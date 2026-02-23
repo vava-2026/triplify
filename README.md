@@ -1,1 +1,6 @@
-# Vava-2026
+# Triplify
+
+Run the app using:
+```
+./gradlew :ui:run
+```
