@@ -1,5 +1,5 @@
 package com.triplify.infrastructure.repository;
 
-public interface TripRepository {
+public class TripRepositoryImpl {
     // TODO
 }
