@@ -1,18 +1,26 @@
 package com.triplify.domain.model.route;
 
+import com.triplify.domain.model.place.Place;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.NonNull;
 
-public record RoutePlace(
-        UUID id,
-        UUID userId,
-        UUID routeId,
-        UUID placeId,
-        int priority,
-        LocalDateTime createdAt,
-        String status,
-        LocalDate startDate,
-        LocalDate endDate
-) {
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class RoutePlace {
+    private UUID id;
+    @NonNull
+    private Place place;
+    private int priority;
+    private LocalDateTime createdAt;
+    private String status;
+    private LocalDate startDate;
+    private LocalDate endDate;
 }

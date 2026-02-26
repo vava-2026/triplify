@@ -1,15 +1,28 @@
 package com.triplify.domain.model.badge;
 
+import com.triplify.domain.model.media.Image;
+import com.triplify.domain.model.user.User;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.NonNull;
 
-public record Badge(
-        UUID id,
-        UUID createdBy,
-        UUID imageId,
-        UUID groupId,
-        String name,
-        String description,
-        int level,
-        int requiredValue
-) {
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class Badge {
+    private UUID id;
+    @NonNull
+    private User createdBy;
+    private Image icon;
+    @NonNull
+    private BadgeGroup group;
+    @NonNull
+    private String name;
+    private String description;
+    private int level;
+    private int requiredValue;
 }

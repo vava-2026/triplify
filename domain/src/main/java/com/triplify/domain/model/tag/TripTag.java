@@ -1,9 +1,19 @@
 package com.triplify.domain.model.tag;
 
-import java.util.UUID;
+import com.triplify.domain.model.trip.Trip;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.NonNull;
 
-public record TripTag(
-        UUID tripId,
-        UUID tagId
-) {
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class TripTag {
+    @NonNull
+    private Trip trip;
+    @NonNull
+    private Tag tag;
 }

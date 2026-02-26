@@ -1,12 +1,23 @@
 package com.triplify.domain.model.trip;
 
+import com.triplify.domain.model.user.User;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.NonNull;
 
-public record Category(
-        UUID id,
-        UUID createdBy,
-        String name,
-        String description,
-        String icon
-) {
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class Category {
+    private UUID id;
+    @NonNull
+    private User createdBy;
+    @NonNull
+    private String name;
+    private String description;
+    private String icon;
 }

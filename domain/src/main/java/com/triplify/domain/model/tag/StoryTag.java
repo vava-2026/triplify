@@ -1,9 +1,19 @@
 package com.triplify.domain.model.tag;
 
-import java.util.UUID;
+import com.triplify.domain.model.story.Story;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.NonNull;
 
-public record StoryTag(
-        UUID storyId,
-        UUID tagId
-) {
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class StoryTag {
+    @NonNull
+    private Story story;
+    @NonNull
+    private Tag tag;
 }
