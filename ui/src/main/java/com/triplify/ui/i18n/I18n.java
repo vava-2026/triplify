@@ -1,9 +1,14 @@
 package com.triplify.ui.i18n;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicReference;
 
 public final class I18n {
+
+    private static final Logger logger = LoggerFactory.getLogger(I18n.class);
 
     private static final String BUNDLE_BASE = "messages";
 
@@ -22,21 +27,21 @@ public final class I18n {
 
     /**
      * Switch language using the {@link Language} enum.
-     * Atomic — no locks needed.
      */
     public static void setLanguage(Language language) {
         STATE.set(loadState(language));
+        logger.info("Language switched to: {}", language);
     }
 
     /**
-     * Get the currently active language.
+     * Get the current language.
      */
     public static Language getLanguage() {
         return STATE.get().language();
     }
 
     /**
-     * Expose the bundle directly (useful for FXMLLoader).
+     * Get the bundle directly (useful for FXMLLoader).
      */
     public static ResourceBundle getBundle() {
         return STATE.get().bundle();
