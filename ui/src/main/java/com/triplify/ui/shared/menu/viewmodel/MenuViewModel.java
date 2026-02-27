@@ -6,18 +6,6 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
-/**
- * ViewModel for the sidebar menu component.
- *
- * <p>Holds observable state that the View binds to:
- * <ul>
- *   <li>{@code selectedItem}  – currently active navigation item</li>
- *   <li>{@code collapsed}     – whether the sidebar is in collapsed (icon-only) mode</li>
- * </ul>
- *
- * <p>To wire navigation: listen to {@code selectedItemProperty()} changes in
- * the parent controller and swap the main content accordingly.
- */
 public class MenuViewModel {
 
     private final ObjectProperty<MenuItem> selectedItem =
@@ -56,6 +44,14 @@ public class MenuViewModel {
 
     public void toggleCollapsed() {
         collapsed.set(!collapsed.get());
+    }
+
+    // ------------------------------------------------------------------ //
+    //  Account actions
+    // ------------------------------------------------------------------ //
+
+    public void onAccountClicked() {
+        // TODO: navigate to account / profile page
     }
 }
 

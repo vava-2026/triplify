@@ -1,9 +1,5 @@
 package com.triplify.ui.shared.menu.model;
 
-/**
- * Represents a navigable item in the sidebar menu.
- * Add new entries here to extend the navigation.
- */
 public enum MenuItem {
 
     MAP("Map"),

@@ -51,7 +51,7 @@
                     mnemonicParsing="false"
                     onAction="#onNavMap">
                 <graphic>
-                    <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 0 0 15;">
+                    <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 0 0 5;">
                         <FontIcon iconLiteral="fth-map" iconSize="18" styleClass="nav-icon" />
                         <Label styleClass="nav-label" text="Map" />
                     </HBox>
@@ -64,7 +64,7 @@
                     mnemonicParsing="false"
                     onAction="#onNavMyTrips">
                 <graphic>
-                    <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 0 0 15;">
+                    <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 0 0 5;">
                         <FontIcon iconLiteral="fth-briefcase" iconSize="18" styleClass="nav-icon" />
                         <Label styleClass="nav-label" text="My Trips" />
                     </HBox>
@@ -77,7 +77,7 @@
                     mnemonicParsing="false"
                     onAction="#onNavCalendar">
                 <graphic>
-                    <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 0 0 15;">
+                    <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 0 0 5;">
                         <FontIcon iconLiteral="fth-calendar" iconSize="18" styleClass="nav-icon" />
                         <Label styleClass="nav-label" text="Calendar" />
                     </HBox>
@@ -90,7 +90,7 @@
                     mnemonicParsing="false"
                     onAction="#onNavSettings">
                 <graphic>
-                    <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 0 0 15;">
+                    <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 0 0 5;">
                         <FontIcon iconLiteral="fth-settings" iconSize="18" styleClass="nav-icon" />
                         <Label styleClass="nav-label" text="Settings" />
                     </HBox>
@@ -102,11 +102,13 @@
         <Region VBox.vgrow="ALWAYS" />
 
         <!-- Account island (pinned to bottom) -->
-        <HBox styleClass="account-island"
+        <HBox fx:id="accountIsland"
+              styleClass="account-island"
               prefWidth="220" prefHeight="48"
               alignment="CENTER_LEFT" spacing="10"
               VBox.vgrow="NEVER"
-              style="-fx-margin: 0 20 15 20;">
+              style="-fx-margin: 0 20 15 20;"
+              onMouseClicked="#onAccountClicked">
 
             <StackPane styleClass="avatar-circle">
                 <Label text="B" styleClass="avatar-label" />

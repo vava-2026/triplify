@@ -39,7 +39,6 @@
     -fx-background-color: #fafafa;
     -fx-background-radius: 8;
     -fx-border-color: transparent;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 8, 0, 0, 2);
     -fx-padding: 10 15 10 15;
 }
 
@@ -80,26 +79,26 @@
     -fx-background-color: transparent;
     -fx-background-radius: 8;
     -fx-border-color: transparent;
+    -fx-border-width: 2;
+    -fx-border-radius: 8;
     -fx-text-fill: #1d3f59;
     -fx-font-size: 14px;
     -fx-font-weight: 500;
     -fx-font-family: "Plus Jakarta Sans", "Segoe UI", "System";
     -fx-cursor: hand;
     -fx-alignment: CENTER_LEFT;
-    -fx-padding: 0 15 0 15;
-}
-
-.nav-btn:hover {
-    -fx-background-color: derive(#2f6690, 80%);
+    -fx-padding: 0 13 0 13;
 }
 
 .nav-btn-active {
     -fx-background-color: #2f6690;
+    -fx-border-color: transparent;
     -fx-text-fill: #ecf3f9;
 }
 
 .nav-btn-active:hover {
-    -fx-background-color: derive(#2f6690, -10%);
+    -fx-background-color: #2f6690;
+    -fx-border-color: transparent;
 }
 
 .nav-btn-active .nav-label {
@@ -129,10 +128,11 @@
 .account-island {
     -fx-background-color: #fafafa;
     -fx-background-radius: 8;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 8, 0, 0, 2);
+    -fx-border-color: transparent;
+    -fx-border-width: 2;
+    -fx-border-radius: 8;
     -fx-padding: 5 8 5 8;
     -fx-cursor: hand;
-    -fx-margin: 0 15 0 15;
 }
 
 /* ---------- Avatar ---------- */
@@ -170,7 +170,7 @@
 /* ---------- Toggle icon box ---------- */
 
 .toggle-box {
-    -fx-background-color: #ecf3f9;
+    -fx-background-color: transparent;
     -fx-background-radius: 8;
     -fx-min-width: 28;
     -fx-pref-width: 28;
@@ -183,11 +183,11 @@
     -fx-cursor: hand;
 }
 
-.toggle-box:hover {
-    -fx-background-color: derive(#2f6690, 60%);
-}
-
 .toggle-icon {
     -fx-icon-color: #1D3F59;
     -fx-icon-size: 16;
+}
+
+.toggle-icon:hover {
+    -fx-icon-color: #0A090C;
 }
