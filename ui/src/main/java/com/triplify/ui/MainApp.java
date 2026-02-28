@@ -47,12 +47,9 @@ public class MainApp extends Application {
         headerView.getViewModel().activeItemProperty().bind(
                 menuView.getViewModel().selectedItemProperty());
 
-        // Hide header on Map state
-        javafx.beans.binding.BooleanBinding showHeader =
-                menuView.getViewModel().selectedItemProperty()
-                        .isNotEqualTo(MenuItem.MAP);
-        header.visibleProperty().bind(showHeader);
-        header.managedProperty().bind(showHeader);
+        // Hide header
+        header.visibleProperty().bind(menuView.getViewModel().hideHeaderProperty().not());
+        header.managedProperty().bind(menuView.getViewModel().hideHeaderProperty().not());
 
         // Main content area
         StackPane contentArea = new StackPane();

@@ -16,7 +16,6 @@ import java.util.ResourceBundle;
 public class SidebarIslandView implements Initializable {
 
     @FXML private HBox sidebarIsland;
-    @FXML private StackPane toggleBox;
     @FXML private FontIcon toggleIcon;
 
     private Runnable onToggle;

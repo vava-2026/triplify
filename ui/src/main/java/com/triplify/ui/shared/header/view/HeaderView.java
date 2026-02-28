@@ -6,7 +6,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.input.MouseEvent;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -15,7 +14,6 @@ public class HeaderView implements Initializable {
 
     @FXML private Label pageTitle;
     @FXML private TextField searchField;
-    @FXML private Label languageLabel;
 
     private final HeaderViewModel viewModel = new HeaderViewModel();
 
@@ -29,16 +27,7 @@ public class HeaderView implements Initializable {
                         I18n.bundleProperty()));
 
         searchField.textProperty().bindBidirectional(viewModel.searchTextProperty());
-
-        languageLabel.textProperty().bind(viewModel.languageCodeBinding());
     }
 
-    public HeaderViewModel getViewModel() {
-        return viewModel;
-    }
-
-    @FXML
-    private void onLanguageClicked(MouseEvent event) {
-        viewModel.onLanguageClicked();
-    }
+    public HeaderViewModel getViewModel() { return viewModel; }
 }
