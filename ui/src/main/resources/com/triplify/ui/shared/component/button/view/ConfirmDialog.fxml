@@ -14,8 +14,8 @@
     <Label fx:id="messageLabel" styleClass="confirm-dialog-message" wrapText="true" />
 
     <HBox spacing="12" alignment="CENTER_RIGHT">
-        <Button fx:id="cancelBtn" styleClass="app-btn,app-btn-secondary" mnemonicParsing="false" onAction="#onCancel" />
-        <Button fx:id="confirmBtn" styleClass="app-btn,app-btn-primary" mnemonicParsing="false" onAction="#onConfirm" />
+        <Button fx:id="cancelBtn" styleClass="app-btn app-btn-secondary" mnemonicParsing="false" onAction="#onCancel" />
+        <Button fx:id="confirmBtn" styleClass="app-btn app-btn-primary" mnemonicParsing="false" onAction="#onConfirm" />
     </HBox>
 
 </VBox>
