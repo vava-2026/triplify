@@ -17,13 +17,15 @@ public final class AppColors {
     public static final Color INK_MUTED = Color.web("#999999");
 
     public static final Color PRIMARY = Color.web("#2f6690");
-
-    public static final Color PRIMARY_DARK = Color.web("#1d3f59");
-
+    public static final Color PRIMARY_HOVER = PRIMARY.deriveColor(0, 1, 0.88, 1);
+    public static final Color PRIMARY_PRESSED = PRIMARY.deriveColor(0, 1, 0.78, 1);
+    public static final Color PRIMARY_DARK  = Color.web("#1d3f59");
     public static final Color PRIMARY_LIGHT = Color.web("#ecf3f9");
 
     public static final Color ON_PRIMARY = Color.web("#ecf3f9");
-
     public static final Color ON_SURFACE = Color.web("#ffffff");
-}
 
+    public static final Color DANGER = Color.web("#c0392b");
+    public static final Color DANGER_HOVER = DANGER.deriveColor(0, 1, 0.88, 1);
+    public static final Color DANGER_PRESSED = DANGER.deriveColor(0, 1, 0.78, 1);
+}

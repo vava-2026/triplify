@@ -1,0 +1,120 @@
+.app-btn {
+    -fx-font-family: -font-family-base;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-cursor: hand;
+    -fx-padding: 10 20 10 20;
+    -fx-min-height: 40;
+    -fx-pref-height: 40;
+    -fx-alignment: CENTER;
+    -fx-content-display: LEFT;
+    -fx-graphic-text-gap: 6;
+}
+
+.app-btn:disabled {
+    -fx-opacity: 0.45;
+    -fx-cursor:  default;
+}
+
+.app-btn-primary {
+    -fx-background-color: -color-primary;
+    -fx-border-color: transparent;
+    -fx-text-fill: -color-on-primary;
+}
+
+.app-btn-primary .app-btn-icon {
+    -fx-icon-color: -color-on-primary;
+}
+
+.app-btn-primary:hover {
+    -fx-background-color: -color-primary-hover;
+}
+
+.app-btn-primary:pressed {
+    -fx-background-color: -color-primary-pressed;
+}
+
+.app-btn-secondary {
+    -fx-background-color: transparent;
+    -fx-border-color: -color-primary;
+    -fx-border-width: 2;
+    -fx-text-fill: -color-primary-dark;
+}
+
+.app-btn-secondary .app-btn-icon {
+    -fx-icon-color: -color-primary-dark;
+}
+
+.app-btn-secondary:hover {
+    -fx-background-color: -color-primary;
+    -fx-border-color: -color-primary;
+    -fx-text-fill: -color-on-primary;
+}
+
+.app-btn-secondary:hover .app-btn-icon {
+    -fx-icon-color: -color-on-primary;
+}
+
+.app-btn-secondary:pressed {
+    -fx-background-color: -color-primary-pressed;
+    -fx-border-color: -color-primary-pressed;
+    -fx-text-fill: -color-on-primary;
+}
+
+.app-btn-danger {
+    -fx-background-color: -color-danger;
+    -fx-border-color: transparent;
+    -fx-text-fill: white;
+}
+
+.app-btn-danger .app-btn-icon {
+    -fx-icon-color: white;
+}
+
+.app-btn-danger:hover {
+    -fx-background-color: -color-danger-hover;
+}
+
+.app-btn-danger:pressed {
+    -fx-background-color: -color-danger-pressed;
+}
+
+.app-btn-ghost {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: -color-primary-dark;
+}
+
+.app-btn-ghost .app-btn-icon {
+    -fx-icon-color: -color-primary-dark;
+}
+
+.app-btn-ghost:hover {
+    -fx-background-color: -color-surface-tint;
+}
+
+.app-btn-ghost:pressed {
+    -fx-background-color: -color-primary-light;
+}
+
+.app-btn-spinner {
+    -fx-progress-color: -color-on-primary;
+    -fx-pref-width: 18;
+    -fx-pref-height: 18;
+    -fx-max-width: 18;
+    -fx-max-height: 18;
+    -fx-min-width: 18;
+    -fx-min-height: 18;
+}
+
+.app-btn-secondary .app-btn-spinner,
+.app-btn-ghost     .app-btn-spinner {
+    -fx-progress-color: -color-primary;
+}
+
+.app-btn-danger .app-btn-spinner {
+    -fx-progress-color: white;
+}
+

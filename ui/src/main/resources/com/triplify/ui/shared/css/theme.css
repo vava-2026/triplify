@@ -8,6 +8,12 @@
     -color-primary:       #2f6690;
     -color-primary-dark:  #1d3f59;
     -color-primary-light: #ecf3f9;
+    -color-primary-hover:   derive(-color-primary, -12%);
+    -color-primary-pressed: derive(-color-primary, -22%);
+
+    -color-danger:         #c0392b;
+    -color-danger-hover:   derive(-color-danger, -12%);
+    -color-danger-pressed: derive(-color-danger, -22%);
 
     -color-on-primary:    #ecf3f9;
     -color-on-surface:    white;
