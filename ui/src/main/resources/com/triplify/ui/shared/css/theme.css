@@ -1,0 +1,35 @@
+.root {
+    -color-bg:            #f0f0f0;
+    -color-surface:       #fafafa;
+    -color-surface-tint:  #ecf3f9;
+    -color-ink:           #0a090c;
+    -color-ink-muted:     #999999;
+
+    -color-primary:       #2f6690;
+    -color-primary-dark:  #1d3f59;
+    -color-primary-light: #ecf3f9;
+
+    -color-on-primary:    #ecf3f9;
+    -color-on-surface:    white;
+
+    -font-family-base: "Plus Jakarta Sans", "Segoe UI", System;
+
+    -height-topbar: 70px;
+
+    -shadow-card: dropshadow(gaussian, rgba(12,12,13,0.05), 4, 0, 0, 1);
+}
+
+
+.app-root {
+    -fx-background-color: -color-bg;
+}
+
+.app-right-column {
+    -fx-background-color: -color-bg;
+}
+
+.app-content {
+    -fx-background-color: -color-bg;
+}
+
+

@@ -1,8 +1,8 @@
 .header-root {
-    -fx-background-color: #fafafa;
-    -fx-pref-height: 70;
-    -fx-min-height: 70;
-    -fx-max-height: 70;
+    -fx-background-color: -color-surface;
+    -fx-pref-height: -height-topbar;
+    -fx-min-height: -height-topbar;
+    -fx-max-height: -height-topbar;
 }
 
 .header-hbox {
@@ -10,19 +10,19 @@
 }
 
 .header-title {
-    -fx-text-fill: #0a090c;
+    -fx-text-fill: -color-ink;
     -fx-font-size: 32px;
     -fx-font-weight: bold;
-    -fx-font-family: "Plus Jakarta Sans", "Segoe UI", "System";
+    -fx-font-family: -font-family-base;
 }
 
 .search-bar {
-    -fx-background-color: #ecf3f9;
+    -fx-background-color: -color-surface-tint;
     -fx-background-radius: 10;
     -fx-border-color: transparent;
     -fx-border-radius: 10;
-    -fx-effect: dropshadow(gaussian, rgba(12,12,13,0.05), 4, 0, 0, 1);
-    -fx-max-width: 600;
+    -fx-effect: -shadow-card;
+    -fx-max-width: 500;
     -fx-min-width: 200;
     -fx-pref-height: 38;
     -fx-min-height: 38;
@@ -31,17 +31,17 @@
 }
 
 .search-icon {
-    -fx-icon-color: #999999;
+    -fx-icon-color: -color-ink-muted;
     -fx-icon-size: 18;
 }
 
 .search-field {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
-    -fx-text-fill: #0a090c;
-    -fx-prompt-text-fill: #999999;
+    -fx-text-fill: -color-ink;
+    -fx-prompt-text-fill: -color-ink-muted;
     -fx-font-size: 14px;
-    -fx-font-family: "Plus Jakarta Sans", "Segoe UI", "System";
+    -fx-font-family: -font-family-base;
     -fx-padding: 0;
     -fx-max-width: Infinity;
 }
@@ -52,7 +52,7 @@
 }
 
 .language-island {
-    -fx-background-color: #fafafa;
+    -fx-background-color: -color-surface;
     -fx-background-radius: 8;
     -fx-border-width: 1;
     -fx-border-radius: 8;
@@ -67,23 +67,21 @@
 }
 
 .language-island:hover .language-icon {
-    -fx-icon-color: #0a090c;
+    -fx-icon-color: -color-ink;
 }
 
 .language-island:hover .language-label {
-    -fx-text-fill: #0a090c;
+    -fx-text-fill: -color-ink;
 }
 
 .language-icon {
-    -fx-icon-color: #1d3f59;
+    -fx-icon-color: -color-primary-dark;
     -fx-icon-size: 20;
 }
 
 .language-label {
-    -fx-text-fill: #1d3f59;
+    -fx-text-fill: -color-primary-dark;
     -fx-font-size: 14px;
     -fx-font-weight: bold;
-    -fx-font-family: "Plus Jakarta Sans", "Segoe UI", "System";
+    -fx-font-family: -font-family-base;
 }
-
-

@@ -1,5 +1,6 @@
 package com.triplify.ui.shared.header.view;
 
+import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.header.viewmodel.HeaderViewModel;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -20,12 +21,16 @@ public class HeaderView implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        pageTitle.setText(viewModel.getPageTitle());
-        viewModel.pageTitleProperty().addListener(
-                (obs, oldV, newV) -> pageTitle.setText(newV));
+        pageTitle.textProperty().bind(viewModel.pageTitleBinding());
+
+        searchField.promptTextProperty().bind(
+                javafx.beans.binding.Bindings.createStringBinding(
+                        () -> I18n.t("header.search.prompt"),
+                        I18n.bundleProperty()));
 
         searchField.textProperty().bindBidirectional(viewModel.searchTextProperty());
-        languageLabel.textProperty().bind(viewModel.languageProperty());
+
+        languageLabel.textProperty().bind(viewModel.languageCodeBinding());
     }
 
     public HeaderViewModel getViewModel() {
@@ -37,4 +42,3 @@ public class HeaderView implements Initializable {
         viewModel.onLanguageClicked();
     }
 }
-

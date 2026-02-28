@@ -1,21 +1,26 @@
 package com.triplify.ui.shared.menu.model;
 
+import com.triplify.ui.i18n.I18n;
+
 public enum MenuItem {
 
-    MAP("Map"),
-    MY_TRIPS("My Trips"),
-    CALENDAR("Calendar"),
-    SETTINGS("Settings"),
-    ACCOUNT("Account");
+    MAP("nav.map"),
+    MY_TRIPS("nav.myTrips"),
+    CALENDAR("nav.calendar"),
+    SETTINGS("nav.settings"),
+    ACCOUNT("nav.account");
 
-    private final String label;
+    private final String i18nKey;
 
-    MenuItem(String label) {
-        this.label = label;
+    MenuItem(String i18nKey) {
+        this.i18nKey = i18nKey;
+    }
+
+    public String getI18nKey() {
+        return i18nKey;
     }
 
     public String getLabel() {
-        return label;
+        return I18n.t(i18nKey);
     }
 }
-

@@ -11,7 +11,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,11 +44,8 @@ public class MainApp extends Application {
         HeaderView headerView = headerLoader.getController();
         HBox.setHgrow(header, Priority.ALWAYS);
 
-        // Bind header title to menu selection
-        headerView.getViewModel().pageTitleProperty().bind(
-                menuView.getViewModel().selectedItemProperty()
-                        .map(item -> item.getLabel())
-        );
+        headerView.getViewModel().activeItemProperty().bind(
+                menuView.getViewModel().selectedItemProperty());
 
         // Hide header on Map state
         javafx.beans.binding.BooleanBinding showHeader =
@@ -60,20 +56,26 @@ public class MainApp extends Application {
 
         // Main content area
         StackPane contentArea = new StackPane();
-        contentArea.setStyle("-fx-background-color: #f0f0f0;");
+        contentArea.getStyleClass().add("app-content");
         VBox.setVgrow(contentArea, Priority.ALWAYS);
 
         // Right column: header + content
         VBox rightColumn = new VBox(header, contentArea);
-        rightColumn.setStyle("-fx-background-color: #f0f0f0;");
+        rightColumn.getStyleClass().add("app-right-column");
         HBox.setHgrow(rightColumn, Priority.ALWAYS);
 
         // Root
         HBox root = new HBox(menu, rightColumn);
-        root.setStyle("-fx-background-color: #f0f0f0;");
+        root.getStyleClass().add("app-root");
 
         Scene scene = new Scene(root, 1280, 800);
-        scene.setFill(Color.web("#f0f0f0"));
+
+        // Load the global theme
+        URL themeUrl = getClass().getResource("/com/triplify/ui/shared/css/theme.css");
+        if (themeUrl == null) {
+            throw new IllegalStateException("theme.css not found on classpath");
+        }
+        scene.getStylesheets().add(themeUrl.toExternalForm());
 
         stage.setTitle("Triplify");
         stage.setScene(scene);

@@ -31,7 +31,7 @@
                 <graphic>
                     <HBox alignment="CENTER_LEFT" spacing="15">
                         <FontIcon iconLiteral="fth-map" iconSize="18" styleClass="nav-icon" />
-                        <Label styleClass="nav-label" text="Map" />
+                        <Label styleClass="nav-label" />
                     </HBox>
                 </graphic>
             </Button>
@@ -44,7 +44,7 @@
                 <graphic>
                     <HBox alignment="CENTER_LEFT" spacing="15">
                         <FontIcon iconLiteral="fth-briefcase" iconSize="18" styleClass="nav-icon" />
-                        <Label styleClass="nav-label" text="My Trips" />
+                        <Label styleClass="nav-label" />
                     </HBox>
                 </graphic>
             </Button>
@@ -57,7 +57,7 @@
                 <graphic>
                     <HBox alignment="CENTER_LEFT" spacing="15">
                         <FontIcon iconLiteral="fth-calendar" iconSize="18" styleClass="nav-icon" />
-                        <Label styleClass="nav-label" text="Calendar" />
+                        <Label styleClass="nav-label" />
                     </HBox>
                 </graphic>
             </Button>
@@ -70,7 +70,7 @@
                 <graphic>
                     <HBox alignment="CENTER_LEFT" spacing="15">
                         <FontIcon iconLiteral="fth-settings" iconSize="18" styleClass="nav-icon" />
-                        <Label styleClass="nav-label" text="Settings" />
+                        <Label styleClass="nav-label" />
                     </HBox>
                 </graphic>
             </Button>
@@ -89,12 +89,12 @@
             </VBox.margin>
 
             <StackPane styleClass="avatar-circle">
-                <Label text="Т" styleClass="avatar-label" />
+                <Label text="N" styleClass="avatar-label" />
             </StackPane>
 
             <VBox HBox.hgrow="ALWAYS">
                 <Label styleClass="account-name" text="Name Surname" />
-                <Label styleClass="account-role" text="Explorer" />
+                <Label fx:id="accountRole" styleClass="account-role" />
             </VBox>
 
         </HBox>

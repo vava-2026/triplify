@@ -15,6 +15,9 @@ dependencies {
 
 application {
     mainClass.set("com.triplify.ui.MainApp")
+    applicationDefaultJvmArgs = listOf(
+        "--enable-native-access=javafx.graphics"
+    )
 }
 
 javafx {

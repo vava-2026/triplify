@@ -1,16 +1,19 @@
 package com.triplify.ui.shared.menu.view;
 
+import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.menu.model.MenuItem;
 import com.triplify.ui.shared.menu.viewmodel.MenuViewModel;
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -41,6 +44,7 @@ public class MenuView implements Initializable {
     @FXML private Button navSettings;
 
     @FXML private HBox accountIsland;
+    @FXML private Label accountRole;
 
     private final MenuViewModel viewModel = new MenuViewModel();
     private final Map<MenuItem, Button> navButtons = new EnumMap<>(MenuItem.class);
@@ -59,6 +63,14 @@ public class MenuView implements Initializable {
         navButtons.put(MenuItem.MY_TRIPS, navMyTrips);
         navButtons.put(MenuItem.CALENDAR, navCalendar);
         navButtons.put(MenuItem.SETTINGS, navSettings);
+
+        bindNavLabel(navMap, MenuItem.MAP);
+        bindNavLabel(navMyTrips, MenuItem.MY_TRIPS);
+        bindNavLabel(navCalendar, MenuItem.CALENDAR);
+        bindNavLabel(navSettings, MenuItem.SETTINGS);
+
+        accountRole.textProperty().bind(
+                Bindings.createStringBinding(() -> I18n.t("account.role"), I18n.bundleProperty()));
 
         navButtons.values().forEach(this::installHoverAnimation);
         installHoverAnimation(accountIsland);
@@ -82,6 +94,15 @@ public class MenuView implements Initializable {
     @FXML private void onNavCalendar() { viewModel.setSelectedItem(MenuItem.CALENDAR); }
     @FXML private void onNavSettings() { viewModel.setSelectedItem(MenuItem.SETTINGS); }
     @FXML private void onAccountClicked(MouseEvent event) { viewModel.setSelectedItem(MenuItem.ACCOUNT); }
+
+    private void bindNavLabel(Button button, MenuItem item) {
+        if (button.getGraphic() == null) return;
+        button.getGraphic().lookupAll(".nav-label").stream()
+                .filter(n -> n instanceof Label)
+                .map(n -> (Label) n)
+                .findFirst()
+                .ifPresent(label -> label.textProperty().bind(viewModel.labelFor(item)));
+    }
 
     private void refreshActiveState(MenuItem active) {
         navButtons.forEach((item, btn) -> {
