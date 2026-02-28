@@ -34,7 +34,7 @@ public class SidebarIslandView implements Initializable {
         if (sidebarIsland != null) {
             if (collapsed && isMap) {
                 sidebarIsland.getStyleClass().add("sidebar-island-pill");
-                sidebarIsland.setLayoutX(25);
+                sidebarIsland.setLayoutX(30);
                 sidebarIsland.setLayoutY(20);
             } else {
                 sidebarIsland.getStyleClass().remove("sidebar-island-pill");
