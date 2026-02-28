@@ -2,6 +2,7 @@
 
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <StackPane xmlns="http://javafx.com/javafx"
@@ -14,35 +15,12 @@
            stylesheets="@../css/menu.css"
            styleClass="sidebar-root">
 
-    <!-- ═══════════════════════════════════════════════════════
-         EXPANDED SIDEBAR
-    ═══════════════════════════════════════════════════════ -->
     <VBox fx:id="mainPageInner" styleClass="main-page-inner" prefWidth="260">
 
-        <!-- Sidebar island: logo + title + collapse button -->
-        <HBox fx:id="sidebarIsland" styleClass="sidebar-island"
-              prefWidth="250" prefHeight="50"
-              alignment="CENTER_LEFT" spacing="10"
-              VBox.vgrow="NEVER"
-              style="-fx-margin: 10 5 0 5;">
+        <fx:include fx:id="expandedIsland"
+                    source="SidebarIsland.fxml"
+                    VBox.vgrow="NEVER" />
 
-            <StackPane styleClass="logo-box" alignment="CENTER">
-                <FontIcon iconLiteral="fth-map-pin" iconSize="16" styleClass="logo-icon" />
-            </StackPane>
-
-            <Label styleClass="app-title" text="Triplify" HBox.hgrow="ALWAYS" />
-
-            <Region HBox.hgrow="ALWAYS" />
-
-            <StackPane fx:id="toggleBox"
-                       styleClass="toggle-box"
-                       alignment="CENTER"
-                       onMouseClicked="#onToggleCollapse">
-                <FontIcon fx:id="toggleIcon" iconLiteral="fth-chevron-left" iconSize="16" styleClass="toggle-icon" />
-            </StackPane>
-        </HBox>
-
-        <!-- Nav buttons -->
         <VBox spacing="8" prefWidth="220" VBox.vgrow="ALWAYS" style="-fx-padding: 20 20 0 20;">
 
             <Button fx:id="navMap"
@@ -51,7 +29,7 @@
                     mnemonicParsing="false"
                     onAction="#onNavMap">
                 <graphic>
-                    <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 0 0 5;">
+                    <HBox alignment="CENTER_LEFT" spacing="15">
                         <FontIcon iconLiteral="fth-map" iconSize="18" styleClass="nav-icon" />
                         <Label styleClass="nav-label" text="Map" />
                     </HBox>
@@ -64,7 +42,7 @@
                     mnemonicParsing="false"
                     onAction="#onNavMyTrips">
                 <graphic>
-                    <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 0 0 5;">
+                    <HBox alignment="CENTER_LEFT" spacing="15">
                         <FontIcon iconLiteral="fth-briefcase" iconSize="18" styleClass="nav-icon" />
                         <Label styleClass="nav-label" text="My Trips" />
                     </HBox>
@@ -77,7 +55,7 @@
                     mnemonicParsing="false"
                     onAction="#onNavCalendar">
                 <graphic>
-                    <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 0 0 5;">
+                    <HBox alignment="CENTER_LEFT" spacing="15">
                         <FontIcon iconLiteral="fth-calendar" iconSize="18" styleClass="nav-icon" />
                         <Label styleClass="nav-label" text="Calendar" />
                     </HBox>
@@ -90,7 +68,7 @@
                     mnemonicParsing="false"
                     onAction="#onNavSettings">
                 <graphic>
-                    <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 0 0 5;">
+                    <HBox alignment="CENTER_LEFT" spacing="15">
                         <FontIcon iconLiteral="fth-settings" iconSize="18" styleClass="nav-icon" />
                         <Label styleClass="nav-label" text="Settings" />
                     </HBox>
@@ -98,56 +76,36 @@
             </Button>
         </VBox>
 
-        <!-- Spacer pushes account island to the bottom -->
         <Region VBox.vgrow="ALWAYS" />
 
-        <!-- Account island (pinned to bottom) -->
         <HBox fx:id="accountIsland"
               styleClass="account-island"
               prefWidth="220" prefHeight="48"
               alignment="CENTER_LEFT" spacing="10"
               VBox.vgrow="NEVER"
-              style="-fx-margin: 0 20 15 20;"
               onMouseClicked="#onAccountClicked">
+            <VBox.margin>
+                <Insets right="20" left="20" />
+            </VBox.margin>
 
             <StackPane styleClass="avatar-circle">
-                <Label text="B" styleClass="avatar-label" />
+                <Label text="Т" styleClass="avatar-label" />
             </StackPane>
 
-            <VBox styleClass="account-info" HBox.hgrow="ALWAYS" spacing="2">
-                <Label styleClass="account-name" text="Billy Herrington" />
+            <VBox HBox.hgrow="ALWAYS">
+                <Label styleClass="account-name" text="Name Surname" />
                 <Label styleClass="account-role" text="Explorer" />
             </VBox>
 
         </HBox>
     </VBox>
 
-    <!-- ═══════════════════════════════════════════════════════
-         COLLAPSED ISLAND (floating pill only — no sidebar panel)
-    ═══════════════════════════════════════════════════════ -->
     <Pane fx:id="collapsedIsland" visible="false" managed="false"
-          prefWidth="210" prefHeight="70"
+          prefWidth="260" prefHeight="70"
           styleClass="collapsed-pane">
 
-        <HBox styleClass="sidebar-island"
-              layoutX="5" layoutY="10"
-              prefWidth="200" prefHeight="50"
-              alignment="CENTER_LEFT" spacing="10">
-
-            <StackPane styleClass="logo-box" alignment="CENTER">
-                <FontIcon iconLiteral="fth-map-pin" iconSize="16" styleClass="logo-icon" />
-            </StackPane>
-
-            <Label styleClass="app-title" text="Triplify" HBox.hgrow="ALWAYS" />
-
-            <Region HBox.hgrow="ALWAYS" />
-
-            <StackPane styleClass="toggle-box"
-                       alignment="CENTER"
-                       onMouseClicked="#onToggleCollapse">
-                <FontIcon iconLiteral="fth-chevron-right" iconSize="16" styleClass="toggle-icon" />
-            </StackPane>
-        </HBox>
+        <fx:include fx:id="collapsedIslandInner"
+                    source="SidebarIsland.fxml" />
     </Pane>
 
 </StackPane>

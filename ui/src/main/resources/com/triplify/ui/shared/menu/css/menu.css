@@ -1,79 +1,69 @@
-/* ═══════════════════════════════════════════════════════════════════
-   Triplify – Sidebar Menu stylesheet
-   Colours from design:
-     background / surface  #fafafa
-     primary               #2f6690
-     primary-light         #ecf3f9
-     text-dark             #0a090c
-     text-brand            #1d3f59
-     role-colour           #2f6690
-   ═══════════════════════════════════════════════════════════════════ */
-
-/* ---------- Root ---------- */
-
 .sidebar-root {
     -fx-background-color: transparent;
 }
-
-/* ---------- Full sidebar body ---------- */
 
 .main-page-inner {
     -fx-background-color: #fafafa;
     -fx-background-radius: 0;
     -fx-min-width: 260;
     -fx-pref-width: 260;
-    -fx-padding: 10 5 15 5;
+    -fx-padding: 0 0 15 0;
     -fx-spacing: 0;
 }
-
-/* ---------- Collapsed pane (transparent — only island pill shows) ---------- */
 
 .collapsed-pane {
     -fx-background-color: transparent;
     -fx-pref-width: 260;
 }
 
-/* ---------- Sidebar island (top bar) ---------- */
-
 .sidebar-island {
     -fx-background-color: #fafafa;
-    -fx-background-radius: 8;
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
     -fx-border-color: transparent;
-    -fx-padding: 10 15 10 15;
+    -fx-pref-height: 70;
+    -fx-min-height: 70;
+    -fx-max-height: 70;
+    -fx-padding: 0 15 0 15;
 }
 
-
-/* ---------- Logo box ---------- */
+.sidebar-island-pill {
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-pref-width: 200;
+    -fx-min-width: 200;
+    -fx-max-width: 200;
+    -fx-pref-height: 50;
+    -fx-min-height: 50;
+    -fx-max-height: 50;
+    -fx-padding: 0 15 0 10;
+}
 
 .logo-box {
     -fx-background-color: #2f6690;
     -fx-background-radius: 8;
-    -fx-min-width: 32;
-    -fx-pref-width: 32;
-    -fx-max-width: 32;
-    -fx-min-height: 32;
-    -fx-pref-height: 32;
-    -fx-max-height: 32;
+    -fx-min-width: 30;
+    -fx-pref-width: 30;
+    -fx-max-width: 30;
+    -fx-min-height: 30;
+    -fx-pref-height: 30;
+    -fx-max-height: 30;
     -fx-alignment: CENTER;
     -fx-padding: 0;
 }
 
 .logo-icon {
     -fx-icon-color: black;
-    -fx-icon-size: 16;
+    -fx-icon-size: 18;
 }
-
-/* ---------- App title ---------- */
 
 .app-title {
     -fx-text-fill: #0a090c;
-    -fx-font-size: 20px;
+    -fx-font-size: 24px;
     -fx-font-weight: bold;
     -fx-font-family: "Plus Jakarta Sans", "Segoe UI", "System";
     -fx-letter-spacing: -0.5px;
 }
-
-/* ---------- Nav buttons ---------- */
 
 .nav-btn {
     -fx-background-color: transparent;
@@ -109,8 +99,6 @@
     -fx-icon-color: #ecf3f9;
 }
 
-/* ---------- Nav button internals ---------- */
-
 .nav-icon {
     -fx-icon-color: #1d3f59;
     -fx-icon-size: 18;
@@ -120,22 +108,21 @@
     -fx-text-fill: #1d3f59;
     -fx-font-size: 14px;
     -fx-font-weight: 500;
+    -fx-font-style: Medium;
     -fx-font-family: "Plus Jakarta Sans", "Segoe UI", "System";
 }
 
-/* ---------- Account island ---------- */
-
 .account-island {
     -fx-background-color: #fafafa;
+    -fx-max-width: 220;
+    -fx-max-height: 48;
     -fx-background-radius: 8;
     -fx-border-color: transparent;
     -fx-border-width: 2;
     -fx-border-radius: 8;
-    -fx-padding: 5 8 5 8;
+    -fx-padding: 5 5 5 5;
     -fx-cursor: hand;
 }
-
-/* ---------- Avatar ---------- */
 
 .avatar-circle {
     -fx-background-color: #2f6690;
@@ -152,11 +139,9 @@
     -fx-font-weight: bold;
 }
 
-/* ---------- Account text ---------- */
-
 .account-name {
     -fx-text-fill: #0a090c;
-    -fx-font-size: 13px;
+    -fx-font-size: 14px;
     -fx-font-weight: bold;
     -fx-font-family: "Plus Jakarta Sans", "Segoe UI", "System";
 }
@@ -166,8 +151,6 @@
     -fx-font-size: 11px;
     -fx-font-family: "Plus Jakarta Sans", "Segoe UI", "System";
 }
-
-/* ---------- Toggle icon box ---------- */
 
 .toggle-box {
     -fx-background-color: transparent;
@@ -185,7 +168,7 @@
 
 .toggle-icon {
     -fx-icon-color: #1D3F59;
-    -fx-icon-size: 16;
+    -fx-icon-size: 24;
 }
 
 .toggle-icon:hover {

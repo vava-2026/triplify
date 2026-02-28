@@ -19,7 +19,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
-import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.net.URL;
 import java.util.EnumMap;
@@ -29,12 +28,12 @@ import java.util.ResourceBundle;
 
 public class MenuView implements Initializable {
 
-    // ---- FXML injections -------------------------------------------------
-
     @FXML private StackPane sidebarRoot;
     @FXML private VBox mainPageInner;
     @FXML private Pane collapsedIsland;
-    @FXML private FontIcon toggleIcon;
+
+    @FXML private SidebarIslandView expandedIslandController;
+    @FXML private SidebarIslandView collapsedIslandInnerController;
 
     @FXML private Button navMap;
     @FXML private Button navMyTrips;
@@ -42,8 +41,6 @@ public class MenuView implements Initializable {
     @FXML private Button navSettings;
 
     @FXML private HBox accountIsland;
-
-    // ---- ViewModel -------------------------------------------------------
 
     private final MenuViewModel viewModel = new MenuViewModel();
     private final Map<MenuItem, Button> navButtons = new EnumMap<>(MenuItem.class);
@@ -54,19 +51,20 @@ public class MenuView implements Initializable {
     private static final Color BORDER_COLOR = Color.web("#2f6690");
     private static final Duration ANIM_DURATION = Duration.millis(180);
 
-    // ---- Initializable ---------------------------------------------------
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         mainPageInner.setMaxHeight(Double.MAX_VALUE);
 
-        navButtons.put(MenuItem.MAP,      navMap);
+        navButtons.put(MenuItem.MAP, navMap);
         navButtons.put(MenuItem.MY_TRIPS, navMyTrips);
         navButtons.put(MenuItem.CALENDAR, navCalendar);
         navButtons.put(MenuItem.SETTINGS, navSettings);
 
         navButtons.values().forEach(this::installHoverAnimation);
         installHoverAnimation(accountIsland);
+
+        expandedIslandController.setOnToggle(viewModel::toggleCollapsed);
+        collapsedIslandInnerController.setOnToggle(viewModel::toggleCollapsed);
 
         viewModel.selectedItemProperty().addListener(
                 (obs, oldVal, newVal) -> refreshActiveState(newVal));
@@ -77,16 +75,13 @@ public class MenuView implements Initializable {
         applyCollapsedState(viewModel.isCollapsed());
     }
 
-    // ---- FXML handlers ---------------------------------------------------
+    public MenuViewModel getViewModel() { return viewModel; }
 
-    @FXML private void onToggleCollapse(MouseEvent event) { viewModel.toggleCollapsed(); }
-    @FXML private void onNavMap()      { viewModel.setSelectedItem(MenuItem.MAP); }
-    @FXML private void onNavMyTrips()  { viewModel.setSelectedItem(MenuItem.MY_TRIPS); }
+    @FXML private void onNavMap() { viewModel.setSelectedItem(MenuItem.MAP); }
+    @FXML private void onNavMyTrips() { viewModel.setSelectedItem(MenuItem.MY_TRIPS); }
     @FXML private void onNavCalendar() { viewModel.setSelectedItem(MenuItem.CALENDAR); }
     @FXML private void onNavSettings() { viewModel.setSelectedItem(MenuItem.SETTINGS); }
-    @FXML private void onAccountClicked(MouseEvent event) { viewModel.onAccountClicked(); }
-
-    // ---- Helpers ---------------------------------------------------------
+    @FXML private void onAccountClicked(MouseEvent event) { viewModel.setSelectedItem(MenuItem.ACCOUNT); }
 
     private void refreshActiveState(MenuItem active) {
         navButtons.forEach((item, btn) -> {
@@ -100,6 +95,10 @@ public class MenuView implements Initializable {
                 applyBorderStyle(btn, interpolateColor(p));
             }
         });
+
+        if (viewModel.isCollapsed()) {
+            applyCollapsedState(true);
+        }
     }
 
     private void applyCollapsedState(boolean collapsed) {
@@ -111,25 +110,22 @@ public class MenuView implements Initializable {
         sidebarRoot.setPrefWidth(260);
         sidebarRoot.setMaxWidth(260);
 
-        if (toggleIcon != null) {
-            toggleIcon.setIconLiteral(collapsed ? "fth-chevron-right" : "fth-chevron-left");
-        }
+        boolean isMap = (viewModel.getSelectedItem() == MenuItem.MAP);
+        expandedIslandController.setCollapsed(collapsed, isMap);
+        collapsedIslandInnerController.setCollapsed(collapsed, isMap);
     }
-
-    // ---- Hover border animation ------------------------------------------
 
     private void installHoverAnimation(Region node) {
         DoubleProperty progress = new SimpleDoubleProperty(0.0);
         borderProgress.put(node, progress);
 
         progress.addListener((obs, oldV, newV) -> {
-            // For buttons: skip when active (active style owns the border)
             if (node instanceof Button btn && btn.getStyleClass().contains("nav-btn-active")) return;
             applyBorderStyle(node, interpolateColor(newV.doubleValue()));
         });
 
         node.addEventHandler(MouseEvent.MOUSE_ENTERED, e -> animateBorder(node, progress, 1.0));
-        node.addEventHandler(MouseEvent.MOUSE_EXITED,  e -> animateBorder(node, progress, 0.0));
+        node.addEventHandler(MouseEvent.MOUSE_EXITED, e -> animateBorder(node, progress, 0.0));
     }
 
     private void animateBorder(Region node, DoubleProperty progress, double target) {
@@ -139,8 +135,7 @@ public class MenuView implements Initializable {
         double remaining = Math.abs(target - progress.get());
         Duration dur = ANIM_DURATION.multiply(remaining);
 
-        Timeline tl = new Timeline(new KeyFrame(dur,
-                new KeyValue(progress, target, Interpolator.EASE_BOTH)));
+        Timeline tl = new Timeline(new KeyFrame(dur, new KeyValue(progress, target, Interpolator.EASE_BOTH)));
         hoverTimelines.put(node, tl);
         tl.play();
     }

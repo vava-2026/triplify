@@ -5,7 +5,8 @@ public enum MenuItem {
     MAP("Map"),
     MY_TRIPS("My Trips"),
     CALENDAR("Calendar"),
-    SETTINGS("Settings");
+    SETTINGS("Settings"),
+    ACCOUNT("Account");
 
     private final String label;
 

@@ -1,0 +1,89 @@
+.header-root {
+    -fx-background-color: #fafafa;
+    -fx-pref-height: 70;
+    -fx-min-height: 70;
+    -fx-max-height: 70;
+}
+
+.header-hbox {
+    -fx-padding: 0 35 0 40;
+}
+
+.header-title {
+    -fx-text-fill: #0a090c;
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Plus Jakarta Sans", "Segoe UI", "System";
+}
+
+.search-bar {
+    -fx-background-color: #ecf3f9;
+    -fx-background-radius: 10;
+    -fx-border-color: transparent;
+    -fx-border-radius: 10;
+    -fx-effect: dropshadow(gaussian, rgba(12,12,13,0.05), 4, 0, 0, 1);
+    -fx-max-width: 600;
+    -fx-min-width: 200;
+    -fx-pref-height: 38;
+    -fx-min-height: 38;
+    -fx-max-height: 38;
+    -fx-padding: 0 15 0 15;
+}
+
+.search-icon {
+    -fx-icon-color: #999999;
+    -fx-icon-size: 18;
+}
+
+.search-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: #0a090c;
+    -fx-prompt-text-fill: #999999;
+    -fx-font-size: 14px;
+    -fx-font-family: "Plus Jakarta Sans", "Segoe UI", "System";
+    -fx-padding: 0;
+    -fx-max-width: Infinity;
+}
+
+.search-field:focused {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.language-island {
+    -fx-background-color: #fafafa;
+    -fx-background-radius: 8;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-min-width: 74;
+    -fx-pref-width: 74;
+    -fx-max-width: 74;
+    -fx-min-height: 48;
+    -fx-pref-height: 48;
+    -fx-max-height: 48;
+    -fx-padding: 10 15 10 15;
+    -fx-cursor: hand;
+}
+
+.language-island:hover .language-icon {
+    -fx-icon-color: #0a090c;
+}
+
+.language-island:hover .language-label {
+    -fx-text-fill: #0a090c;
+}
+
+.language-icon {
+    -fx-icon-color: #1d3f59;
+    -fx-icon-size: 20;
+}
+
+.language-label {
+    -fx-text-fill: #1d3f59;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Plus Jakarta Sans", "Segoe UI", "System";
+}
+
+

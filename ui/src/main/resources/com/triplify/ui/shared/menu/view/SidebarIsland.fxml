@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<HBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.triplify.ui.shared.menu.view.SidebarIslandView"
+      fx:id="sidebarIsland"
+      styleClass="sidebar-island"
+      prefWidth="260" prefHeight="70" minHeight="70" maxHeight="70"
+      alignment="CENTER_LEFT" spacing="10">
+
+    <StackPane styleClass="logo-box">
+        <FontIcon iconLiteral="fth-map-pin" iconSize="18" styleClass="logo-icon" />
+    </StackPane>
+
+    <Label styleClass="app-title" text="Triplify" HBox.hgrow="ALWAYS" />
+
+    <Region HBox.hgrow="ALWAYS" />
+
+    <StackPane fx:id="toggleBox"
+               styleClass="toggle-box"
+               onMouseClicked="#onToggleCollapse">
+        <FontIcon fx:id="toggleIcon" iconLiteral="fth-chevron-left" iconSize="24" styleClass="toggle-icon" />
+    </StackPane>
+
+</HBox>
+

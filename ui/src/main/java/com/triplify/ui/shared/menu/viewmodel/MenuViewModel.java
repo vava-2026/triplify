@@ -8,50 +8,25 @@ import javafx.beans.property.SimpleObjectProperty;
 
 public class MenuViewModel {
 
-    private final ObjectProperty<MenuItem> selectedItem =
-            new SimpleObjectProperty<>(MenuItem.MAP);
+    private final ObjectProperty<MenuItem> selectedItem = new SimpleObjectProperty<>(MenuItem.MAP);
 
-    private final BooleanProperty collapsed =
-            new SimpleBooleanProperty(false);
+    private final BooleanProperty collapsed = new SimpleBooleanProperty(false);
 
-    // ------------------------------------------------------------------ //
     //  Selected item
-    // ------------------------------------------------------------------ //
+    public ObjectProperty<MenuItem> selectedItemProperty() { return selectedItem; }
+    public MenuItem getSelectedItem() { return selectedItem.get(); }
+    public void setSelectedItem(MenuItem item) { selectedItem.set(item); }
 
-    public ObjectProperty<MenuItem> selectedItemProperty() {
-        return selectedItem;
-    }
-
-    public MenuItem getSelectedItem() {
-        return selectedItem.get();
-    }
-
-    public void setSelectedItem(MenuItem item) {
-        selectedItem.set(item);
-    }
-
-    // ------------------------------------------------------------------ //
     //  Collapsed state
-    // ------------------------------------------------------------------ //
-
-    public BooleanProperty collapsedProperty() {
-        return collapsed;
-    }
-
-    public boolean isCollapsed() {
-        return collapsed.get();
-    }
-
+    public BooleanProperty collapsedProperty() { return collapsed; }
+    public boolean isCollapsed() { return collapsed.get(); }
     public void toggleCollapsed() {
         collapsed.set(!collapsed.get());
     }
 
-    // ------------------------------------------------------------------ //
     //  Account actions
-    // ------------------------------------------------------------------ //
-
     public void onAccountClicked() {
-        // TODO: navigate to account / profile page
+        // TODO: navigate to profile page
     }
 }
 
