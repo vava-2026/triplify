@@ -1,0 +1,147 @@
+.app-select {
+    -fx-background-color: -color-surface;
+    -fx-border-color: -color-border;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-border-width: 1.5;
+    -fx-pref-height: 36;
+    -fx-cursor: hand;
+}
+
+.app-select:hover {
+    -fx-border-color: -color-primary;
+}
+
+.app-select:focused {
+    -fx-border-color: -color-primary;
+    -fx-background-color: -color-surface;
+}
+
+.app-select .list-cell {
+    -fx-text-fill: -color-primary;
+    -fx-background-color: transparent;
+    -fx-padding: 4 8 4 8;
+}
+
+.app-select .list-view .list-cell:hover {
+    -fx-background-color: -color-surface-tint;
+}
+
+.app-select .list-view .list-cell:selected {
+    -fx-background-color: -color-primary-light;
+    -fx-text-fill: -color-primary-dark;
+}
+
+/* ── Component-level variants ─────────────────────────────────────────── */
+.app-select-primary {
+    -fx-border-color: -color-primary;
+}
+
+.app-select-primary:hover {
+    -fx-border-color: -color-primary-hover;
+}
+
+.app-select-primary:focused {
+    -fx-border-color: -color-primary-pressed;
+}
+
+/* ── Entry cell base ──────────────────────────────────────────────────── */
+.app-select-entry-cell {
+    -fx-padding: 5 10 5 10;
+    -fx-background-color: transparent;
+}
+
+.app-select-entry-cell:hover {
+    -fx-background-color: -color-surface-tint;
+}
+
+.app-select-entry-cell:selected {
+    -fx-background-color: -color-primary-light;
+}
+
+.app-select-entry-label {
+    -fx-text-fill: -color-primary;
+}
+
+.app-select-entry-icon {
+    -fx-icon-size: 14;
+    -fx-icon-color: -color-primary;
+}
+
+/* ========================================      PRIMARY       =================================== */
+.app-select-primary-cell .app-select-entry-label {
+    -fx-text-fill: -color-primary;
+}
+
+.app-select-primary-cell .app-select-entry-icon {
+    -fx-icon-color: -color-primary;
+}
+
+/* ========================================      SECONDARY       =================================== */
+
+.app-select-secondary {
+    -fx-border-color: -color-primary;
+    -fx-border-width: 2;
+    -fx-background-color: transparent;
+}
+
+.app-select-secondary:hover {
+    -fx-background-color: -color-primary;
+    -fx-border-color: -color-primary;
+}
+
+.app-select-secondary:focused {
+    -fx-background-color: -color-primary-pressed;
+    -fx-border-color: -color-primary-pressed;
+}
+
+.app-select-secondary-cell .app-select-entry-label {
+    -fx-text-fill: -color-primary-dark;
+}
+
+.app-select-secondary-cell .app-select-entry-icon {
+    -fx-icon-color: -color-primary-dark;
+}
+
+/* ========================================      DANGER       =================================== */
+
+.app-select-danger {
+    -fx-border-color: -color-danger;
+}
+
+.app-select-danger:hover {
+    -fx-border-color: -color-danger-hover;
+}
+
+.app-select-danger:focused {
+    -fx-border-color: -color-danger-pressed;
+}
+
+.app-select-danger-cell .app-select-entry-label {
+    -fx-text-fill: -color-danger;
+}
+
+.app-select-danger-cell .app-select-entry-icon {
+    -fx-icon-color: -color-danger;
+}
+/* ========================================      GHOST       =================================== */
+.app-select-ghost {
+    -fx-border-color: transparent;
+    -fx-background-color: transparent;
+}
+
+.app-select-ghost:hover {
+    -fx-background-color: -color-primary-dark;
+}
+
+.app-select-ghost:focused {
+    -fx-background-color: -color-primary-light;
+}
+
+.app-select-ghost-cell .app-select-entry-label {
+    -fx-text-fill: -color-ink-muted;
+}
+
+.app-select-ghost-cell .app-select-entry-icon {
+    -fx-icon-color: -color-ink-muted;
+}
