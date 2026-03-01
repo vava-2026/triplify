@@ -77,10 +77,12 @@ public class MainApp extends Application {
 
         contentArea.routerProperty().addListener((obs, oldRouter, newRouter) -> {
             router = newRouter;
+            log.info("Router initialized: {}", newRouter != null ? "ready" : "null");
         });
 
         menuView.getViewModel().selectedItemProperty().addListener((obs, oldItem, newItem) -> {
             if (router != null && newItem != null) {
+                log.info("Navigate to route: {}", newItem.getRouteId());
                 router.moveto(newItem.getRouteId());
             }
         });

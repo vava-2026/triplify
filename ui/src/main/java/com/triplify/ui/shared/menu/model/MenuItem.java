@@ -1,14 +1,15 @@
 package com.triplify.ui.shared.menu.model;
 
 import com.triplify.ui.i18n.I18n;
+import com.triplify.ui.routing.RouteIds;
 
 public enum MenuItem {
 
-    MAP("nav.map", "map", true),
-    MY_TRIPS("nav.myTrips", "my_trips", false),
-    CALENDAR("nav.calendar", "calendar", false),
-    SETTINGS("nav.settings", "settings", false),
-    ACCOUNT("nav.account", "account", false);
+    MAP("nav.map", RouteIds.MAP, true),
+    MY_TRIPS("nav.myTrips", RouteIds.MY_TRIPS, false),
+    CALENDAR("nav.calendar", RouteIds.CALENDAR, false),
+    SETTINGS("nav.settings", RouteIds.SETTINGS, false),
+    ACCOUNT("nav.account", RouteIds.ACCOUNT, false);
 
     private final String i18nKey;
     private final String routeId;
