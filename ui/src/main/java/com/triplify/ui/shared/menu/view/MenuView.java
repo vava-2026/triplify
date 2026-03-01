@@ -1,9 +1,14 @@
 package com.triplify.ui.shared.menu.view;
 
+import an.awesome.pipelinr.Pipeline;
+import com.triplify.application.category.query.CategoryResponse;
+import com.triplify.application.category.query.GetAllCategoriesQuery;
+import com.triplify.ui.MainApp;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.menu.model.MenuItem;
 import com.triplify.ui.shared.menu.model.NavItem;
 import com.triplify.ui.shared.menu.viewmodel.MenuViewModel;
+import jakarta.inject.Inject;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -13,6 +18,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -36,9 +43,22 @@ public class MenuView implements Initializable {
     private final MenuViewModel viewModel = new MenuViewModel();
     private final List<NavButtonView> navButtons = new ArrayList<>();
 
+    private final Pipeline pipeline;
+    private static final Logger log = LoggerFactory.getLogger(MenuView.class);
+
+    @Inject
+    public MenuView(Pipeline pipeline) {
+        this.pipeline = pipeline;
+    }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        // TODO: This is just for testing, remove when categories are integrated into the UI
+        List<CategoryResponse> categories = pipeline.send(new GetAllCategoriesQuery());
+        for(CategoryResponse category : categories) {
+            log.info("Category: " + category.name());
+        }
+
         mainPageInner.setMaxHeight(Double.MAX_VALUE);
 
         for (NavItem navItem : NavItem.values()) {

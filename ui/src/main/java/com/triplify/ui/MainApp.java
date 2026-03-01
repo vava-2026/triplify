@@ -1,5 +1,8 @@
 package com.triplify.ui;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.triplify.ui.di.AppModule;
 import com.triplify.ui.shared.header.view.HeaderView;
 import com.triplify.ui.shared.menu.model.MenuItem;
 import com.triplify.ui.shared.menu.view.MenuView;
@@ -20,6 +23,12 @@ import java.net.URL;
 public class MainApp extends Application {
 
     private static final Logger log = LoggerFactory.getLogger(MainApp.class);
+    private Injector injector;
+
+    @Override
+    public void init() {
+        injector = Guice.createInjector(new AppModule());
+    }
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -31,6 +40,7 @@ public class MainApp extends Application {
             throw new IllegalStateException("MenuView.fxml not found on classpath");
         }
         FXMLLoader menuLoader = new FXMLLoader(menuFxmlUrl);
+        menuLoader.setControllerFactory(clazz -> injector.getInstance(clazz));
         Node menu = menuLoader.load();
         MenuView menuView = menuLoader.getController();
 
