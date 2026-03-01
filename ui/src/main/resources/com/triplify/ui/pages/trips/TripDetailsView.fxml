@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.triplify.ui.pages.trips.TripDetailsController"
+           styleClass="page-root">
+    <VBox spacing="14" maxWidth="980">
+        <HBox spacing="10">
+            <Button text="Back" onAction="#onBack"/>
+            <Label text="Trip Details" styleClass="page-title"/>
+        </HBox>
+
+        <Label text="Review the trip details passed via routing arguments." styleClass="page-subtitle"/>
+
+        <VBox styleClass="page-card" spacing="8">
+            <Label text="Trip name:"/>
+            <Label fx:id="tripNameLabel" styleClass="page-title"/>
+            <Label text="Trip id:"/>
+            <Label fx:id="tripIdLabel"/>
+        </VBox>
+    </VBox>
+</StackPane>
