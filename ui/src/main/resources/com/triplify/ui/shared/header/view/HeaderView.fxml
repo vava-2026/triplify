@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.triplify.ui.shared.header.view.HeaderView"
+           styleClass="header-root"
+           stylesheets="@../css/header.css"
+           prefHeight="70"
+           minHeight="70"
+           maxHeight="70">
+
+    <HBox styleClass="header-hbox" alignment="CENTER_LEFT" spacing="0" StackPane.alignment="CENTER_LEFT">
+        <Label fx:id="pageTitle"
+               styleClass="header-title"
+               text="My Trips" />
+
+        <Region HBox.hgrow="ALWAYS" />
+
+        <fx:include fx:id="languageIsland" source="LanguageIsland.fxml" />
+
+    </HBox>
+
+    <HBox styleClass="search-bar"
+          alignment="CENTER_LEFT"
+          spacing="20"
+          StackPane.alignment="CENTER">
+        <FontIcon iconLiteral="fth-search" iconSize="18" styleClass="search-icon" />
+        <TextField fx:id="searchField"
+                   styleClass="search-field"
+                   promptText="Search trip"
+                   HBox.hgrow="ALWAYS" />
+    </HBox>
+
+</StackPane>
+
+

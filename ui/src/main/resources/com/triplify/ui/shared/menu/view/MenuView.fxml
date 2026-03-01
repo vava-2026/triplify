@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.triplify.ui.shared.menu.view.MenuView"
+           fx:id="sidebarRoot"
+           prefWidth="260"
+           maxWidth="260"
+           minWidth="60"
+           stylesheets="@../css/menu.css"
+           styleClass="sidebar-root">
+
+    <VBox fx:id="mainPageInner" styleClass="main-page-inner" prefWidth="260">
+
+        <fx:include fx:id="expandedIsland"
+                    source="SidebarIsland.fxml"
+                    VBox.vgrow="NEVER" />
+
+
+        <VBox fx:id="navContainer"
+              spacing="8" prefWidth="220"
+              VBox.vgrow="ALWAYS"
+              style="-fx-padding: 20 20 0 20;" />
+
+        <Region VBox.vgrow="ALWAYS" />
+
+        <HBox fx:id="accountIsland"
+              styleClass="account-island"
+              prefWidth="220" prefHeight="48"
+              alignment="CENTER_LEFT" spacing="10"
+              VBox.vgrow="NEVER"
+              onMouseClicked="#onAccountClicked">
+            <VBox.margin>
+                <Insets right="20" left="20" />
+            </VBox.margin>
+
+            <StackPane styleClass="avatar-circle">
+                <Label text="N" styleClass="avatar-label" />
+            </StackPane>
+
+            <VBox HBox.hgrow="ALWAYS">
+                <Label styleClass="account-name" text="Name Surname" />
+                <Label fx:id="accountRole" styleClass="account-role" />
+            </VBox>
+        </HBox>
+    </VBox>
+
+    <Pane fx:id="collapsedIsland" visible="false" managed="false"
+          prefWidth="260" prefHeight="70"
+          styleClass="collapsed-pane">
+
+        <fx:include fx:id="collapsedIslandInner"
+                    source="SidebarIsland.fxml" />
+    </Pane>
+
+</StackPane>
+

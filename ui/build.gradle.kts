@@ -7,13 +7,20 @@ dependencies {
     implementation(project(":application"))
 
     runtimeOnly("ch.qos.logback:logback-classic:1.5.32")
+
+    // Icon library – Ikonli with Feather pack
+    implementation("org.kordamp.ikonli:ikonli-javafx:12.4.0")
+    implementation("org.kordamp.ikonli:ikonli-feather-pack:12.4.0")
 }
 
 application {
     mainClass.set("com.triplify.ui.MainApp")
+    applicationDefaultJvmArgs = listOf(
+        "--enable-native-access=javafx.graphics"
+    )
 }
 
 javafx {
     version = "25"
-    modules = listOf("javafx.controls")
+    modules = listOf("javafx.controls", "javafx.fxml")
 }
