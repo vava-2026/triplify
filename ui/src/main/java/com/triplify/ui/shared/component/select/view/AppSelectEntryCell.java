@@ -8,57 +8,73 @@ import javafx.scene.control.ListCell;
 import javafx.scene.layout.HBox;
 import org.kordamp.ikonli.javafx.FontIcon;
 
-/**
- * Reusable ListCell for {@link SelectEntry} items.
- * Can be used by both Select and Search components.
- */
 public class AppSelectEntryCell<T> extends ListCell<SelectEntry<T>> {
 
     private static final String BASE_CLASS  = "app-select-entry-cell";
     private static final String ICON_CLASS  = "app-select-entry-icon";
     private static final String LABEL_CLASS = "app-select-entry-label";
 
-    /** Variant applied when the entry itself carries no variant. */
     private final SelectVariant componentVariant;
+
+    private final Label    textLabel = new Label();
+    private final FontIcon icon      = new FontIcon();
+    private final HBox     contentBox;
+
+    private SelectVariant lastVariant = null;
 
     public AppSelectEntryCell(SelectVariant componentVariant) {
         this.componentVariant = componentVariant;
         getStyleClass().add(BASE_CLASS);
         setAlignment(Pos.CENTER_LEFT);
+        setText(null);
+
+        textLabel.getStyleClass().add(LABEL_CLASS);
+        icon.getStyleClass().add(ICON_CLASS);
+
+        contentBox = new HBox(6, icon, textLabel);
+        contentBox.setAlignment(Pos.CENTER_LEFT);
+
+        setGraphic(contentBox);
     }
 
     @Override
     protected void updateItem(SelectEntry<T> entry, boolean empty) {
         super.updateItem(entry, empty);
-
-        // Remove any previously applied variant style classes
-        getStyleClass().removeIf(c -> c.endsWith("-cell") && !c.equals(BASE_CLASS));
+        setText(null);
 
         if (empty || entry == null) {
-            setText(null);
             setGraphic(null);
+            removeVariantStyle();
+            lastVariant = null;
             return;
         }
 
-        // Entry-level variant wins over component-level variant
         SelectVariant effective = entry.hasVariant() ? entry.getVariant() : componentVariant;
-        if (effective != null) {
-            getStyleClass().add(effective.getStyleClass() + "-cell");
+        if (effective != lastVariant) {
+            removeVariantStyle();
+            if (effective != null) {
+                getStyleClass().add(effective.getStyleClass() + "-cell");
+            }
+            lastVariant = effective;
         }
 
-        Label textLabel = new Label(entry.getLabel());
-        textLabel.getStyleClass().add(LABEL_CLASS);
+        textLabel.setText(entry.getLabel());
 
         if (entry.hasIcon()) {
-            FontIcon icon = new FontIcon(entry.getIconLiteral());
-            icon.getStyleClass().add(ICON_CLASS);
-            HBox box = new HBox(6, icon, textLabel);
-            box.setAlignment(Pos.CENTER_LEFT);
-            setGraphic(box);
+            icon.setIconLiteral(entry.getIconLiteral());
+            icon.setVisible(true);
+            icon.setManaged(true);
         } else {
-            setGraphic(textLabel);
+            icon.setVisible(false);
+            icon.setManaged(false);
         }
 
-        setText(null);
+        setGraphic(contentBox);
+    }
+
+    private void removeVariantStyle() {
+        if (lastVariant != null) {
+            getStyleClass().remove(lastVariant.getStyleClass() + "-cell");
+        }
     }
 }
