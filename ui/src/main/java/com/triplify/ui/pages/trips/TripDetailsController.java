@@ -1,5 +1,6 @@
 package com.triplify.ui.pages.trips;
 
+import com.triplify.ui.routing.TriplifyRouterContext;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import rahulstech.jfx.routing.element.RouterArgument;
@@ -18,6 +19,24 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
 
         tripNameLabel.setText(name == null ? "Unknown trip" : name);
         tripIdLabel.setText(id == null ? "-" : String.valueOf(id));
+    }
+
+    @Override
+    public void onLifecycleShow() {
+        TriplifyRouterContext context = (TriplifyRouterContext) getRouter().getContext();
+        context.setFullScreenContent(true);
+    }
+
+    @Override
+    public void onLifecycleHide() {
+        TriplifyRouterContext context = (TriplifyRouterContext) getRouter().getContext();
+        context.setFullScreenContent(false);
+    }
+
+    @Override
+    public void onLifecycleDestroy() {
+        TriplifyRouterContext context = (TriplifyRouterContext) getRouter().getContext();
+        context.setFullScreenContent(false);
     }
 
     @FXML
