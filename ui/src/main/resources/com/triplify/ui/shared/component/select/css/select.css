@@ -1,26 +1,38 @@
 .app-select {
     -fx-background-color: -color-surface;
-    -fx-border-color: -color-surface-tint;
-    -fx-border-radius: 6;
+    -fx-border-color: -color-ink-muted;
     -fx-background-radius: 6;
-    -fx-border-width: 1.5;
+    -fx-border-radius: 6;
+    -fx-border-width: 0.5;
     -fx-pref-height: 36;
     -fx-cursor: hand;
 }
 
 .app-select:hover {
-    -fx-border-color: -color-primary;
 }
 
 .app-select:focused {
-    -fx-border-color: -color-primary;
-    -fx-background-color: -color-surface;
+}
+
+.app-select:showing {
+    -fx-background-radius: 6 6 0 0;
+    -fx-border-radius: 6 6 0 0;
+    -fx-border-width: 0.5 0.5 0.5 0.5;
 }
 
 .app-select .list-cell {
-    -fx-text-fill: -color-primary;
+    -fx-text-fill: -color-ink-muted;
     -fx-background-color: transparent;
     -fx-padding: 4 8 4 8;
+}
+
+/* match app-selct:showing */
+.app-select .list-view {
+    -fx-background-radius: 0 0 6 6;
+    -fx-border-radius: 0 0 6 6;
+    -fx-background-color: -color-surface;
+    -fx-border-color: -color-ink-muted;
+    -fx-border-width: 0 0.5 0.5 0.5;
 }
 
 .app-select .list-view .list-cell:hover {
@@ -30,19 +42,6 @@
 .app-select .list-view .list-cell:selected {
     -fx-background-color: -color-primary-light;
     -fx-text-fill: -color-primary-dark;
-}
-
-/* ========================================      SELECT BASE       =================================== */
-.app-select-primary {
-    -fx-border-color: -color-primary;
-}
-
-.app-select-primary:hover {
-    -fx-border-color: -color-primary-hover;
-}
-
-.app-select-primary:focused {
-    -fx-border-color: -color-primary-pressed;
 }
 
 /* ========================================      CELL BASE       =================================== */
@@ -69,6 +68,19 @@
 }
 
 /* ========================================      PRIMARY       =================================== */
+
+.app-select-primary {
+    -fx-border-color: -color-ink-muted;
+}
+
+.app-select-primary:hover {
+    -fx-border-color: -color-ink-muted;
+}
+
+.app-select-primary:focused {
+    -fx-border-color: -color-ink-muted;
+}
+
 .app-select-primary-cell .app-select-entry-label {
     -fx-text-fill: -color-primary;
 }
