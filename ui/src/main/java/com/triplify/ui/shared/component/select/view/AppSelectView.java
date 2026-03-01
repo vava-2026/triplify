@@ -23,15 +23,22 @@ public class AppSelectView<T> implements Initializable {
     private static final URL CSS_URL = AppSelectView.class.getResource(
             "/com/triplify/ui/shared/component/select/css/select.css");
 
-    @FXML private ComboBox<SelectEntry<T>> comboBox;
+    @FXML
+    private ComboBox<SelectEntry<T>> comboBox;
 
     private AppSelectViewModel<T> viewModel;
 
     @Override
-    public void initialize(URL location, ResourceBundle resources) {}
+    public void initialize(URL location, ResourceBundle resources) {
+    }
 
-    public ComboBox<SelectEntry<T>> getComboBox() { return comboBox; }
-    public AppSelectViewModel<T> getViewModel()   { return viewModel; }
+    public ComboBox<SelectEntry<T>> getComboBox() {
+        return comboBox;
+    }
+
+    public AppSelectViewModel<T> getViewModel() {
+        return viewModel;
+    }
 
     @FXML
     private void onSelectionChanged() {
@@ -42,24 +49,50 @@ public class AppSelectView<T> implements Initializable {
         }
     }
 
-    public static <T> Builder<T> builder() { return new Builder<>(); }
+    public static <T> Builder<T> builder() {
+        return new Builder<>();
+    }
 
     public static final class Builder<T> {
-        private String placeholder           = "Select...";
-        private SelectVariant variant        = SelectVariant.PRIMARY;
+        private String placeholder = "Select...";
+        private SelectVariant variant = SelectVariant.PRIMARY;
         private ObservableList<SelectEntry<T>> items = FXCollections.observableArrayList();
-        private SelectEntry<T> selectedItem  = null;
-        private boolean disabled             = false;
+        private SelectEntry<T> selectedItem = null;
+        private boolean disabled = false;
         private Consumer<SelectEntry<T>> onSelect = null;
 
-        private Builder() {}
+        private Builder() {
+        }
 
-        public Builder<T> placeholder(String v)                   { this.placeholder = v;   return this; }
-        public Builder<T> variant(SelectVariant v)                { this.variant = v;        return this; }
-        public Builder<T> items(ObservableList<SelectEntry<T>> v) { this.items = v;          return this; }
-        public Builder<T> selectedItem(SelectEntry<T> v)          { this.selectedItem = v;   return this; }
-        public Builder<T> disabled(boolean v)                     { this.disabled = v;       return this; }
-        public Builder<T> onSelect(Consumer<SelectEntry<T>> r)    { this.onSelect = r;       return this; }
+        public Builder<T> placeholder(String v) {
+            this.placeholder = v;
+            return this;
+        }
+
+        public Builder<T> variant(SelectVariant v) {
+            this.variant = v;
+            return this;
+        }
+
+        public Builder<T> items(ObservableList<SelectEntry<T>> v) {
+            this.items = v;
+            return this;
+        }
+
+        public Builder<T> selectedItem(SelectEntry<T> v) {
+            this.selectedItem = v;
+            return this;
+        }
+
+        public Builder<T> disabled(boolean v) {
+            this.disabled = v;
+            return this;
+        }
+
+        public Builder<T> onSelect(Consumer<SelectEntry<T>> r) {
+            this.onSelect = r;
+            return this;
+        }
 
         public ComboBox<SelectEntry<T>> build() {
             if (FXML_URL == null) throw new IllegalStateException("AppSelect.fxml not found");
@@ -102,8 +135,15 @@ public class AppSelectView<T> implements Initializable {
         comboBox.setButtonCell(new AppSelectEntryCell<>(variant));
 
         comboBox.setConverter(new StringConverter<>() {
-            @Override public String toString(SelectEntry<T> e) { return e == null ? "" : e.getLabel(); }
-            @Override public SelectEntry<T> fromString(String s) { return null; }
+            @Override
+            public String toString(SelectEntry<T> e) {
+                return e == null ? "" : e.getLabel();
+            }
+
+            @Override
+            public SelectEntry<T> fromString(String s) {
+                return null;
+            }
         });
 
         //comboBox.setOnAction(e -> onSelectionChanged());

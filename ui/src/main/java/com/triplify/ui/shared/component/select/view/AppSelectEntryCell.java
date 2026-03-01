@@ -10,15 +10,15 @@ import org.kordamp.ikonli.javafx.FontIcon;
 
 public class AppSelectEntryCell<T> extends ListCell<SelectEntry<T>> {
 
-    private static final String BASE_CLASS  = "app-select-entry-cell";
-    private static final String ICON_CLASS  = "app-select-entry-icon";
+    private static final String BASE_CLASS = "app-select-entry-cell";
+    private static final String ICON_CLASS = "app-select-entry-icon";
     private static final String LABEL_CLASS = "app-select-entry-label";
 
     private final SelectVariant componentVariant;
 
-    private final Label    textLabel = new Label();
-    private final FontIcon icon      = new FontIcon();
-    private final HBox     contentBox;
+    private final Label textLabel = new Label();
+    private final FontIcon icon = new FontIcon();
+    private final HBox contentBox;
 
     private SelectVariant lastVariant = null;
 

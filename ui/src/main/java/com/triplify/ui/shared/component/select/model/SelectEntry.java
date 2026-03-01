@@ -8,21 +8,40 @@ public class SelectEntry<T> {
     private final SelectVariant variant;
 
     private SelectEntry(Builder<T> b) {
-        this.value       = b.value;
-        this.label       = b.label;
+        this.value = b.value;
+        this.label = b.label;
         this.iconLiteral = b.iconLiteral;
-        this.variant     = b.variant;
+        this.variant = b.variant;
     }
 
-    public T getValue()               { return value; }
-    public String getLabel()          { return label; }
-    public String getIconLiteral()    { return iconLiteral; }
-    public SelectVariant getVariant() { return variant; }
-    public boolean hasIcon()          { return iconLiteral != null && !iconLiteral.isBlank(); }
-    public boolean hasVariant()       { return variant != null; }
+    public T getValue() {
+        return value;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public String getIconLiteral() {
+        return iconLiteral;
+    }
+
+    public SelectVariant getVariant() {
+        return variant;
+    }
+
+    public boolean hasIcon() {
+        return iconLiteral != null && !iconLiteral.isBlank();
+    }
+
+    public boolean hasVariant() {
+        return variant != null;
+    }
 
     @Override
-    public String toString()          { return label; }
+    public String toString() {
+        return label;
+    }
 
     public static <T> Builder<T> builder(T value, String label) {
         return new Builder<>(value, label);
@@ -39,8 +58,18 @@ public class SelectEntry<T> {
             this.label = label;
         }
 
-        public Builder<T> icon(String iconLiteral)    { this.iconLiteral = iconLiteral; return this; }
-        public Builder<T> variant(SelectVariant v)    { this.variant = v;               return this; }
-        public SelectEntry<T> build()                 { return new SelectEntry<>(this); }
+        public Builder<T> icon(String iconLiteral) {
+            this.iconLiteral = iconLiteral;
+            return this;
+        }
+
+        public Builder<T> variant(SelectVariant v) {
+            this.variant = v;
+            return this;
+        }
+
+        public SelectEntry<T> build() {
+            return new SelectEntry<>(this);
+        }
     }
 }

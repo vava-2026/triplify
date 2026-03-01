@@ -32,7 +32,7 @@
     -fx-text-fill: -color-primary-dark;
 }
 
-/* ── Component-level variants ─────────────────────────────────────────── */
+/* ========================================      SELECT BASE       =================================== */
 .app-select-primary {
     -fx-border-color: -color-primary;
 }
@@ -45,7 +45,7 @@
     -fx-border-color: -color-primary-pressed;
 }
 
-/* ── Entry cell base ──────────────────────────────────────────────────── */
+/* ========================================      CELL BASE       =================================== */
 .app-select-entry-cell {
     -fx-padding: 5 10 5 10;
     -fx-background-color: transparent;

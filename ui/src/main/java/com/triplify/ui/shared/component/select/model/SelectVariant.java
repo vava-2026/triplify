@@ -12,8 +12,12 @@ public enum SelectVariant {
 
     private final String styleClass;
 
-    SelectVariant(String styleClass) { this.styleClass = styleClass; }
+    SelectVariant(String styleClass) {
+        this.styleClass = styleClass;
+    }
 
-    public String getStyleClass() { return styleClass; }
+    public String getStyleClass() {
+        return styleClass;
+    }
 }
 

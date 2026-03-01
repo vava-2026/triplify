@@ -47,12 +47,29 @@ public class MainApp extends Application {
         headerView.getViewModel().activeItemProperty().bind(
                 menuView.getViewModel().selectedItemProperty());
 
+        // Select component
+        // TODO: uncomment (add imports yourself)
+//        ComboBox<SelectEntry<String>> comboBox = AppSelectView.<String>builder()
+//                .placeholder("Choose an option...")
+//                .variant(SelectVariant.PRIMARY)
+//                .items(FXCollections.observableArrayList(
+//                        SelectEntry.builder("A", "Option A").build(),
+//                        SelectEntry.builder("B", "Option B").variant(SelectVariant.SECONDARY).build(),
+//                        SelectEntry.builder("C", "Option C").variant(SelectVariant.DANGER).build(),
+//                        SelectEntry.builder("D", "Option D").variant(SelectVariant.GHOST).build(),
+//                        SelectEntry.builder("C", "Option C").icon("fth-globe").variant(SelectVariant.DANGER).build()
+//                ))
+//                .onSelect(entry -> System.out.println("Selected: " + entry.getValue()))
+//                .build();
+
         // Hide header
         header.visibleProperty().bind(menuView.getViewModel().hideHeaderProperty().not());
         header.managedProperty().bind(menuView.getViewModel().hideHeaderProperty().not());
 
         // Main content area
+        // TODO: uncomment and comment
         StackPane contentArea = new StackPane();
+        //StackPane contentArea = new StackPane(comboBox);
         contentArea.getStyleClass().add("app-content");
         VBox.setVgrow(contentArea, Priority.ALWAYS);
 
