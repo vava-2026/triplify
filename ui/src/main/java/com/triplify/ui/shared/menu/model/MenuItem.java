@@ -4,21 +4,24 @@ import com.triplify.ui.i18n.I18n;
 
 public enum MenuItem {
 
-    MAP("nav.map", true),
-    MY_TRIPS("nav.myTrips", false),
-    CALENDAR("nav.calendar", false),
-    SETTINGS("nav.settings", false),
-    ACCOUNT("nav.account", false);
+    MAP("nav.map", "map", true),
+    MY_TRIPS("nav.myTrips", "my_trips", false),
+    CALENDAR("nav.calendar", "calendar", false),
+    SETTINGS("nav.settings", "settings", false),
+    ACCOUNT("nav.account", "account", false);
 
     private final String i18nKey;
+    private final String routeId;
     private final boolean hideHeader;
 
-    MenuItem(String i18nKey, boolean hideHeader) {
+    MenuItem(String i18nKey, String routeId, boolean hideHeader) {
         this.i18nKey = i18nKey;
+        this.routeId = routeId;
         this.hideHeader = hideHeader;
     }
 
     public String getI18nKey() { return i18nKey; }
+    public String getRouteId() { return routeId; }
     public boolean isHideHeader() { return hideHeader; }
     public String getLabel() { return I18n.t(i18nKey); }
 }

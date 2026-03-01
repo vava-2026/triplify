@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<router xmlns="https://github.com/rahulstech/javafx-routing"
+        home="map"
+        homeEnterAnimation="fade_in"
+        enterAnimation="slide_left_fade_in"
+        exitAnimation="slide_left_fade_out"
+        popEnterAnimation="slide_right_fade_in"
+        popExitAnimation="slide_right_fade_out">
+
+    <destination id="map"
+                 fxml="com/triplify/ui/pages/map/MapView.fxml"
+                 singleTop="true"/>
+
+    <destination id="my_trips"
+                 fxml="com/triplify/ui/pages/trips/MyTripsView.fxml"
+                 singleTop="true"/>
+
+    <destination id="calendar"
+                 fxml="com/triplify/ui/pages/calendar/CalendarView.fxml"
+                 singleTop="true"/>
+
+    <destination id="settings"
+                 fxml="com/triplify/ui/pages/settings/SettingsView.fxml"
+                 singleTop="true"/>
+
+    <destination id="account"
+                 fxml="com/triplify/ui/pages/account/AccountView.fxml"
+                 singleTop="true"/>
+
+</router>

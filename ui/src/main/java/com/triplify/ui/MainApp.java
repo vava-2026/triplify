@@ -1,5 +1,6 @@
 package com.triplify.ui;
 
+import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.header.view.HeaderView;
 import com.triplify.ui.shared.menu.model.MenuItem;
 import com.triplify.ui.shared.menu.view.MenuView;
@@ -9,17 +10,20 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rahulstech.jfx.routing.Router;
+import rahulstech.jfx.routing.layout.RouterStackPane;
 
 import java.net.URL;
 
 public class MainApp extends Application {
 
     private static final Logger log = LoggerFactory.getLogger(MainApp.class);
+    private Router router;
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -52,9 +56,25 @@ public class MainApp extends Application {
         header.managedProperty().bind(menuView.getViewModel().hideHeaderProperty().not());
 
         // Main content area
-        StackPane contentArea = new StackPane();
+        RouterStackPane contentArea = new RouterStackPane();
         contentArea.getStyleClass().add("app-content");
+        contentArea.setContext(new TriplifyRouterContext());
+        contentArea.setRouterConfig("router.xml");
         VBox.setVgrow(contentArea, Priority.ALWAYS);
+        Rectangle contentClip = new Rectangle();
+        contentClip.widthProperty().bind(contentArea.widthProperty());
+        contentClip.heightProperty().bind(contentArea.heightProperty());
+        contentArea.setClip(contentClip);
+
+        contentArea.routerProperty().addListener((obs, oldRouter, newRouter) -> {
+            router = newRouter;
+        });
+
+        menuView.getViewModel().selectedItemProperty().addListener((obs, oldItem, newItem) -> {
+            if (router != null && newItem != null) {
+                router.moveto(newItem.getRouteId());
+            }
+        });
 
         // Right column: header + content
         VBox rightColumn = new VBox(header, contentArea);
@@ -81,5 +101,13 @@ public class MainApp extends Application {
 
     public static void main(String[] args) {
         launch();
+    }
+
+    @Override
+    public void stop() throws Exception {
+        if (router != null) {
+            router.dispose();
+        }
+        super.stop();
     }
 }
