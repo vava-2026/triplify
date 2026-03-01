@@ -12,7 +12,7 @@ import java.util.ResourceBundle;
 
 public class ConfirmDialogView implements Initializable {
 
-    @FXML private Label  messageLabel;
+    @FXML private Label messageLabel;
     @FXML private Button cancelBtn;
     @FXML private Button confirmBtn;
 

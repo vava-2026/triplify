@@ -21,12 +21,9 @@ import java.util.ResourceBundle;
 
 public class AppButtonView implements Initializable {
 
-    private static final URL FXML_URL = AppButtonView.class.getResource(
-            "/com/triplify/ui/shared/component/button/view/AppButton.fxml");
-    private static final URL CSS_URL = AppButtonView.class.getResource(
-            "/com/triplify/ui/shared/component/button/css/button.css");
-    private static final URL DIALOG_FXML_URL = AppButtonView.class.getResource(
-            "/com/triplify/ui/shared/component/button/view/ConfirmDialog.fxml");
+    private static final URL FXML_URL = AppButtonView.class.getResource("/com/triplify/ui/shared/component/button/view/AppButton.fxml");
+    private static final URL CSS_URL = AppButtonView.class.getResource("/com/triplify/ui/shared/component/button/css/button.css");
+    private static final URL DIALOG_FXML_URL = AppButtonView.class.getResource("/com/triplify/ui/shared/component/button/view/ConfirmDialog.fxml");
 
     @FXML private Button button;
 
