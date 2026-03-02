@@ -63,7 +63,7 @@ public class MainApp extends Application {
                         Entry.builder(2, "Option B").variant(EntryVariant.SECONDARY).build(),
                         Entry.builder(3, "Option C").variant(EntryVariant.DANGER).build(),
                         Entry.builder(4, "Option D").variant(EntryVariant.MUTED).build(),
-                        Entry.builder(5, "Option C").variant(EntryVariant.DANGER).build()
+                        Entry.builder(5, "Option C").icon("fth-globe").variant(EntryVariant.DANGER).build()
                 ))
                 .onSelect(entry -> System.out.println("Selected: " + entry.getValue()))
                 .build());

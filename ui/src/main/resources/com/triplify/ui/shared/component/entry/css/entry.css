@@ -7,10 +7,6 @@
     -fx-pref-width: 0;
 }
 
-.app-entry:hover {
-    -fx-background-color: -color-surface-tint;
-}
-
 .app-entry-label {
     -fx-text-fill: -color-primary;
 }

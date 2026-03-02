@@ -31,3 +31,7 @@
     -fx-padding: 5 10 5 10;
     -fx-background-color: transparent;
 }
+
+.app-select .list-view .list-cell:hover {
+    -fx-background-color: -color-surface-tint;
+}
