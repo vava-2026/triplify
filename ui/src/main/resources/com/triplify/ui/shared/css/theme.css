@@ -38,4 +38,39 @@
     -fx-background-color: -color-bg;
 }
 
+.page-root {
+    -fx-background-color: -color-bg;
+    -fx-padding: 24px 28px;
+}
+
+.page-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-ink;
+}
+
+.page-subtitle {
+    -fx-text-fill: -color-ink-muted;
+}
+
+.page-card {
+    -fx-background-color: -color-surface;
+    -fx-background-radius: 12px;
+    -fx-padding: 16px;
+    -fx-effect: -shadow-card;
+}
+
+.page-card-muted {
+    -fx-background-color: -color-surface-tint;
+}
+
+.page-actions {
+    -fx-spacing: 10px;
+}
+
+.map-canvas {
+    -fx-background-radius: 12px;
+    -fx-min-height: 340px;
+}
+
 
