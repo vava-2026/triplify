@@ -1,6 +1,7 @@
 package com.triplify.ui.shared.component.select.view;
 
 import com.triplify.ui.shared.component.entry.model.Entry;
+import com.triplify.ui.shared.component.entry.model.EntryVariant;
 import com.triplify.ui.shared.component.entry.view.EntryCell;
 import com.triplify.ui.shared.component.select.model.Select;
 import javafx.fxml.FXML;
@@ -31,7 +32,7 @@ public class SelectView<T> extends HBox {
         }
 
         comboBox.setCellFactory(lv -> new EntryCell<>());
-        comboBox.setButtonCell(new EntryCell<>());
+        comboBox.setButtonCell(new SelectButtonCell<>("Select an option"));
 
         comboBox.setConverter(new StringConverter<>() {
             @Override public String toString(Entry<T> e) { return e == null ? "" : e.getLabel(); }

@@ -6,7 +6,9 @@ public enum EntryVariant {
 
     SECONDARY("app-entry-secondary"),
 
-    DANGER("app-entry-danger");
+    DANGER("app-entry-danger"),
+
+    MUTED("app-entry-muted");
 
     private final String styleClass;
 

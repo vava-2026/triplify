@@ -1,7 +1,6 @@
 /* ========================================      ENTRY BASE       =================================== */
 
 .app-entry {
-    -fx-padding: 5 10 5 10;
     -fx-background-color: transparent;
     -fx-max-width: Infinity;
     -fx-max-height: Infinity;
@@ -9,7 +8,7 @@
 }
 
 .app-entry:hover {
-    -fx-background-color: -color-primary-light;
+    -fx-background-color: -color-surface-tint;
 }
 
 .app-entry-label {
@@ -33,31 +32,15 @@
 
 /* ========================================      SECONDARY       =================================== */
 
-.app-entry-secondary {
-    -fx-background-color: -color-primary;
-}
-
-.app-entry-secondary:hover {
-    -fx-background-color: -color-primary-dark;
-}
-
 .app-entry-secondary .app-entry-label {
-    -fx-text-fill: -color-surface;
+    -fx-text-fill: -color-primary-dark;
 }
 
 .app-entry-secondary .app-entry-icon {
-    -fx-icon-color: -color-surface;
+    -fx-icon-color: -color-primary-dark;
 }
 
 /* ========================================      DANGER       =================================== */
-
-.app-entry-danger {
-    -fx-background-color: pink;
-}
-
-.app-entry-danger:hover {
-    -fx-background-color: derive(pink, -5%);
-}
 
 .app-entry-danger .app-entry-label {
     -fx-text-fill: -color-danger;
@@ -65,4 +48,14 @@
 
 .app-entry-danger .app-entry-icon {
     -fx-icon-color: -color-danger;
+}
+
+/* ========================================      MUTED       =================================== */
+
+.app-entry-muted .app-entry-label {
+    -fx-text-fill: -color-ink-muted;
+}
+
+.app-entry-muted .app-entry-icon {
+    -fx-icon-color: -color-ink-muted;
 }

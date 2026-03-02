@@ -54,36 +54,26 @@ public class MainApp extends Application {
         headerView.getViewModel().activeItemProperty().bind(
                 menuView.getViewModel().selectedItemProperty());
 
-        // DEMO content - TODO: remove
-        VBox contentDemo = new VBox();
-
-        // DEMO for the entry variants - TODO: remove
-        for (EntryVariant variant : EntryVariant.values()) {
-            EntryView<String> entryView = new EntryView<>();
-            entryView.update(Entry.builder(variant.getStyleClass(), variant.name()).variant(variant).build());
-            entryView.setMaxHeight(100.0);
-            contentDemo.getChildren().add(entryView);
-        }
-
         // DEMO for the select component - TODO: remove
         SelectView<Integer> selectView = new SelectView<>();
         selectView.update(Select.<Integer>builder()
                 .placeholder("Choose a number...")
                 .items(Arrays.asList(
-                        Entry.builder(1, "One").variant(EntryVariant.PRIMARY).icon("fth-globe").build(),
-                        Entry.builder(2, "Two").variant(EntryVariant.SECONDARY).build(),
-                        Entry.builder(3, "Three").variant(EntryVariant.DANGER).build()
+                        Entry.builder(1, "Option A").build(),
+                        Entry.builder(2, "Option B").variant(EntryVariant.SECONDARY).build(),
+                        Entry.builder(3, "Option C").variant(EntryVariant.DANGER).build(),
+                        Entry.builder(4, "Option D").variant(EntryVariant.MUTED).build(),
+                        Entry.builder(5, "Option C").variant(EntryVariant.DANGER).build()
                 ))
                 .onSelect(entry -> System.out.println("Selected: " + entry.getValue()))
                 .build());
-        contentDemo.getChildren().add(selectView);
 
         // Hide header
         header.visibleProperty().bind(menuView.getViewModel().hideHeaderProperty().not());
         header.managedProperty().bind(menuView.getViewModel().hideHeaderProperty().not());
 
-        // DEMO: content - TODO: remove contentDemo from the braces
-        StackPane contentArea = new StackPane(contentDemo);
+        // DEMO: content - TODO: remove selectView from the braces
+        StackPane contentArea = new StackPane(selectView);
         contentArea.getStyleClass().add("app-content");
         VBox.setVgrow(contentArea, Priority.ALWAYS);
 

@@ -1,6 +1,7 @@
 .app-select {
     -fx-background-color: -color-surface;
-    -fx-border-color: -color-ink-muted;
+    -fx-border-color: -color-primary;
+    -fx-text-color: -color-primary;
     -fx-background-radius: 6;
     -fx-border-radius: 6;
     -fx-border-width: 0.5;
@@ -11,23 +12,22 @@
 .app-select:showing {
     -fx-background-radius: 6 6 0 0;
     -fx-border-radius: 6 6 0 0;
-    -fx-border-width: 0.5 0.5 0.5 0.5;
+    -fx-border-width: 0 0 0.5 0;
 }
 
-.app-select .list-cell {
+/* Only SelectButtonCell */
+.app-select > .list-cell {
     -fx-background-color: transparent;
-    -fx-padding: 0;
-    -fx-alignment: CENTER_LEFT;
+    -fx-text-fill: -color-ink-muted;
 }
 
 .app-select .list-view {
+    -fx-background-color: -color-surface;
     -fx-background-radius: 0 0 6 6;
-    -fx-border-radius: 0 0 6 6;
-    -fx-border-color: -color-ink-muted;
-    -fx-border-width: 0 0.5 0.5 0.5;
+    -fx-border-width: 0;
 }
 
 .app-select .list-view .list-cell {
-    -fx-padding: 0;
-    -fx-pref-width: 0;
+    -fx-padding: 5 10 5 10;
+    -fx-background-color: transparent;
 }
