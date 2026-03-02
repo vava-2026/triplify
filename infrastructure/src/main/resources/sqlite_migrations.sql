@@ -1,4 +1,4 @@
--- Foreign key enable + perfomance-related pragmas
+-- Foreign key enable + performance-related pragmas
 PRAGMA foreign_keys = ON;
 PRAGMA journal_mode = WAL;
 PRAGMA synchronous  = NORMAL;
@@ -35,7 +35,6 @@ CREATE TABLE users (
     updated_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
        CHECK (datetime(updated_at) IS NOT NULL)
 );
-CREATE INDEX idx_users_email ON users(email COLLATE NOCASE);
 CREATE INDEX idx_users_role  ON users(role);
 
 CREATE TABLE emotions (
@@ -87,7 +86,6 @@ CREATE TABLE tags (
 
     UNIQUE (user_id, name)
 );
-CREATE INDEX idx_tags_user_id ON tags(user_id);
 
 CREATE TABLE places (
     id             TEXT NOT NULL PRIMARY KEY,
@@ -427,7 +425,7 @@ BEGIN
     WHERE id = OLD.id;
 END;
 
--- SpatialLite triggers
+-- SpatiaLite triggers
 CREATE TRIGGER trg_places_geom_insert
     AFTER INSERT ON places FOR EACH ROW
 BEGIN
