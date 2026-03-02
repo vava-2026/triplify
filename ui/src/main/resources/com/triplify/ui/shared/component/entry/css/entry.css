@@ -1,0 +1,68 @@
+/* ========================================      ENTRY BASE       =================================== */
+
+.app-entry {
+    -fx-padding: 5 10 5 10;
+    -fx-background-color: transparent;
+    -fx-max-width: Infinity;
+    -fx-max-height: Infinity;
+    -fx-pref-width: 0;
+}
+
+.app-entry:hover {
+    -fx-background-color: -color-primary-light;
+}
+
+.app-entry-label {
+    -fx-text-fill: -color-primary;
+}
+
+.app-entry-icon {
+    -fx-icon-size: 14;
+    -fx-icon-color: -color-primary;
+}
+
+/* ========================================      PRIMARY       =================================== */
+
+.app-entry-primary .app-entry-label {
+    -fx-text-fill: -color-primary;
+}
+
+.app-entry-primary .app-entry-icon {
+    -fx-icon-color: -color-primary;
+}
+
+/* ========================================      SECONDARY       =================================== */
+
+.app-entry-secondary {
+    -fx-background-color: -color-primary;
+}
+
+.app-entry-secondary:hover {
+    -fx-background-color: -color-primary-dark;
+}
+
+.app-entry-secondary .app-entry-label {
+    -fx-text-fill: -color-surface;
+}
+
+.app-entry-secondary .app-entry-icon {
+    -fx-icon-color: -color-surface;
+}
+
+/* ========================================      DANGER       =================================== */
+
+.app-entry-danger {
+    -fx-background-color: pink;
+}
+
+.app-entry-danger:hover {
+    -fx-background-color: derive(pink, -5%);
+}
+
+.app-entry-danger .app-entry-label {
+    -fx-text-fill: -color-danger;
+}
+
+.app-entry-danger .app-entry-icon {
+    -fx-icon-color: -color-danger;
+}

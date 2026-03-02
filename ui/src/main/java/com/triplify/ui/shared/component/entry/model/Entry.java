@@ -1,13 +1,13 @@
-package com.triplify.ui.shared.component.select.model;
+package com.triplify.ui.shared.component.entry.model;
 
-public class SelectEntry<T> {
+public class Entry<T> {
 
     private final T value;
     private final String label;
     private final String iconLiteral;
-    private final SelectVariant variant;
+    private final EntryVariant variant;
 
-    private SelectEntry(Builder<T> b) {
+    private Entry(Builder<T> b) {
         this.value = b.value;
         this.label = b.label;
         this.iconLiteral = b.iconLiteral;
@@ -26,7 +26,7 @@ public class SelectEntry<T> {
         return iconLiteral;
     }
 
-    public SelectVariant getVariant() {
+    public EntryVariant getVariant() {
         return variant;
     }
 
@@ -51,7 +51,7 @@ public class SelectEntry<T> {
         private final T value;
         private final String label;
         private String iconLiteral;
-        private SelectVariant variant;
+        private EntryVariant variant;
 
         private Builder(T value, String label) {
             this.value = value;
@@ -63,13 +63,13 @@ public class SelectEntry<T> {
             return this;
         }
 
-        public Builder<T> variant(SelectVariant v) {
+        public Builder<T> variant(EntryVariant v) {
             this.variant = v;
             return this;
         }
 
-        public SelectEntry<T> build() {
-            return new SelectEntry<>(this);
+        public Entry<T> build() {
+            return new Entry<>(this);
         }
     }
 }

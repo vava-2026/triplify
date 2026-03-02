@@ -1,7 +1,11 @@
 package com.triplify.ui;
 
+import com.triplify.ui.shared.component.entry.model.Entry;
+import com.triplify.ui.shared.component.entry.model.EntryVariant;
+import com.triplify.ui.shared.component.entry.view.EntryView;
+import com.triplify.ui.shared.component.select.model.Select;
+import com.triplify.ui.shared.component.select.view.SelectView;
 import com.triplify.ui.shared.header.view.HeaderView;
-import com.triplify.ui.shared.menu.model.MenuItem;
 import com.triplify.ui.shared.menu.view.MenuView;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -16,6 +20,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class MainApp extends Application {
 
@@ -47,29 +54,36 @@ public class MainApp extends Application {
         headerView.getViewModel().activeItemProperty().bind(
                 menuView.getViewModel().selectedItemProperty());
 
-        // Select component
-        // TODO: uncomment (add imports yourself)
-//        ComboBox<SelectEntry<String>> comboBox = AppSelectView.<String>builder()
-//                .placeholder("Choose an option...")
-//                .variant(SelectVariant.PRIMARY)
-//                .items(FXCollections.observableArrayList(
-//                        SelectEntry.builder("A", "Option A").build(),
-//                        SelectEntry.builder("B", "Option B").variant(SelectVariant.SECONDARY).build(),
-//                        SelectEntry.builder("C", "Option C").variant(SelectVariant.DANGER).build(),
-//                        SelectEntry.builder("D", "Option D").variant(SelectVariant.GHOST).build(),
-//                        SelectEntry.builder("C", "Option C").icon("fth-globe").variant(SelectVariant.DANGER).build()
-//                ))
-//                .onSelect(entry -> System.out.println("Selected: " + entry.getValue()))
-//                .build();
+        // DEMO content - TODO: remove
+        VBox contentDemo = new VBox();
+
+        // DEMO for the entry variants - TODO: remove
+        for (EntryVariant variant : EntryVariant.values()) {
+            EntryView<String> entryView = new EntryView<>();
+            entryView.update(Entry.builder(variant.getStyleClass(), variant.name()).variant(variant).build());
+            entryView.setMaxHeight(100.0);
+            contentDemo.getChildren().add(entryView);
+        }
+
+        // DEMO for the select component - TODO: remove
+        SelectView<Integer> selectView = new SelectView<>();
+        selectView.update(Select.<Integer>builder()
+                .placeholder("Choose a number...")
+                .items(Arrays.asList(
+                        Entry.builder(1, "One").variant(EntryVariant.PRIMARY).icon("fth-globe").build(),
+                        Entry.builder(2, "Two").variant(EntryVariant.SECONDARY).build(),
+                        Entry.builder(3, "Three").variant(EntryVariant.DANGER).build()
+                ))
+                .onSelect(entry -> System.out.println("Selected: " + entry.getValue()))
+                .build());
+        contentDemo.getChildren().add(selectView);
 
         // Hide header
         header.visibleProperty().bind(menuView.getViewModel().hideHeaderProperty().not());
         header.managedProperty().bind(menuView.getViewModel().hideHeaderProperty().not());
 
-        // Main content area
-        // TODO: uncomment and comment
-        StackPane contentArea = new StackPane();
-        //StackPane contentArea = new StackPane(comboBox);
+        // DEMO: content - TODO: remove contentDemo from the braces
+        StackPane contentArea = new StackPane(contentDemo);
         contentArea.getStyleClass().add("app-content");
         VBox.setVgrow(contentArea, Priority.ALWAYS);
 
