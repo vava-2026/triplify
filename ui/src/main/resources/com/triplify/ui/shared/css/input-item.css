@@ -12,3 +12,13 @@
     -fx-border-color: #377fb3;
     -fx-border-width: 2;
 }
+
+/* Show/hide password */
+.toggle-button {
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+    -fx-font-size: 14px;
+}
+.toggle-button:hover {
+    -fx-text-fill: #4CAF50;
+}
