@@ -29,8 +29,7 @@ CREATE TABLE users (
        CHECK (role IN ('guest', 'user', 'moderator', 'admin')),
     avatar_image_id TEXT
        REFERENCES images(id)
-           ON DELETE SET NULL
-           ON UPDATE CASCADE,
+           ON DELETE SET NULL ON UPDATE CASCADE,
     created_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
        CHECK (datetime(created_at) IS NOT NULL),
     updated_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
@@ -43,8 +42,7 @@ CREATE TABLE emotions (
     id         TEXT NOT NULL PRIMARY KEY,
     created_by TEXT NOT NULL
       REFERENCES users(id)
-          ON DELETE RESTRICT
-          ON UPDATE CASCADE,
+          ON DELETE RESTRICT ON UPDATE CASCADE,
     name       TEXT NOT NULL UNIQUE COLLATE NOCASE,
     name_sk    TEXT NOT NULL UNIQUE COLLATE NOCASE,
     icon       TEXT
@@ -54,8 +52,7 @@ CREATE TABLE categories (
     id             TEXT NOT NULL PRIMARY KEY,
     created_by     TEXT NOT NULL
         REFERENCES users(id)
-            ON DELETE RESTRICT
-            ON UPDATE CASCADE,
+            ON DELETE RESTRICT ON UPDATE CASCADE,
     name           TEXT NOT NULL UNIQUE COLLATE NOCASE,
     name_sk        TEXT NOT NULL UNIQUE COLLATE NOCASE,
     description    TEXT,
@@ -67,12 +64,10 @@ CREATE TABLE countries (
     id         TEXT    NOT NULL PRIMARY KEY,
     created_by TEXT    NOT NULL
        REFERENCES users(id)
-           ON DELETE RESTRICT
-           ON UPDATE CASCADE,
+           ON DELETE RESTRICT ON UPDATE CASCADE,
     emotion_id TEXT
        REFERENCES emotions(id)
-           ON DELETE SET NULL
-           ON UPDATE CASCADE,
+           ON DELETE SET NULL ON UPDATE CASCADE,
     name       TEXT    NOT NULL UNIQUE COLLATE NOCASE,
     name_sk    TEXT    NOT NULL UNIQUE COLLATE NOCASE,
     is_banned  INTEGER NOT NULL DEFAULT 0
@@ -85,8 +80,7 @@ CREATE TABLE tags (
     id      TEXT NOT NULL PRIMARY KEY,
     user_id TEXT NOT NULL
       REFERENCES users(id)
-          ON DELETE CASCADE
-          ON UPDATE CASCADE,
+          ON DELETE CASCADE ON UPDATE CASCADE,
     name    TEXT NOT NULL COLLATE NOCASE,
     color   TEXT NOT NULL DEFAULT 'gray'
       CHECK (color IN ('red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'gray')),
@@ -99,16 +93,14 @@ CREATE TABLE places (
     id             TEXT NOT NULL PRIMARY KEY,
     user_id        TEXT NOT NULL
         REFERENCES users(id)
-            ON DELETE RESTRICT
-            ON UPDATE CASCADE,
+            ON DELETE RESTRICT ON UPDATE CASCADE,
     country_id     TEXT NOT NULL
         REFERENCES countries(id)
             ON DELETE RESTRICT
             ON UPDATE CASCADE,
     titul_image_id TEXT
         REFERENCES images(id)
-            ON DELETE SET NULL
-            ON UPDATE CASCADE,
+            ON DELETE SET NULL ON UPDATE CASCADE,
     title          TEXT NOT NULL COLLATE NOCASE,
     description    TEXT,
     latitude       REAL NOT NULL CHECK (latitude  BETWEEN -90  AND  90),
@@ -129,16 +121,13 @@ CREATE TABLE trips (
     id          TEXT NOT NULL PRIMARY KEY,
     user_id     TEXT NOT NULL
        REFERENCES users(id)
-           ON DELETE RESTRICT
-           ON UPDATE CASCADE,
+           ON DELETE RESTRICT ON UPDATE CASCADE,
     category_id TEXT
        REFERENCES categories(id)
-           ON DELETE SET NULL
-           ON UPDATE CASCADE,
+           ON DELETE SET NULL ON UPDATE CASCADE,
     country_id  TEXT
        REFERENCES countries(id)
-           ON DELETE SET NULL
-           ON UPDATE CASCADE,
+           ON DELETE SET NULL ON UPDATE CASCADE,
     title       TEXT NOT NULL COLLATE NOCASE,
     description TEXT,
     status      TEXT NOT NULL DEFAULT 'draft'
@@ -161,12 +150,10 @@ CREATE TABLE routes (
     id             TEXT NOT NULL PRIMARY KEY,
     user_id        TEXT NOT NULL
         REFERENCES users(id)
-            ON DELETE RESTRICT
-            ON UPDATE CASCADE,
+            ON DELETE RESTRICT ON UPDATE CASCADE,
     titul_image_id TEXT
         REFERENCES images(id)
-            ON DELETE SET NULL
-            ON UPDATE CASCADE,
+            ON DELETE SET NULL ON UPDATE CASCADE,
     title          TEXT NOT NULL COLLATE NOCASE,
     description    TEXT,
     total_length   REAL CHECK (total_length >= 0),
@@ -181,12 +168,10 @@ CREATE TABLE trip_routes (
     id         TEXT    NOT NULL PRIMARY KEY,
     trip_id    TEXT    NOT NULL
      REFERENCES trips(id)
-         ON DELETE CASCADE
-         ON UPDATE CASCADE,
+         ON DELETE CASCADE ON UPDATE CASCADE,
     route_id   TEXT    NOT NULL
      REFERENCES routes(id)
-         ON DELETE RESTRICT
-         ON UPDATE CASCADE,
+         ON DELETE RESTRICT ON UPDATE CASCADE,
     "order"    INTEGER NOT NULL DEFAULT 0 CHECK ("order" >= 0),  -- replaced priority per ERD
     status     TEXT    NOT NULL DEFAULT 'draft'
      CHECK (status IN ('draft', 'active', 'completed', 'archived')),
@@ -207,12 +192,10 @@ CREATE TABLE trip_places (
     id         TEXT NOT NULL PRIMARY KEY,
     trip_id    TEXT NOT NULL
      REFERENCES trips(id)
-         ON DELETE CASCADE
-         ON UPDATE CASCADE,
+         ON DELETE CASCADE ON UPDATE CASCADE,
     place_id   TEXT NOT NULL
      REFERENCES places(id)
-         ON DELETE RESTRICT
-         ON UPDATE CASCADE,
+         ON DELETE RESTRICT ON UPDATE CASCADE,
     created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
      CHECK (datetime(created_at) IS NOT NULL),
     updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
@@ -227,12 +210,10 @@ CREATE TABLE route_places (
     id         TEXT    NOT NULL PRIMARY KEY,
     route_id   TEXT    NOT NULL
       REFERENCES routes(id)
-          ON DELETE CASCADE
-          ON UPDATE CASCADE,
+          ON DELETE CASCADE ON UPDATE CASCADE,
     place_id   TEXT    NOT NULL
       REFERENCES places(id)
-          ON DELETE RESTRICT
-          ON UPDATE CASCADE,
+          ON DELETE RESTRICT ON UPDATE CASCADE,
     "order"    INTEGER NOT NULL DEFAULT 0 CHECK ("order" >= 0),
     status     TEXT    NOT NULL DEFAULT 'draft'
       CHECK (status IN ('draft', 'active', 'completed', 'archived')),
@@ -253,16 +234,13 @@ CREATE TABLE stories (
     id            TEXT NOT NULL PRIMARY KEY,
     user_id       TEXT NOT NULL
      REFERENCES users(id)
-         ON DELETE RESTRICT
-         ON UPDATE CASCADE,
+         ON DELETE RESTRICT ON UPDATE CASCADE,
     trip_place_id TEXT
      REFERENCES trip_places(id)
-         ON DELETE SET NULL
-         ON UPDATE CASCADE,
+         ON DELETE SET NULL ON UPDATE CASCADE,
     emotion_id    TEXT
      REFERENCES emotions(id)
-         ON DELETE SET NULL
-         ON UPDATE CASCADE,
+         ON DELETE SET NULL ON UPDATE CASCADE,
     title         TEXT NOT NULL COLLATE NOCASE,
     description   TEXT,
     story_time    TEXT NOT NULL
@@ -313,12 +291,10 @@ CREATE INDEX idx_badges_group_id   ON badges(group_id);
 CREATE TABLE user_badges (
     user_id        TEXT    NOT NULL
      REFERENCES users(id)
-         ON DELETE CASCADE
-         ON UPDATE CASCADE,
+         ON DELETE CASCADE ON UPDATE CASCADE,
     badge_id       TEXT    NOT NULL
      REFERENCES badges(id)
-         ON DELETE CASCADE
-         ON UPDATE CASCADE,
+         ON DELETE CASCADE ON UPDATE CASCADE,
     progress_value INTEGER NOT NULL DEFAULT 0 CHECK (progress_value >= 0),
     is_unlocked    INTEGER NOT NULL DEFAULT 0 CHECK (is_unlocked IN (0, 1)),
 
@@ -329,12 +305,10 @@ CREATE INDEX idx_user_badges_badge_id ON user_badges(badge_id);
 CREATE TABLE trip_tags (
     trip_id TEXT NOT NULL
        REFERENCES trips(id)
-           ON DELETE CASCADE
-           ON UPDATE CASCADE,
+           ON DELETE CASCADE ON UPDATE CASCADE,
     tag_id  TEXT NOT NULL
        REFERENCES tags(id)
-           ON DELETE CASCADE
-           ON UPDATE CASCADE,
+           ON DELETE CASCADE ON UPDATE CASCADE,
 
     PRIMARY KEY (trip_id, tag_id)
 );
@@ -343,40 +317,31 @@ CREATE INDEX idx_trip_tags_tag_id ON trip_tags(tag_id);
 CREATE TABLE story_tags (
     story_id TEXT NOT NULL
         REFERENCES stories(id)
-            ON DELETE CASCADE
-            ON UPDATE CASCADE,
+            ON DELETE CASCADE ON UPDATE CASCADE,
     tag_id   TEXT NOT NULL
         REFERENCES tags(id)
-            ON DELETE CASCADE
-            ON UPDATE CASCADE,
+            ON DELETE CASCADE ON UPDATE CASCADE,
 
     PRIMARY KEY (story_id, tag_id)
 );
 CREATE INDEX idx_story_tags_tag_id ON story_tags(tag_id);
 
-CREATE TABLE trip_images (
-    image_id TEXT NOT NULL
-     REFERENCES images(id)
-         ON DELETE CASCADE
-         ON UPDATE CASCADE,
-    trip_id  TEXT NOT NULL
-     REFERENCES trips(id)
-         ON DELETE CASCADE
-         ON UPDATE CASCADE,
-
-    PRIMARY KEY (image_id, trip_id)
+CREATE TABLE trip_places_images (
+    image_id      TEXT NOT NULL REFERENCES images(id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    trip_place_id TEXT NOT NULL REFERENCES trip_places(id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    PRIMARY KEY (image_id, trip_place_id)
 );
-CREATE INDEX idx_trip_images_trip_id ON trip_images(trip_id);
+CREATE INDEX idx_trip_places_images_trip_place_id ON trip_places_images(trip_place_id);
 
 CREATE TABLE places_images (
     place_id TEXT NOT NULL
        REFERENCES places(id)
-           ON DELETE CASCADE
-           ON UPDATE CASCADE,
+           ON DELETE CASCADE ON UPDATE CASCADE,
     image_id TEXT NOT NULL
        REFERENCES images(id)
-           ON DELETE CASCADE
-           ON UPDATE CASCADE,
+           ON DELETE CASCADE ON UPDATE CASCADE,
 
     PRIMARY KEY (place_id, image_id)
 );
@@ -385,12 +350,10 @@ CREATE INDEX idx_places_images_place_id ON places_images(place_id);
 CREATE TABLE route_images (
     route_id TEXT NOT NULL
       REFERENCES routes(id)
-          ON DELETE CASCADE
-          ON UPDATE CASCADE,
+          ON DELETE CASCADE ON UPDATE CASCADE,
     image_id TEXT NOT NULL
       REFERENCES images(id)
-          ON DELETE CASCADE
-          ON UPDATE CASCADE,
+          ON DELETE CASCADE ON UPDATE CASCADE,
 
     PRIMARY KEY (route_id, image_id)
 );
@@ -399,12 +362,10 @@ CREATE INDEX idx_route_images_route_id ON route_images(route_id);
 CREATE TABLE story_images (
     story_id TEXT NOT NULL
       REFERENCES stories(id)
-          ON DELETE CASCADE
-          ON UPDATE CASCADE,
+          ON DELETE CASCADE ON UPDATE CASCADE,
     image_id TEXT NOT NULL
       REFERENCES images(id)
-          ON DELETE CASCADE
-          ON UPDATE CASCADE,
+          ON DELETE CASCADE ON UPDATE CASCADE,
 
     PRIMARY KEY (story_id, image_id)
 );
