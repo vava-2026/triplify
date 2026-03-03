@@ -7,8 +7,8 @@ PRAGMA synchronous  = NORMAL;
 SELECT InitSpatialMetaData(1);
 
 -- ENUMS (enforced via CHECK)
--- ROLE_ENUM  : 'guest' | 'user' | 'moderator' | 'admin'
--- STATUS_ENUM: 'draft' | 'active' | 'completed' | 'archived'
+-- ROLE_ENUM  : 'user' | 'pro-user' | 'configuration manager'
+-- STATUS_ENUM: 'planned', 'active', 'completed', 'canceled'
 -- COLOR_ENUM : 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | 'pink' | 'gray'
 
 CREATE TABLE images (
@@ -26,7 +26,7 @@ CREATE TABLE users (
     email           TEXT NOT NULL UNIQUE COLLATE NOCASE,
     password_hash   TEXT NOT NULL,
     role            TEXT NOT NULL DEFAULT 'user'
-       CHECK (role IN ('guest', 'user', 'moderator', 'admin')),
+       CHECK (role IN ('user', 'pro-user', 'configuration manager')),
     avatar_image_id TEXT
        REFERENCES images(id)
            ON DELETE SET NULL ON UPDATE CASCADE,
@@ -128,8 +128,8 @@ CREATE TABLE trips (
            ON DELETE SET NULL ON UPDATE CASCADE,
     title       TEXT NOT NULL COLLATE NOCASE,
     description TEXT,
-    status      TEXT NOT NULL DEFAULT 'draft'
-       CHECK (status IN ('draft', 'active', 'completed', 'archived')),
+    status      TEXT NOT NULL DEFAULT 'planned'
+       CHECK (status IN ('planned', 'active', 'completed', 'canceled')),
     started_at  TEXT CHECK (started_at IS NULL OR datetime(started_at) IS NOT NULL),
     ended_at    TEXT CHECK (ended_at   IS NULL OR datetime(ended_at)   IS NOT NULL),
     created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
@@ -171,8 +171,8 @@ CREATE TABLE trip_routes (
      REFERENCES routes(id)
          ON DELETE RESTRICT ON UPDATE CASCADE,
     "order"    INTEGER NOT NULL DEFAULT 0 CHECK ("order" >= 0),
-    status     TEXT    NOT NULL DEFAULT 'draft'
-     CHECK (status IN ('draft', 'active', 'completed', 'archived')),
+    status     TEXT    NOT NULL DEFAULT 'planned'
+     CHECK (status IN ('planned', 'active', 'completed', 'canceled')),
     started_at TEXT    CHECK (started_at IS NULL OR datetime(started_at) IS NOT NULL),
     ended_at   TEXT    CHECK (ended_at   IS NULL OR datetime(ended_at)   IS NOT NULL),
     created_at TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
