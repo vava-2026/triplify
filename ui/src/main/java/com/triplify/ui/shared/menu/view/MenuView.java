@@ -1,20 +1,17 @@
 package com.triplify.ui.shared.menu.view;
 
-import an.awesome.pipelinr.Pipeline;
-import com.triplify.application.category.query.CategoryResponse;
-import com.triplify.application.category.query.GetAllCategoriesQuery;
-import com.triplify.ui.MainApp;
+import com.triplify.application.category.usecase.CategoryResponse;
+import com.triplify.application.category.usecase.CategoryService;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.menu.model.MenuItem;
 import com.triplify.ui.shared.menu.model.NavItem;
 import com.triplify.ui.shared.menu.viewmodel.MenuViewModel;
-import jakarta.inject.Inject;
+import com.google.inject.Inject;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -43,19 +40,19 @@ public class MenuView implements Initializable {
     private final MenuViewModel viewModel = new MenuViewModel();
     private final List<NavButtonView> navButtons = new ArrayList<>();
 
-    private final Pipeline pipeline;
+    private final CategoryService categoryService;
     private static final Logger log = LoggerFactory.getLogger(MenuView.class);
 
     @Inject
-    public MenuView(Pipeline pipeline) {
-        this.pipeline = pipeline;
+    public MenuView(CategoryService categoryService) {
+        this.categoryService = categoryService;
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // TODO: This is just for testing, remove when categories are integrated into the UI
-        List<CategoryResponse> categories = pipeline.send(new GetAllCategoriesQuery());
-        for(CategoryResponse category : categories) {
+        List<CategoryResponse> categories = categoryService.getAllCategories();
+        for (CategoryResponse category : categories) {
             log.info("Category: " + category.name());
         }
 
