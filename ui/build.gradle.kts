@@ -5,7 +5,7 @@ plugins {
 
 dependencies {
     implementation(project(":application"))
-    implementation(project(":infrastructure"))  // needed for AppModule to install InfrastructureModule
+    implementation(project(":infrastructure"))
 
     runtimeOnly("ch.qos.logback:logback-classic:1.5.32")
 
