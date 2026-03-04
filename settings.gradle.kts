@@ -5,5 +5,6 @@ include("ui", "application", "domain", "infrastructure")
 dependencyResolutionManagement {
     repositories {
         mavenCentral()
+        maven("https://jitpack.io")
     }
 }
