@@ -5,19 +5,23 @@ import com.triplify.ui.shared.component.entry.model.EntryVariant;
 import com.triplify.ui.shared.component.entry.view.EntryView;
 import com.triplify.ui.shared.component.select.model.Select;
 import com.triplify.ui.shared.component.select.view.SelectView;
+import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.header.view.HeaderView;
 import com.triplify.ui.shared.menu.view.MenuView;
 import javafx.application.Application;
+import javafx.beans.binding.BooleanBinding;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rahulstech.jfx.routing.Router;
+import rahulstech.jfx.routing.layout.RouterStackPane;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -27,6 +31,7 @@ import java.util.List;
 public class MainApp extends Application {
 
     private static final Logger log = LoggerFactory.getLogger(MainApp.class);
+    private Router router;
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -54,28 +59,41 @@ public class MainApp extends Application {
         headerView.getViewModel().activeItemProperty().bind(
                 menuView.getViewModel().selectedItemProperty());
 
-        // DEMO for the select component - TODO: remove
-        SelectView<Integer> selectView = new SelectView<>();
-        selectView.update(Select.<Integer>builder()
-                .placeholder("Choose a number...")
-                .items(Arrays.asList(
-                        Entry.builder(1, "Option A").build(),
-                        Entry.builder(2, "Option B").variant(EntryVariant.SECONDARY).build(),
-                        Entry.builder(3, "Option C").variant(EntryVariant.DANGER).build(),
-                        Entry.builder(4, "Option D").variant(EntryVariant.MUTED).build(),
-                        Entry.builder(5, "Option C").icon("fth-globe").variant(EntryVariant.DANGER).build()
-                ))
-                .onSelect(entry -> System.out.println("Selected: " + entry.getValue()))
-                .build());
+        // Main content area
+        TriplifyRouterContext routerContext = new TriplifyRouterContext();
+        RouterStackPane contentArea = new RouterStackPane();
 
-        // Hide header
-        header.visibleProperty().bind(menuView.getViewModel().hideHeaderProperty().not());
-        header.managedProperty().bind(menuView.getViewModel().hideHeaderProperty().not());
-
-        // DEMO: content - TODO: remove selectView from the braces
-        StackPane contentArea = new StackPane(selectView);
         contentArea.getStyleClass().add("app-content");
+        contentArea.setContext(routerContext);
+        contentArea.setRouterConfig("router.xml");
         VBox.setVgrow(contentArea, Priority.ALWAYS);
+        Rectangle contentClip = new Rectangle();
+        contentClip.widthProperty().bind(contentArea.widthProperty());
+        contentClip.heightProperty().bind(contentArea.heightProperty());
+        contentArea.setClip(contentClip);
+
+        BooleanBinding showMenu = routerContext.fullScreenContentProperty().not();
+        menu.visibleProperty().bind(showMenu);
+        menu.managedProperty().bind(showMenu);
+
+        BooleanBinding showHeader = menuView.getViewModel()
+                .hideHeaderProperty()
+                .not()
+                .and(routerContext.fullScreenContentProperty().not());
+        header.visibleProperty().bind(showHeader);
+        header.managedProperty().bind(showHeader);
+
+        contentArea.routerProperty().addListener((obs, oldRouter, newRouter) -> {
+            router = newRouter;
+            log.info("Router initialized: {}", newRouter != null ? "ready" : "null");
+        });
+
+        menuView.getViewModel().selectedItemProperty().addListener((obs, oldItem, newItem) -> {
+            if (router != null && newItem != null) {
+                log.info("Navigate to route: {}", newItem.getRouteId());
+                router.moveto(newItem.getRouteId());
+            }
+        });
 
         // Right column: header + content
         VBox rightColumn = new VBox(header, contentArea);
@@ -102,5 +120,13 @@ public class MainApp extends Application {
 
     public static void main(String[] args) {
         launch();
+    }
+
+    @Override
+    public void stop() throws Exception {
+        if (router != null) {
+            router.dispose();
+        }
+        super.stop();
     }
 }
