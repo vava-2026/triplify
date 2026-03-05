@@ -1,25 +1,30 @@
 package com.triplify.ui;
 
+import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.header.view.HeaderView;
 import com.triplify.ui.shared.menu.model.MenuItem;
 import com.triplify.ui.shared.menu.view.MenuView;
 import javafx.application.Application;
+import javafx.beans.binding.BooleanBinding;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rahulstech.jfx.routing.Router;
+import rahulstech.jfx.routing.layout.RouterStackPane;
 
 import java.net.URL;
 
 public class MainApp extends Application {
 
     private static final Logger log = LoggerFactory.getLogger(MainApp.class);
+    private Router router;
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -47,14 +52,40 @@ public class MainApp extends Application {
         headerView.getViewModel().activeItemProperty().bind(
                 menuView.getViewModel().selectedItemProperty());
 
-        // Hide header
-        header.visibleProperty().bind(menuView.getViewModel().hideHeaderProperty().not());
-        header.managedProperty().bind(menuView.getViewModel().hideHeaderProperty().not());
-
         // Main content area
-        StackPane contentArea = new StackPane();
+        TriplifyRouterContext routerContext = new TriplifyRouterContext();
+        RouterStackPane contentArea = new RouterStackPane();
         contentArea.getStyleClass().add("app-content");
+        contentArea.setContext(routerContext);
+        contentArea.setRouterConfig("router.xml");
         VBox.setVgrow(contentArea, Priority.ALWAYS);
+        Rectangle contentClip = new Rectangle();
+        contentClip.widthProperty().bind(contentArea.widthProperty());
+        contentClip.heightProperty().bind(contentArea.heightProperty());
+        contentArea.setClip(contentClip);
+
+        BooleanBinding showMenu = routerContext.fullScreenContentProperty().not();
+        menu.visibleProperty().bind(showMenu);
+        menu.managedProperty().bind(showMenu);
+
+        BooleanBinding showHeader = menuView.getViewModel()
+                .hideHeaderProperty()
+                .not()
+                .and(routerContext.fullScreenContentProperty().not());
+        header.visibleProperty().bind(showHeader);
+        header.managedProperty().bind(showHeader);
+
+        contentArea.routerProperty().addListener((obs, oldRouter, newRouter) -> {
+            router = newRouter;
+            log.info("Router initialized: {}", newRouter != null ? "ready" : "null");
+        });
+
+        menuView.getViewModel().selectedItemProperty().addListener((obs, oldItem, newItem) -> {
+            if (router != null && newItem != null) {
+                log.info("Navigate to route: {}", newItem.getRouteId());
+                router.moveto(newItem.getRouteId());
+            }
+        });
 
         // Right column: header + content
         VBox rightColumn = new VBox(header, contentArea);
@@ -81,5 +112,13 @@ public class MainApp extends Application {
 
     public static void main(String[] args) {
         launch();
+    }
+
+    @Override
+    public void stop() throws Exception {
+        if (router != null) {
+            router.dispose();
+        }
+        super.stop();
     }
 }

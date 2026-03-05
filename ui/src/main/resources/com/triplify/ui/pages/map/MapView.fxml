@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.triplify.ui.pages.SimplePageController"
+           styleClass="page-root">
+    <VBox spacing="14" maxWidth="980">
+        <Label text="Map" styleClass="page-title"/>
+        <Label text="Explore destinations and drop pins for your next trip." styleClass="page-subtitle"/>
+        <StackPane styleClass="page-card map-canvas">
+            <Label text="Zoom or drag to explore the map area"/>
+        </StackPane>
+    </VBox>
+</StackPane>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.triplify.ui.pages.SimplePageController"
+           styleClass="page-root">
+    <VBox spacing="14" maxWidth="980">
+        <Label text="Calendar" styleClass="page-title"/>
+        <Label text="Keep track of travel dates and reminders." styleClass="page-subtitle"/>
+
+        <DatePicker/>
+
+        <ListView VBox.vgrow="ALWAYS" styleClass="page-card"/>
+    </VBox>
+</StackPane>
