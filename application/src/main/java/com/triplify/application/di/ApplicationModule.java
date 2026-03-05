@@ -2,8 +2,8 @@ package com.triplify.application.di;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
-import com.triplify.application.category.usecase.CategoryService;
-import com.triplify.application.category.usecase.CategoryServiceImpl;
+import com.triplify.application.usecase.category.CategoryService;
+import com.triplify.application.usecase.category.CategoryServiceImpl;
 
 public class ApplicationModule extends AbstractModule {
 

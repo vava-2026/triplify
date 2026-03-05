@@ -1,7 +1,7 @@
 package com.triplify.ui.shared.menu.view;
 
-import com.triplify.application.category.usecase.CategoryResponse;
-import com.triplify.application.category.usecase.CategoryService;
+import com.triplify.application.usecase.category.CategoryResponse;
+import com.triplify.application.usecase.category.CategoryService;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.menu.model.MenuItem;
 import com.triplify.ui.shared.menu.model.NavItem;

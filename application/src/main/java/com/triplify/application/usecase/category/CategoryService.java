@@ -1,4 +1,4 @@
-package com.triplify.application.category.usecase;
+package com.triplify.application.usecase.category;
 
 import java.util.List;
 
