@@ -8,7 +8,7 @@ SELECT InitSpatialMetaData(1);
 
 -- ENUMS (enforced via CHECK)
 -- ROLE_ENUM  : 'user' | 'pro-user' | 'configuration manager'
--- STATUS_ENUM: 'planned', 'active', 'completed', 'canceled'
+-- STATUS_ENUM: 'planned' | 'ongoing' | 'visited' | 'canceled'
 -- COLOR_ENUM : 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | 'pink' | 'gray'
 
 CREATE TABLE images (
@@ -35,7 +35,6 @@ CREATE TABLE users (
     updated_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
        CHECK (datetime(updated_at) IS NOT NULL)
 );
-CREATE INDEX idx_users_role ON users(role);
 
 CREATE TABLE emotions (
     id         TEXT NOT NULL PRIMARY KEY,
@@ -44,9 +43,8 @@ CREATE TABLE emotions (
           ON DELETE RESTRICT ON UPDATE CASCADE,
     name       TEXT NOT NULL UNIQUE COLLATE NOCASE,
     name_sk    TEXT NOT NULL UNIQUE COLLATE NOCASE,
-    icon       TEXT
+    emoji TEXT NOT NULL
 );
-CREATE INDEX idx_emotions_created_by ON emotions(created_by);
 
 CREATE TABLE categories (
     id             TEXT NOT NULL PRIMARY KEY,
@@ -57,9 +55,10 @@ CREATE TABLE categories (
     name_sk        TEXT NOT NULL UNIQUE COLLATE NOCASE,
     description    TEXT,
     description_sk TEXT,
-    icon           TEXT
+    emoji TEXT
+    color TEXT NOT NULL DEFAULT 'gray'
+      CHECK (color IN ('red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'gray')),
 );
-CREATE INDEX idx_categories_created_by ON categories(created_by);
 
 CREATE TABLE countries (
     id         TEXT    NOT NULL PRIMARY KEY,
@@ -68,11 +67,10 @@ CREATE TABLE countries (
            ON DELETE RESTRICT ON UPDATE CASCADE,
     name       TEXT    NOT NULL UNIQUE COLLATE NOCASE,
     name_sk    TEXT    NOT NULL UNIQUE COLLATE NOCASE,
-    icon       TEXT,
+    emoji TEXT NOT NULL,
     is_banned  INTEGER NOT NULL DEFAULT 0
        CHECK (is_banned IN (0, 1))
 );
-CREATE INDEX idx_countries_created_by ON countries(created_by);
 
 CREATE TABLE tags (
     id      TEXT NOT NULL PRIMARY KEY,
@@ -109,7 +107,6 @@ CREATE TABLE places (
 );
 CREATE INDEX idx_places_user_id       ON places(user_id);
 CREATE INDEX idx_places_country_id    ON places(country_id);
-CREATE INDEX idx_places_cover_image_id ON places(cover_image_id);
 
 -- Adding column to the Places table as SpatiaLite specific data
 SELECT AddGeometryColumn('places', 'geom', 4326, 'POINT', 'XY');
@@ -129,7 +126,7 @@ CREATE TABLE trips (
     title       TEXT NOT NULL COLLATE NOCASE,
     description TEXT,
     status      TEXT NOT NULL DEFAULT 'planned'
-       CHECK (status IN ('planned', 'active', 'completed', 'canceled')),
+       CHECK (status IN ('planned', 'ongoing', 'visited', 'canceled')),
     started_at  TEXT CHECK (started_at IS NULL OR datetime(started_at) IS NOT NULL),
     ended_at    TEXT CHECK (ended_at   IS NULL OR datetime(ended_at)   IS NOT NULL),
     created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
@@ -172,7 +169,7 @@ CREATE TABLE trip_routes (
          ON DELETE RESTRICT ON UPDATE CASCADE,
     "order"    INTEGER NOT NULL DEFAULT 0 CHECK ("order" >= 0),
     status     TEXT    NOT NULL DEFAULT 'planned'
-     CHECK (status IN ('planned', 'active', 'completed', 'canceled')),
+     CHECK (status IN ('planned', 'ongoing', 'visited', 'canceled')),
     started_at TEXT    CHECK (started_at IS NULL OR datetime(started_at) IS NOT NULL),
     ended_at   TEXT    CHECK (ended_at   IS NULL OR datetime(ended_at)   IS NOT NULL),
     created_at TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
@@ -229,9 +226,9 @@ CREATE TABLE stories (
     user_id       TEXT NOT NULL
      REFERENCES users(id)
          ON DELETE RESTRICT ON UPDATE CASCADE,
-    trip_id       TEXT
-     REFERENCES trips(id)
-         ON DELETE SET NULL ON UPDATE CASCADE,
+--     trip_id       TEXT
+--      REFERENCES trips(id)
+--          ON DELETE SET NULL ON UPDATE CASCADE,
     trip_place_id TEXT
      REFERENCES trip_places(id)
          ON DELETE SET NULL ON UPDATE CASCADE,
@@ -260,7 +257,6 @@ CREATE TABLE badges_groups (
     description    TEXT,
     description_sk TEXT
 );
-CREATE INDEX idx_badges_groups_created_by ON badges_groups(created_by);
 
 CREATE TABLE badges (
     id             TEXT    NOT NULL PRIMARY KEY,
@@ -282,7 +278,6 @@ CREATE TABLE badges (
 
     UNIQUE (group_id, name, level)
 );
-CREATE INDEX idx_badges_created_by ON badges(created_by);
 CREATE INDEX idx_badges_group_id   ON badges(group_id);
 
 CREATE TABLE user_badges (
