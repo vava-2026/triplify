@@ -16,11 +16,6 @@
 
     <VBox fx:id="mainPageInner" styleClass="main-page-inner" prefWidth="260">
 
-        <fx:include fx:id="expandedIsland"
-                    source="SidebarIsland.fxml"
-                    VBox.vgrow="NEVER" />
-
-
         <VBox fx:id="navContainer"
               spacing="8" prefWidth="220"
               VBox.vgrow="ALWAYS"
@@ -49,13 +44,6 @@
         </HBox>
     </VBox>
 
-    <Pane fx:id="collapsedIsland" visible="false" managed="false"
-          prefWidth="260" prefHeight="70"
-          styleClass="collapsed-pane">
-
-        <fx:include fx:id="collapsedIslandInner"
-                    source="SidebarIsland.fxml" />
-    </Pane>
 
 </StackPane>
 
