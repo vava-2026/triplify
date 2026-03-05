@@ -19,7 +19,7 @@ import java.util.ResourceBundle;
 
 public class MenuView implements Initializable {
 
-    private static final double SIDEBAR_WIDTH = 260;
+    public static final double SIDEBAR_WIDTH = 260;
     private static final double SIDEBAR_COLLAPSED_WIDTH = 0;
 
     @FXML private StackPane sidebarRoot;

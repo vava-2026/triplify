@@ -42,9 +42,9 @@ public class MainApp extends Application {
         SidebarIslandView islandView = islandLoader.getController();
 
         Pane islandPane = new Pane(island);
-        islandPane.setPrefWidth(260);
-        islandPane.setMinWidth(260);
-        islandPane.setMaxWidth(260);
+        islandPane.setPrefWidth(MenuView.SIDEBAR_WIDTH);
+        islandPane.setMinWidth(MenuView.SIDEBAR_WIDTH);
+        islandPane.setMaxWidth(MenuView.SIDEBAR_WIDTH);
 
         // Sidebar menu
         URL menuFxmlUrl = getClass().getResource("/com/triplify/ui/shared/menu/view/MenuView.fxml");
