@@ -134,13 +134,13 @@
 
 .trips-scroll .scroll-bar:vertical .track {
     -fx-background-color: rgba(47,102,144,0.08);
-    -fx-background-radius: 999px;
+    -fx-background-radius: 4px;
     -fx-padding: 2px;
 }
 
 .trips-scroll .scroll-bar:vertical .thumb {
     -fx-background-color: rgba(47,102,144,0.45);
-    -fx-background-radius: 999px;
+    -fx-background-radius: 4px;
 }
 
 .trips-scroll .scroll-bar:vertical .thumb:hover {
