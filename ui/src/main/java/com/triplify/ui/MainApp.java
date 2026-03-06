@@ -1,8 +1,6 @@
 package com.triplify.ui;
 
-import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.triplify.ui.di.AppModule;
 import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.header.view.HeaderView;
 import com.triplify.ui.shared.menu.model.MenuItem;
@@ -32,7 +30,7 @@ public class MainApp extends Application {
   
     @Override
     public void init() {
-        injector = Guice.createInjector(new AppModule());
+        injector = InjectorHolder.getInjector();
     }
 
     @Override

@@ -1,10 +1,10 @@
-package com.triplify.ui.di;
+package com.triplify.bootstrap;
 
 import com.google.inject.AbstractModule;
 import com.triplify.application.di.ApplicationModule;
 import com.triplify.infrastructure.di.InfrastructureModule;
 
-public class AppModule extends AbstractModule {
+public class BootstrapModule extends AbstractModule {
 
     @Override
     protected void configure() {
@@ -12,4 +12,3 @@ public class AppModule extends AbstractModule {
         install(new ApplicationModule());
     }
 }
-
