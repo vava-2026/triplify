@@ -1,5 +1,6 @@
 package com.triplify.ui;
 
+import com.triplify.infrastructure.repository.persistence.SQLiteConnectionFactory;
 import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.header.view.HeaderView;
 import com.triplify.ui.shared.menu.model.MenuItem;
@@ -29,6 +30,13 @@ public class MainApp extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         log.info("App launched");
+
+        try (var stmt = SQLiteConnectionFactory.getConnection().createStatement();
+             var rs = stmt.executeQuery("SELECT spatialite_version()")) {
+            log.info("SpatiaLite version: {}", rs.getString(1));
+        } catch (Exception e) {
+            log.error("SpatiaLite check failed", e);
+        }
 
         // Sidebar menu
         URL menuFxmlUrl = getClass().getResource("/com/triplify/ui/shared/menu/view/MenuView.fxml");
