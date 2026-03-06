@@ -1,5 +1,6 @@
 package com.triplify.ui.shared.component.entry.view;
 
+import com.triplify.application.model.ColorTheme;
 import com.triplify.ui.shared.component.entry.model.EntryVariant;
 import com.triplify.ui.shared.component.entry.model.Entry;
 import javafx.fxml.FXML;
@@ -10,15 +11,13 @@ import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.io.IOException;
 
-/// Basically a label with an icon, used to represent an entry in a list or menu.
-/// Supports different variants for styling (e.g. primary, secondary, danger).
-///
 public class EntryView<T> extends HBox {
 
     @FXML private Label label;
     @FXML private FontIcon icon;
 
     private EntryVariant lastVariant = null;
+    private ColorTheme lastColorTheme = null;
 
     public EntryView() {
         FXMLLoader loader = new FXMLLoader(
@@ -39,6 +38,7 @@ public class EntryView<T> extends HBox {
             icon.setVisible(false);
             icon.setManaged(false);
             applyVariant(null);
+            applyColorTheme(null);
             return;
         }
 
@@ -54,6 +54,7 @@ public class EntryView<T> extends HBox {
         }
 
         applyVariant(entry.hasVariant() ? entry.getVariant() : null);
+        applyColorTheme(entry.hasColorTheme() ? entry.getColorTheme() : null);
     }
 
     private void applyVariant(EntryVariant variant) {
@@ -65,5 +66,16 @@ public class EntryView<T> extends HBox {
             getStyleClass().add(variant.getStyleClass());
         }
         lastVariant = variant;
+    }
+
+    private void applyColorTheme(ColorTheme theme) {
+        if (lastColorTheme == theme) return;
+        if (lastColorTheme != null) {
+            getStyleClass().remove(lastColorTheme.getStyleClass());
+        }
+        if (theme != null) {
+            getStyleClass().add(theme.getStyleClass());
+        }
+        lastColorTheme = theme;
     }
 }
