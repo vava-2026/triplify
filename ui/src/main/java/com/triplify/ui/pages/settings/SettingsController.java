@@ -3,6 +3,7 @@ package com.triplify.ui.pages.settings;
 import com.triplify.application.model.ColorTheme;
 import com.triplify.ui.shared.component.entry.model.Entry;
 import com.triplify.ui.shared.component.select.model.Select;
+import com.triplify.ui.shared.component.select.model.SelectVariant;
 import com.triplify.ui.shared.component.select.view.SelectView;
 import javafx.fxml.FXML;
 import javafx.scene.layout.VBox;
@@ -20,6 +21,7 @@ public class SettingsController extends SimpleLifecycleAwareController {
         SelectView<Integer> selectView = new SelectView<>();
         selectView.update(Select.<Integer>builder()
                 .placeholder("Choose a number...")
+                .variant(SelectVariant.OUTLINED)
                 .items(Arrays.asList(
                         Entry.builder(1, "One").colorTheme(ColorTheme.BLUE).icon("fth-globe").build(),
                         Entry.builder(2, "Two").colorTheme(ColorTheme.GREEN).build(),

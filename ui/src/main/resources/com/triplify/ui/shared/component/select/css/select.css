@@ -1,18 +1,16 @@
 .app-select {
     -fx-background-color: -color-surface;
-    -fx-border-color: -color-primary;
     -fx-text-color: -color-primary;
     -fx-background-radius: 6;
     -fx-border-radius: 6;
-    -fx-border-width: 0.5;
     -fx-pref-height: 36;
     -fx-cursor: hand;
+    -fx-border-width: 1;
 }
 
 .app-select:showing {
     -fx-background-radius: 6 6 0 0;
     -fx-border-radius: 6 6 0 0;
-    -fx-border-width: 0 0 0.5 0;
 }
 
 /* Only SelectButtonCell */
@@ -24,7 +22,6 @@
 .app-select .list-view {
     -fx-background-color: -color-surface;
     -fx-background-radius: 0 0 6 6;
-    -fx-border-width: 0;
 }
 
 .app-select .list-view .list-cell {
@@ -34,4 +31,31 @@
 
 .app-select .list-view .list-cell:hover {
     -fx-background-color: -color-surface-tint;
+}
+
+
+.app-select-variant-filled {
+    -fx-border-color: transparent;
+    -fx-border-width: 1;
+}
+
+.app-select-variant-outlined {
+    -fx-border-color: -color-primary;
+    -fx-border-width: 1;
+}
+
+.app-select-variant-filled:showing {
+    -fx-border-color: -color-surface-tint;
+    -fx-border-width: 0 0 1 0;
+}
+
+.app-select-variant-outlined:showing {
+    -fx-border-color: -color-primary -color-primary -color-surface-tint -color-primary;
+    -fx-border-width: 1;
+}
+
+.app-select-variant-outlined .list-view {
+    -fx-border-color: -color-primary;
+    -fx-border-width: 0 1 1 1;
+    -fx-border-radius: 0 0 6 6;
 }
