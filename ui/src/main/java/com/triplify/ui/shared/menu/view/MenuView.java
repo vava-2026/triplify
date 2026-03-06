@@ -84,6 +84,7 @@ public class MenuView implements Initializable {
         double width = collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH;
         sidebarRoot.setPrefWidth(width);
         sidebarRoot.setMaxWidth(width);
+        sidebarRoot.setMinWidth(width);
 
         if (islandController != null) {
             islandController.setCollapsed(collapsed, viewModel.isHideHeader());
