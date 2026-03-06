@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      styleClass="search-container"
+      spacing="4">
+
+    <!-- Search input row -->
+    <HBox styleClass="search-input-box" alignment="CENTER_LEFT" spacing="6">
+        <padding><Insets top="6" right="10" bottom="6" left="10"/></padding>
+        <FontIcon fx:id="searchIcon" iconLiteral="fth-search" iconSize="14" styleClass="search-icon"/>
+        <TextField fx:id="searchField"
+                   styleClass="search-field"
+                   HBox.hgrow="ALWAYS"/>
+        <Button fx:id="clearButton"
+                styleClass="search-clear-button"
+                text="✕"
+                onAction="#onClearClicked"
+                visible="false"
+                managed="false"/>
+    </HBox>
+
+    <!-- Results list (height controlled programmatically) -->
+    <ListView fx:id="resultsListView"
+              styleClass="search-results"
+              fixedCellSize="32"
+              visible="false"
+              managed="false"/>
+
+    <!-- No-results feedback -->
+    <Label fx:id="noResultsLabel"
+           styleClass="search-no-results"
+           text="No results found."
+           visible="false"
+           managed="false">
+        <padding><Insets top="6" right="10" bottom="6" left="10"/></padding>
+    </Label>
+</VBox>

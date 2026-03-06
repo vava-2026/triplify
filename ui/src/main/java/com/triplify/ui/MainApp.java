@@ -1,10 +1,7 @@
 package com.triplify.ui;
 
-import com.triplify.ui.shared.component.entry.model.Entry;
-import com.triplify.ui.shared.component.entry.model.EntryVariant;
-import com.triplify.ui.shared.component.entry.view.EntryView;
-import com.triplify.ui.shared.component.select.model.Select;
-import com.triplify.ui.shared.component.select.view.SelectView;
+import com.triplify.ui.shared.component.search.model.Search;
+import com.triplify.ui.shared.component.search.view.SearchView;
 import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.header.view.HeaderView;
 import com.triplify.ui.shared.menu.view.MenuView;
@@ -24,8 +21,6 @@ import rahulstech.jfx.routing.Router;
 import rahulstech.jfx.routing.layout.RouterStackPane;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class MainApp extends Application {
@@ -95,8 +90,15 @@ public class MainApp extends Application {
             }
         });
 
+        // Search<String> searchModel =
+        SearchView<String> searchView = SearchView.create(Search.builder(str -> List.of("Result1", "Result2", "Result3"))
+                .onResultSelected(str -> System.out.println(str))
+                .debounceMs(100)
+                .placeholder("Search...")
+                .build());
+
         // Right column: header + content
-        VBox rightColumn = new VBox(header, contentArea);
+        VBox rightColumn = new VBox(header, searchView.getRoot());
         rightColumn.getStyleClass().add("app-right-column");
         HBox.setHgrow(rightColumn, Priority.ALWAYS);
 

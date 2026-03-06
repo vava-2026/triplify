@@ -1,5 +1,6 @@
 @import url("/com/triplify/ui/shared/component/entry/css/entry.css");
 @import url("/com/triplify/ui/shared/component/select/css/select.css");
+@import url("/com/triplify/ui/shared/component/search/css/search.css");
 
 .root {
     -color-bg:            #f0f0f0;
