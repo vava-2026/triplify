@@ -10,9 +10,6 @@ import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.io.IOException;
 
-/// Basically a label with an icon, used to represent an entry in a list or menu.
-/// Supports color themes (e.g. red, green, blue).
-///
 public class EntryView<T> extends HBox {
 
     @FXML private Label label;
