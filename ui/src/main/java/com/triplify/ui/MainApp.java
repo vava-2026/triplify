@@ -1,12 +1,8 @@
 package com.triplify.ui;
 
-import com.triplify.ui.shared.component.entry.model.Entry;
-import com.triplify.ui.shared.component.entry.model.EntryVariant;
-import com.triplify.ui.shared.component.entry.view.EntryView;
-import com.triplify.ui.shared.component.select.model.Select;
-import com.triplify.ui.shared.component.select.view.SelectView;
 import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.header.view.HeaderView;
+import com.triplify.ui.shared.menu.model.MenuItem;
 import com.triplify.ui.shared.menu.view.MenuView;
 import com.triplify.ui.shared.menu.view.SidebarIslandView;
 import javafx.application.Application;
