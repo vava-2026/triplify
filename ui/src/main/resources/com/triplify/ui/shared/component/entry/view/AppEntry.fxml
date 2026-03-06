@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Label?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<fx:root type="HBox"
+         xmlns="http://javafx.com/javafx"
+         xmlns:fx="http://javafx.com/fxml"
+         styleClass="app-entry"
+         alignment="CENTER_LEFT"
+         spacing="6">
+
+    <FontIcon fx:id="icon" styleClass="app-entry-icon" />
+    <Label fx:id="label" styleClass="app-entry-label" />
+
+</fx:root>

@@ -1,3 +1,6 @@
+@import url("/com/triplify/ui/shared/component/entry/css/entry.css");
+@import url("/com/triplify/ui/shared/component/select/css/select.css");
+
 .root {
     -color-bg: #f0f0f0;
     -color-surface: #fafafa;
@@ -17,6 +20,15 @@
 
     -color-on-primary: #ecf3f9;
     -color-on-surface: white;
+
+    -color-theme-red: #e74c3c;
+    -color-theme-orange: #e67e22;
+    -color-theme-yellow: #f1c40f;
+    -color-theme-green: #27ae60;
+    -color-theme-teal: #1abc9c;
+    -color-theme-blue: #2980b9;
+    -color-theme-purple: #8e44ad;
+    -color-theme-pink: #e91e8c;
 
     -font-family-base: "Plus Jakarta Sans", "Segoe UI", System;
 

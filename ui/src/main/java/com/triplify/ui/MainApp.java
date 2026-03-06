@@ -24,6 +24,9 @@ import rahulstech.jfx.routing.Router;
 import rahulstech.jfx.routing.layout.RouterStackPane;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class MainApp extends Application {
 
@@ -72,6 +75,7 @@ public class MainApp extends Application {
         // Router content area
         TriplifyRouterContext routerContext = new TriplifyRouterContext();
         RouterStackPane contentArea = new RouterStackPane();
+
         contentArea.getStyleClass().add("app-content");
         contentArea.setContext(routerContext);
         contentArea.setRouterConfig("router.xml");
