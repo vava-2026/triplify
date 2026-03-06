@@ -43,7 +43,7 @@ CREATE TABLE emotions (
           ON DELETE RESTRICT ON UPDATE CASCADE,
     name       TEXT NOT NULL UNIQUE COLLATE NOCASE,
     name_sk    TEXT NOT NULL UNIQUE COLLATE NOCASE,
-    emoji TEXT NOT NULL
+    emoji_unicode TEXT NOT NULL
 );
 
 CREATE TABLE categories (
@@ -55,9 +55,9 @@ CREATE TABLE categories (
     name_sk        TEXT NOT NULL UNIQUE COLLATE NOCASE,
     description    TEXT,
     description_sk TEXT,
-    emoji TEXT
+    emoji_unicode TEXT,
     color TEXT NOT NULL DEFAULT 'gray'
-      CHECK (color IN ('red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'gray')),
+      CHECK (color IN ('red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'gray'))
 );
 
 CREATE TABLE countries (
@@ -67,9 +67,9 @@ CREATE TABLE countries (
            ON DELETE RESTRICT ON UPDATE CASCADE,
     name       TEXT    NOT NULL UNIQUE COLLATE NOCASE,
     name_sk    TEXT    NOT NULL UNIQUE COLLATE NOCASE,
-    emoji TEXT NOT NULL,
-    is_banned  INTEGER NOT NULL DEFAULT 0
-       CHECK (is_banned IN (0, 1))
+    emoji_unicode TEXT NOT NULL,
+    is_available  INTEGER NOT NULL DEFAULT 1
+       CHECK (is_available IN (0, 1))
 );
 
 CREATE TABLE tags (
@@ -120,9 +120,6 @@ CREATE TABLE trips (
     category_id TEXT
        REFERENCES categories(id)
            ON DELETE SET NULL ON UPDATE CASCADE,
-    country_id  TEXT
-       REFERENCES countries(id)
-           ON DELETE SET NULL ON UPDATE CASCADE,
     title       TEXT NOT NULL COLLATE NOCASE,
     description TEXT,
     status      TEXT NOT NULL DEFAULT 'planned'
@@ -138,7 +135,6 @@ CREATE TABLE trips (
 );
 CREATE INDEX idx_trips_user_id     ON trips(user_id);
 CREATE INDEX idx_trips_category_id ON trips(category_id);
-CREATE INDEX idx_trips_country_id  ON trips(country_id);
 
 CREATE TABLE routes (
     id             TEXT NOT NULL PRIMARY KEY,
@@ -150,7 +146,7 @@ CREATE TABLE routes (
             ON DELETE SET NULL ON UPDATE CASCADE,
     title          TEXT NOT NULL COLLATE NOCASE,
     description    TEXT,
-    total_length   REAL CHECK (total_length >= 0),
+    length   REAL CHECK (length >= 0),
     created_at     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
         CHECK (datetime(created_at) IS NOT NULL),
     updated_at     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
@@ -222,30 +218,36 @@ CREATE INDEX idx_route_places_route_id ON route_places(route_id);
 CREATE INDEX idx_route_places_place_id ON route_places(place_id);
 
 CREATE TABLE stories (
-    id            TEXT NOT NULL PRIMARY KEY,
-    user_id       TEXT NOT NULL
+    id             TEXT NOT NULL PRIMARY KEY,
+    user_id        TEXT NOT NULL
      REFERENCES users(id)
          ON DELETE RESTRICT ON UPDATE CASCADE,
---     trip_id       TEXT
---      REFERENCES trips(id)
---          ON DELETE SET NULL ON UPDATE CASCADE,
-    trip_place_id TEXT
+    trip_id        TEXT
+     REFERENCES trips(id)
+         ON DELETE SET NULL ON UPDATE CASCADE,
+    trip_route_id  TEXT
+     REFERENCES trip_routes(id)
+         ON DELETE SET NULL ON UPDATE CASCADE,
+    trip_place_id  TEXT
      REFERENCES trip_places(id)
          ON DELETE SET NULL ON UPDATE CASCADE,
-    emotion_id    TEXT
+    emotion_id     TEXT
      REFERENCES emotions(id)
          ON DELETE SET NULL ON UPDATE CASCADE,
-    title         TEXT NOT NULL COLLATE NOCASE,
-    description   TEXT,
-    story_time    TEXT NOT NULL
+    title          TEXT NOT NULL COLLATE NOCASE,
+    description    TEXT,
+    story_time     TEXT NOT NULL
      CHECK (datetime(story_time) IS NOT NULL),
-    created_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
-     CHECK (datetime(created_at) IS NOT NULL)
+    created_at     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+     CHECK (datetime(created_at) IS NOT NULL),
+
+    CHECK (
+     trip_id IS NOT NULL OR
+     trip_route_id IS NOT NULL OR
+     trip_place_id IS NOT NULL
+     )
 );
-CREATE INDEX idx_stories_user_id       ON stories(user_id);
-CREATE INDEX idx_stories_trip_id       ON stories(trip_id);
-CREATE INDEX idx_stories_trip_place_id ON stories(trip_place_id);
-CREATE INDEX idx_stories_emotion_id    ON stories(emotion_id);
+CREATE INDEX idx_stories_user_id ON stories(user_id);
 
 CREATE TABLE badges_groups (
     id             TEXT NOT NULL PRIMARY KEY,
@@ -353,6 +355,18 @@ CREATE TABLE trip_route_images (
     PRIMARY KEY (trip_route_id, image_id)
 );
 CREATE INDEX idx_trip_route_images_trip_route_id ON trip_route_images(trip_route_id);
+
+CREATE TABLE trip_countries (
+    trip_id TEXT NOT NULL
+        REFERENCES trips(id)
+            ON DELETE CASCADE ON UPDATE CASCADE,
+    country_id TEXT NOT NULL
+        REFERENCES countries(id)
+            ON DELETE RESTRICT ON UPDATE CASCADE
+
+    PRIMARY KEY (trip_id, country_id),
+);
+CREATE INDEX idx_trip_countries_country_id ON trip_countries(country_id);
 
 CREATE TABLE story_images (
     story_id TEXT NOT NULL
