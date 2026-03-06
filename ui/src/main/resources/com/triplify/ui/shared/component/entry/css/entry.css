@@ -1,5 +1,3 @@
-/* ========================================      ENTRY BASE       =================================== */
-
 .app-entry {
     -fx-background-color: transparent;
     -fx-max-width: Infinity;
@@ -16,8 +14,6 @@
     -fx-icon-color: -color-primary;
 }
 
-
-/* ========================================   COLOR THEMES   =================================== */
 
 .app-theme-red .app-entry-label {
     -fx-text-fill: -color-theme-red;
