@@ -1,7 +1,6 @@
 package com.triplify.ui.shared.component.select.view;
 
 import com.triplify.ui.shared.component.entry.model.Entry;
-import com.triplify.ui.shared.component.entry.model.EntryVariant;
 import com.triplify.ui.shared.component.entry.view.EntryCell;
 import com.triplify.ui.shared.component.select.model.Select;
 import javafx.fxml.FXML;

@@ -1,7 +1,6 @@
 package com.triplify.ui.shared.component.select.model;
 
 import com.triplify.ui.shared.component.entry.model.Entry;
-import com.triplify.ui.shared.component.entry.model.EntryVariant;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -13,7 +12,6 @@ public class Select<T> {
     private final BooleanProperty disabled = new SimpleBooleanProperty(false);
     private final ObjectProperty<Entry<T>> selectedItem = new SimpleObjectProperty<>(null);
     private final ListProperty<Entry<T>> items = new SimpleListProperty<>(FXCollections.observableArrayList());
-    private final ObjectProperty<EntryVariant> variant = new SimpleObjectProperty<>(EntryVariant.PRIMARY);
 
     private java.util.function.Consumer<Entry<T>> onSelect = null;
 
@@ -65,18 +63,6 @@ public class Select<T> {
         items.set(v);
     }
 
-    public ObjectProperty<EntryVariant> variantProperty() {
-        return variant;
-    }
-
-    public EntryVariant getVariant() {
-        return variant.get();
-    }
-
-    public void setVariant(EntryVariant v) {
-        variant.set(v);
-    }
-
     public void setOnSelect(java.util.function.Consumer<Entry<T>> r) {
         this.onSelect = r;
     }
@@ -94,7 +80,6 @@ public class Select<T> {
         private boolean disabled = false;
         private Entry<T> selectedItem = null;
         private ObservableList<Entry<T>> items = FXCollections.observableArrayList();
-        private EntryVariant variant = EntryVariant.PRIMARY;
         private java.util.function.Consumer<Entry<T>> onSelect = null;
 
         private Builder() {}
@@ -124,11 +109,6 @@ public class Select<T> {
             return this;
         }
 
-        public Builder<T> variant(EntryVariant variant) {
-            this.variant = variant;
-            return this;
-        }
-
         public Builder<T> onSelect(java.util.function.Consumer<Entry<T>> onSelect) {
             this.onSelect = onSelect;
             return this;
@@ -140,7 +120,6 @@ public class Select<T> {
             select.setDisabled(disabled);
             select.setSelectedItem(selectedItem);
             select.setItems(items);
-            select.setVariant(variant);
             select.setOnSelect(onSelect);
             return select;
         }

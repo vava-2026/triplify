@@ -7,14 +7,12 @@ public class Entry<T> {
     private final T value;
     private final String label;
     private final String iconLiteral;
-    private final EntryVariant variant;
     private final ColorTheme colorTheme;
 
     private Entry(Builder<T> b) {
         this.value = b.value;
         this.label = b.label;
         this.iconLiteral = b.iconLiteral;
-        this.variant = b.variant;
         this.colorTheme = b.colorTheme;
     }
 
@@ -30,16 +28,8 @@ public class Entry<T> {
         return iconLiteral;
     }
 
-    public EntryVariant getVariant() {
-        return variant;
-    }
-
     public boolean hasIcon() {
         return iconLiteral != null && !iconLiteral.isBlank();
-    }
-
-    public boolean hasVariant() {
-        return variant != null;
     }
 
     public ColorTheme getColorTheme() {
@@ -63,7 +53,6 @@ public class Entry<T> {
         private final T value;
         private final String label;
         private String iconLiteral;
-        private EntryVariant variant;
         private ColorTheme colorTheme;
 
         private Builder(T value, String label) {
@@ -73,11 +62,6 @@ public class Entry<T> {
 
         public Builder<T> icon(String iconLiteral) {
             this.iconLiteral = iconLiteral;
-            return this;
-        }
-
-        public Builder<T> variant(EntryVariant v) {
-            this.variant = v;
             return this;
         }
 

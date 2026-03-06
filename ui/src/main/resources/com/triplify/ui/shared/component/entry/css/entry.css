@@ -16,45 +16,6 @@
     -fx-icon-color: -color-primary;
 }
 
-/* ========================================      PRIMARY       =================================== */
-
-.app-entry-primary .app-entry-label {
-    -fx-text-fill: -color-primary;
-}
-
-.app-entry-primary .app-entry-icon {
-    -fx-icon-color: -color-primary;
-}
-
-/* ========================================      SECONDARY       =================================== */
-
-.app-entry-secondary .app-entry-label {
-    -fx-text-fill: -color-primary-dark;
-}
-
-.app-entry-secondary .app-entry-icon {
-    -fx-icon-color: -color-primary-dark;
-}
-
-/* ========================================      DANGER       =================================== */
-
-.app-entry-danger .app-entry-label {
-    -fx-text-fill: -color-danger;
-}
-
-.app-entry-danger .app-entry-icon {
-    -fx-icon-color: -color-danger;
-}
-
-/* ========================================      MUTED       =================================== */
-
-.app-entry-muted .app-entry-label {
-    -fx-text-fill: -color-ink-muted;
-}
-
-.app-entry-muted .app-entry-icon {
-    -fx-icon-color: -color-ink-muted;
-}
 
 /* ========================================   COLOR THEMES   =================================== */
 
