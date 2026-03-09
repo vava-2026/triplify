@@ -1,18 +1,23 @@
 package com.triplify.ui.shared.component.search.model;
 
+import com.triplify.ui.shared.component.entry.model.Entry;
+
+import lombok.Getter;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class Search<T> {
 
-    private final Function<String, List<T>> searchFunction;
-    private final String placeholder;
-    private final int debounceMs;
-    private final int maxResults;
-    private final boolean caseSensitive;
-    private final Consumer<T> onResultSelected;
-    private final String noResultsMessage;
+    private final Function<String, List<Entry<T>>> searchFunction;
+
+    @Getter private final String placeholder;
+    @Getter private final int debounceMs;
+    @Getter private final int maxResults;
+    @Getter private final boolean caseSensitive;
+    @Getter private final Consumer<Entry<T>> onResultSelected;
+    @Getter private final String noResultsMessage;
+    @Getter private final SearchVariant variant;
 
     private Search(Builder<T> builder) {
         this.searchFunction = builder.searchFunction;
@@ -22,47 +27,48 @@ public class Search<T> {
         this.caseSensitive = builder.caseSensitive;
         this.onResultSelected = builder.onResultSelected;
         this.noResultsMessage = builder.noResultsMessage;
+        this.variant = builder.variant;
     }
 
-    public List<T> search(String query) {
+    public List<Entry<T>> search(String query) {
         if (query == null) {
             return List.of();
         }
         String effectiveQuery = caseSensitive ? query : query.toLowerCase();
-        List<T> results = searchFunction.apply(effectiveQuery);
+        List<Entry<T>> results = searchFunction.apply(effectiveQuery);
         return maxResults > 0 && results.size() > maxResults
                 ? results.subList(0, maxResults)
                 : results;
     }
 
-    public void selectResult(T result) {
+    public void selectResult(Entry<T> result) {
         if (onResultSelected != null) {
             onResultSelected.accept(result);
         }
     }
 
-    // Getters
-    public String getPlaceholder() { return placeholder; }
-    public int getDebounceMs() { return debounceMs; }
-    public int getMaxResults() { return maxResults; }
-    public boolean isCaseSensitive() { return caseSensitive; }
-    public String getNoResultsMessage() { return noResultsMessage; }
-
-    public static <T> Builder<T> builder(Function<String, List<T>> searchFunction) {
+    public static <T> Builder<T> builder(Function<String, List<Entry<T>>> searchFunction) {
         return new Builder<>(searchFunction);
     }
 
     public static class Builder<T> {
 
-        private Function<String, List<T>> searchFunction;
-        private String placeholder = "Search...";
-        private int debounceMs = 300;
-        private int maxResults = 0; // 0 = unlimited
-        private boolean caseSensitive = false;
-        private Consumer<T> onResultSelected;
-        private String noResultsMessage = "No results found.";
+        static private final String DEFAULT_PLACEHOLDER = "Search...";
+        static private final String DEFAULT_NO_RESULT_MESSAGE = "No results found.";
+        static private final int DEFAULT_DEBOUNCE_MS = 300;
+        static private final int DEFAULT_MAX_RESULTS = 0;   // unlimited
+        static private final SearchVariant DEFAULT_VARIANT = SearchVariant.WHITE;
 
-        private Builder(Function<String, List<T>> searchFunction) {
+        private final Function<String, List<Entry<T>>> searchFunction;
+        private Consumer<Entry<T>> onResultSelected;
+        private String placeholder = DEFAULT_PLACEHOLDER;
+        private String noResultsMessage = DEFAULT_NO_RESULT_MESSAGE;
+        private int debounceMs = DEFAULT_DEBOUNCE_MS;
+        private int maxResults = DEFAULT_MAX_RESULTS;
+        private SearchVariant variant = DEFAULT_VARIANT;
+        private boolean caseSensitive = false;
+
+        private Builder(Function<String, List<Entry<T>>> searchFunction) {
             if (searchFunction == null) {
                 throw new IllegalArgumentException("searchFunction must not be null");
             }
@@ -89,13 +95,18 @@ public class Search<T> {
             return this;
         }
 
-        public Builder<T> onResultSelected(Consumer<T> onResultSelected) {
+        public Builder<T> onResultSelected(Consumer<Entry<T>> onResultSelected) {
             this.onResultSelected = onResultSelected;
             return this;
         }
 
         public Builder<T> noResultsMessage(String noResultsMessage) {
             this.noResultsMessage = noResultsMessage;
+            return this;
+        }
+
+        public Builder<T> variant(SearchVariant variant) {
+            this.variant = variant;
             return this;
         }
 

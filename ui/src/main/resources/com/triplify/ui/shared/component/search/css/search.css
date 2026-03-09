@@ -1,18 +1,22 @@
 .search-container {
-    -fx-background-color: #ffffff;
-    -fx-border-color: #d0d0d0;
-    -fx-border-radius: 6;
-    -fx-background-radius: 6;
+    -fx-background-color: transparent;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 6, 0, 0, 2);
 }
 
 .search-input-box {
-    -fx-background-color: transparent;
-    -fx-border-color: transparent transparent #e0e0e0 transparent;
+    -fx-background-color: -color-surface;
+    -fx-padding: 6 12 6 12;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+}
+
+.search-showing .search-input-box {
+    -fx-background-radius: 6 6 0 0;
+    -fx-border-radius: 6 6 0 0;
 }
 
 .search-icon {
-    -fx-icon-color: #888888;
+    -fx-icon-color: -color-ink-muted;
 }
 
 .search-field {
@@ -27,40 +31,85 @@
 
 .search-clear-button {
     -fx-background-color: transparent;
-    -fx-text-fill: #888888;
+    -fx-text-fill: -color-ink-muted;
     -fx-cursor: hand;
     -fx-font-size: 14px;
     -fx-padding: 2 4 2 4;
 }
 
-.search-clear-button:hover {
-    -fx-text-fill: #333333;
-}
-
 .search-results {
-    -fx-background-color: #ffffff;
-    -fx-border-color: transparent;
+    -fx-background-color: -color-surface;
+    -fx-border-width: 2 0 0 0;
+    -fx-border-color: -color-surface-tint transparent transparent transparent;
     -fx-border-radius: 0 0 6 6;
     -fx-background-radius: 0 0 6 6;
-    -fx-padding: 0;
 }
+
 .search-results .list-cell {
     -fx-background-color: transparent;
+    -fx-padding: 5 10 5 10;
 }
-
-.search-results .list-cell:hover {
-    -fx-background-color: #f0f4ff;
-}
-
-/*.search-results .list-cell:selected {*/
-/*    -fx-background-color: #4a7eff;*/
-/*    -fx-text-fill: #ffffff;*/
-/*}*/
 
 .search-no-results {
-    -fx-text-fill: #999999;
+    -fx-text-fill: -color-ink-muted;
     -fx-font-size: 13px;
     -fx-font-style: italic;
     -fx-border-radius: 0 0 6 6;
     -fx-background-radius: 0 0 6 6;
+}
+
+/* ==========================================  FILLED ==========================================*/
+
+.app-search-variant-filled .search-input-box {
+    -fx-background-color: -color-surface;
+}
+
+.app-search-variant-filled .search-results {
+    -fx-background-color: -color-surface;
+    -fx-border-color: -color-surface-tint transparent transparent transparent;
+}
+
+.app-search-variant-filled .search-results .list-cell:hover {
+    -fx-background-color: -color-surface-tint;
+}
+
+/* ==========================================  OUTLINED ==========================================*/
+
+.app-search-variant-outlined .search-input-box {
+    -fx-background-color: -color-surface;
+}
+
+.app-search-variant-outlined .search-results {
+    -fx-background-color: -color-surface;
+    -fx-border-color: transparent -color-primary -color-primary -color-primary;
+}
+
+.app-search-variant-outlined .search-results .list-cell:hover {
+    -fx-background-color: -color-surface-tint;
+}
+
+.app-search-variant-outlined.search-showing .search-input-box {
+    -fx-border-color: -color-primary -color-primary transparent -color-primary;
+    -fx-border-width: 1.5px;
+}
+
+.app-search-variant-outlined.search-showing .search-results {
+    -fx-border-color: transparent -color-primary -color-primary -color-primary;
+    -fx-border-width: 1.5px;
+}
+
+
+/* ==========================================  BLUE ==========================================*/
+
+.app-search-variant-blue .search-input-box {
+    -fx-background-color: -color-surface-tint;
+}
+
+.app-search-variant-blue .search-results {
+    -fx-background-color: -color-surface-tint;
+    -fx-border-color: -color-surface transparent transparent transparent;
+}
+
+.app-search-variant-blue .search-results .list-cell:hover {
+    -fx-background-color: -color-surface-dark;
 }

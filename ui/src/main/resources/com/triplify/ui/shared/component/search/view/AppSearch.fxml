@@ -5,14 +5,13 @@
 <?import javafx.geometry.Insets?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 
-<VBox xmlns="http://javafx.com/javafx"
+<fx:root type="VBox"
+      xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      styleClass="search-container"
-      spacing="4">
+      styleClass="search-container">
 
     <!-- Search input row -->
     <HBox styleClass="search-input-box" alignment="CENTER_LEFT" spacing="6">
-        <padding><Insets top="6" right="10" bottom="6" left="10"/></padding>
         <FontIcon fx:id="searchIcon" iconLiteral="fth-search" iconSize="14" styleClass="search-icon"/>
         <TextField fx:id="searchField"
                    styleClass="search-field"
@@ -40,4 +39,4 @@
            managed="false">
         <padding><Insets top="6" right="10" bottom="6" left="10"/></padding>
     </Label>
-</VBox>
+</fx:root>

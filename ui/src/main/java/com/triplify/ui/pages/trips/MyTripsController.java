@@ -1,7 +1,10 @@
 package com.triplify.ui.pages.trips;
 
+import com.triplify.application.model.ColorTheme;
 import com.triplify.ui.routing.RouteIds;
+import com.triplify.ui.shared.component.entry.model.Entry;
 import com.triplify.ui.shared.component.search.model.Search;
+import com.triplify.ui.shared.component.search.model.SearchVariant;
 import com.triplify.ui.shared.component.search.view.SearchView;
 import javafx.fxml.FXML;
 import javafx.scene.layout.VBox;
@@ -20,19 +23,20 @@ public class MyTripsController extends SimpleLifecycleAwareController {
 
     @FXML
     private void initialize() {
-        SearchView<String> searchView = SearchView.create(
-                Search.<String>builder(query -> List.of("Prague Weekend", "Rome Adventure", "Paris Escape")
-                                .stream()
-                                .filter(t -> t.toLowerCase().contains(query.toLowerCase()))
-                                .toList())
+        SearchView<String> searchView = new SearchView<>(
+                Search.<String>builder(query -> List.of(
+                                        Entry.builder("prague-weekend", "Prague Weekend").icon("fth-globe").build(),
+                                        Entry.builder("rome-adventure", "Rome Adventure").icon("fth-globe").colorTheme(ColorTheme.GREEN).build(),
+                                        Entry.builder("paris-escape", "Paris escape").colorTheme(ColorTheme.ORANGE).build()))
                         .placeholder("Search trips...")
                         .debounceMs(200)
                         .maxResults(5)
                         .onResultSelected(trip -> log.info("Trip selected: {}", trip))
+                        .variant(SearchVariant.OUTLINED)
                         .build()
         );
 
-        searchContainer.getChildren().add(searchView.getRoot());
+        searchContainer.getChildren().add(searchView);
     }
 
     @FXML

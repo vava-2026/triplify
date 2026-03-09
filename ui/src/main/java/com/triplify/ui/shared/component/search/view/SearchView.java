@@ -1,6 +1,10 @@
 package com.triplify.ui.shared.component.search.view;
 
+import com.triplify.ui.shared.component.entry.model.Entry;
+import com.triplify.ui.shared.component.entry.view.EntryCell;
 import com.triplify.ui.shared.component.search.model.Search;
+import com.triplify.ui.shared.component.search.model.SearchVariant;
+import com.triplify.ui.shared.component.select.model.SelectVariant;
 import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -9,44 +13,43 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 import javafx.util.Duration;
+import lombok.Getter;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.io.IOException;
 import java.util.List;
 
-public class SearchView<T> {
+public class SearchView<T> extends VBox {
 
     private static final double ROW_HEIGHT = 32.0;
 
-    @FXML private TextField  searchField;
+    @FXML @Getter private TextField  searchField;
+    @FXML @Getter private ListView<Entry<T>> resultsListView;
+
     @FXML private Button clearButton;
-    @FXML private ListView<T> resultsListView;
     @FXML private Label noResultsLabel;
 
     private Search<T> model;
-    private Node root;
     private PauseTransition debounce;
 
+    private SearchVariant lastVariant = null;
     private boolean isFocused = false;
 
-    public static <T> SearchView<T> create(Search<T> model) {
-        SearchView<T> controller = new SearchView<>();
-        FXMLLoader loader = new FXMLLoader(
-            SearchView.class.getResource("/com/triplify/ui/shared/component/search/view/AppSearch.fxml"));
-        loader.setController(controller);
+    public SearchView(Search<T> model) {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/triplify/ui/shared/component/search/view/AppSearch.fxml"));
+        loader.setRoot(this);
+        loader.setController(this);
+
         try {
-            controller.root = loader.load();
+            loader.load();
         } catch (IOException e) {
             throw new RuntimeException("Failed to load AppSearch.fxml", e);
         }
-        controller.update(model);
-        return controller;
-    }
 
-    @FXML
-    private void initialize() {
-        // Wired after load; real setup happens in bindModel()
+        resultsListView.setCellFactory(lv -> new EntryCell<>());
+        update(model);
     }
 
     private void update(Search<T> model) {
@@ -91,8 +94,10 @@ public class SearchView<T> {
                 }
             });
 
-        resultsListView.getItems().addListener((javafx.collections.ListChangeListener<T>) c ->
+        resultsListView.getItems().addListener((javafx.collections.ListChangeListener<Entry<T>>) c ->
             updateListViewHeight());
+
+        applyVariant(model.getVariant());
 
         // update UI state immediately after loading
         runSearch(searchField.getText());
@@ -104,7 +109,7 @@ public class SearchView<T> {
             return;
         }
 
-        List<T> results = model.search(query);
+        List<Entry<T>> results = model.search(query);
         resultsListView.getItems().setAll(results);
         updateListViewHeight();
 
@@ -119,6 +124,7 @@ public class SearchView<T> {
         }
     }
 
+    // UI helpers
     private void updateListViewHeight() {
         int max = model.getMaxResults() > 0 ? model.getMaxResults() : Integer.MAX_VALUE;
         int count = Math.min(resultsListView.getItems().size(), max);
@@ -128,16 +134,28 @@ public class SearchView<T> {
         resultsListView.setMaxHeight(height);
     }
 
-    private void showNothing()
-    {
+    private void applyVariant(SearchVariant variant) {
+        if (lastVariant == variant) return;
+        if (lastVariant != null) {
+            getStyleClass().remove(lastVariant.getStyleClass());
+        }
+        if (variant != null) {
+            getStyleClass().add(variant.getStyleClass());
+        }
+        lastVariant = variant;
+    }
+
+    // show/hide UI
+    private void showNothing() {
+        getStyleClass().remove("search-showing");
         noResultsLabel.setVisible(false);
         noResultsLabel.setManaged(false);
         resultsListView.setVisible(false);
         resultsListView.setManaged(false);
     }
 
-    // operations on to show/hide UI components
     private void showNoResults() {
+        getStyleClass().remove("search-showing");
         noResultsLabel.setVisible(true);
         noResultsLabel.setManaged(true);
         resultsListView.setVisible(false);
@@ -145,28 +163,16 @@ public class SearchView<T> {
     }
 
     private void showResults() {
+        if (!getStyleClass().contains("search-showing"))
+            getStyleClass().add("search-showing");
         noResultsLabel.setVisible(false);
         noResultsLabel.setManaged(false);
         resultsListView.setVisible(true);
         resultsListView.setManaged(true);
     }
 
-    // Event handlers
     @FXML
     private void onClearClicked() {
         searchField.clear();
-    }
-
-    // Public API
-    public Node getRoot() {
-        return root;
-    }
-
-    public TextField getSearchField() {
-        return searchField;
-    }
-
-    public ListView<T> getResultsListView() {
-        return resultsListView;
     }
 }
