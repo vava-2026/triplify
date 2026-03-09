@@ -9,8 +9,11 @@ import javafx.scene.layout.HBox;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.io.IOException;
+import java.net.URL;
 
 public class EntryView<T> extends HBox {
+
+    private static final URL FXML_URL = EntryView.class.getResource("/com/triplify/ui/shared/component/entry/view/AppEntry.fxml");
 
     @FXML private Label label;
     @FXML private FontIcon icon;
@@ -18,9 +21,7 @@ public class EntryView<T> extends HBox {
     private ColorTheme lastColorTheme = null;
 
     public EntryView() {
-        FXMLLoader loader = new FXMLLoader(
-                getClass().getResource("/com/triplify/ui/shared/component/entry/view/AppEntry.fxml")
-        );
+        FXMLLoader loader = new FXMLLoader(FXML_URL);
         loader.setRoot(this);
         loader.setController(this);
         try {

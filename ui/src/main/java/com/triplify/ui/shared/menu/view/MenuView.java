@@ -7,6 +7,8 @@ import com.triplify.ui.shared.menu.model.MenuItem;
 import com.triplify.ui.shared.menu.model.NavItem;
 import com.triplify.ui.shared.menu.viewmodel.MenuViewModel;
 import com.google.inject.Inject;
+import com.triplify.ui.shared.util.FxmlLoaderHelper;
+import com.triplify.ui.shared.util.FxmlLoadResult;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -38,12 +40,14 @@ public class MenuView implements Initializable {
     private final List<NavButtonView> navButtons = new ArrayList<>();
 
     private final CategoryService categoryService;
+    private final FxmlLoaderHelper fxmlLoader;
     private static final Logger log = LoggerFactory.getLogger(MenuView.class);
     private SidebarIslandView islandController;
 
     @Inject
-    public MenuView(CategoryService categoryService) {
+    public MenuView(CategoryService categoryService, FxmlLoaderHelper fxmlLoader) {
         this.categoryService = categoryService;
+        this.fxmlLoader = fxmlLoader;
     }
 
     @Override
@@ -53,12 +57,13 @@ public class MenuView implements Initializable {
         for (CategoryResponse category : categories) {
             log.info("Category: " + category.name());
         }
- 
+
         sidebarRoot.setMaxHeight(Double.MAX_VALUE);
         mainPageInner.setMaxHeight(Double.MAX_VALUE);
 
         for (NavItem navItem : NavItem.values()) {
-            NavButtonView btn = NavButtonView.create(navItem);
+            FxmlLoadResult<?, NavButtonView> result = fxmlLoader.load("/com/triplify/ui/shared/menu/view/NavButton.fxml");
+            NavButtonView btn = result.controller().withNavItem(navItem);
             btn.setOnSelect(() -> viewModel.setSelectedItem(navItem.getMenuItem()));
             navContainer.getChildren().add(btn.getButton());
             navButtons.add(btn);
