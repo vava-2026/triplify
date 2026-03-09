@@ -1,6 +1,9 @@
+package com.triplify.ui.shared.component.input_item;
+
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 
@@ -9,7 +12,7 @@ public class InputItem extends VBox {
     private TextField textField;
     private Label errorLabel;
 
-    public InputItem(String text, String style) {
+    public InputItem(String text) {
 
         // Base elements
         textField = new TextField();
@@ -17,25 +20,27 @@ public class InputItem extends VBox {
         textField.setPromptText(text);
 
         // Link design from css file
-        textField.getStyleClass().add(style);
+        textField.getStyleClass().add("input-item");
 
         // Error
         errorLabel.setTextFill(Color.RED);
         errorLabel.setVisible(false);
 
-        // Расположение
+        // Position
         setSpacing(5);
-        setAlignment(Pos.CENTER_LEFT);
+        setAlignment(Pos.CENTER);
+        textField.setMaxWidth(175);
+        this.setMaxWidth(175);
 
         getChildren().addAll(textField, errorLabel);
     }
 
-    // Получить текст
+    // Get text from item
     public String getText() {
         return textField.getText();
     }
 
-    // Установить текст
+    // Set own text in item
     public void setText(String text) {
         textField.setPromptText(text);
     }
@@ -61,6 +66,13 @@ public class InputItem extends VBox {
     // Change Spacing
     public void setSpacingBetween(double spacing) {
         setSpacing(spacing);
+    }
+
+    // Change css style
+    public void setStyleSheet(String cssPath) {
+        getStylesheets().clear();
+        String css = getClass().getResource(cssPath).toExternalForm();
+        getStylesheets().add(css);
     }
 
     // Validation

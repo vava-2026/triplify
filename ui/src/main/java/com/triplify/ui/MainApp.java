@@ -1,12 +1,15 @@
 package com.triplify.ui;
 
 import com.triplify.ui.routing.TriplifyRouterContext;
+import com.triplify.ui.shared.component.input_item.InputItem;
+import com.triplify.ui.shared.component.input_item.PasswordItem;
 import com.triplify.ui.shared.header.view.HeaderView;
 import com.triplify.ui.shared.menu.model.MenuItem;
 import com.triplify.ui.shared.menu.view.MenuView;
 import javafx.application.Application;
 import javafx.beans.binding.BooleanBinding;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.layout.HBox;
@@ -52,6 +55,7 @@ public class MainApp extends Application {
         headerView.getViewModel().activeItemProperty().bind(
                 menuView.getViewModel().selectedItemProperty());
 
+
         // Main content area
         TriplifyRouterContext routerContext = new TriplifyRouterContext();
         RouterStackPane contentArea = new RouterStackPane();
@@ -91,6 +95,17 @@ public class MainApp extends Application {
         VBox rightColumn = new VBox(header, contentArea);
         rightColumn.getStyleClass().add("app-right-column");
         HBox.setHgrow(rightColumn, Priority.ALWAYS);
+
+
+        // ----------------------------
+        // Тестовые поля InputItem и PasswordItem
+        // ----------------------------
+        InputItem inputTest = new InputItem("Enter your name");
+        PasswordItem passwordTest = new PasswordItem("Enter password");
+
+        // Вставляем тестовые поля после header и перед contentArea
+        rightColumn.getChildren().add(1, inputTest);    // индекс 1 — после header
+        rightColumn.getChildren().add(2, passwordTest); // индекс 2 — после InputItem
 
         // Root
         HBox root = new HBox(menu, rightColumn);
