@@ -23,31 +23,37 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rahulstech.jfx.routing.Router;
 import rahulstech.jfx.routing.layout.RouterStackPane;
-
+import javafx.util.Callback;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class MainApp extends Application {
 
     private static final Logger log = LoggerFactory.getLogger(MainApp.class);
+    private static Injector injectorRef;
+
     private Injector injector;
     private Router router;
-  
+
+    public static void launch(Injector injector, String[] args) {
+        injectorRef = injector;
+        Application.launch(MainApp.class, args);
+    }
+
     @Override
     public void init() {
-        injector = InjectorHolder.getInjector();
+        injector = injectorRef;
     }
 
     @Override
     public void start(Stage stage) throws Exception {
         log.info("App launched");
+        Callback<Class<?>, Object> guiceControllerFactory = injector::getInstance;
 
         // Sidebar island
         URL islandFxmlUrl = getClass().getResource("/com/triplify/ui/shared/menu/view/SidebarIsland.fxml");
         if (islandFxmlUrl == null) throw new IllegalStateException("SidebarIsland.fxml not found");
         FXMLLoader islandLoader = new FXMLLoader(islandFxmlUrl);
+        islandLoader.setControllerFactory(guiceControllerFactory);
         Node island = islandLoader.load();
         SidebarIslandView islandView = islandLoader.getController();
 
@@ -60,7 +66,7 @@ public class MainApp extends Application {
         URL menuFxmlUrl = getClass().getResource("/com/triplify/ui/shared/menu/view/MenuView.fxml");
         if (menuFxmlUrl == null) throw new IllegalStateException("MenuView.fxml not found");
         FXMLLoader menuLoader = new FXMLLoader(menuFxmlUrl);
-        menuLoader.setControllerFactory(clazz -> injector.getInstance(clazz));
+        menuLoader.setControllerFactory(guiceControllerFactory);
         Node menu = menuLoader.load();
         MenuView menuView = menuLoader.getController();
         menuView.setIslandController(islandView);
@@ -69,6 +75,7 @@ public class MainApp extends Application {
         URL headerFxmlUrl = getClass().getResource("/com/triplify/ui/shared/header/view/HeaderView.fxml");
         if (headerFxmlUrl == null) throw new IllegalStateException("HeaderView.fxml not found");
         FXMLLoader headerLoader = new FXMLLoader(headerFxmlUrl);
+        headerLoader.setControllerFactory(guiceControllerFactory);
         Node header = headerLoader.load();
         HeaderView headerView = headerLoader.getController();
         HBox.setHgrow(header, Priority.ALWAYS);
@@ -78,6 +85,7 @@ public class MainApp extends Application {
         URL mapFxmlUrl = getClass().getResource("/com/triplify/ui/pages/map/MapView.fxml");
         if (mapFxmlUrl == null) throw new IllegalStateException("MapView.fxml not found");
         FXMLLoader mapLoader = new FXMLLoader(mapFxmlUrl);
+        mapLoader.setControllerFactory(guiceControllerFactory);
         Node mapView = mapLoader.load();
 
         // Router content area
