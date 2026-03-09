@@ -1,17 +1,23 @@
 package com.triplify.ui;
 
+
 import com.triplify.ui.shared.component.search.model.Search;
 import com.triplify.ui.shared.component.search.view.SearchView;
 import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.header.view.HeaderView;
+import com.triplify.ui.shared.menu.model.MenuItem;
 import com.triplify.ui.shared.menu.view.MenuView;
+import com.triplify.ui.shared.menu.view.SidebarIslandView;
 import javafx.application.Application;
+import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
@@ -32,44 +38,71 @@ public class MainApp extends Application {
     public void start(Stage stage) throws Exception {
         log.info("App launched");
 
+        // Sidebar island
+        URL islandFxmlUrl = getClass().getResource("/com/triplify/ui/shared/menu/view/SidebarIsland.fxml");
+        if (islandFxmlUrl == null) throw new IllegalStateException("SidebarIsland.fxml not found");
+        FXMLLoader islandLoader = new FXMLLoader(islandFxmlUrl);
+        Node island = islandLoader.load();
+        SidebarIslandView islandView = islandLoader.getController();
+
+        Pane islandPane = new Pane(island);
+        islandPane.setPrefWidth(MenuView.SIDEBAR_WIDTH);
+        islandPane.setMinWidth(MenuView.SIDEBAR_WIDTH);
+        islandPane.setMaxWidth(MenuView.SIDEBAR_WIDTH);
+
         // Sidebar menu
         URL menuFxmlUrl = getClass().getResource("/com/triplify/ui/shared/menu/view/MenuView.fxml");
-        if (menuFxmlUrl == null) {
-            throw new IllegalStateException("MenuView.fxml not found on classpath");
-        }
+        if (menuFxmlUrl == null) throw new IllegalStateException("MenuView.fxml not found");
         FXMLLoader menuLoader = new FXMLLoader(menuFxmlUrl);
         Node menu = menuLoader.load();
         MenuView menuView = menuLoader.getController();
+        menuView.setIslandController(islandView);
 
-        // Header bar
+        // Header
         URL headerFxmlUrl = getClass().getResource("/com/triplify/ui/shared/header/view/HeaderView.fxml");
-        if (headerFxmlUrl == null) {
-            throw new IllegalStateException("HeaderView.fxml not found on classpath");
-        }
+        if (headerFxmlUrl == null) throw new IllegalStateException("HeaderView.fxml not found");
         FXMLLoader headerLoader = new FXMLLoader(headerFxmlUrl);
         Node header = headerLoader.load();
         HeaderView headerView = headerLoader.getController();
         HBox.setHgrow(header, Priority.ALWAYS);
+        headerView.getViewModel().activeItemProperty().bind(menuView.getViewModel().selectedItemProperty());
 
-        headerView.getViewModel().activeItemProperty().bind(
-                menuView.getViewModel().selectedItemProperty());
+        // Map layer
+        URL mapFxmlUrl = getClass().getResource("/com/triplify/ui/pages/map/MapView.fxml");
+        if (mapFxmlUrl == null) throw new IllegalStateException("MapView.fxml not found");
+        FXMLLoader mapLoader = new FXMLLoader(mapFxmlUrl);
+        Node mapView = mapLoader.load();
 
-        // Main content area
+        // Router content area
         TriplifyRouterContext routerContext = new TriplifyRouterContext();
         RouterStackPane contentArea = new RouterStackPane();
 
         contentArea.getStyleClass().add("app-content");
         contentArea.setContext(routerContext);
         contentArea.setRouterConfig("router.xml");
+        HBox.setHgrow(contentArea, Priority.ALWAYS);
         VBox.setVgrow(contentArea, Priority.ALWAYS);
         Rectangle contentClip = new Rectangle();
         contentClip.widthProperty().bind(contentArea.widthProperty());
         contentClip.heightProperty().bind(contentArea.heightProperty());
         contentArea.setClip(contentClip);
 
+        //isMap binding
+        BooleanBinding isMap = Bindings.createBooleanBinding(
+                () -> menuView.getViewModel().getSelectedItem() == MenuItem.MAP,
+                menuView.getViewModel().selectedItemProperty());
+
+        mapView.visibleProperty().bind(isMap);
+        mapView.managedProperty().bind(isMap);
+
+        contentArea.visibleProperty().bind(isMap.not());
+        contentArea.managedProperty().bind(isMap.not());
+
         BooleanBinding showMenu = routerContext.fullScreenContentProperty().not();
         menu.visibleProperty().bind(showMenu);
         menu.managedProperty().bind(showMenu);
+        islandPane.visibleProperty().bind(showMenu);
+        islandPane.managedProperty().bind(showMenu);
 
         BooleanBinding showHeader = menuView.getViewModel()
                 .hideHeaderProperty()
@@ -78,6 +111,7 @@ public class MainApp extends Application {
         header.visibleProperty().bind(showHeader);
         header.managedProperty().bind(showHeader);
 
+        // Router navigation
         contentArea.routerProperty().addListener((obs, oldRouter, newRouter) -> {
             router = newRouter;
             log.info("Router initialized: {}", newRouter != null ? "ready" : "null");
@@ -90,29 +124,25 @@ public class MainApp extends Application {
             }
         });
 
-        // Search<String> searchModel =
-        SearchView<String> searchView = SearchView.create(Search.builder(str -> List.of("Result1", "Result2", "Result3"))
-                .onResultSelected(str -> System.out.println(str))
-                .debounceMs(100)
-                .placeholder("Search...")
-                .build());
+        HBox topBar = new HBox(islandPane, header);
+        topBar.getStyleClass().add("app-top-bar");
 
-        // Right column: header + content
-        VBox rightColumn = new VBox(header, searchView.getRoot());
-        rightColumn.getStyleClass().add("app-right-column");
-        HBox.setHgrow(rightColumn, Priority.ALWAYS);
+        HBox bottomRow = new HBox(menu, contentArea);
+        bottomRow.getStyleClass().add("app-bottom-row");
+        VBox.setVgrow(bottomRow, Priority.ALWAYS);
+
+        VBox normalLayout = new VBox(topBar, bottomRow);
+        normalLayout.getStyleClass().add("app-root");
 
         // Root
-        HBox root = new HBox(menu, rightColumn);
-        root.getStyleClass().add("app-root");
+        StackPane root = new StackPane(mapView, normalLayout);
+        root.getStyleClass().add("app-scene-root");
 
+        // Scene
         Scene scene = new Scene(root, 1280, 800);
 
-        // Load the global theme
         URL themeUrl = getClass().getResource("/com/triplify/ui/shared/css/theme.css");
-        if (themeUrl == null) {
-            throw new IllegalStateException("theme.css not found on classpath");
-        }
+        if (themeUrl == null) throw new IllegalStateException("theme.css not found");
         scene.getStylesheets().add(themeUrl.toExternalForm());
 
         stage.setTitle("Triplify");
@@ -126,9 +156,7 @@ public class MainApp extends Application {
 
     @Override
     public void stop() throws Exception {
-        if (router != null) {
-            router.dispose();
-        }
+        if (router != null) router.dispose();
         super.stop();
     }
 }

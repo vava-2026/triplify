@@ -1,17 +1,19 @@
 package com.triplify.ui.shared.component.entry.model;
 
+import com.triplify.application.model.ColorTheme;
+
 public class Entry<T> {
 
     private final T value;
     private final String label;
     private final String iconLiteral;
-    private final EntryVariant variant;
+    private final ColorTheme colorTheme;
 
     private Entry(Builder<T> b) {
         this.value = b.value;
         this.label = b.label;
         this.iconLiteral = b.iconLiteral;
-        this.variant = b.variant;
+        this.colorTheme = b.colorTheme;
     }
 
     public T getValue() {
@@ -26,16 +28,16 @@ public class Entry<T> {
         return iconLiteral;
     }
 
-    public EntryVariant getVariant() {
-        return variant;
-    }
-
     public boolean hasIcon() {
         return iconLiteral != null && !iconLiteral.isBlank();
     }
 
-    public boolean hasVariant() {
-        return variant != null;
+    public ColorTheme getColorTheme() {
+        return colorTheme;
+    }
+
+    public boolean hasColorTheme() {
+        return colorTheme != null;
     }
 
     @Override
@@ -51,7 +53,7 @@ public class Entry<T> {
         private final T value;
         private final String label;
         private String iconLiteral;
-        private EntryVariant variant;
+        private ColorTheme colorTheme;
 
         private Builder(T value, String label) {
             this.value = value;
@@ -63,8 +65,8 @@ public class Entry<T> {
             return this;
         }
 
-        public Builder<T> variant(EntryVariant v) {
-            this.variant = v;
+        public Builder<T> colorTheme(ColorTheme theme) {
+            this.colorTheme = theme;
             return this;
         }
 

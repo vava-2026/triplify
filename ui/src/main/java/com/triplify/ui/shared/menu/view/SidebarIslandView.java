@@ -1,13 +1,9 @@
 package com.triplify.ui.shared.menu.view;
 
-import com.triplify.ui.i18n.I18n;
-import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.net.URL;
@@ -31,6 +27,7 @@ public class SidebarIslandView implements Initializable {
         if (toggleIcon != null) {
             toggleIcon.setIconLiteral(collapsed ? "fth-chevron-right" : "fth-chevron-left");
         }
+
         if (sidebarIsland != null) {
             if (collapsed && isMap) {
                 sidebarIsland.getStyleClass().add("sidebar-island-pill");

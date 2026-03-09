@@ -8,6 +8,7 @@
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.triplify.ui.shared.menu.view.SidebarIslandView"
       fx:id="sidebarIsland"
+      stylesheets="@../css/menu.css"
       styleClass="sidebar-island"
       prefWidth="260" prefHeight="70" minHeight="70" maxHeight="70"
       alignment="CENTER_LEFT" spacing="10">

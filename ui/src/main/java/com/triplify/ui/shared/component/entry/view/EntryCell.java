@@ -4,8 +4,6 @@ import com.triplify.ui.shared.component.entry.model.Entry;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ContentDisplay;
 
-///  Convenient wrapper around AppEntryView, allowing it to be used with AppSelect component
-///
 public class EntryCell<T> extends ListCell<Entry<T>> {
 
     private final EntryView<T> entryView = new EntryView<>();

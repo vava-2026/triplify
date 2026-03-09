@@ -1,5 +1,3 @@
-/* ========================================      ENTRY BASE       =================================== */
-
 .app-entry {
     -fx-background-color: transparent;
     -fx-max-width: Infinity;
@@ -16,42 +14,60 @@
     -fx-icon-color: -color-primary;
 }
 
-/* ========================================      PRIMARY       =================================== */
 
-.app-entry-primary .app-entry-label {
-    -fx-text-fill: -color-primary;
+.app-theme-red .app-entry-label {
+    -fx-text-fill: -color-theme-red;
+}
+.app-theme-red .app-entry-icon {
+    -fx-icon-color: -color-theme-red;
 }
 
-.app-entry-primary .app-entry-icon {
-    -fx-icon-color: -color-primary;
+.app-theme-orange .app-entry-label {
+    -fx-text-fill: -color-theme-orange;
+}
+.app-theme-orange .app-entry-icon {
+    -fx-icon-color: -color-theme-orange;
 }
 
-/* ========================================      SECONDARY       =================================== */
-
-.app-entry-secondary .app-entry-label {
-    -fx-text-fill: -color-primary-dark;
+.app-theme-yellow .app-entry-label {
+    -fx-text-fill: -color-theme-yellow;
+}
+.app-theme-yellow .app-entry-icon {
+    -fx-icon-color: -color-theme-yellow;
 }
 
-.app-entry-secondary .app-entry-icon {
-    -fx-icon-color: -color-primary-dark;
+.app-theme-green .app-entry-label {
+    -fx-text-fill: -color-theme-green;
+}
+.app-theme-green .app-entry-icon {
+    -fx-icon-color: -color-theme-green;
 }
 
-/* ========================================      DANGER       =================================== */
-
-.app-entry-danger .app-entry-label {
-    -fx-text-fill: -color-danger;
+.app-theme-teal .app-entry-label {
+    -fx-text-fill: -color-theme-teal;
+}
+.app-theme-teal .app-entry-icon {
+    -fx-icon-color: -color-theme-teal;
 }
 
-.app-entry-danger .app-entry-icon {
-    -fx-icon-color: -color-danger;
+.app-theme-blue .app-entry-label {
+    -fx-text-fill: -color-theme-blue;
+}
+.app-theme-blue .app-entry-icon {
+    -fx-icon-color: -color-theme-blue;
 }
 
-/* ========================================      MUTED       =================================== */
-
-.app-entry-muted .app-entry-label {
-    -fx-text-fill: -color-ink-muted;
+.app-theme-purple .app-entry-label {
+    -fx-text-fill: -color-theme-purple;
+}
+.app-theme-purple .app-entry-icon {
+    -fx-icon-color: -color-theme-purple;
 }
 
-.app-entry-muted .app-entry-icon {
-    -fx-icon-color: -color-ink-muted;
+.app-theme-pink .app-entry-label {
+    -fx-text-fill: -color-theme-pink;
 }
+.app-theme-pink .app-entry-icon {
+    -fx-icon-color: -color-theme-pink;
+}
+

@@ -1,9 +1,9 @@
 package com.triplify.ui.shared.component.select.view;
 
 import com.triplify.ui.shared.component.entry.model.Entry;
-import com.triplify.ui.shared.component.entry.model.EntryVariant;
 import com.triplify.ui.shared.component.entry.view.EntryCell;
 import com.triplify.ui.shared.component.select.model.Select;
+import com.triplify.ui.shared.component.select.model.SelectVariant;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ComboBox;
@@ -20,6 +20,7 @@ public class SelectView<T> extends HBox {
     @FXML private ComboBox<Entry<T>> comboBox;
 
     private Select<T> model;
+    private SelectVariant lastVariant = null;
 
     public SelectView() {
         FXMLLoader loader = new FXMLLoader(FXML_URL);
@@ -50,6 +51,21 @@ public class SelectView<T> extends HBox {
         if (select.getSelectedItem() != null) {
             comboBox.setValue(select.getSelectedItem());
         }
+
+        applyVariant(select.getVariant());
+
+        select.variantProperty().addListener((obs, oldVal, newVal) -> applyVariant(newVal));
+    }
+
+    private void applyVariant(SelectVariant variant) {
+        if (lastVariant == variant) return;
+        if (lastVariant != null) {
+            comboBox.getStyleClass().remove(lastVariant.getStyleClass());
+        }
+        if (variant != null) {
+            comboBox.getStyleClass().add(variant.getStyleClass());
+        }
+        lastVariant = variant;
     }
 
     @FXML

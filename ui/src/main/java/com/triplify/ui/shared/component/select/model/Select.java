@@ -1,7 +1,6 @@
 package com.triplify.ui.shared.component.select.model;
 
 import com.triplify.ui.shared.component.entry.model.Entry;
-import com.triplify.ui.shared.component.entry.model.EntryVariant;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -13,7 +12,7 @@ public class Select<T> {
     private final BooleanProperty disabled = new SimpleBooleanProperty(false);
     private final ObjectProperty<Entry<T>> selectedItem = new SimpleObjectProperty<>(null);
     private final ListProperty<Entry<T>> items = new SimpleListProperty<>(FXCollections.observableArrayList());
-    private final ObjectProperty<EntryVariant> variant = new SimpleObjectProperty<>(EntryVariant.PRIMARY);
+    private final ObjectProperty<SelectVariant> variant = new SimpleObjectProperty<>(SelectVariant.FILLED);
 
     private java.util.function.Consumer<Entry<T>> onSelect = null;
 
@@ -65,15 +64,15 @@ public class Select<T> {
         items.set(v);
     }
 
-    public ObjectProperty<EntryVariant> variantProperty() {
+    public ObjectProperty<SelectVariant> variantProperty() {
         return variant;
     }
 
-    public EntryVariant getVariant() {
+    public SelectVariant getVariant() {
         return variant.get();
     }
 
-    public void setVariant(EntryVariant v) {
+    public void setVariant(SelectVariant v) {
         variant.set(v);
     }
 
@@ -94,7 +93,7 @@ public class Select<T> {
         private boolean disabled = false;
         private Entry<T> selectedItem = null;
         private ObservableList<Entry<T>> items = FXCollections.observableArrayList();
-        private EntryVariant variant = EntryVariant.PRIMARY;
+        private SelectVariant variant = SelectVariant.FILLED;
         private java.util.function.Consumer<Entry<T>> onSelect = null;
 
         private Builder() {}
@@ -124,7 +123,7 @@ public class Select<T> {
             return this;
         }
 
-        public Builder<T> variant(EntryVariant variant) {
+        public Builder<T> variant(SelectVariant variant) {
             this.variant = variant;
             return this;
         }
