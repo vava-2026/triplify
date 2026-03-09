@@ -74,3 +74,27 @@
 }
 
 
+.input-item {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #1D3F59;
+    -fx-prompt-text-fill: #999999;
+    -fx-border-color: #2F6690;
+    -fx-font-size: 16;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+}
+
+.password-field {
+    -fx-text-fill: #D9D9D9;
+}
+/* Show/hide password */
+.password-toggle-button {
+    -fx-background-color: #f5f5f5;
+    -fx-border-color: #d0d0d0;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-cursor: hand
+}
+.password-toggle-button:hover {
+    -fx-text-fill: red;
+}

@@ -4,11 +4,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 
@@ -19,8 +15,7 @@ public class PasswordItem extends VBox {
     private Label errorLabel;
     private Button toggleButton;
     private boolean isVisible = false;
-    private HBox fieldBox;
-
+    private StackPane fieldPane;
     private ImageView eyeView;
     private Image eye;
     private Image eye_off;
@@ -33,55 +28,49 @@ public class PasswordItem extends VBox {
         eye = new Image(getClass().getResourceAsStream("/com/triplify/ui/shared/component/input_item/eye.png"));
         eye_off = new Image(getClass().getResourceAsStream("/com/triplify/ui/shared/component/input_item/eye_off.png"));
 
-        eyeView = new ImageView(eye);
-        eyeView.setFitWidth(20);
-        eyeView.setFitHeight(20);
+        eyeView = new ImageView(eye_off);
+        eyeView.setFitWidth(25);
+        eyeView.setFitHeight(25);
         eyeView.setPreserveRatio(true);
 
         // Password fields
         passwordField = new PasswordField();
         passwordField.setPromptText(placeholder);
         passwordField.getStyleClass().add("input-item");
-        passwordField.setMaxWidth(200);
-        passwordField.setPrefHeight(28);
+        System.out.println("Classes: " + passwordField.getStyleClass()); // добавь это
+        passwordField.setPrefWidth(350);
+        passwordField.setPrefHeight(45);
 
         textField = new TextField();
         textField.setPromptText(placeholder);
         textField.getStyleClass().add("input-item");
+        textField.setPrefWidth(350);
+        textField.setPrefHeight(45);
         textField.setVisible(false);
-        textField.setMaxWidth(200); // ограничиваем ширину
-        textField.setPrefHeight(28);
 
-        // Создаём ImageView
-        eyeView.setFitWidth(20);  // ширина иконки
-        eyeView.setFitHeight(20); // высота иконки
-        eyeView.setPreserveRatio(true);
-
-
-        // Switch button
+        // Toggle button
         toggleButton = new Button();
         toggleButton.setGraphic(eyeView);
         toggleButton.setFocusTraversable(false);
-        toggleButton.setStyle("""
-            -fx-background-color: #f5f5f5;
-            -fx-border-color: #d0d0d0;
-            -fx-border-radius: 6;
-            -fx-background-radius: 6;
-            -fx-cursor: hand;
-        """);
+        toggleButton.setStyle("-fx-background-color: transparent;");
+        toggleButton.setPrefWidth(45);
+        toggleButton.setPrefHeight(45);
+        toggleButton.setMaxWidth(45);
+        toggleButton.setMaxHeight(45);
         toggleButton.setOnAction(e -> togglePasswordVisibility());
-        toggleButton.setPrefHeight(28);
 
-
-        // HBox для поля + кнопка
-        fieldBox = new HBox(5, passwordField, toggleButton);
-        fieldBox.setAlignment(Pos.CENTER);
+        // StackPane — кнопка внутри поля
+        fieldPane = new StackPane();
+        fieldPane.setPrefWidth(350);
+        fieldPane.setMaxWidth(350);
+        fieldPane.getChildren().addAll(passwordField, textField, toggleButton);
+        StackPane.setAlignment(toggleButton, Pos.CENTER_RIGHT);
+        toggleButton.translateXProperty().set(-5);
 
         // VBox
         setSpacing(5);
-        setAlignment(Pos.CENTER);
-        setMaxWidth(200);
-        getChildren().addAll(fieldBox, errorLabel);
+        setAlignment(Pos.CENTER_LEFT);
+        getChildren().addAll(fieldPane, errorLabel);
     }
 
     private void togglePasswordVisibility() {
@@ -89,20 +78,13 @@ public class PasswordItem extends VBox {
             textField.setVisible(false);
             passwordField.setText(textField.getText());
             passwordField.setVisible(true);
-            fieldBox.getChildren().set(0, passwordField);
-
-            // Меняем иконку
             eyeView.setImage(eye_off);
-
             isVisible = false;
         } else {
             textField.setText(passwordField.getText());
             textField.setVisible(true);
             passwordField.setVisible(false);
-            fieldBox.getChildren().set(0, textField);
-
             eyeView.setImage(eye);
-
             isVisible = true;
         }
     }
@@ -138,23 +120,17 @@ public class PasswordItem extends VBox {
         return true;
     }
 
-    // Change Position
     public void setPosition(Pos alignment) {
         setAlignment(alignment);
-        fieldBox.setAlignment(alignment);
     }
 
-    // Change Spacing
     public void setSpacingBetween(double spacing) {
         setSpacing(spacing);
-        fieldBox.setSpacing(spacing);
     }
 
-    // Change css style
     public void setStyleSheet(String cssPath) {
         getStylesheets().clear();
         String css = getClass().getResource(cssPath).toExternalForm();
         getStylesheets().add(css);
     }
-
 }

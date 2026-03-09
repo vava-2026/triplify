@@ -98,9 +98,9 @@ public class MainApp extends Application {
 
 
         // ----------------------------
-        // Тестовые поля InputItem и PasswordItem
+        // Testing InputItem and PasswordItem
         // ----------------------------
-        InputItem inputTest = new InputItem("Enter your name");
+        InputItem inputTest = new InputItem("youremail@gmail.com");
         PasswordItem passwordTest = new PasswordItem("Enter password");
 
         // Вставляем тестовые поля после header и перед contentArea
