@@ -1,5 +1,5 @@
 plugins {
-    id("java-library")
+    id("java")
     id("org.openjfx.javafxplugin") version "0.1.0"
 }
 
