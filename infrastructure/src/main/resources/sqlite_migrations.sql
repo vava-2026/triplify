@@ -120,6 +120,9 @@ CREATE TABLE trips (
     category_id TEXT
        REFERENCES categories(id)
            ON DELETE SET NULL ON UPDATE CASCADE,
+    cover_image_id TEXT
+        REFERENCES images(id)
+            ON DELETE SET NULL ON UPDATE CASCADE,
     title       TEXT NOT NULL COLLATE NOCASE,
     description TEXT,
     status      TEXT NOT NULL DEFAULT 'planned'
