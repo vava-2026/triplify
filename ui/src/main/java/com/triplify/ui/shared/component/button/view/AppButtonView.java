@@ -2,6 +2,7 @@ package com.triplify.ui.shared.component.button.view;
 
 import com.triplify.ui.shared.component.button.model.ButtonVariant;
 import com.triplify.ui.shared.component.button.viewmodel.AppButtonViewModel;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -50,6 +51,7 @@ public class AppButtonView implements Initializable {
 
     public static final class Builder {
         private String label = "";
+        private ObservableValue<String> labelBinding = null;
         private ButtonVariant variant = ButtonVariant.PRIMARY;
         private String icon = null;
         private boolean disabled = false;
@@ -60,6 +62,7 @@ public class AppButtonView implements Initializable {
         private Builder() {}
 
         public Builder label(String v) { this.label = v; return this; }
+        public Builder labelBinding(ObservableValue<String> binding) { this.labelBinding = binding; return this; }
         public Builder variant(ButtonVariant v) { this.variant = v; return this; }
         public Builder icon(String iconLiteral) { this.icon = iconLiteral; return this; }
         public Builder disabled(boolean v) { this.disabled = v; return this; }
@@ -75,12 +78,12 @@ public class AppButtonView implements Initializable {
                 throw new RuntimeException("Failed to load AppButton.fxml", e);
             }
             AppButtonView view = loader.getController();
-            view.configure(label, variant, icon, disabled, requireConfirm, confirmMessage, onAction);
+            view.configure(label, labelBinding, variant, icon, disabled, requireConfirm, confirmMessage, onAction);
             return view.getButton();
         }
     }
 
-    private void configure(String label, ButtonVariant variant, String iconLiteral,
+    private void configure(String label, ObservableValue<String> labelBinding, ButtonVariant variant, String iconLiteral,
                            boolean disabled, boolean requireConfirm, String confirmMessage,
                            Runnable onAction) {
         viewModel = new AppButtonViewModel();
@@ -98,8 +101,11 @@ public class AppButtonView implements Initializable {
 
         button.getStyleClass().add(variant.getStyleClass());
 
-        button.textProperty().bind(viewModel.labelProperty());
-
+        if (labelBinding != null) {
+            button.textProperty().bind(labelBinding);
+        } else {
+            button.textProperty().bind(viewModel.labelProperty());
+        }
         button.disableProperty().bind(viewModel.disabledProperty());
 
         rebuildGraphic(iconLiteral, false);

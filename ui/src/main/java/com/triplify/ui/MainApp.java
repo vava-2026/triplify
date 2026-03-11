@@ -125,6 +125,8 @@ public class MainApp extends Application {
 
         HBox topBar = new HBox(islandPane, header);
         topBar.getStyleClass().add("app-top-bar");
+        topBar.visibleProperty().bind(showMenu);
+        topBar.managedProperty().bind(showMenu);
 
         HBox bottomRow = new HBox(menu, contentArea);
         bottomRow.getStyleClass().add("app-bottom-row");
