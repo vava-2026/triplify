@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <router xmlns="https://github.com/rahulstech/javafx-routing"
-        home="start">
+        home="map">
 
     <arguments id="tripDetailsArgs">
         <argument name="tripId" type="int" required="true"/>
