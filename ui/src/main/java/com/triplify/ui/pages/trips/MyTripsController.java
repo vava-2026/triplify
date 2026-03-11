@@ -13,15 +13,17 @@ import com.triplify.ui.shared.component.trip.view.TripCardView;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
-import javafx.geometry.Pos;
-import javafx.geometry.Orientation;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +38,10 @@ public class MyTripsController extends SimpleLifecycleAwareController {
 
     private static final Logger log = LoggerFactory.getLogger(MyTripsController.class);
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("MMM d, yyyy");
+    private static final double CARD_MIN_WIDTH = 170;
+    private static final double CARD_HEIGHT = 353;
+    private static final double CARD_GAP = 12;
+    private static final String FIRST_CARD_COVER = "/com/triplify/ui/shared/Images/trips/one.png";
 
     @FXML private ComboBox<String> countrySelect;
     @FXML private ComboBox<String> categorySelect;
@@ -44,13 +50,16 @@ public class MyTripsController extends SimpleLifecycleAwareController {
     @FXML private ComboBox<String> startTimeSelect;
     @FXML private ComboBox<TripSort> sortSelect;
     @FXML private ScrollPane tripsScroll;
-    @FXML private TilePane tripsGrid;
+    @FXML private GridPane tripsGrid;
 
     private final TripService tripService = new TripServiceImpl();
     private int page = 1;
     private final int pageSize = 6;
     private boolean loading = false;
     private boolean hasMore = true;
+    private boolean firstTripCoverApplied = false;
+    private int currentColumns = 0;
+    private double currentTileWidth = 0;
 
     @FXML
     private void initialize() {
@@ -95,7 +104,6 @@ public class MyTripsController extends SimpleLifecycleAwareController {
         statusSelect.getSelectionModel().selectFirst();
         startTimeSelect.getSelectionModel().selectFirst();
     }
-
     private void configureSort() {
         sortSelect.setItems(FXCollections.observableArrayList(TripSort.values()));
         sortSelect.getSelectionModel().select(TripSort.NEWEST_FIRST);
@@ -111,12 +119,19 @@ public class MyTripsController extends SimpleLifecycleAwareController {
     }
 
     private void configureGrid() {
-        tripsGrid.setPrefTileWidth(240);
-        tripsGrid.setPrefTileHeight(240);
-        tripsGrid.setHgap(16);
-        tripsGrid.setVgap(16);
-        tripsGrid.setTileAlignment(Pos.TOP_LEFT);
-        tripsGrid.setOrientation(Orientation.HORIZONTAL);
+        tripsGrid.setHgap(CARD_GAP);
+        tripsGrid.setVgap(CARD_GAP);
+        tripsGrid.setAlignment(Pos.TOP_LEFT);
+        tripsScroll.viewportBoundsProperty().addListener((obs, oldBounds, newBounds) -> {
+            if (newBounds != null) {
+                updateGridLayout(newBounds.getWidth());
+            }
+        });
+        Platform.runLater(() -> {
+            if (tripsScroll != null) {
+                updateGridLayout(tripsScroll.getViewportBounds().getWidth());
+            }
+        });
     }
 
     private void attachScrollListener() {
@@ -132,11 +147,13 @@ public class MyTripsController extends SimpleLifecycleAwareController {
         if (resetPage) {
             page = 1;
             hasMore = true;
+            firstTripCoverApplied = false;
             tripsGrid.getChildren().clear();
             tripsGrid.getChildren().add(buildCreateTripCard());
             if (tripsScroll != null) {
                 tripsScroll.setVvalue(0);
             }
+            refreshGridLayout();
         }
         if (!hasMore) return;
         loading = true;
@@ -193,17 +210,40 @@ public class MyTripsController extends SimpleLifecycleAwareController {
             return;
         }
 
+        int index = 0;
         for (TripResponse trip : trips) {
+            TripResponse effectiveTrip = trip;
+            if (!firstTripCoverApplied && index == 0) {
+                effectiveTrip = new TripResponse(
+                        trip.id(),
+                        trip.name(),
+                        trip.country(),
+                        trip.category(),
+                        trip.status(),
+                        trip.startDate(),
+                        trip.endDate(),
+                        trip.coverKey(),
+                        FIRST_CARD_COVER,
+                        trip.tags()
+                );
+                firstTripCoverApplied = true;
+            }
             String dateRange = formatDateRange(trip.startDate(), trip.endDate());
-            TripCardView card = TripCardView.create(trip, dateRange, () -> openTrip(trip, dateRange));
+            TripCardView card = TripCardView.create(effectiveTrip, dateRange, () -> openTrip(trip, dateRange));
             tripsGrid.getChildren().add(card.getRoot());
+            index++;
         }
+        Platform.runLater(this::refreshGridLayout);
     }
 
     private Node buildCreateTripCard() {
         StackPane card = new StackPane();
         card.getStyleClass().add("trip-create-card");
-        card.setPrefSize(240, 240);
+
+        card.setPrefHeight(CARD_HEIGHT);
+        card.setMinHeight(CARD_HEIGHT);
+        card.setMaxHeight(CARD_HEIGHT);
+
         card.setOnMouseClicked(event -> onCreateTrip());
 
         VBox content = new VBox(6);
@@ -219,6 +259,92 @@ public class MyTripsController extends SimpleLifecycleAwareController {
         content.getChildren().addAll(icon, title, subtitle);
         card.getChildren().add(content);
         return card;
+    }
+
+    private void refreshGridLayout() {
+        if (tripsScroll == null) return;
+        double width = tripsScroll.getViewportBounds().getWidth();
+        if (width <= 0) {
+            width = tripsScroll.getWidth();
+        }
+        updateGridLayout(width);
+    }
+
+    private void updateGridLayout(double viewportWidth) {
+        if (tripsGrid == null || viewportWidth <= 0) return;
+
+        double usableWidth = viewportWidth - getHorizontalInsets(tripsGrid.getInsets());
+        if (usableWidth <= 0) return;
+
+        int columns = resolveColumns(usableWidth);
+        double tileWidth = resolveTileWidth(usableWidth, columns);
+
+        boolean layoutChanged = columns != currentColumns || Math.abs(tileWidth - currentTileWidth) >= 0.5;
+        currentColumns = columns;
+        currentTileWidth = tileWidth;
+
+        if (layoutChanged) {
+            applyColumnConstraints(columns, tileWidth);
+        }
+        layoutCards(columns, tileWidth);
+    }
+
+    private double getHorizontalInsets(Insets insets) {
+        if (insets == null) return 0;
+        return insets.getLeft() + insets.getRight();
+    }
+
+    private int resolveColumns(double usableWidth) {
+        double minWidthFor4Columns = 4 * CARD_MIN_WIDTH + 3 * CARD_GAP;
+        double minWidthFor2Columns = 2 * CARD_MIN_WIDTH + CARD_GAP;
+
+        if (usableWidth >= minWidthFor4Columns) {
+            return 4;
+        }
+        if (usableWidth >= minWidthFor2Columns) {
+            return 2;
+        }
+        return 1;
+    }
+
+    private double resolveTileWidth(double usableWidth, int columns) {
+        double totalGap = (columns - 1) * CARD_GAP;
+        double tileWidth = (usableWidth - totalGap) / columns;
+        return Math.max(tileWidth, CARD_MIN_WIDTH);
+    }
+
+    private void applyColumnConstraints(int columns, double tileWidth) {
+        tripsGrid.getColumnConstraints().clear();
+        for (int i = 0; i < columns; i++) {
+            ColumnConstraints constraint = new ColumnConstraints();
+            constraint.setMinWidth(tileWidth);
+            constraint.setPrefWidth(tileWidth);
+            constraint.setMaxWidth(tileWidth);
+            tripsGrid.getColumnConstraints().add(constraint);
+        }
+    }
+
+    private void layoutCards(int columns, double tileWidth) {
+        List<Node> nodes = tripsGrid.getChildren();
+        for (int i = 0; i < nodes.size(); i++) {
+            Node node = nodes.get(i);
+            int row = i / columns;
+            int column = i % columns;
+            GridPane.setRowIndex(node, row);
+            GridPane.setColumnIndex(node, column);
+            GridPane.setColumnSpan(node, 1);
+            GridPane.setRowSpan(node, 1);
+            applyCardWidth(node, tileWidth);
+        }
+    }
+
+    private void applyCardWidth(Node node, double width) {
+        if (!(node instanceof Region region)) {
+            return;
+        }
+        region.setMinWidth(width);
+        region.setPrefWidth(width);
+        region.setMaxWidth(width);
     }
 
     private void openTrip(TripResponse trip, String dateRange) {

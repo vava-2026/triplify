@@ -82,6 +82,7 @@ public class MenuView implements Initializable {
         mainPageInner.setManaged(!collapsed);
 
         double width = collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH;
+        sidebarRoot.setMinWidth(width);
         sidebarRoot.setPrefWidth(width);
         sidebarRoot.setMaxWidth(width);
 

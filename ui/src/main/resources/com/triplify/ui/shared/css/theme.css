@@ -167,27 +167,35 @@
     -fx-font-size: 12px;
 }
 
+/*.trip-card {
+    -fx-background-color: -color-surface;
+    -fx-background-radius: 14px;
+    -fx-effect: -shadow-card;
+    -fx-cursor: hand;
+    -fx-pref-width: 210px;
+    -fx-min-width: 100px;
+    -fx-max-width: 210px;
+    -fx-pref-height: 353px;
+    -fx-min-height: 353px;
+    -fx-max-height: 353px;
+}*/
 .trip-card {
     -fx-background-color: -color-surface;
     -fx-background-radius: 14px;
     -fx-effect: -shadow-card;
     -fx-cursor: hand;
-    -fx-pref-width: 240px;
-    -fx-min-width: 240px;
-    -fx-max-width: 240px;
-    -fx-pref-height: 240px;
-    -fx-min-height: 240px;
-    -fx-max-height: 240px;
+    -fx-pref-height: 353px;
+    -fx-min-height: 353px;
+    -fx-max-height: 353px;
 }
-
 .trip-card:hover {
     -fx-translate-y: -1px;
 }
 
 .trip-card-media {
-    -fx-min-height: 120px;
-    -fx-pref-height: 120px;
-    -fx-max-height: 120px;
+    -fx-min-height: 184px;
+    -fx-pref-height: 184px;
+    -fx-max-height: 184px;
     -fx-background-radius: 14px 14px 10px 10px;
     -fx-padding: 10px;
 }
@@ -202,13 +210,16 @@
 
 .trip-title {
     -fx-text-fill: -color-ink;
-    -fx-font-size: 15px;
+    -fx-font-size: 19px;
     -fx-font-weight: bold;
 }
 
 .trip-category {
     -fx-text-fill: -color-ink-muted;
-    -fx-font-size: 12px;
+    -fx-font-size: 14px;
+    -fx-background-color: #ecf3f9;
+    -fx-background-radius: 999px;
+    -fx-padding: 2px 8px;
 }
 
 .trip-date-row {
@@ -221,41 +232,60 @@
 
 .trip-date {
     -fx-text-fill: -color-ink-muted;
-    -fx-font-size: 12px;
+    -fx-font-size: 14px;
 }
 
 .trip-status {
     -fx-background-radius: 999px;
     -fx-padding: 4px 10px;
-    -fx-font-size: 11px;
+    -fx-font-size: 13px;
     -fx-font-weight: bold;
+    -fx-font-family: -font-family-base;
 }
 
 .trip-status-visited {
-    -fx-background-color: #e6f4ed;
-    -fx-text-fill: #2f8f6b;
+    -fx-background-color: #B2D7BB;
+    -fx-text-fill: #025B42;
 }
 
 .trip-status-drafted {
-    -fx-background-color: #f7ead7;
-    -fx-text-fill: #d28b35;
+    -fx-background-color: #F0DCAD;
+    -fx-text-fill: #FFB100;
 }
 
 .trip-status-rejected {
-    -fx-background-color: #fbe9e7;
-    -fx-text-fill: -color-danger;
+    -fx-background-color: #FABDCA;
+    -fx-text-fill: #B20D30;
 }
 
 .trip-status-planned {
-    -fx-background-color: #e0edf7;
-    -fx-text-fill: -color-primary;
+    -fx-background-color: #C9DEEE;
+    -fx-text-fill: #2F6690;
 }
 
 .trip-status-ongoing {
-    -fx-background-color: #e3f4f1;
-    -fx-text-fill: #1b7f7a;
+    -fx-background-color: #C1B2D7;
+    -fx-text-fill: #6A4C93;
 }
 
+/*.trip-create-card {
+    -fx-background-color: -color-surface;
+    -fx-background-radius: 14px;
+    -fx-border-color: #8fb0c8;
+    -fx-border-radius: 14px;
+    -fx-border-width: 2px;
+    -fx-border-style: segments(8, 6);
+    -fx-effect: -shadow-card;
+    -fx-cursor: hand;
+    -fx-alignment: center;
+    -fx-padding: 12px;
+    -fx-pref-width: 210px;
+    -fx-min-width: 100px;
+    -fx-max-width: 210px;
+    -fx-pref-height: 353px;
+    -fx-min-height: 353px;
+    -fx-max-height: 353px;
+}*/
 .trip-create-card {
     -fx-background-color: -color-surface;
     -fx-background-radius: 14px;
@@ -267,12 +297,9 @@
     -fx-cursor: hand;
     -fx-alignment: center;
     -fx-padding: 12px;
-    -fx-pref-width: 240px;
-    -fx-min-width: 240px;
-    -fx-max-width: 240px;
-    -fx-pref-height: 240px;
-    -fx-min-height: 240px;
-    -fx-max-height: 240px;
+    -fx-pref-height: 353px;
+    -fx-min-height: 353px;
+    -fx-max-height: 353px;
 }
 
 .trip-create-icon {

@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.StackPane?>
-<?import javafx.scene.layout.TilePane?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.VBox?>
 
 <StackPane xmlns="http://javafx.com/javafx"
@@ -32,8 +32,7 @@
 
         <ScrollPane fx:id="tripsScroll" fitToWidth="true" hbarPolicy="NEVER" styleClass="trips-scroll"
                     VBox.vgrow="ALWAYS">
-            <TilePane fx:id="tripsGrid" styleClass="trips-grid" prefTileWidth="240"
-                      prefTileHeight="240" hgap="16" vgap="16"/>
+            <GridPane fx:id="tripsGrid" styleClass="trips-grid"/>
         </ScrollPane>
     </VBox>
 </StackPane>
