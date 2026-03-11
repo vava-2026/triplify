@@ -2,20 +2,22 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.geometry.Insets?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <fx:root type="VBox"
       xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      styleClass="search-container">
+      styleClass="search-container"
+      maxHeight="-Infinity">
 
     <!-- Search input row -->
-    <HBox styleClass="search-input-box" alignment="CENTER_LEFT" spacing="6">
+    <HBox fx:id="searchBox" styleClass="search-input-box" alignment="CENTER_LEFT" spacing="6">
         <FontIcon fx:id="searchIcon" iconLiteral="fth-search" iconSize="14" styleClass="search-icon"/>
         <TextField fx:id="searchField"
                    styleClass="search-field"
-                   HBox.hgrow="ALWAYS"/>
+                   HBox.hgrow="ALWAYS"
+                    minHeight="26"
+                   maxHeight="26"/>
         <Button fx:id="clearButton"
                 styleClass="search-clear-button"
                 text="✕"
@@ -24,19 +26,4 @@
                 managed="false"/>
     </HBox>
 
-    <!-- Results list (height controlled programmatically) -->
-    <ListView fx:id="resultsListView"
-              styleClass="search-results"
-              fixedCellSize="32"
-              visible="false"
-              managed="false"/>
-
-    <!-- No-results feedback -->
-    <Label fx:id="noResultsLabel"
-           styleClass="search-no-results"
-           text="No results found."
-           visible="false"
-           managed="false">
-        <padding><Insets top="6" right="10" bottom="6" left="10"/></padding>
-    </Label>
 </fx:root>

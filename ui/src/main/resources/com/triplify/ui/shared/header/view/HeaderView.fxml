@@ -24,16 +24,10 @@
 
     </HBox>
 
-    <HBox styleClass="search-bar"
-          alignment="CENTER_LEFT"
-          spacing="20"
-          StackPane.alignment="CENTER">
-        <FontIcon iconLiteral="fth-search" iconSize="18" styleClass="search-icon" />
-        <TextField fx:id="searchField"
-                   styleClass="search-field"
-                   promptText="Search trip"
-                   HBox.hgrow="ALWAYS" />
-    </HBox>
+    <StackPane fx:id="searchContainer"
+               maxWidth="500"
+               minWidth="300"
+               StackPane.alignment="CENTER"/>
 
 </StackPane>
 

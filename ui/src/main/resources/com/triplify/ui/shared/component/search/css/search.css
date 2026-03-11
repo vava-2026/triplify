@@ -52,10 +52,15 @@
 
 .search-no-results {
     -fx-text-fill: -color-ink-muted;
-    -fx-font-size: 13px;
+    -fx-font-size: 14px;
     -fx-font-style: italic;
     -fx-border-radius: 0 0 6 6;
     -fx-background-radius: 0 0 6 6;
+}
+
+.search-popup-content {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
 }
 
 /* ==========================================  FILLED ==========================================*/
@@ -113,3 +118,4 @@
 .app-search-variant-blue .search-results .list-cell:hover {
     -fx-background-color: -color-surface-dark;
 }
+
