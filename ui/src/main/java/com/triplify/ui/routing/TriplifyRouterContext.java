@@ -1,7 +1,9 @@
 package com.triplify.ui.routing;
 
+import com.google.inject.Injector;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.fxml.FXMLLoader;
 import rahulstech.jfx.routing.BaseRouterContext;
 
 import java.io.InputStream;
@@ -24,13 +26,21 @@ public class TriplifyRouterContext extends BaseRouterContext {
     }
 
     private String normalize(String name) {
-        if (name == null || name.isEmpty()) {
+        if (name == null || name.isEmpty()){
             return null;
         }
         return name.startsWith("/") ? name : "/" + name;
     }
 
-    public BooleanProperty fullScreenContentProperty() { return fullScreenContent; }
-    public boolean isFullScreenContent() { return fullScreenContent.get(); }
-    public void setFullScreenContent(boolean value) { fullScreenContent.set(value); }
+    public BooleanProperty fullScreenContentProperty() {
+        return fullScreenContent;
+    }
+
+    public boolean isFullScreenContent() {
+        return fullScreenContent.get();
+    }
+
+    public void setFullScreenContent(boolean value) {
+        fullScreenContent.set(value);
+    }
 }
