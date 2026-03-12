@@ -9,9 +9,9 @@ import java.util.function.Consumer;
 public final class ValidationResult<T> {
 
     private final T value;
-    private final List<FieldViolation> violations;
+    private final List<FieldError> violations;
 
-    private ValidationResult(T value, List<FieldViolation> violations) {
+    private ValidationResult(T value, List<FieldError> violations) {
         this.value = value;
         this.violations = violations;
     }
@@ -24,7 +24,7 @@ public final class ValidationResult<T> {
         return new ValidationResult<>(null, List.of());
     }
 
-    public static <T> ValidationResult<T> invalid(List<FieldViolation> violations) {
+    public static <T> ValidationResult<T> invalid(List<FieldError> violations) {
         if (violations == null || violations.isEmpty()) {
             throw new IllegalArgumentException("invalid() requires at least one violation");
         }
@@ -48,11 +48,11 @@ public final class ValidationResult<T> {
 
     public List<AppError> getErrors() {
         return violations.stream()
-                .map(FieldViolation::toAppError)
+                .map(FieldError::toAppError)
                 .toList();
     }
 
-    public List<FieldViolation> getViolations() {
+    public List<FieldError> getViolations() {
         return violations;
     }
 
@@ -63,7 +63,7 @@ public final class ValidationResult<T> {
         return this;
     }
 
-    public ValidationResult<T> onFailure(Consumer<List<FieldViolation>> action) {
+    public ValidationResult<T> onFailure(Consumer<List<FieldError>> action) {
         if (isFailure()) {
             action.accept(violations);
         }

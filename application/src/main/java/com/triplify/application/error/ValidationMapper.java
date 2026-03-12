@@ -1,10 +1,9 @@
 package com.triplify.application.error;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 
 import java.util.*;
 
@@ -26,19 +25,19 @@ public final class ValidationMapper {
             return ValidationResult.valid(object);
         }
 
-        Map<String, FieldViolation> byField = new HashMap<>();
+        Map<String, FieldError> byField = new LinkedHashMap<>();
         violations.stream()
                 .map(ValidationMapper::toFieldViolation)
                 .sorted(Comparator
-                        .comparing(FieldViolation::getField)
+                        .comparing(FieldError::getField)
                         .thenComparingInt(v -> ValidationMessage.getPriority(v.getMessageKey())))
                 .forEach(v -> byField.putIfAbsent(v.getField(), v));
 
         return ValidationResult.invalid(List.copyOf(byField.values()));
     }
 
-    private static FieldViolation toFieldViolation(ConstraintViolation<?> cv) {
+    private static FieldError toFieldViolation(ConstraintViolation<?> cv) {
         String field = cv.getPropertyPath().toString();
-        return new FieldViolation(field, cv.getMessage());
+        return new FieldError(field, cv.getMessage());
     }
 }

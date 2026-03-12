@@ -23,6 +23,9 @@ public class TriplifyRouterContext extends BaseRouterContext {
     @Override
     public FXMLLoader getFxmlLoader(String name, Class<?> controllerClass, ResourceBundle resources, Charset charset) {
         URL url = getResource(name);
+        if (url == null) {
+            throw new IllegalArgumentException("FXML resource not found: " + name);
+        }
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(url);
         if (resources != null) loader.setResources(resources);

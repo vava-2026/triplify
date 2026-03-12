@@ -7,7 +7,7 @@ import com.triplify.application.result.Result;
 import com.triplify.application.usecase.auth.AuthResponse;
 import com.triplify.application.usecase.auth.AuthService;
 import com.triplify.application.usecase.auth.LoginRequest;
-import com.triplify.ui.shared.error.ErrorPresenter;
+import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.toast.ToastService;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -23,10 +23,10 @@ import java.util.Map;
 public class LoginController extends SimpleLifecycleAwareController {
 
     private static final Logger log = LoggerFactory.getLogger(LoginController.class);
+    private static final String ERROR_STYLE_CLASS = "input-error";
 
     @FXML private TextField username;
     @FXML private PasswordField password;
-    @FXML private Label errorBanner;
     @FXML private Label usernameError;
     @FXML private Label passwordError;
 
@@ -45,13 +45,22 @@ public class LoginController extends SimpleLifecycleAwareController {
 
         Map<String, TextField> fieldMap = Map.of("username", username, "password", password);
         Map<String, Label> errorMap = Map.of("username", usernameError, "password", passwordError);
+        clearFieldStyles(fieldMap);
 
         ValidationResult<LoginRequest> validation = ValidationMapper.validate(command);
         if (validation.isFailure()) {
-            ErrorPresenter.showValidation(validation, fieldMap);
             validation.getViolations().forEach(v -> {
+                TextField field = fieldMap.get(v.getField());
+                if (field != null) {
+                    markFieldError(field);
+                } else {
+                    log.warn("No TextField mapped for violated field '{}'", v.getField());
+                }
+
                 Label label = errorMap.get(v.getField());
-                if (label != null) showFieldError(label, v.getMessageKey());
+                if (label != null) {
+                    showFieldError(label, v.getMessageKey());
+                }
             });
             return;
         }
@@ -60,10 +69,10 @@ public class LoginController extends SimpleLifecycleAwareController {
         Result<AuthResponse> result = authService.login(command);
         result.onSuccess(auth -> {
             log.info("Login successful for user '{}'", auth.username());
-            toast.success("Welcome back, " + auth.username() + "!");})
-              .onFailureResponse(errors -> {
+            toast.success("Welcome back, " + auth.username() + "!");
+        }).onFailureResponse(errors -> {
                   log.info("Login failed: {}", result.getFirstErrorResponse().messageKey());
-                  toast.error(ErrorPresenter.resolveKey(result.getFirstErrorResponse().messageKey()));
+                  toast.error(I18n.t((result.getFirstErrorResponse().messageKey())));
               });
     }
 
@@ -73,7 +82,7 @@ public class LoginController extends SimpleLifecycleAwareController {
     }
 
     private void showFieldError(Label label, String messageKey) {
-        label.setText(ErrorPresenter.resolveKey(messageKey));
+        label.setText(I18n.t(messageKey));
         label.setVisible(true);
         label.setManaged(true);
     }
@@ -82,5 +91,15 @@ public class LoginController extends SimpleLifecycleAwareController {
         label.setText("");
         label.setVisible(false);
         label.setManaged(false);
+    }
+
+    private void clearFieldStyles(Map<String, TextField> fieldMap) {
+        fieldMap.values().forEach(field -> field.getStyleClass().remove(ERROR_STYLE_CLASS));
+    }
+
+    private void markFieldError(TextField field) {
+        if (!field.getStyleClass().contains(ERROR_STYLE_CLASS)) {
+            field.getStyleClass().add(ERROR_STYLE_CLASS);
+        }
     }
 }

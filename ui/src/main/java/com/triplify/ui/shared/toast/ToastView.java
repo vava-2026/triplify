@@ -13,17 +13,30 @@ import org.kordamp.ikonli.javafx.FontIcon;
 public class ToastView {
 
     private static final Duration SLIDE_IN_DURATION  = Duration.millis(280);
-    private static final Duration VISIBLE_DURATION   = Duration.millis(3500);
-    private static final Duration FADE_OUT_DURATION  = Duration.millis(300);
+    private static final Duration VISIBLE_DURATION = Duration.millis(3500);
+    private static final Duration FADE_OUT_DURATION = Duration.millis(300);
 
-    @FXML private HBox  toastRoot;
+    @FXML private HBox toastRoot;
     @FXML private FontIcon toastIcon;
     @FXML private Label titleLabel;
     @FXML private Label messageLabel;
 
     private Runnable onDone;
+    private SequentialTransition activeTransition;
 
     public void show(ToastType type, String title, String message) {
+        if (activeTransition != null) {
+            activeTransition.stop();
+            activeTransition = null;
+        }
+        toastRoot.getStyleClass().removeAll(
+                ToastType.ERROR.getStyleClass(),
+                ToastType.SUCCESS.getStyleClass(),
+                ToastType.INFO.getStyleClass(),
+                ToastType.WARNING.getStyleClass());
+        toastRoot.setOpacity(1.0);
+        toastRoot.setTranslateX(0);
+
         toastRoot.getStyleClass().add(type.getStyleClass());
         toastIcon.setIconLiteral(type.getIconLiteral());
         titleLabel.setText(title);
@@ -39,19 +52,29 @@ public class ToastView {
         fadeOut.setFromValue(1.0);
         fadeOut.setToValue(0.0);
 
-        SequentialTransition seq = new SequentialTransition(slideIn, pause, fadeOut);
-        seq.setOnFinished(e -> {
-            if (onDone != null) onDone.run();
-        });
-        seq.play();
+        activeTransition = new SequentialTransition(slideIn, pause, fadeOut);
+        activeTransition.setOnFinished(e -> finishOnce());
+        activeTransition.play();
     }
 
     @FXML
     private void onClose() {
-        if (onDone != null) onDone.run();
+        if (activeTransition != null) {
+            activeTransition.stop();
+            activeTransition = null;
+        }
+        finishOnce();
     }
 
     public void setOnDone(Runnable onDone) {
         this.onDone = onDone;
+    }
+
+    private void finishOnce() {
+        Runnable callback = onDone;
+        onDone = null;
+        if (callback != null) {
+            callback.run();
+        }
     }
 }

@@ -1,7 +1,10 @@
 package com.triplify.ui.shared.toast;
 
+import javafx.scene.layout.StackPane;
 
 public interface ToastService {
+
+    void attach(StackPane appRoot);
 
     void error(String message);
     void error(String title, String message);
@@ -15,4 +18,3 @@ public interface ToastService {
     void warning(String message);
     void warning(String title, String message);
 }
-

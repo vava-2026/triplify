@@ -3,12 +3,12 @@ package com.triplify.application.error;
 import com.triplify.domain.error.AppError;
 import com.triplify.domain.error.ErrorCode;
 
-public final class FieldViolation {
+public final class FieldError {
 
     private final String field;
     private final String messageKey;
 
-    public FieldViolation(String field, String messageKey) {
+    public FieldError(String field, String messageKey) {
         this.field = field;
         this.messageKey = messageKey;
     }
