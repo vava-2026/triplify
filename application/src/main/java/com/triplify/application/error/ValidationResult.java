@@ -1,11 +1,17 @@
 package com.triplify.application.error;
 
+import com.triplify.application.result.Result;
 import com.triplify.domain.error.AppError;
 
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 
+/**
+ * A specialized version of {@link Result} dedicated only to the input validation part.
+ * <p>
+ * While {@code Result} handles generic domain failures (like "User not found"), {@code ValidationResult} specifically the exact fields that failed.
+ */
 public final class ValidationResult<T> {
 
     private final T value;
@@ -39,13 +45,10 @@ public final class ValidationResult<T> {
         return !violations.isEmpty();
     }
 
-    public T getValue() {
-        if (isFailure()) {
-            throw new NoSuchElementException("Validation failed: " + violations);
-        }
-        return value;
-    }
-
+    /**
+     * Converts the specific field violations into standard domain {@link AppError}s.
+     * Useful when you want to convert a failed ValidationResult into a standard Result.
+     */
     public List<AppError> getErrors() {
         return violations.stream()
                 .map(FieldError::toAppError)
