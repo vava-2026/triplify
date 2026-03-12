@@ -49,7 +49,6 @@ public class MainApp extends Application {
     public void start(Stage stage) throws Exception {
         log.info("App launched");
 
-
         // Sidebar island
         FxmlLoadResult<Node, SidebarIslandView> islandResult = fxml.load("/com/triplify/ui/shared/menu/view/SidebarIsland.fxml");
         Node island = islandResult.node();

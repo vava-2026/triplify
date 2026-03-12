@@ -1,9 +1,11 @@
 package com.triplify.ui.pages.start;
 
+import com.google.inject.Inject;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.component.button.model.ButtonVariant;
 import com.triplify.ui.shared.component.button.view.AppButtonView;
+import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -21,6 +23,8 @@ public class StartPageController extends SimpleLifecycleAwareController implemen
 
     private static final Logger log = LoggerFactory.getLogger(StartPageController.class);
 
+    @Inject private FxmlLoaderHelper fxmlLoader;
+
     @FXML private Label heroTitleLine1;
     @FXML private Label heroTitleLine2;
     @FXML private Label heroSubtitle;
@@ -37,13 +41,13 @@ public class StartPageController extends SimpleLifecycleAwareController implemen
 
         heroTitleLine2.getStyleClass().add("start-hero-title-tight");
 
-        Button loginBtn = AppButtonView.builder()
+        Button loginBtn = AppButtonView.builder(fxmlLoader)
                 .variant(ButtonVariant.LOGIN)
                 .labelBinding(Bindings.createStringBinding(() -> I18n.t("start.login"), I18n.bundleProperty()))
                 .onAction(() -> log.debug("Log In clicked"))
                 .build();
 
-        Button signUpBtn = AppButtonView.builder()
+        Button signUpBtn = AppButtonView.builder(fxmlLoader)
                 .variant(ButtonVariant.SIGN_UP)
                 .labelBinding(Bindings.createStringBinding(() -> I18n.t("start.signUp"), I18n.bundleProperty()))
                 .onAction(() -> log.debug("Sign Up clicked"))
