@@ -1,0 +1,20 @@
+package com.triplify.bootstrap;
+
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.triplify.ui.MainApp;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class Launcher {
+
+    private static final Logger log = LoggerFactory.getLogger(Launcher.class);
+
+    public static void main(String[] args) {
+        log.info("Creating Guice injector");
+        Injector injector = Guice.createInjector(new BootstrapModule());
+        log.info("Guice injector created successfully");
+        log.info("Launching UI");
+        MainApp.launch(injector, args);
+    }
+}
