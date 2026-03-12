@@ -1,5 +1,17 @@
 package com.triplify.application.error;
 
+/**
+ * Catalogue of well-known validation message keys and their display priority.
+ *
+ * <p>Each constant pairs an i18n message key (e.g. {@code "validation.field.required"}) with
+ * a numeric priority used by {@link ValidationMapper} to select the most important error when
+ * multiple constraints are violated on the same field. Lower numeric priority means higher
+ * importance — {@code REQUIRED} (0) is always shown first.
+ *
+ * <p>The inner {@link Constants} class exposes the raw {@code String} keys so that
+ * Bean Validation {@code @NotBlank}, {@code @Email}, etc. annotations can reference them
+ * without creating a compile-time dependency on this enum.
+ */
 public enum ValidationMessage {
 
     REQUIRED(Constants.REQUIRED, 0),

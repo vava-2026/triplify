@@ -43,29 +43,43 @@ public class ToastServiceImpl implements ToastService {
         appRoot.getChildren().add(container);
     }
 
-    @Override public void error(String message) {
+    @Override
+    public void error(String message) {
         show(ToastType.ERROR, ToastType.ERROR.getDefaultTitle(), message);
     }
 
-    @Override public void error(String title, String message) {
+    @Override
+    public void error(String title, String message) {
         show(ToastType.ERROR, title, message);
     }
-    @Override public void success(String message) {
+
+    @Override
+    public void success(String message) {
         show(ToastType.SUCCESS, ToastType.SUCCESS.getDefaultTitle(), message);
     }
-    @Override public void success(String title, String message){
+
+    @Override
+    public void success(String title, String message) {
         show(ToastType.SUCCESS, title, message);
     }
-    @Override public void info(String message) {
+
+    @Override
+    public void info(String message) {
         show(ToastType.INFO, ToastType.INFO.getDefaultTitle(), message);
     }
-    @Override public void info(String title, String message) {
+
+    @Override
+    public void info(String title, String message) {
         show(ToastType.INFO, title, message);
     }
-    @Override public void warning(String message) {
+
+    @Override
+    public void warning(String message) {
         show(ToastType.WARNING, ToastType.WARNING.getDefaultTitle(), message);
     }
-    @Override public void warning(String title, String message) {
+
+    @Override
+    public void warning(String title, String message) {
         show(ToastType.WARNING, title, message);
     }
 
