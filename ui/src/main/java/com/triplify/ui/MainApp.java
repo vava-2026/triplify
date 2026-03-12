@@ -80,7 +80,7 @@ public class MainApp extends Application {
         Node mapView = mapResult.node();
 
         // Router content area
-        TriplifyRouterContext routerContext = new TriplifyRouterContext();
+        TriplifyRouterContext routerContext = new TriplifyRouterContext(injectorRef);
         RouterStackPane contentArea = new RouterStackPane();
 
         contentArea.getStyleClass().add("app-content");
