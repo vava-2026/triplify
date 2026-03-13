@@ -1,3 +1,10 @@
+<<<<<<< feature/66-StartPage
+=======
+@import url("/com/triplify/ui/shared/component/entry/css/entry.css");
+@import url("/com/triplify/ui/shared/component/select/css/select.css");
+@import url("/com/triplify/ui/shared/toast/toast.css");
+
+>>>>>>> develop
 .root {
     -color-bg: #f0f0f0;
     -color-surface: #fafafa;
@@ -102,4 +109,58 @@
     -fx-min-height: 340px;
 }
 
+.form-label {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-ink;
+}
 
+.form-input {
+    -fx-font-family: -font-family-base;
+    -fx-font-size: 14px;
+    -fx-background-color: -color-bg;
+    -fx-border-color: #cccccc;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 8 12 8 12;
+    -fx-pref-height: 40px;
+}
+
+.form-input:focused {
+    -fx-border-color: -color-primary;
+}
+
+.input-error {
+    -fx-border-color: -color-danger;
+}
+
+.input-error:focused {
+    -fx-border-color: -color-danger;
+}
+
+.field-error-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-danger;
+}
+
+.error-banner {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-danger;
+    -fx-background-color: derive(-color-danger, 90%);
+    -fx-background-radius: 8;
+    -fx-border-color: derive(-color-danger, 60%);
+    -fx-border-radius: 8;
+    -fx-padding: 10 14 10 14;
+}
+
+.success-banner {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-theme-green;
+    -fx-background-color: derive(-color-theme-green, 85%);
+    -fx-background-radius: 8;
+    -fx-border-color: derive(-color-theme-green, 50%);
+    -fx-border-radius: 8;
+    -fx-padding: 10 14 10 14;
+}

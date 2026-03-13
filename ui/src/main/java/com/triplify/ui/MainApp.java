@@ -1,6 +1,7 @@
 package com.triplify.ui;
 
 import com.google.inject.Inject;
+import com.triplify.ui.shared.toast.ToastService;
 import com.google.inject.Injector;
 import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.header.view.HeaderView;
@@ -33,6 +34,7 @@ public class MainApp extends Application {
     private static Injector injectorRef;
 
     @Inject private FxmlLoaderHelper fxml;
+    @Inject private ToastService toastService;
     private Router router;
 
     public static void launch(Injector injector, String[] args) {
@@ -77,7 +79,7 @@ public class MainApp extends Application {
         Node mapView = mapResult.node();
 
         // Router content area
-        TriplifyRouterContext routerContext = new TriplifyRouterContext();
+        TriplifyRouterContext routerContext = new TriplifyRouterContext(injectorRef);
         RouterStackPane contentArea = new RouterStackPane();
 
         contentArea.getStyleClass().add("app-content");
@@ -142,6 +144,8 @@ public class MainApp extends Application {
         // Root
         StackPane root = new StackPane(mapView, normalLayout);
         root.getStyleClass().add("app-scene-root");
+
+        toastService.attach(root);
 
         // Scene
         Scene scene = new Scene(root, 1280, 800);
