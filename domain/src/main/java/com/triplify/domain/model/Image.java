@@ -13,18 +13,14 @@ public class Image {
     private String description;
     private final Instant uploadedAt;
 
-    private Image(String url, String storageKey, String description) {
-        super();
+    public Image(String url, String storageKey, String description) {
         if (url == null || url.isBlank()) throw new IllegalArgumentException("Image url must not be blank.");
         if (storageKey == null || storageKey.isBlank()) throw new IllegalArgumentException("Storage key must not be blank.");
+        this.id = UUID.randomUUID();
         this.url = url;
         this.storageKey = storageKey;
         this.description = description;
         this.uploadedAt = Instant.now();
-    }
-
-    public static Image create(String url, String storageKey, String description) {
-        return new Image(url, storageKey, description);
     }
 
     public void updateDescription(String description) {
