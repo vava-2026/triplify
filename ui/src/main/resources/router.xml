@@ -33,4 +33,7 @@
                  fxml="com/triplify/ui/pages/account/AccountView.fxml"
                  singleTop="true"/>
 
+    <destination id="login"
+                 fxml="com/triplify/ui/pages/account/LoginView.fxml"
+                 singleTop="true"/>
 </router>

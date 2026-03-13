@@ -1,0 +1,76 @@
+.toast {
+    -fx-background-color: -color-on-surface;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-effect: dropshadow(gaussian, rgba(12,12,13,0.18), 16, 0, 0, 4);
+    -fx-padding: 0 14 0 0;
+    -fx-min-height: 64;
+    -fx-pref-height: 64;
+    -fx-cursor: default;
+}
+
+.toast-accent {
+    -fx-background-radius: 10 0 0 10;
+    -fx-min-width: 4;
+    -fx-max-width: 4;
+    -fx-min-height: 64;
+    -fx-pref-height: 64;
+}
+
+.toast-error .toast-accent {
+    -fx-background-color: -color-danger;
+}
+.toast-success .toast-accent {
+    -fx-background-color: -color-theme-green;
+}
+.toast-info .toast-accent {
+    -fx-background-color: -color-theme-blue;
+}
+.toast-warning .toast-accent {
+    -fx-background-color: -color-theme-orange;
+}
+
+.toast-error .toast-icon {
+    -fx-icon-color: -color-danger;
+}
+.toast-success .toast-icon {
+    -fx-icon-color: -color-theme-green;
+}
+.toast-info .toast-icon {
+    -fx-icon-color: -color-theme-blue;
+}
+.toast-warning .toast-icon {
+    -fx-icon-color: -color-theme-orange;
+}
+
+.toast-title {
+    -fx-font-family: -font-family-base;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-ink;
+}
+
+.toast-message {
+    -fx-font-family: -font-family-base;
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-ink-muted;
+    -fx-wrap-text: true;
+}
+
+.toast-close {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 4;
+    -fx-cursor: hand;
+    -fx-min-width: 24;
+    -fx-min-height: 24;
+}
+
+.toast-close:hover {
+    -fx-background-color: -color-bg;
+    -fx-background-radius: 6;
+}
+
+.toast-close-icon {
+    -fx-icon-color: -color-ink-muted;
+}
