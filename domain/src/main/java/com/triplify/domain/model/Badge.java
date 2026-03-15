@@ -1,37 +1,35 @@
 package com.triplify.domain.model;
 
-import lombok.AccessLevel;
-import lombok.NonNull;
-import lombok.ToString;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.EqualsAndHashCode;
 
 import java.util.UUID;
 
 @Slf4j
 @Getter
-@ToString(exclude = {"createdBy", "group", "image"})
+@ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Badge {
 
+    @EqualsAndHashCode.Include
     @NonNull
     private final UUID id;
 
     @NonNull
-    private final User createdBy;
+    private final UUID createdById;
 
     @NonNull
-    private final BadgeGroup group;
+    private final UUID groupId;
 
     @Setter(AccessLevel.PRIVATE)
-    private Image image;
+    private UUID imageId;
 
     @NonNull
+    @Setter(AccessLevel.PRIVATE)
     private String name;
 
     @NonNull
+    @Setter(AccessLevel.PRIVATE)
     private String nameSk;
 
     @Setter(AccessLevel.PRIVATE)
@@ -40,67 +38,71 @@ public class Badge {
     @Setter(AccessLevel.PRIVATE)
     private String descriptionSk;
 
-    /**
-     * Difficulty tier — must be >= 1. Immutable after creation.
-     */
     private final int level;
 
-    /**
-     * Progress threshold a user must reach to unlock this badge.
-     */
+    @Setter(AccessLevel.PRIVATE)
     private int requiredValue;
 
     @Builder(builderMethodName = "of")
-    private Badge(@NonNull User createdBy,
-                  @NonNull BadgeGroup group,
+    private Badge(@NonNull UUID createdById,
+                  @NonNull UUID groupId,
                   @NonNull String name,
                   @NonNull String nameSk,
                   String description,
                   String descriptionSk,
-                  @Builder.ObtainVia(method = "defaultLevel") int level,
+                  int level,
                   int requiredValue,
-                  Image image) {
+                  UUID imageId) throws IllegalArgumentException {
         if (level < 1) throw new IllegalArgumentException("Badge level must be >= 1, got: " + level);
         if (requiredValue < 0) throw new IllegalArgumentException("Required value cannot be negative, got: " + requiredValue);
         this.id = UUID.randomUUID();
-        this.createdBy = createdBy;
-        this.group = group;
+        this.createdById = createdById;
+        this.groupId = groupId;
         this.name = name;
         this.nameSk = nameSk;
         this.description = description;
         this.descriptionSk = descriptionSk;
         this.level = level;
         this.requiredValue = requiredValue;
-        this.image = image;
-        log.debug("Badge created: name={}, level={}, requiredValue={}", name, level, requiredValue);
+        this.imageId = imageId;
+        log.debug("Badge created: id={}, name={}, level={}, requiredValue={}", id, name, level, requiredValue);
     }
 
-    @SuppressWarnings("unused")
-    private static int defaultLevel() {
-        return 1;
+    public void updateName(@NonNull String name) throws IllegalArgumentException {
+        if (name.isBlank()) throw new IllegalArgumentException("Name must not be blank.");
+        log.debug("Badge [{}] name: {} to {}", id, this.name, name);
+        setName(name);
     }
 
-    public void updateDetails(@NonNull String name,
-                              @NonNull String nameSk,
-                              String description,
-                              String descriptionSk,
-                              int requiredValue) {
-        if (requiredValue < 0) throw new IllegalArgumentException("Required value cannot be negative.");
-        log.debug("Updating Badge [{}]: name {} -> {}, requiredValue {} -> {}", getId(), this.name, name, this.requiredValue, requiredValue);
-        this.name = name;
-        this.nameSk = nameSk;
+    public void updateNameSk(@NonNull String nameSk) throws IllegalArgumentException {
+        if (nameSk.isBlank()) throw new IllegalArgumentException("Slovak name must not be blank.");
+        log.debug("Badge [{}] nameSk: {} to {}", id, this.nameSk, nameSk);
+        setNameSk(nameSk);
+    }
+
+    public void updateDescription(String description) {
+        log.debug("Badge [{}] description updated.", id);
         setDescription(description);
-        setDescriptionSk(descriptionSk);
-        this.requiredValue = requiredValue;
     }
 
-    public void updateImage(Image image) {
-        log.debug("Updating image for Badge [{}]", getId());
-        setImage(image);
+    public void updateDescriptionSk(String descriptionSk) {
+        log.debug("Badge [{}] descriptionSk updated.", id);
+        setDescriptionSk(descriptionSk);
+    }
+
+    public void updateRequiredValue(int requiredValue) throws IllegalArgumentException {
+        if (requiredValue < 0) throw new IllegalArgumentException("Required value cannot be negative, got: " + requiredValue);
+        log.debug("Badge [{}] requiredValue: {} to {}", id, this.requiredValue, requiredValue);
+        setRequiredValue(requiredValue);
+    }
+
+    public void updateImage(@NonNull UUID imageId) {
+        log.debug("Badge [{}] image updated: {}", id, imageId);
+        setImageId(imageId);
     }
 
     public void removeImage() {
-        log.debug("Removing image from Badge [{}]", getId());
-        setImage(null);
+        log.debug("Badge [{}] image removed.", id);
+        setImageId(null);
     }
 }

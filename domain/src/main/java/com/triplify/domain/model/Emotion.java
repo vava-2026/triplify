@@ -7,9 +7,9 @@ import java.util.UUID;
 
 @Slf4j
 @Getter
-@ToString(exclude = {"createdById"})
+@ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class Country {
+public class Emotion {
 
     @EqualsAndHashCode.Include
     @NonNull
@@ -30,14 +30,11 @@ public class Country {
     @Setter(AccessLevel.PRIVATE)
     private String emojiUnicode;
 
-    @Setter(AccessLevel.PRIVATE)
-    private boolean available;
-
     @Builder(builderMethodName = "of")
-    private Country(@NonNull UUID createdById,
+    private Emotion(@NonNull UUID createdById,
                     @NonNull String name,
                     @NonNull String nameSk,
-                    @NonNull String emojiUnicode) throws IllegalArgumentException{
+                    @NonNull String emojiUnicode) throws IllegalArgumentException {
         if (name.isBlank()) throw new IllegalArgumentException("Name must not be blank.");
         if (nameSk.isBlank()) throw new IllegalArgumentException("Slovak name must not be blank.");
         if (emojiUnicode.isBlank()) throw new IllegalArgumentException("Emoji unicode must not be blank.");
@@ -46,35 +43,24 @@ public class Country {
         this.name = name;
         this.nameSk = nameSk;
         this.emojiUnicode = emojiUnicode;
-        this.available = true;
-        log.debug("Country created: id={}, name={}", id, name);
+        log.debug("Emotion created: id={}, name={}", id, name);
     }
 
-    public void updateName(@NonNull String name) throws IllegalArgumentException{
+    public void updateName(@NonNull String name) throws IllegalArgumentException {
         if (name.isBlank()) throw new IllegalArgumentException("Name must not be blank.");
-        log.debug("Country [{}] name: {} to {}", id, this.name, name);
+        log.debug("Emotion [{}] name: {} to {}", id, this.name, name);
         setName(name);
     }
 
     public void updateNameSk(@NonNull String nameSk) throws IllegalArgumentException {
         if (nameSk.isBlank()) throw new IllegalArgumentException("Slovak name must not be blank.");
-        log.debug("Country [{}] nameSk: {} to {}", id, this.nameSk, nameSk);
+        log.debug("Emotion [{}] nameSk: {} to {}", id, this.nameSk, nameSk);
         setNameSk(nameSk);
     }
 
     public void updateEmojiUnicode(@NonNull String emojiUnicode) throws IllegalArgumentException {
         if (emojiUnicode.isBlank()) throw new IllegalArgumentException("Emoji unicode must not be blank.");
-        log.debug("Country [{}] emojiUnicode: {} to {}", id, this.emojiUnicode, emojiUnicode);
+        log.debug("Emotion [{}] emojiUnicode: {} to {}", id, this.emojiUnicode, emojiUnicode);
         setEmojiUnicode(emojiUnicode);
-    }
-
-    public void enable() {
-        log.debug("Country [{}] enabled.", id);
-        setAvailable(true);
-    }
-
-    public void disable() {
-        log.debug("Country [{}] disabled.", id);
-        setAvailable(false);
     }
 }

@@ -13,28 +13,28 @@ import java.util.UUID;
 @ToString
 public class Route {
     @Getter private final UUID id;
-    @Getter private final User user;
-    @Getter private Image coverImage;
+    @Getter private final UUID userID;
+    @Getter private UUID coverImageID;
     @Getter private String title;
     @Getter private String description;
     @Getter private Double length;
     @Getter private final Instant createdAt;
     @Getter private Instant updatedAt;
-    private final Set<Image> images = new LinkedHashSet<>();
+    private final Set<UUID> imagesID = new LinkedHashSet<>();
 
-    public Route(@NonNull User user, @NonNull String title, @NonNull String description, @NonNull Double length) throws IllegalArgumentException{
+    public Route(@NonNull UUID userID, @NonNull String title, @NonNull String description, @NonNull Double length) throws IllegalArgumentException{
         if (title.isBlank()) throw new IllegalArgumentException("Title must not be blank.");
         if (length < 0) throw new IllegalArgumentException("Route length cannot be negative.");
         this.id = UUID.randomUUID();
-        this.user = user;
+        this.userID = userID;
         this.title = title;
         this.description = description;
         this.length = length;
         this.createdAt = Instant.now();
     }
 
-    public Set<Image> getImages() {
-        return Collections.unmodifiableSet(images);
+    public Set<UUID> getImages() {
+        return Collections.unmodifiableSet(imagesID);
     }
 
     public void updateTitle(@NonNull String title) {
@@ -53,23 +53,23 @@ public class Route {
         this.updatedAt = Instant.now();
     }
 
-    public void updateCoverImage(@NonNull Image coverImage) {
-        this.coverImage = coverImage;
+    public void updateCoverImage(@NonNull UUID coverImageID) {
+        this.coverImageID = coverImageID;
         this.updatedAt = Instant.now();
     }
 
     public void removeCoverImage() {
-        this.coverImage = null;
+        this.coverImageID = null;
         this.updatedAt = Instant.now();
     }
 
-    public void addImage(@NonNull Image image) {
-        this.images.add(image);
+    public void addImage(@NonNull UUID imageID) {
+        this.imagesID.add(imageID);
         this.updatedAt = Instant.now();
     }
 
-    public void removeImage(@NonNull Image image) {
-        this.images.remove(image);
+    public void removeImage(@NonNull UUID imageID) {
+        this.imagesID.remove(imageID);
         this.updatedAt = Instant.now();
     }
 }
