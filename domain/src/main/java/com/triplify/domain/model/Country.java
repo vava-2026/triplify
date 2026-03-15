@@ -31,7 +31,7 @@ public class Country {
     private String emojiUnicode;
 
     @Setter(AccessLevel.PRIVATE)
-    private boolean available;
+    private boolean isAvailable;
 
     @Builder(builderMethodName = "of")
     private Country(@NonNull UUID createdById,
@@ -46,7 +46,7 @@ public class Country {
         this.name = name;
         this.nameSk = nameSk;
         this.emojiUnicode = emojiUnicode;
-        this.available = true;
+        this.isAvailable = true;
         log.debug("Country created: id={}, name={}", id, name);
     }
 
