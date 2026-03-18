@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<HBox fx:id="toastRoot"
+      xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.triplify.ui.shared.toast.ToastView"
+      styleClass="toast"
+      alignment="CENTER_LEFT"
+      spacing="12"
+      maxWidth="380"
+      minWidth="300">
+    <VBox styleClass="toast-accent" minWidth="4" maxWidth="4"/>
+    <FontIcon fx:id="toastIcon" styleClass="toast-icon" iconSize="22"/>
+    <VBox spacing="2" HBox.hgrow="ALWAYS">
+        <Label fx:id="titleLabel"   styleClass="toast-title"   wrapText="false"/>
+        <Label fx:id="messageLabel" styleClass="toast-message" wrapText="true"/>
+    </VBox>
+    <Button styleClass="toast-close" onAction="#onClose" focusTraversable="false">
+        <graphic>
+            <FontIcon iconLiteral="fth-x" iconSize="14" styleClass="toast-close-icon"/>
+        </graphic>
+    </Button>
+</HBox>
+
