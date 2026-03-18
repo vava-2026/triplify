@@ -1,6 +1,6 @@
 package com.triplify.application.model;
 
-import com.triplify.domain.model.ColorCategory;
+import com.triplify.domain.model.enums.ColorEnum;
 
 public enum ColorTheme {
 
@@ -23,7 +23,7 @@ public enum ColorTheme {
         return styleClass;
     }
 
-    public static ColorTheme from(ColorCategory color) {
+    public static ColorTheme from(ColorEnum color) {
         return switch (color) {
             case RED -> RED;
             case ORANGE -> ORANGE;

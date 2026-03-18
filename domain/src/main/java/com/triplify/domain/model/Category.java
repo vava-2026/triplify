@@ -57,7 +57,7 @@ public class Category {
         this.description = description;
         this.descriptionSk = descriptionSk;
         this.emojiUnicode = emojiUnicode;
-        this.color = color != null ? color : ColorEnum.GRAY;
+        this.color = color != null ? color : ColorEnum.TEAL;
         log.debug("Category created: id={}, name={}, color={}", id, name, this.color);
     }
 

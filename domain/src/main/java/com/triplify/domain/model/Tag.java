@@ -33,7 +33,7 @@ public class Tag {
         this.id = UUID.randomUUID();
         this.userId = userId;
         this.name = name;
-        this.color = color != null ? color : ColorEnum.GRAY;
+        this.color = color != null ? color : ColorEnum.TEAL;
         log.debug("Tag created: id={}, name={}, color={}", id, name, this.color);
     }
 
@@ -45,6 +45,6 @@ public class Tag {
 
     public void updateColor(ColorEnum color) {
         log.debug("Tag [{}] color: {} to {}", id, this.color, color);
-        setColor(color != null ? color : ColorEnum.GRAY);
+        setColor(color != null ? color : ColorEnum.TEAL);
     }
 }
