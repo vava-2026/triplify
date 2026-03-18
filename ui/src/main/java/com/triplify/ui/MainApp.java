@@ -1,6 +1,5 @@
 package com.triplify.ui;
 
-import com.triplify.infrastructure.repository.persistence.SQLiteConnectionFactory;
 import com.google.inject.Inject;
 import com.triplify.ui.shared.toast.ToastService;
 import com.google.inject.Injector;
@@ -51,13 +50,6 @@ public class MainApp extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         log.info("App launched");
-
-        try (var stmt = SQLiteConnectionFactory.getConnection().createStatement();
-             var rs = stmt.executeQuery("SELECT spatialite_version()")) {
-            log.info("SpatiaLite version: {}", rs.getString(1));
-        } catch (Exception e) {
-            log.error("SpatiaLite check failed", e);
-        }
 
         // Sidebar island
         FxmlLoadResult<Node, SidebarIslandView> islandResult = fxml.load("/com/triplify/ui/shared/menu/view/SidebarIsland.fxml");
