@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.layout.HBox?>
+
+<fx:root type="HBox"
+         xmlns="http://javafx.com/javafx"
+         xmlns:fx="http://javafx.com/fxml">
+
+    <ComboBox fx:id="comboBox"
+              styleClass="app-select"
+              maxWidth="Infinity"
+              HBox.hgrow="ALWAYS"
+              onAction="#onSelectionChanged"/>
+
+</fx:root>

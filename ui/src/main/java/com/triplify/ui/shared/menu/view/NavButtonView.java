@@ -1,7 +1,9 @@
 package com.triplify.ui.shared.menu.view;
 
+import com.google.inject.Inject;
 import com.triplify.ui.shared.menu.model.NavItem;
 import com.triplify.ui.shared.menu.viewmodel.NavButtonViewModel;
+import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import com.triplify.ui.theme.AppColors;
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
@@ -10,7 +12,6 @@ import javafx.animation.Timeline;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -18,18 +19,20 @@ import javafx.scene.paint.Color;
 import javafx.util.Duration;
 import org.kordamp.ikonli.javafx.FontIcon;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
 public class NavButtonView implements Initializable {
 
-    private static final Color COLOR_PRIMARY  = AppColors.PRIMARY;
-    private static final Duration ANIM_DURATION  = Duration.millis(180);
+    private static final URL FXML_URL = NavButtonView.class.getResource("/com/triplify/ui/shared/menu/view/NavButton.fxml");
+    private static final Color COLOR_PRIMARY = AppColors.PRIMARY;
+    private static final Duration ANIM_DURATION = Duration.millis(180);
 
     @FXML private Button button;
     @FXML private FontIcon icon;
     @FXML private Label label;
+
+    @Inject private FxmlLoaderHelper fxmlLoader;
 
     private NavButtonViewModel viewModel;
     private Runnable onSelect;
@@ -37,20 +40,9 @@ public class NavButtonView implements Initializable {
     private final DoubleProperty borderProgress = new SimpleDoubleProperty(0.0);
     private Timeline hoverTimeline;
 
-    public static NavButtonView create(NavItem navItem) {
-        URL fxml = NavButtonView.class.getResource(
-                "/com/triplify/ui/shared/menu/view/NavButton.fxml");
-        if (fxml == null) throw new IllegalStateException("NavButton.fxml not found");
-
-        FXMLLoader loader = new FXMLLoader(fxml);
-        try {
-            loader.load();
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to load NavButton.fxml", e);
-        }
-        NavButtonView view = loader.getController();
-        view.configure(navItem);
-        return view;
+    public NavButtonView withNavItem(NavItem navItem) {
+        configure(navItem);
+        return this;
     }
 
     @Override
@@ -117,4 +109,3 @@ public class NavButtonView implements Initializable {
                 COLOR_PRIMARY.getBlue(), t);
     }
 }
-

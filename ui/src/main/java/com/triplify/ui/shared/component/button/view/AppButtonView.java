@@ -1,21 +1,21 @@
 package com.triplify.ui.shared.component.button.view;
 
+import com.google.inject.Inject;
 import com.triplify.ui.shared.component.button.model.ButtonVariant;
 import com.triplify.ui.shared.component.button.viewmodel.AppButtonViewModel;
+import com.triplify.ui.shared.util.FxmlLoaderHelper;
+import com.triplify.ui.shared.util.FxmlLoadResult;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ProgressIndicator;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.kordamp.ikonli.javafx.FontIcon;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -28,6 +28,8 @@ public class AppButtonView implements Initializable {
     @FXML private Button button;
 
     private AppButtonViewModel viewModel;
+
+    @Inject private FxmlLoaderHelper fxmlLoader;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) { }
@@ -46,9 +48,10 @@ public class AppButtonView implements Initializable {
         }
     }
 
-    public static Builder builder() { return new Builder(); }
+    public static Builder builder(FxmlLoaderHelper fxmlLoader) { return new Builder(fxmlLoader); }
 
     public static final class Builder {
+        private final FxmlLoaderHelper fxmlLoader;
         private String label = "";
         private ButtonVariant variant = ButtonVariant.PRIMARY;
         private String icon = null;
@@ -57,7 +60,7 @@ public class AppButtonView implements Initializable {
         private String confirmMessage = "Are you sure?";
         private Runnable onAction = null;
 
-        private Builder() {}
+        private Builder(FxmlLoaderHelper fxmlLoader) { this.fxmlLoader = fxmlLoader; }
 
         public Builder label(String v) { this.label = v; return this; }
         public Builder variant(ButtonVariant v) { this.variant = v; return this; }
@@ -68,13 +71,8 @@ public class AppButtonView implements Initializable {
 
         public Button build() {
             if (FXML_URL == null) throw new IllegalStateException("AppButton.fxml not found");
-            FXMLLoader loader = new FXMLLoader(FXML_URL);
-            try {
-                loader.load();
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to load AppButton.fxml", e);
-            }
-            AppButtonView view = loader.getController();
+            FxmlLoadResult<?, AppButtonView> result = fxmlLoader.load(FXML_URL);
+            AppButtonView view = result.controller();
             view.configure(label, variant, icon, disabled, requireConfirm, confirmMessage, onAction);
             return view.getButton();
         }
@@ -128,30 +126,25 @@ public class AppButtonView implements Initializable {
 
     private void showConfirmDialog() {
         if (DIALOG_FXML_URL == null) return;
-        try {
-            FXMLLoader loader = new FXMLLoader(DIALOG_FXML_URL);
-            VBox content = loader.load();
-            ConfirmDialogView dialogView = loader.getController();
-            dialogView.configure(viewModel.getConfirmMessage(), viewModel::execute);
+        FxmlLoadResult<VBox, ConfirmDialogView> result = fxmlLoader.load(DIALOG_FXML_URL);
+        VBox content = result.node();
+        ConfirmDialogView dialogView = result.controller();
+        dialogView.configure(viewModel.getConfirmMessage(), viewModel::execute);
 
-            Scene scene = new Scene(content);
-            if (CSS_URL != null) scene.getStylesheets().add(CSS_URL.toExternalForm());
-            if (button.getScene() != null) {
-                scene.getStylesheets().addAll(button.getScene().getStylesheets());
-            }
-
-            Stage dialog = new Stage(StageStyle.UTILITY);
-            dialog.initModality(Modality.APPLICATION_MODAL);
-            if (button.getScene() != null) {
-                dialog.initOwner(button.getScene().getWindow());
-            }
-            dialog.setResizable(false);
-            dialog.setScene(scene);
-            dialog.showAndWait();
-
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to load ConfirmDialog.fxml", e);
+        Scene scene = new Scene(content);
+        if (CSS_URL != null) scene.getStylesheets().add(CSS_URL.toExternalForm());
+        if (button.getScene() != null) {
+            scene.getStylesheets().addAll(button.getScene().getStylesheets());
         }
+
+        Stage dialog = new Stage(StageStyle.UTILITY);
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        if (button.getScene() != null) {
+            dialog.initOwner(button.getScene().getWindow());
+        }
+        dialog.setResizable(false);
+        dialog.setScene(scene);
+        dialog.showAndWait();
     }
 }
 
