@@ -22,6 +22,15 @@
     -color-on-primary: #ecf3f9;
     -color-on-surface: white;
 
+    -color-start-bg: #06070e;
+
+    -color-login: #2f658d;
+    -color-login-hover: #245168;
+    -color-on-login: #EBF2F8;
+    -color-sign-up: #d9e0e6;
+    -color-sign-up-hover: #bbbec1;
+    -color-on-sign-up: #000000;
+
     -color-theme-red: #e74c3c;
     -color-theme-orange: #e67e22;
     -color-theme-yellow: #f1c40f;

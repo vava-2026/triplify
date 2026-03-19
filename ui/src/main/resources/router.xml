@@ -8,6 +8,10 @@
         <argument name="tripName" type="string" required="true"/>
     </arguments>
 
+    <destination id="start"
+                 fxml="com/triplify/ui/pages/start/StartPageView.fxml"
+                 singleTop="true"/>
+
     <destination id="map"
                  fxml="com/triplify/ui/pages/map/MapView.fxml"
                  singleTop="true"/>

@@ -10,7 +10,7 @@
            fx:id="sidebarRoot"
            prefWidth="260"
            maxWidth="260"
-           minWidth="60"
+           minWidth="260"
            stylesheets="@../css/menu.css"
            styleClass="sidebar-root">
 

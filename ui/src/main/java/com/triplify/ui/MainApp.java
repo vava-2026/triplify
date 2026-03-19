@@ -55,7 +55,6 @@ public class MainApp extends Application {
     public void start(Stage stage) throws Exception {
         log.info("App launched");
 
-
         // Sidebar island
         FxmlLoadResult<Node, SidebarIslandView> islandResult = fxml.load("/com/triplify/ui/shared/menu/view/SidebarIsland.fxml");
         Node island = islandResult.node();
@@ -136,6 +135,8 @@ public class MainApp extends Application {
 
         HBox topBar = new HBox(islandPane, header);
         topBar.getStyleClass().add("app-top-bar");
+        topBar.visibleProperty().bind(showMenu);
+        topBar.managedProperty().bind(showMenu);
 
         HBox bottomRow = new HBox(menu, contentArea);
         bottomRow.getStyleClass().add("app-bottom-row");
