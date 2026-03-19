@@ -12,35 +12,39 @@
            xmlns:fx="http://javafx.com/fxml"
            fx:controller="com.triplify.ui.pages.account.LoginController"
            styleClass="page-root">
-    <VBox spacing="14" maxWidth="420" StackPane.alignment="CENTER">
-        <Label text="Sign In" styleClass="page-title"/>
-        <Label text="Welcome back! Enter your credentials." styleClass="page-subtitle"/>
-        <VBox styleClass="page-card" spacing="12">
-            <VBox spacing="4">
-                <Label text="Username" styleClass="form-label"/>
-                <TextField fx:id="username"
-                           promptText="Enter your username"
-                           styleClass="form-input"/>
-                <Label fx:id="usernameError"
-                       managed="false"
-                       visible="false"
-                       styleClass="field-error-label"/>
-            </VBox>
-            <VBox spacing="4">
-                <Label text="Password" styleClass="form-label"/>
-                <PasswordField fx:id="password"
-                               promptText="Enter your password"
+    <VBox alignment="CENTER" spacing="24">
+        <VBox spacing="14" maxWidth="420" StackPane.alignment="CENTER">
+            <Label text="Sign In" styleClass="page-title"/>
+            <Label text="Welcome back! Enter your credentials." styleClass="page-subtitle"/>
+            <VBox styleClass="page-card" spacing="12">
+                <VBox spacing="4">
+                    <Label text="Username" styleClass="form-label"/>
+                    <TextField fx:id="username"
+                               promptText="Enter your username"
                                styleClass="form-input"/>
-                <Label fx:id="passwordError"
-                       managed="false"
-                       visible="false"
-                       styleClass="field-error-label"/>
+                    <Label fx:id="usernameError"
+                           managed="false"
+                           visible="false"
+                           styleClass="field-error-label"/>
+                </VBox>
+                <VBox spacing="4">
+                    <Label text="Password" styleClass="form-label"/>
+                    <PasswordField fx:id="password"
+                                   promptText="Enter your password"
+                                   styleClass="form-input"/>
+                    <Label fx:id="passwordError"
+                           managed="false"
+                           visible="false"
+                           styleClass="field-error-label"/>
+                </VBox>
+                <Button text="Sign In"
+                        onAction="#onLogin"
+                        maxWidth="Infinity"
+                        styleClass="app-btn,app-btn-primary"/>
             </VBox>
-            <Button text="Sign In"
-                    onAction="#onLogin"
-                    maxWidth="Infinity"
-                    styleClass="app-btn,app-btn-primary"/>
         </VBox>
+
+        <fx:include fx:id="statistics" source="../account/StatisticsView.fxml"/>
     </VBox>
 </StackPane>
 

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns:fx="http://javafx.com/fxml/1"
+      xmlns="http://javafx.com/javafx/21"
+      fx:controller="com.triplify.ui.pages.account.StatisticsController"
+      styleClass="stats-page"
+      spacing="20">
+
+    <padding>
+        <Insets top="24" right="24" bottom="24" left="24"/>
+    </padding>
+
+    <!-- Header -->
+    <HBox styleClass="section-header" alignment="CENTER_LEFT" spacing="8">
+        <Label text="📊" styleClass="header-icon"/>
+        <Label text="Travel Statistics" styleClass="section-title"/>
+    </HBox>
+
+    <!-- Statistic cards -->
+    <HBox spacing="12">
+
+        <!-- Countries Visited -->
+        <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="8">
+            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+            <StackPane styleClass="icon-circle, icon-green" maxWidth="44" minWidth="44" maxHeight="44" minHeight="44">
+                <Label text="🌍" styleClass="card-icon"/>
+            </StackPane>
+            <Region prefHeight="4"/>
+            <Label text="Countries Visited" styleClass="card-label" wrapText="true"/>
+            <Label fx:id="countriesValue" text="—" styleClass="card-value"/>
+        </VBox>
+
+        <!-- Total Trips -->
+        <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="8">
+            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+            <StackPane styleClass="icon-circle, icon-blue" maxWidth="44" minWidth="44" maxHeight="44" minHeight="44">
+                <Label text="✈" styleClass="card-icon"/>
+            </StackPane>
+            <Region prefHeight="4"/>
+            <Label text="Total Trips" styleClass="card-label"/>
+            <Label fx:id="tripsValue" text="—" styleClass="card-value"/>
+        </VBox>
+
+        <!-- Places Visited -->
+        <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="8">
+            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+            <StackPane styleClass="icon-circle, icon-yellow" maxWidth="44" minWidth="44" maxHeight="44" minHeight="44">
+                <Label text="📍" styleClass="card-icon"/>
+            </StackPane>
+            <Region prefHeight="4"/>
+            <Label text="Places Visited" styleClass="card-label"/>
+            <Label fx:id="placesValue" text="—" styleClass="card-value"/>
+        </VBox>
+
+        <!-- Travel Days -->
+        <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="8">
+            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+            <StackPane styleClass="icon-circle, icon-purple" maxWidth="44" minWidth="44" maxHeight="44" minHeight="44">
+                <Label text="📅" styleClass="card-icon"/>
+            </StackPane>
+            <Region prefHeight="4"/>
+            <Label text="Travel Days" styleClass="card-label"/>
+            <Label fx:id="travelDaysValue" text="—" styleClass="card-value"/>
+        </VBox>
+
+        <!-- Photos Uploaded -->
+        <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="8">
+            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+            <StackPane styleClass="icon-circle, icon-pink" maxWidth="44" minWidth="44" maxHeight="44" minHeight="44">
+                <Label text="📷" styleClass="card-icon"/>
+            </StackPane>
+            <Region prefHeight="4"/>
+            <Label text="Photos Uploaded" styleClass="card-label"/>
+            <Label fx:id="photosValue" text="—" styleClass="card-value"/>
+        </VBox>
+
+    </HBox>
+
+</VBox>
