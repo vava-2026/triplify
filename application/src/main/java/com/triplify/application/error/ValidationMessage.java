@@ -5,13 +5,15 @@ public enum ValidationMessage {
     REQUIRED(Constants.REQUIRED, 0),
     EMAIL_INVALID(Constants.EMAIL_INVALID, 1),
     PASSWORD_TOO_SHORT(Constants.PASSWORD_TOO_SHORT, 2),
-    USERNAME_TOO_SHORT(Constants.USERNAME_TOO_SHORT, 3);
+    USERNAME_TOO_SHORT(Constants.USERNAME_TOO_SHORT, 3),
+    DESCRIPTION_TOO_LONG(Constants.DESCRIPTION_TOO_LONG, 4);
 
     public static final class Constants {
         public static final String REQUIRED = "validation.field.required";
         public static final String EMAIL_INVALID = "validation.email.invalid";
         public static final String PASSWORD_TOO_SHORT = "validation.password.too.short";
         public static final String USERNAME_TOO_SHORT = "validation.username.too.short";
+        public static final String DESCRIPTION_TOO_LONG = "validation.description.too.long";
     }
 
     private final String messageKey;
