@@ -145,17 +145,6 @@ public class MainApp extends Application {
         VBox normalLayout = new VBox(topBar, bottomRow);
         normalLayout.getStyleClass().add("app-root");
 
-
-        // ----------------------------
-        // Testing InputItem and PasswordItem
-        // ----------------------------
-        InputItem inputTest = new InputItem("youremail@gmail.com");
-        PasswordItem passwordTest = new PasswordItem("Enter password");
-
-        // Вставляем тестовые поля после header и перед contentArea
-        rightColumn.getChildren().add(1, inputTest);    // индекс 1 — после header
-        rightColumn.getChildren().add(2, passwordTest); // индекс 2 — после InputItem
-
         // Root
         StackPane root = new StackPane(mapView, normalLayout);
         root.getStyleClass().add("app-scene-root");

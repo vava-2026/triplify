@@ -6,29 +6,39 @@ import javafx.beans.binding.Bindings;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextArea;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import org.kordamp.ikonli.javafx.FontIcon;
 
-public class InputItem extends VBox {
+public class TextAreaItem extends VBox {
 
-    private TextField textField;
+    private TextArea textArea;
     private Label errorLabel;
     private Button clearButton;
     private FontIcon clearIcon;
     private StackPane fieldPane;
 
-    public InputItem(String placeholderKey) {
+    public TextAreaItem(String placeholderKey) {
         this(placeholderKey, InputVariant.OUTLINED);
     }
 
-    public InputItem(String placeholderKey, InputVariant variant) {
-
-        textField = new TextField();
-        textField.promptTextProperty().bind(
+    public TextAreaItem(String placeholderKey, InputVariant variant) {
+        textArea = new TextArea();
+        textArea.promptTextProperty().bind(
                 Bindings.createStringBinding(() -> I18n.t(placeholderKey), I18n.bundleProperty()));
-        textField.getStyleClass().addAll("input-item", variant.getStyleClass());
+        textArea.getStyleClass().addAll("input-item", "textarea-item", variant.getStyleClass());
+        textArea.setWrapText(true);
+
+        textArea.skinProperty().addListener((obs, oldSkin, newSkin) -> {
+            if (newSkin == null) return;
+            ScrollPane sp = (ScrollPane) textArea.lookup(".scroll-pane");
+            if (sp != null) {
+                sp.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+                sp.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+            }
+        });
 
         errorLabel = new Label();
         errorLabel.getStyleClass().add("input-error-label");
@@ -43,61 +53,62 @@ public class InputItem extends VBox {
         clearButton.setFocusTraversable(false);
         clearButton.getStyleClass().add("input-action-btn");
         clearButton.setOnAction(e -> {
-            textField.clear();
+            textArea.clear();
             clearError();
         });
 
         clearButton.setVisible(false);
         clearButton.setManaged(false);
-        textField.textProperty().addListener((obs, oldVal, newVal) -> {
+        textArea.textProperty().addListener((obs, oldVal, newVal) -> {
             boolean hasText = newVal != null && !newVal.isEmpty();
             clearButton.setVisible(hasText);
             clearButton.setManaged(hasText);
             if (hasText) {
-                textField.getStyleClass().add("input-item-with-action");
+                textArea.getStyleClass().add("textarea-item-with-action");
             } else {
-                textField.getStyleClass().remove("input-item-with-action");
+                textArea.getStyleClass().remove("textarea-item-with-action");
             }
         });
 
         fieldPane = new StackPane();
-        fieldPane.getChildren().addAll(textField, clearButton);
-        StackPane.setAlignment(clearButton, Pos.CENTER_RIGHT);
+        fieldPane.getChildren().addAll(textArea, clearButton);
+        StackPane.setAlignment(clearButton, Pos.TOP_RIGHT);
         clearButton.translateXProperty().set(-5);
+        clearButton.translateYProperty().set(5);
 
-        textField.setPrefWidth(350);
-        textField.setPrefHeight(45);
+        textArea.setPrefWidth(350);
+        textArea.setPrefHeight(120);
         clearButton.setPrefWidth(36);
         clearButton.setPrefHeight(36);
+        clearButton.setMaxWidth(36);
         clearButton.setMaxHeight(36);
         fieldPane.setPrefWidth(350);
+
         setSpacing(5);
         setAlignment(Pos.CENTER_LEFT);
         getChildren().addAll(fieldPane, errorLabel);
-
-        textField.setOnAction(e -> validateRequired());
     }
 
     public String getText() {
-        return textField.getText();
+        return textArea.getText();
     }
 
     public void setText(String text) {
-        textField.setText(text);
+        textArea.setText(text);
     }
 
     public void showError(String message) {
         errorLabel.setText(message);
         errorLabel.setVisible(true);
         errorLabel.setManaged(true);
-        textField.getStyleClass().remove("input-item-error");
-        textField.getStyleClass().add("input-item-error");
+        textArea.getStyleClass().remove("input-item-error");
+        textArea.getStyleClass().add("input-item-error");
     }
 
     public void clearError() {
         errorLabel.setVisible(false);
         errorLabel.setManaged(false);
-        textField.getStyleClass().remove("input-item-error");
+        textArea.getStyleClass().remove("input-item-error");
     }
 
     public boolean validateRequired() {
@@ -107,6 +118,10 @@ public class InputItem extends VBox {
         }
         clearError();
         return true;
+    }
+
+    public void setRows(int rows) {
+        textArea.setPrefRowCount(rows);
     }
 
     public void setPosition(Pos alignment) {

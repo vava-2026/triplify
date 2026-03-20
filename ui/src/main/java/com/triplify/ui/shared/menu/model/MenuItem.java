@@ -9,7 +9,7 @@ public enum MenuItem {
     MY_TRIPS("nav.myTrips", RouteIds.MY_TRIPS, false),
     CALENDAR("nav.calendar", RouteIds.CALENDAR, false),
     SETTINGS("nav.settings", RouteIds.SETTINGS, false),
-    ACCOUNT("nav.account", RouteIds.LOGIN, false); // TODO: change to account, login just for example here 
+    ACCOUNT("nav.account", RouteIds.ACCOUNT, false);
 
     private final String i18nKey;
     private final String routeId;

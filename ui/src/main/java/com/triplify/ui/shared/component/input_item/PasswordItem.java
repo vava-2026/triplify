@@ -1,12 +1,13 @@
 package com.triplify.ui.shared.component.input_item;
 
+import com.triplify.ui.i18n.I18n;
+import com.triplify.ui.shared.component.input_item.model.InputVariant;
+import javafx.beans.binding.Bindings;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 public class PasswordItem extends VBox {
 
@@ -16,58 +17,50 @@ public class PasswordItem extends VBox {
     private Button toggleButton;
     private boolean isVisible = false;
     private StackPane fieldPane;
-    private ImageView eyeView;
-    private Image eye;
-    private Image eye_off;
+    private FontIcon toggleIcon;
 
-    public PasswordItem(String placeholder) {
+    public PasswordItem(String placeholderKey) {
+        this(placeholderKey, InputVariant.OUTLINED);
+    }
+
+    public PasswordItem(String placeholderKey, InputVariant variant) {
         errorLabel = new Label();
-        errorLabel.setTextFill(Color.RED);
+        errorLabel.getStyleClass().add("input-error-label");
         errorLabel.setVisible(false);
+        errorLabel.setManaged(false);
 
-        eye = new Image(getClass().getResourceAsStream("/com/triplify/ui/shared/component/input_item/eye.png"));
-        eye_off = new Image(getClass().getResourceAsStream("/com/triplify/ui/shared/component/input_item/eye_off.png"));
+        toggleIcon = new FontIcon("fth-eye-off");
+        toggleIcon.getStyleClass().add("input-action-icon");
 
-        eyeView = new ImageView(eye_off);
-        eyeView.setFitWidth(25);
-        eyeView.setFitHeight(25);
-        eyeView.setPreserveRatio(true);
-
-        // Password fields
         passwordField = new PasswordField();
-        passwordField.setPromptText(placeholder);
-        passwordField.getStyleClass().add("input-item");
-        System.out.println("Classes: " + passwordField.getStyleClass()); // добавь это
+        passwordField.promptTextProperty().bind(Bindings.createStringBinding(() -> I18n.t(placeholderKey), I18n.bundleProperty()));
+        passwordField.getStyleClass().addAll("input-item", variant.getStyleClass(), "input-item-with-action");
         passwordField.setPrefWidth(350);
         passwordField.setPrefHeight(45);
 
         textField = new TextField();
-        textField.setPromptText(placeholder);
-        textField.getStyleClass().add("input-item");
+        textField.promptTextProperty().bind(Bindings.createStringBinding(() -> I18n.t(placeholderKey), I18n.bundleProperty()));
+        textField.getStyleClass().addAll("input-item", variant.getStyleClass(), "input-item-with-action");
         textField.setPrefWidth(350);
         textField.setPrefHeight(45);
         textField.setVisible(false);
 
-        // Toggle button
         toggleButton = new Button();
-        toggleButton.setGraphic(eyeView);
+        toggleButton.setGraphic(toggleIcon);
         toggleButton.setFocusTraversable(false);
-        toggleButton.setStyle("-fx-background-color: transparent;");
-        toggleButton.setPrefWidth(45);
-        toggleButton.setPrefHeight(45);
-        toggleButton.setMaxWidth(45);
-        toggleButton.setMaxHeight(45);
+        toggleButton.getStyleClass().add("input-action-btn");
+        toggleButton.setPrefWidth(36);
+        toggleButton.setPrefHeight(36);
+        toggleButton.setMaxWidth(36);
+        toggleButton.setMaxHeight(36);
         toggleButton.setOnAction(e -> togglePasswordVisibility());
 
-        // StackPane — кнопка внутри поля
         fieldPane = new StackPane();
         fieldPane.setPrefWidth(350);
-        fieldPane.setMaxWidth(350);
         fieldPane.getChildren().addAll(passwordField, textField, toggleButton);
         StackPane.setAlignment(toggleButton, Pos.CENTER_RIGHT);
         toggleButton.translateXProperty().set(-5);
 
-        // VBox
         setSpacing(5);
         setAlignment(Pos.CENTER_LEFT);
         getChildren().addAll(fieldPane, errorLabel);
@@ -78,13 +71,13 @@ public class PasswordItem extends VBox {
             textField.setVisible(false);
             passwordField.setText(textField.getText());
             passwordField.setVisible(true);
-            eyeView.setImage(eye_off);
+            toggleIcon.setIconLiteral("fth-eye-off");
             isVisible = false;
         } else {
             textField.setText(passwordField.getText());
             textField.setVisible(true);
             passwordField.setVisible(false);
-            eyeView.setImage(eye);
+            toggleIcon.setIconLiteral("fth-eye");
             isVisible = true;
         }
     }
@@ -101,19 +94,23 @@ public class PasswordItem extends VBox {
     public void showError(String message) {
         errorLabel.setText(message);
         errorLabel.setVisible(true);
-        passwordField.setStyle("-fx-border-color: red;");
-        textField.setStyle("-fx-border-color: red;");
+        errorLabel.setManaged(true);
+        passwordField.getStyleClass().remove("input-item-error");
+        passwordField.getStyleClass().add("input-item-error");
+        textField.getStyleClass().remove("input-item-error");
+        textField.getStyleClass().add("input-item-error");
     }
 
     public void clearError() {
         errorLabel.setVisible(false);
-        passwordField.setStyle("");
-        textField.setStyle("");
+        errorLabel.setManaged(false);
+        passwordField.getStyleClass().remove("input-item-error");
+        textField.getStyleClass().remove("input-item-error");
     }
 
     public boolean validateRequired() {
         if (getText() == null || getText().trim().isEmpty()) {
-            showError("This field is required");
+            showError(I18n.t("validation.field.required"));
             return false;
         }
         clearError();
@@ -126,11 +123,5 @@ public class PasswordItem extends VBox {
 
     public void setSpacingBetween(double spacing) {
         setSpacing(spacing);
-    }
-
-    public void setStyleSheet(String cssPath) {
-        getStylesheets().clear();
-        String css = getClass().getResource(cssPath).toExternalForm();
-        getStylesheets().add(css);
     }
 }
