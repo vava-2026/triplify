@@ -11,6 +11,9 @@ import org.kordamp.ikonli.javafx.FontIcon;
 
 public class PasswordItem extends VBox {
 
+    private static final double FIELD_HEIGHT = 45;
+    private static final double ACTION_BTN_SIZE = 36;
+
     private TextField textField;
     private PasswordField passwordField;
     private Label errorLabel;
@@ -35,34 +38,35 @@ public class PasswordItem extends VBox {
         passwordField = new PasswordField();
         passwordField.promptTextProperty().bind(Bindings.createStringBinding(() -> I18n.t(placeholderKey), I18n.bundleProperty()));
         passwordField.getStyleClass().addAll("input-item", variant.getStyleClass(), "input-item-with-action");
-        passwordField.setPrefWidth(350);
-        passwordField.setPrefHeight(45);
+        passwordField.setPrefHeight(FIELD_HEIGHT);
+        passwordField.setMaxWidth(Double.MAX_VALUE);
 
         textField = new TextField();
         textField.promptTextProperty().bind(Bindings.createStringBinding(() -> I18n.t(placeholderKey), I18n.bundleProperty()));
         textField.getStyleClass().addAll("input-item", variant.getStyleClass(), "input-item-with-action");
-        textField.setPrefWidth(350);
-        textField.setPrefHeight(45);
+        textField.setPrefHeight(FIELD_HEIGHT);
+        textField.setMaxWidth(Double.MAX_VALUE);
         textField.setVisible(false);
 
         toggleButton = new Button();
         toggleButton.setGraphic(toggleIcon);
         toggleButton.setFocusTraversable(false);
         toggleButton.getStyleClass().add("input-action-btn");
-        toggleButton.setPrefWidth(36);
-        toggleButton.setPrefHeight(36);
-        toggleButton.setMaxWidth(36);
-        toggleButton.setMaxHeight(36);
+        toggleButton.setPrefWidth(ACTION_BTN_SIZE);
+        toggleButton.setPrefHeight(ACTION_BTN_SIZE);
+        toggleButton.setMaxWidth(ACTION_BTN_SIZE);
+        toggleButton.setMaxHeight(ACTION_BTN_SIZE);
         toggleButton.setOnAction(e -> togglePasswordVisibility());
 
         fieldPane = new StackPane();
-        fieldPane.setPrefWidth(350);
+        fieldPane.setMaxWidth(Double.MAX_VALUE);
         fieldPane.getChildren().addAll(passwordField, textField, toggleButton);
         StackPane.setAlignment(toggleButton, Pos.CENTER_RIGHT);
         toggleButton.translateXProperty().set(-5);
 
         setSpacing(5);
         setAlignment(Pos.CENTER_LEFT);
+        setMaxWidth(Double.MAX_VALUE);
         getChildren().addAll(fieldPane, errorLabel);
     }
 

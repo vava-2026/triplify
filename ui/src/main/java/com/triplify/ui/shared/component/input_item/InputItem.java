@@ -13,6 +13,9 @@ import org.kordamp.ikonli.javafx.FontIcon;
 
 public class InputItem extends VBox {
 
+    private static final double FIELD_HEIGHT = 45;
+    private static final double ACTION_BTN_SIZE = 36;
+
     private TextField textField;
     private Label errorLabel;
     private Button clearButton;
@@ -65,12 +68,14 @@ public class InputItem extends VBox {
         StackPane.setAlignment(clearButton, Pos.CENTER_RIGHT);
         clearButton.translateXProperty().set(-5);
 
-        textField.setPrefWidth(350);
-        textField.setPrefHeight(45);
-        clearButton.setPrefWidth(36);
-        clearButton.setPrefHeight(36);
-        clearButton.setMaxHeight(36);
-        fieldPane.setPrefWidth(350);
+        textField.setPrefHeight(FIELD_HEIGHT);
+        textField.setMaxWidth(Double.MAX_VALUE);
+        clearButton.setPrefWidth(ACTION_BTN_SIZE);
+        clearButton.setPrefHeight(ACTION_BTN_SIZE);
+        clearButton.setMaxWidth(ACTION_BTN_SIZE);
+        clearButton.setMaxHeight(ACTION_BTN_SIZE);
+        fieldPane.setMaxWidth(Double.MAX_VALUE);
+        setMaxWidth(Double.MAX_VALUE);
         setSpacing(5);
         setAlignment(Pos.CENTER_LEFT);
         getChildren().addAll(fieldPane, errorLabel);
