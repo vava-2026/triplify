@@ -2,6 +2,7 @@ package com.triplify.infrastructure.repository.persistence;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sqlite.SQLiteConnection;
 
 import java.io.IOException;
 import java.net.URI;
@@ -15,10 +16,13 @@ import java.util.Collections;
 
 public class SQLiteConnectionFactory {
     private static final Logger logger = LoggerFactory.getLogger(SQLiteConnectionFactory.class);
-    private static final String URL = "jdbc:sqlite:triplify.db";
+
+    private static final String DB_PATH_PROPERTY = "triplify.db.path"; // JVM property key for db path override
+    private static final String DB_PATH_ENV = "TRIPLIFY_DB_PATH"; // Env var key for db path override
 
     private static Connection instance;
 
+    // Close SQLiteConnection at shutdown
     static {
         Runtime.getRuntime().addShutdownHook(new Thread(SQLiteConnectionFactory::close));
     }
@@ -29,9 +33,10 @@ public class SQLiteConnectionFactory {
     public static synchronized Connection getConnection() {
         try {
             if (instance == null || instance.isClosed()) {
-                instance = DriverManager.getConnection(URL);
+                String jdbcUrl = buildJdbcUrl();
+                instance = DriverManager.getConnection(jdbcUrl);
                 enableSpatiaLite(instance);
-                logger.info("SQLite connection established");
+                logger.info("SQLite connection established: {}", jdbcUrl);
             }
             return instance;
         } catch (SQLException e) {
@@ -55,7 +60,8 @@ public class SQLiteConnectionFactory {
 
     private static void enableSpatiaLite(Connection connection) {
         try (Statement stmt = connection.createStatement()) {
-            connection.unwrap(org.sqlite.SQLiteConnection.class)
+            // // Allow loading native extensions
+            connection.unwrap(SQLiteConnection.class)
                     .getDatabase()
                     .enable_load_extension(true);
 
@@ -123,13 +129,14 @@ public class SQLiteConnectionFactory {
             "mod_spatialite.dll"
     );
 
+    // Copies required native libs from resources to temp filesystem
     private static String extractLibrary() throws IOException {
         String folder = resolvePlatformFolder();
         String libraryName = resolveLibraryName();
 
         // Create a single temp directory to hold all platform files
         Path tempDir = Files.createTempDirectory("spatialite");
-        tempDir.toFile().deleteOnExit();
+        tempDir.toFile().deleteOnExit(); // Mark directory for deletion on JVM exit
 
         // List all resources inside the platform folder using the classpath
         URI folderUri;
@@ -142,15 +149,17 @@ public class SQLiteConnectionFactory {
         }
 
         // Support both plain directories (IDE / exploded) and JARs
-        FileSystem jarFs = null;
-        Path resourceDir;
-        if (folderUri.getScheme().equals("jar")) {
-            jarFs = FileSystems.newFileSystem(folderUri, Collections.emptyMap());
-            resourceDir = jarFs.getPath(folder);
+        FileSystem jarFs = null; // Will hold temporary filesystem if reading from JAR
+        Path resourceDir; // Path handle to resource folder
+        if (folderUri.getScheme().equals("jar")) { // If running from packaged JAR
+            jarFs = FileSystems.newFileSystem(folderUri, Collections.emptyMap()); // Mount JAR as filesystem
+            resourceDir = jarFs.getPath(folder); // Get folder path inside mounted JAR FS
         } else {
             resourceDir = Path.of(folderUri);
         }
 
+        // Copy all native library files from classpath resources to a real temp directory,
+        // because extension loading/System.load requires filesystem paths (not in-JAR resources)
         try (var stream = Files.list(resourceDir)) {
             for (Path entry : stream.toList()) {
                 String fileName = entry.getFileName().toString();
@@ -180,5 +189,55 @@ public class SQLiteConnectionFactory {
         }
 
         return tempDir.resolve(libraryName).toAbsolutePath().toString();
+    }
+
+    private static String buildJdbcUrl() {
+        Path dbPath = resolveDbPath().toAbsolutePath().normalize();
+        try {
+            // Ensure all missing parent directories for the database path exist, creating them if needed
+            Path parent = dbPath.getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to create SQLite parent directory: " + dbPath, e);
+        }
+        return "jdbc:sqlite:" + dbPath;
+    }
+
+    private static Path resolveDbPath() {
+        String configuredPath = System.getProperty(DB_PATH_PROPERTY);
+        if (configuredPath == null || configuredPath.isBlank()) {
+            configuredPath = System.getenv(DB_PATH_ENV);
+        }
+
+        if (configuredPath != null && !configuredPath.isBlank()) {
+            return Path.of(configuredPath.trim());
+        }
+
+        return resolveDefaultDataDir().resolve("triplify.db");
+    }
+
+    private static Path resolveDefaultDataDir() {
+        String os = System.getProperty("os.name").toLowerCase();
+        String userHome = System.getProperty("user.home");
+
+        if (os.contains("win")) {
+            String appData = System.getenv("APPDATA");
+            if (appData != null && !appData.isBlank()) {
+                return Path.of(appData).resolve("Triplify");
+            }
+            return Path.of(userHome, "AppData", "Roaming", "Triplify");
+        }
+
+        if (os.contains("mac")) {
+            return Path.of(userHome, "Library", "Application Support", "Triplify");
+        }
+
+        String xdgDataHome = System.getenv("XDG_DATA_HOME");
+        if (xdgDataHome != null && !xdgDataHome.isBlank()) {
+            return Path.of(xdgDataHome).resolve("triplify");
+        }
+        return Path.of(userHome, ".local", "share", "triplify"); // Linux fallback
     }
 }

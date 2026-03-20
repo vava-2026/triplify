@@ -365,9 +365,9 @@ CREATE TABLE trip_countries (
             ON DELETE CASCADE ON UPDATE CASCADE,
     country_id TEXT NOT NULL
         REFERENCES countries(id)
-            ON DELETE RESTRICT ON UPDATE CASCADE
+            ON DELETE RESTRICT ON UPDATE CASCADE,
 
-    PRIMARY KEY (trip_id, country_id),
+    PRIMARY KEY (trip_id, country_id)
 );
 CREATE INDEX idx_trip_countries_country_id ON trip_countries(country_id);
 
