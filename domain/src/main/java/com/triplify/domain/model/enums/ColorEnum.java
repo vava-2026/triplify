@@ -1,6 +1,6 @@
-package com.triplify.domain.model;
+package com.triplify.domain.model.enums;
 
-public enum ColorCategory {
+public enum ColorEnum {
     RED,
     ORANGE,
     YELLOW,
