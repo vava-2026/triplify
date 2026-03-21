@@ -44,7 +44,10 @@ public class User {
     @Setter(AccessLevel.PRIVATE)
     private Instant updatedAt;
 
-    @Builder(builderMethodName = "of")
+    public static User of(@NonNull String username, @NonNull String email, @NonNull String passwordHash) {
+        return new User(username, email, passwordHash);
+    }
+
     private User(@NonNull String username, @NonNull String email, @NonNull String passwordHash) {
         if (username.isBlank()) throw new IllegalArgumentException("Username must not be blank.");
         if (email.isBlank()) throw new IllegalArgumentException("Email must not be blank.");
