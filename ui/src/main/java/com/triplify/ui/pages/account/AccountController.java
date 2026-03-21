@@ -8,7 +8,7 @@ import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.input_item.PasswordItem;
 import com.triplify.ui.shared.component.input_item.TextAreaItem;
-import com.triplify.ui.shared.component.input_item.model.InputVariant;
+import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.toast.ToastService;
 import javafx.fxml.FXML;
 import javafx.scene.layout.VBox;
@@ -31,9 +31,9 @@ public class AccountController extends SimpleLifecycleAwareController {
 
     @FXML
     public void initialize() {
-        nameInput = new InputItem("input.placeholder.fullName", InputVariant.FILLED);
+        nameInput = new InputItem("input.placeholder.fullName", FieldVariant.FILLED);
         emailInput = new InputItem("input.placeholder.email");
-        passwordInput = new PasswordItem("input.placeholder.password", InputVariant.GHOST);
+        passwordInput = new PasswordItem("input.placeholder.password", FieldVariant.GHOST);
         bioInput = new TextAreaItem("input.placeholder.bio");
 
         editFormContainer.getChildren().addAll(nameInput, emailInput, passwordInput, bioInput);

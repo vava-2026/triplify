@@ -2,7 +2,7 @@ package com.triplify.ui.pages.trips;
 
 import com.triplify.application.model.ColorTheme;
 import com.triplify.ui.routing.RouteIds;
-import com.triplify.ui.shared.component.entry.model.Entry;
+import com.triplify.ui.shared.component.select.entry.model.Entry;
 import com.triplify.ui.shared.component.search.model.Search;
 import com.triplify.ui.shared.component.search.model.SearchVariant;
 import com.triplify.ui.shared.component.search.view.SearchView;

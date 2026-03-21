@@ -1,8 +1,7 @@
-package com.triplify.ui.shared.component.entry.view;
+package com.triplify.ui.shared.component.select.entry.view;
 
-import com.triplify.ui.shared.component.entry.model.Entry;
+import com.triplify.ui.shared.component.select.entry.model.Entry;
 import javafx.scene.control.ListCell;
-import javafx.scene.control.ContentDisplay;
 
 public class EntryCell<T> extends ListCell<Entry<T>> {
 

@@ -1,9 +1,9 @@
 package com.triplify.ui.shared.component.select.view;
 
-import com.triplify.ui.shared.component.entry.model.Entry;
-import com.triplify.ui.shared.component.entry.view.EntryCell;
+import com.triplify.ui.shared.component.select.entry.model.Entry;
+import com.triplify.ui.shared.component.select.entry.view.EntryCell;
 import com.triplify.ui.shared.component.select.model.Select;
-import com.triplify.ui.shared.component.select.model.SelectVariant;
+import com.triplify.ui.shared.model.FieldVariant;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ComboBox;
@@ -20,7 +20,7 @@ public class SelectView<T> extends HBox {
     @FXML private ComboBox<Entry<T>> comboBox;
 
     private Select<T> model;
-    private SelectVariant lastVariant = null;
+    private FieldVariant lastVariant = null;
 
     public SelectView() {
         FXMLLoader loader = new FXMLLoader(FXML_URL);
@@ -33,7 +33,6 @@ public class SelectView<T> extends HBox {
         }
 
         comboBox.setCellFactory(lv -> new EntryCell<>());
-        comboBox.setButtonCell(new SelectButtonCell<>("Select an option"));
 
         comboBox.setConverter(new StringConverter<>() {
             @Override public String toString(Entry<T> e) { return e == null ? "" : e.getLabel(); }
@@ -44,6 +43,7 @@ public class SelectView<T> extends HBox {
     public void update(Select<T> select) {
         this.model = select;
 
+        comboBox.setButtonCell(new SelectButtonCell<>(select.getPlaceholder(), select.getEmoji()));
         comboBox.setItems(select.getItems());
         comboBox.disableProperty().bind(select.disabledProperty());
         comboBox.promptTextProperty().bind(select.placeholderProperty());
@@ -57,13 +57,21 @@ public class SelectView<T> extends HBox {
         select.variantProperty().addListener((obs, oldVal, newVal) -> applyVariant(newVal));
     }
 
-    private void applyVariant(SelectVariant variant) {
+    private static String toStyleClass(FieldVariant variant) {
+        return switch (variant) {
+            case OUTLINED -> "app-select-variant-outlined";
+            case FILLED -> "app-select-variant-filled";
+            case GHOST -> "app-select-variant-ghost";
+        };
+    }
+
+    private void applyVariant(FieldVariant variant) {
         if (lastVariant == variant) return;
         if (lastVariant != null) {
-            comboBox.getStyleClass().remove(lastVariant.getStyleClass());
+            comboBox.getStyleClass().remove(toStyleClass(lastVariant));
         }
         if (variant != null) {
-            comboBox.getStyleClass().add(variant.getStyleClass());
+            comboBox.getStyleClass().add(toStyleClass(variant));
         }
         lastVariant = variant;
     }

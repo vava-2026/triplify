@@ -1,19 +1,15 @@
 package com.triplify.ui.shared.header.view;
 
 import com.triplify.application.model.ColorTheme;
-import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.pages.trips.MyTripsController;
-import com.triplify.ui.shared.component.entry.model.Entry;
+import com.triplify.ui.shared.component.select.entry.model.Entry;
 import com.triplify.ui.shared.component.search.model.Search;
 import com.triplify.ui.shared.component.search.model.SearchVariant;
 import com.triplify.ui.shared.component.search.view.SearchView;
 import com.triplify.ui.shared.header.viewmodel.HeaderViewModel;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.Group;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import lombok.Getter;
 import org.slf4j.Logger;

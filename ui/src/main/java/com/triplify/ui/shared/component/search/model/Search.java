@@ -1,6 +1,6 @@
 package com.triplify.ui.shared.component.search.model;
 
-import com.triplify.ui.shared.component.entry.model.Entry;
+import com.triplify.ui.shared.component.select.entry.model.Entry;
 
 import com.triplify.ui.shared.util.Localization;
 import javafx.beans.property.SimpleStringProperty;

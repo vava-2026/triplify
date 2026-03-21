@@ -1,14 +1,13 @@
 package com.triplify.ui.shared.component.search.view;
 
-import com.triplify.ui.shared.component.entry.model.Entry;
-import com.triplify.ui.shared.component.entry.view.EntryCell;
+import com.triplify.ui.shared.component.select.entry.model.Entry;
+import com.triplify.ui.shared.component.select.entry.view.EntryCell;
 import com.triplify.ui.shared.component.search.model.Search;
 import com.triplify.ui.shared.component.search.model.SearchVariant;
 import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
-import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
