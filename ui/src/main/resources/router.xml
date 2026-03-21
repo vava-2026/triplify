@@ -8,6 +8,10 @@
         <argument name="tripName" type="string" required="true"/>
     </arguments>
 
+    <destination id="start"
+                 fxml="com/triplify/ui/pages/start/StartPageView.fxml"
+                 singleTop="true"/>
+
     <destination id="map"
                  fxml="com/triplify/ui/pages/map/MapView.fxml"
                  singleTop="true"/>
@@ -33,4 +37,7 @@
                  fxml="com/triplify/ui/pages/account/AccountView.fxml"
                  singleTop="true"/>
 
+    <destination id="login"
+                 fxml="com/triplify/ui/pages/account/LoginView.fxml"
+                 singleTop="true"/>
 </router>

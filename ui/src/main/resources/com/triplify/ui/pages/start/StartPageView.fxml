@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.triplify.ui.pages.start.StartPageController"
+           styleClass="start-root"
+           stylesheets="@css/start.css">
+
+    <Region styleClass="start-bg-image"
+            StackPane.alignment="CENTER"
+            maxWidth="Infinity"
+            maxHeight="Infinity" />
+
+    <HBox styleClass="start-top-bar"
+          StackPane.alignment="TOP_LEFT"
+          maxWidth="Infinity">
+        <Label text="TRIPLIFY" styleClass="start-title" />
+        <Region HBox.hgrow="ALWAYS" />
+        <fx:include fx:id="languageIsland"
+                    source="/com/triplify/ui/shared/header/view/LanguageIsland.fxml" />
+    </HBox>
+
+    <VBox styleClass="start-hero"
+          alignment="CENTER"
+          pickOnBounds="false"
+          StackPane.alignment="CENTER">
+        <Label fx:id="heroTitleLine1" styleClass="start-hero-title" />
+        <Label fx:id="heroTitleLine2" styleClass="start-hero-title" />
+        <Label fx:id="heroSubtitle" styleClass="start-hero-subtitle" />
+        <HBox fx:id="heroButtons" styleClass="start-hero-buttons" alignment="CENTER" />
+    </VBox>
+</StackPane>

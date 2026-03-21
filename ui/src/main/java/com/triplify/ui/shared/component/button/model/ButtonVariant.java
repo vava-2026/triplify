@@ -8,7 +8,12 @@ public enum ButtonVariant {
 
     DANGER("app-btn-danger"),
 
-    GHOST("app-btn-ghost");
+    GHOST("app-btn-ghost"),
+
+    LOGIN("app-btn-login"),
+
+    SIGN_UP("app-btn-sign-up");
+
 
     private final String styleClass;
 

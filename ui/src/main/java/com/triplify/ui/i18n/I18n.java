@@ -6,6 +6,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 public final class I18n {
@@ -48,7 +49,12 @@ public final class I18n {
     }
 
     public static String t(String key) {
-        return bundleProperty.get().getString(key);
+        try {
+            return bundleProperty.get().getString(key);
+        } catch (MissingResourceException e) {
+            logger.warn("Missing i18n key: '{}'", key);
+            return key;
+        }
     }
 
     private static ResourceBundle loadBundle(Language language) {

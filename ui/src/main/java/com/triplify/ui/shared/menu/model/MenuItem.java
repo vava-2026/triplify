@@ -21,8 +21,19 @@ public enum MenuItem {
         this.hideHeader = hideHeader;
     }
 
-    public String getI18nKey() { return i18nKey; }
-    public String getRouteId() { return routeId; }
-    public boolean isHideHeader() { return hideHeader; }
-    public String getLabel() { return I18n.t(i18nKey); }
+    public String getI18nKey() {
+        return i18nKey;
+    }
+
+    public String getRouteId() {
+        return routeId;
+    }
+
+    public boolean isHideHeader() {
+        return hideHeader;
+    }
+
+    public String getLabel() {
+        return I18n.t(i18nKey);
+    }
 }

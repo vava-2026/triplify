@@ -14,10 +14,19 @@ subprojects {
         // Logging
         "implementation"("org.slf4j:slf4j-api:2.0.17")
 
+        "implementation"("com.google.inject:guice:7.0.0")
+
         // Tests
         "testImplementation"(platform("org.junit:junit-bom:5.10.0"))
         "testImplementation"("org.junit.jupiter:junit-jupiter")
         "testRuntimeOnly"("org.junit.platform:junit-platform-launcher")
+
+        // Lombok
+        "compileOnly"("org.projectlombok:lombok:1.18.44")
+        "annotationProcessor"("org.projectlombok:lombok:1.18.44")
+
+        "testCompileOnly"("org.projectlombok:lombok:1.18.44")
+        "testAnnotationProcessor"("org.projectlombok:lombok:1.18.44")
     }
 
     tasks.withType<Test> {
