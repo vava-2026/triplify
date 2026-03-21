@@ -96,8 +96,8 @@ public class SearchView<T> extends VBox {
     private void update(Search<T> model) {
         this.model = model;
 
-        searchField.setPromptText(model.getPlaceholder());
-        noResultsLabel.setText(model.getNoResultsMessage());
+        searchField.promptTextProperty().bind(model.getPlaceholder());
+        noResultsLabel.textProperty().bind(model.getNoResult());
 
         debounce = new PauseTransition(Duration.millis(model.getDebounceMs()));
         debounce.setOnFinished(e -> runSearch(searchField.getText()));

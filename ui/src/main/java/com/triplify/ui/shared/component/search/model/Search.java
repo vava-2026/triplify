@@ -2,6 +2,9 @@ package com.triplify.ui.shared.component.search.model;
 
 import com.triplify.ui.shared.component.entry.model.Entry;
 
+import com.triplify.ui.shared.util.Localization;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import lombok.Getter;
 import java.util.List;
 import java.util.function.Consumer;
@@ -11,23 +14,24 @@ public class Search<T> {
 
     private final Function<String, List<Entry<T>>> searchFunction;
 
-    @Getter private final String placeholder;
+    @Getter private final StringProperty placeholder = new SimpleStringProperty();
+    @Getter private final StringProperty noResult = new SimpleStringProperty();
     @Getter private final int debounceMs;
     @Getter private final int maxResults;
     @Getter private final boolean caseSensitive;
     @Getter private final Consumer<Entry<T>> onResultSelected;
-    @Getter private final String noResultsMessage;
     @Getter private final SearchVariant variant;
 
     private Search(Builder<T> builder) {
         this.searchFunction = builder.searchFunction;
-        this.placeholder = builder.placeholder;
         this.debounceMs = builder.debounceMs;
         this.maxResults = builder.maxResults;
         this.caseSensitive = builder.caseSensitive;
         this.onResultSelected = builder.onResultSelected;
-        this.noResultsMessage = builder.noResultsMessage;
         this.variant = builder.variant;
+
+        Localization.bindText(placeholder, builder.placeholderKey);
+        Localization.bindText(noResult, builder.noResultKey);
     }
 
     public List<Entry<T>> search(String query) {
@@ -53,16 +57,16 @@ public class Search<T> {
 
     public static class Builder<T> {
 
-        static private final String DEFAULT_PLACEHOLDER = "Search...";
-        static private final String DEFAULT_NO_RESULT_MESSAGE = "No results found.";
+        static private final String DEFAULT_PLACEHOLDER_KEY = "search.placeholder";
+        static private final String DEFAULT_NO_RESULT_KEY = "search.noResult";
         static private final int DEFAULT_DEBOUNCE_MS = 300;
         static private final int DEFAULT_MAX_RESULTS = 0;   // unlimited
         static private final SearchVariant DEFAULT_VARIANT = SearchVariant.WHITE;
 
         private final Function<String, List<Entry<T>>> searchFunction;
         private Consumer<Entry<T>> onResultSelected;
-        private String placeholder = DEFAULT_PLACEHOLDER;
-        private String noResultsMessage = DEFAULT_NO_RESULT_MESSAGE;
+        private String placeholderKey = DEFAULT_PLACEHOLDER_KEY;
+        private String noResultKey = DEFAULT_NO_RESULT_KEY;
         private int debounceMs = DEFAULT_DEBOUNCE_MS;
         private int maxResults = DEFAULT_MAX_RESULTS;
         private SearchVariant variant = DEFAULT_VARIANT;
@@ -75,8 +79,8 @@ public class Search<T> {
             this.searchFunction = searchFunction;
         }
 
-        public Builder<T> placeholder(String placeholder) {
-            this.placeholder = placeholder;
+        public Builder<T> placeholderKey(String placeholderKey) {
+            this.placeholderKey = placeholderKey;
             return this;
         }
 
@@ -100,8 +104,8 @@ public class Search<T> {
             return this;
         }
 
-        public Builder<T> noResultsMessage(String noResultsMessage) {
-            this.noResultsMessage = noResultsMessage;
+        public Builder<T> noResultKey(String noResultKey) {
+            this.noResultKey = noResultKey;
             return this;
         }
 

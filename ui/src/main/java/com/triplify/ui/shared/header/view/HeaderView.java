@@ -41,7 +41,7 @@ public class HeaderView implements Initializable {
                                 Entry.builder("prague-weekend", "Prague Weekend").icon("fth-globe").build(),
                                 Entry.builder("rome-adventure", "Rome Adventure").icon("fth-globe").colorTheme(ColorTheme.GREEN).build(),
                                 Entry.builder("paris-escape", "Paris escape").colorTheme(ColorTheme.ORANGE).build()))
-                        .placeholder("Search trips...")
+                        .placeholderKey("search.tripsPlaceholder")
                         .debounceMs(200)
                         .maxResults(5)
                         .onResultSelected(trip -> log.info("Trip selected: {}", trip))
