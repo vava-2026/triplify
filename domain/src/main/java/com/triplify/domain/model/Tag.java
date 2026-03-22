@@ -10,11 +10,12 @@ import java.util.UUID;
 @Getter
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@RequiredArgsConstructor(access = AccessLevel.PUBLIC)
 public class Tag {
 
     @EqualsAndHashCode.Include
     @NonNull
-    private final UUID id;
+    private final UUID id = UUID.randomUUID();
 
     @NonNull
     private final UUID userId;
@@ -26,16 +27,6 @@ public class Tag {
     @NonNull
     @Setter(AccessLevel.PRIVATE)
     private ColorEnum color;
-
-    @Builder(builderMethodName = "of")
-    private Tag(@NonNull UUID userId, @NonNull String name, ColorEnum color) {
-        if (name.isBlank()) throw new IllegalArgumentException("Tag name must not be blank.");
-        this.id = UUID.randomUUID();
-        this.userId = userId;
-        this.name = name;
-        this.color = color != null ? color : ColorEnum.TEAL;
-        log.debug("Tag created: id={}, name={}, color={}", id, name, this.color);
-    }
 
     public void updateName(@NonNull String name) {
         if (name.isBlank()) throw new IllegalArgumentException("Tag name must not be blank.");

@@ -37,12 +37,12 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private Result<AuthResponse> authenticate(User user, String rawPassword) {
-        if (!userRepository.verifyPassword(user.id(), rawPassword)) {
-            log.warn("Invalid password attempt for username='{}'", user.username());
+        if (!userRepository.verifyPassword(user.getId().toString(), rawPassword)) {
+            log.warn("Invalid password attempt for username='{}'", user.getUsername());
             return Result.failure(ErrorCode.AUTH_INVALID_CREDENTIALS);
         }
 
-        log.info("User '{}' authenticated successfully", user.username());
-        return Result.success(new AuthResponse(user.id(), user.username()));
+        log.info("User '{}' authenticated successfully", user.getUsername());
+        return Result.success(new AuthResponse(user.getId().toString(), user.getUsername()));
     }
 }

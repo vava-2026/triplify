@@ -21,7 +21,7 @@ public class CategoryServiceImpl implements CategoryService {
     public List<CategoryResponse> getAllCategories() {
         log.debug("Getting all categories");
         return categoryRepository.findAll().stream()
-                .map(c -> new CategoryResponse(c.id(), c.name()))
+                .map(c -> new CategoryResponse(c.getId().toString(), c.getName()))
                 .toList();
     }
 }
