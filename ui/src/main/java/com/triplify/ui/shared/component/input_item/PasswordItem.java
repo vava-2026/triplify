@@ -1,7 +1,7 @@
 package com.triplify.ui.shared.component.input_item;
 
 import com.triplify.ui.i18n.I18n;
-import com.triplify.ui.shared.component.input_item.model.InputVariant;
+import com.triplify.ui.shared.model.FieldVariant;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -23,10 +23,10 @@ public class PasswordItem extends VBox {
     private FontIcon toggleIcon;
 
     public PasswordItem(String placeholderKey) {
-        this(placeholderKey, InputVariant.OUTLINED);
+        this(placeholderKey, FieldVariant.OUTLINED);
     }
 
-    public PasswordItem(String placeholderKey, InputVariant variant) {
+    public PasswordItem(String placeholderKey, FieldVariant variant) {
         errorLabel = new Label();
         errorLabel.getStyleClass().add("input-error-label");
         errorLabel.setVisible(false);
@@ -37,13 +37,13 @@ public class PasswordItem extends VBox {
 
         passwordField = new PasswordField();
         passwordField.promptTextProperty().bind(Bindings.createStringBinding(() -> I18n.t(placeholderKey), I18n.bundleProperty()));
-        passwordField.getStyleClass().addAll("input-item", variant.getStyleClass(), "input-item-with-action");
+        passwordField.getStyleClass().addAll("input-item", toStyleClass(variant), "input-item-with-action");
         passwordField.setPrefHeight(FIELD_HEIGHT);
         passwordField.setMaxWidth(Double.MAX_VALUE);
 
         textField = new TextField();
         textField.promptTextProperty().bind(Bindings.createStringBinding(() -> I18n.t(placeholderKey), I18n.bundleProperty()));
-        textField.getStyleClass().addAll("input-item", variant.getStyleClass(), "input-item-with-action");
+        textField.getStyleClass().addAll("input-item", toStyleClass(variant), "input-item-with-action");
         textField.setPrefHeight(FIELD_HEIGHT);
         textField.setMaxWidth(Double.MAX_VALUE);
         textField.setVisible(false);
@@ -68,6 +68,14 @@ public class PasswordItem extends VBox {
         setAlignment(Pos.CENTER_LEFT);
         setMaxWidth(Double.MAX_VALUE);
         getChildren().addAll(fieldPane, errorLabel);
+    }
+
+    private static String toStyleClass(FieldVariant variant) {
+        return switch (variant) {
+            case OUTLINED -> "input-item--outlined";
+            case FILLED -> "input-item--filled";
+            case GHOST -> "input-item--ghost";
+        };
     }
 
     private void togglePasswordVisibility() {

@@ -21,6 +21,8 @@
             <Button text="Open demo trip" onAction="#onOpenTrip"/>
         </HBox>
 
+        <VBox fx:id="searchContainer"/>
+
         <ListView VBox.vgrow="ALWAYS" styleClass="page-card"/>
     </VBox>
 </StackPane>

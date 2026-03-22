@@ -1,10 +1,13 @@
-package com.triplify.ui.shared.component.entry.view;
+package com.triplify.ui.shared.component.select.entry.view;
 
 import com.triplify.application.model.ColorTheme;
-import com.triplify.ui.shared.component.entry.model.Entry;
+import com.triplify.ui.shared.component.select.entry.model.Entry;
+import com.triplify.ui.shared.util.EmojiUtil;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import org.kordamp.ikonli.javafx.FontIcon;
 
@@ -15,6 +18,7 @@ public class EntryView<T> extends HBox {
 
     private static final URL FXML_URL = EntryView.class.getResource("/com/triplify/ui/shared/component/entry/view/AppEntry.fxml");
 
+    @FXML private ImageView emoji;
     @FXML private Label label;
     @FXML private FontIcon icon;
 
@@ -33,11 +37,24 @@ public class EntryView<T> extends HBox {
 
     public void update(Entry<T> entry) {
         if (entry == null) {
+            emoji.setVisible(false);
+            emoji.setManaged(false);
             label.setText(null);
             icon.setVisible(false);
             icon.setManaged(false);
             applyColorTheme(null);
             return;
+        }
+
+        if (entry.hasEmoji()) {
+            Image img = EmojiUtil.toImage(entry.getEmoji(), 16);
+            boolean show = img != null && !img.isError();
+            emoji.setImage(show ? img : null);
+            emoji.setVisible(show);
+            emoji.setManaged(show);
+        } else {
+            emoji.setVisible(false);
+            emoji.setManaged(false);
         }
 
         label.setText(entry.getLabel());
