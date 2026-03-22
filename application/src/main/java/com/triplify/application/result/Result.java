@@ -1,9 +1,5 @@
 package com.triplify.application.result;
 
-import com.triplify.application.error.ErrorResponse;
-import com.triplify.domain.error.AppError;
-import com.triplify.domain.error.ErrorCode;
-
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -15,23 +11,24 @@ import java.util.function.Function;
  * <p>
  * This is designed to replace throwing exceptions for expected business rule violations.
  * By returning a {@code Result}, you force the caller to explicitly handle the failure case,
- * leading to safer and more predictable code. For all the services, wrap result into Result (return Result<T\>)
+ * leading to safer and more predictable code. For all the services, wrap result into Result (return Result<T, E>)
  * <p>
  * <b>Quick Example:</b>
  * <pre>{@code
- * Result<User> result = userService.findById(id);
+ * Result<User, AppError> result = userService.findById(id);
  * result.onSuccess(responseDTO -> log.info("Found user!"))
  * .onFailure(errors -> log.warn("Failed to find user"));
  * }</pre>
  *
  * @param <T> the type of the wrapped value if the operation is successful
+ * @param <E> the type of the error if the operation fails
  */
-public final class Result<T> {
+public final class Result<T, E> {
 
     private final T value;
-    private final List<AppError> errors;
+    private final List<E> errors;
 
-    private Result(T value, List<AppError> errors) {
+    private Result(T value, List<E> errors) {
         this.value = value;
         this.errors = errors;
     }
@@ -39,30 +36,22 @@ public final class Result<T> {
     /**
      * Creates a success result with no payload. Useful for operations that only perform side effects (like saving to a database) but don't need to return data
      */
-    public static <T> Result<T> success(T value) {
+    public static <T, E> Result<T, E> success(T value) {
         return new Result<>(value, List.of());
     }
 
-    public static Result<Void> success() {
+    public static <T, E> Result<T, E> success() {
         return new Result<>(null, List.of());
     }
 
-    public static <T> Result<T> failure(AppError error) {
+    public static <T, E> Result<T, E> failure(E error) {
         return new Result<>(null, List.of(error));
-    }
-
-    public static <T> Result<T> failure(ErrorCode code) {
-        return failure(AppError.of(code));
-    }
-
-    public static <T> Result<T> failure(ErrorCode code, String detail) {
-        return failure(AppError.of(code, detail));
     }
 
     /**
      * Creates a failure with multiple errors. Great for form validations where multiple fields might be invalid at the same time
      */
-    public static <T> Result<T> failure(List<AppError> errors) {
+    public static <T, E> Result<T, E> failure(List<E> errors) {
         if (errors == null || errors.isEmpty()) {
             throw new IllegalArgumentException("Failure result requires at least one error");
         }
@@ -84,41 +73,24 @@ public final class Result<T> {
         return Optional.ofNullable(value);
     }
 
-    public List<AppError> getErrors() {
+    public List<E> getErrors() {
         return errors;
     }
 
     /**
      * Grabs the first error. Throws an exception if called on a success result. Useful when you only care about the primary reason an operation failed
      */
-    public AppError getFirstError() {
+    public E getFirstError() {
         if (isSuccess()) {
             throw new NoSuchElementException("Result is a success");
         }
         return errors.getFirst();
     }
 
-    public List<ErrorResponse> getErrorResponses() {
-        return errors.stream().map(ErrorResponse::from).toList();
-    }
-
-    public ErrorResponse getFirstErrorResponse() {
-        if (isSuccess()) throw new NoSuchElementException("Result is a success");
-        return ErrorResponse.from(errors.getFirst());
-    }
-
-    /**
-     * Executes the given action only if this result is a failure. Use in UI layer
-     */
-    public Result<T> onFailureResponse(Consumer<List<ErrorResponse>> action) {
-        if (isFailure()) action.accept(getErrorResponses());
-        return this;
-    }
-
     /**
      * Executes the given action only if this result is a success. Ideal for side effects like logging, sending metrics, or triggering events
      */
-    public Result<T> onSuccess(Consumer<T> action) {
+    public Result<T, E> onSuccess(Consumer<T> action) {
         if (isSuccess()) {
             action.accept(value);
         }
@@ -126,10 +98,9 @@ public final class Result<T> {
     }
 
     /**
-     * Executes the given action only if this result is a failure. Ideal for side effects like logging the exact {@link AppError}s.
-     * Do not use in UI layer, use {@link #onFailureResponse(Consumer)} instead to avoid coupling the UI to the domain error model
+     * Executes the given action only if this result is a failure. Ideal for side effects like logging the exact errors.
      */
-    public Result<T> onFailure(Consumer<List<AppError>> action) {
+    public Result<T, E> onFailure(Consumer<List<E>> action) {
         if (isFailure()) {
             action.accept(errors);
         }
@@ -142,15 +113,28 @@ public final class Result<T> {
      * <p>
      * <b>Example:</b>
      * <pre>{@code
-     * Result<User> result = ...;
-     * Result<String> nameResult = result.map(User::getName);
+     * Result<User, AppError> result = ...;
+     * Result<String, AppError> nameResult = result.map(User::getName);
      * }</pre>
      */
-    public <U> Result<U> map(Function<T, U> mapper) {
+    public <U> Result<U, E> map(Function<T, U> mapper) {
         if (isSuccess()) {
             return Result.success(mapper.apply(value));
         }
         return Result.failure(errors);
+    }
+
+    /**
+     * Transforms the errors of this result into a new error type.
+     * If this is a success, the mapping is ignored and the value is passed along.
+     * Use this at the edge of your application to map Domain errors (AppError) to UI errors (ErrorResponse).
+     */
+    public <U> Result<T, U> mapError(Function<E, U> errorMapper) {
+        if (isSuccess()) {
+            return Result.success(value);
+        }
+        List<U> mappedErrors = errors.stream().map(errorMapper).toList();
+        return Result.failure(mappedErrors);
     }
 
     /**
@@ -160,11 +144,11 @@ public final class Result<T> {
      * <b>Example:</b>
      * <pre>{@code
      * // Fetch a user, and if successful, fetch their settings
-     * Result<Settings> settings = userRepository.findById(id)
+     * Result<Settings, AppError> settings = userRepository.findById(id)
      * .flatMap(user -> settingsRepository.findByUserId(user.getId()));
      * }</pre>
      */
-    public <U> Result<U> flatMap(Function<T, Result<U>> mapper) {
+    public <U> Result<U, E> flatMap(Function<T, Result<U, E>> mapper) {
         if (isSuccess()) {
             return mapper.apply(value);
         }

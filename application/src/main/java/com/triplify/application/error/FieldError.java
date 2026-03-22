@@ -28,6 +28,10 @@ public final class FieldError {
         return AppError.of(ErrorCode.VALIDATION_FAILED, field + ": " + messageKey);
     }
 
+    public ErrorResponse toErrorResponse() {
+        return ErrorResponse.from(toAppError());
+    }
+
     public String getField() {
         return field;
     }

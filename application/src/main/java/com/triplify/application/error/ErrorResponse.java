@@ -1,6 +1,7 @@
 package com.triplify.application.error;
 
 import com.triplify.domain.error.AppError;
+import com.triplify.domain.error.ErrorCode;
 
 /**
  * The API-facing representation of an error.
@@ -24,5 +25,12 @@ public record ErrorResponse(String messageKey, String detail) {
      */
     public static ErrorResponse from(AppError error) {
         return new ErrorResponse(error.messageKey(), error.getDetail());
+    }
+
+    /**
+     * Factory method to easily create ErrorResponse without explicit mapping from AppError
+     */
+    public static ErrorResponse of(ErrorCode code) {
+        return ErrorResponse.from(AppError.of(code));
     }
 }

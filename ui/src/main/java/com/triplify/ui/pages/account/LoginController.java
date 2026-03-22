@@ -1,8 +1,9 @@
 package com.triplify.ui.pages.account;
 
 import com.google.inject.Inject;
+import com.triplify.application.error.ErrorResponse;
+import com.triplify.application.error.FieldError;
 import com.triplify.application.error.ValidationMapper;
-import com.triplify.application.error.ValidationResult;
 import com.triplify.application.result.Result;
 import com.triplify.application.usecase.auth.AuthResponse;
 import com.triplify.application.usecase.auth.AuthService;
@@ -47,9 +48,9 @@ public class LoginController extends SimpleLifecycleAwareController {
         Map<String, Label> errorMap = Map.of("username", usernameError, "password", passwordError);
         clearFieldStyles(fieldMap);
 
-        ValidationResult<LoginRequest> validation = ValidationMapper.validate(command);
+        Result<LoginRequest, FieldError> validation = ValidationMapper.validate(command);
         if (validation.isFailure()) {
-            validation.getViolations().forEach(v -> {
+            validation.getErrors().forEach(v -> {
                 TextField field = fieldMap.get(v.getField());
                 if (field != null) {
                     markFieldError(field);
@@ -66,14 +67,14 @@ public class LoginController extends SimpleLifecycleAwareController {
         }
 
         // Step 2 - use-case
-        Result<AuthResponse> result = authService.login(command);
+        Result<AuthResponse, ErrorResponse> result = authService.login(command);
         result.onSuccess(auth -> {
             log.info("Login successful for user '{}'", auth.username());
             toast.success("Welcome back, " + auth.username() + "!");
-        }).onFailureResponse(errors -> {
-                  log.info("Login failed: {}", result.getFirstErrorResponse().messageKey());
-                  toast.error(I18n.t((result.getFirstErrorResponse().messageKey())));
-              });
+        }).onFailure(errors -> {
+            log.info("Login failed: {}", errors.getFirst().messageKey());
+            toast.error(I18n.t(errors.getFirst().messageKey()));
+        });
     }
 
     private void clearFieldErrors() {

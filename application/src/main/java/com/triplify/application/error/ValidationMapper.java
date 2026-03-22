@@ -1,5 +1,6 @@
 package com.triplify.application.error;
 
+import com.triplify.application.result.Result;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -8,7 +9,7 @@ import jakarta.validation.ValidatorFactory;
 import java.util.*;
 
 /**
- * A utility bridge between standard Hibernate Validator and our custom {@link ValidationResult} wrapper.
+ * A utility bridge between standard Hibernate Validator and our custom {@link Result} wrapper.
  * <p>
  * <b>Key Feature:</b> This mapper intentionally filters out multiple violations for the
  * same field, returning only the most critical one based on {@code ValidationMessage.getPriority()}.
@@ -16,7 +17,7 @@ import java.util.*;
  * <p>
  * <b>Usage:</b>
  * <pre>{@code
- * ValidationResult<CreateUserCommand> result = ValidationMapper.validate(requestDTO);
+ * Result<CreateUserCommand, FieldError> result = ValidationMapper.validate(requestDTO);
  * }</pre>
  */
 public final class ValidationMapper {
@@ -34,12 +35,12 @@ public final class ValidationMapper {
     /**
      * Evaluates all standard validation annotations (like {@code @NotNull}, {@code @Email}) on the given object.
      * @param object The input object to validate (a Request).
-     * @return A {@link ValidationResult} containing the safe payload, or a list of field errors.
+     * @return A {@link Result} containing the safe payload, or a list of {@link FieldError}s.
      */
-    public static <T> ValidationResult<T> validate(T object) {
+    public static <T> Result<T, FieldError> validate(T object) {
         Set<ConstraintViolation<T>> violations = VALIDATOR.validate(object);
         if (violations.isEmpty()) {
-            return ValidationResult.valid(object);
+            return Result.success(object);
         }
 
         Map<String, FieldError> byField = new LinkedHashMap<>();
@@ -50,7 +51,7 @@ public final class ValidationMapper {
                         .thenComparingInt(v -> ValidationMessage.getPriority(v.getMessageKey())))
                 .forEach(v -> byField.putIfAbsent(v.getField(), v));
 
-        return ValidationResult.invalid(List.copyOf(byField.values()));
+        return Result.failure(List.copyOf(byField.values()));
     }
 
     private static FieldError toFieldViolation(ConstraintViolation<?> cv) {
