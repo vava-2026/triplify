@@ -4,17 +4,16 @@
     -fx-background-radius: 12;
     -fx-border-width: 0;
     -fx-padding: 16 12 16 12;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 8, 0, 0, 2);
 }
 
-.badge-card badge-locked {
+.badge-card .badge-locked {
     -fx-opacity: 0.5;
-    -fx-background-color: -color-surface-dark;
 }
 
 .badge-image {
     -fx-fit-width: 64;
     -fx-fit-height: 64;
+    -fx-background-color: transparent;
 }
 
 .badge-name {
@@ -25,6 +24,6 @@
 }
 
 .badge-stat {
-    -fx-text-fill: #a0a0cc;
+    -fx-text-fill: -color-ink-muted;
     -fx-font-size: 11px;
 }

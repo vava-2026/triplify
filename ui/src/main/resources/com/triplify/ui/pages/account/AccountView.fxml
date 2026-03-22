@@ -35,10 +35,9 @@
             </HBox>
         </VBox>
 
-        <VBox styleClass="page-card" spacing="12">
-            <Label text="Badges"/>
+        <VBox>
 
-            <GridPane fx:id="badgesGrid" hgap="12" vgap="12">
+            <GridPane fx:id="badgesGrid" styleClass="badges-grid" hgap="12" vgap="12">
                 <columnConstraints>
                     <ColumnConstraints percentWidth="25"/>
                     <ColumnConstraints percentWidth="25"/>

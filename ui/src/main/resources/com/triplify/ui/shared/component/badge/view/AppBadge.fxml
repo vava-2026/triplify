@@ -11,7 +11,8 @@
          stylesheets="@../css/badge.css"
          alignment="CENTER"
          spacing="8"
-         prefWidth="160">
+         prefWidth="160"
+         prefHeight="220">
 
     <ImageView fx:id="badgeImage"
                fitWidth="80"
