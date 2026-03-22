@@ -1,4 +1,4 @@
-package com.triplify.ui.shared.component.entry.model;
+package com.triplify.ui.shared.component.select.entry.model;
 
 import com.triplify.application.model.ColorTheme;
 
@@ -8,12 +8,14 @@ public class Entry<T> {
     private final String label;
     private final String iconLiteral;
     private final ColorTheme colorTheme;
+    private final String emoji;
 
     private Entry(Builder<T> b) {
         this.value = b.value;
         this.label = b.label;
         this.iconLiteral = b.iconLiteral;
         this.colorTheme = b.colorTheme;
+        this.emoji = b.emoji;
     }
 
     public T getValue() {
@@ -40,6 +42,14 @@ public class Entry<T> {
         return colorTheme != null;
     }
 
+    public String getEmoji() {
+        return emoji;
+    }
+
+    public boolean hasEmoji() {
+        return emoji != null && !emoji.isBlank();
+    }
+
     @Override
     public String toString() {
         return label;
@@ -54,6 +64,7 @@ public class Entry<T> {
         private final String label;
         private String iconLiteral;
         private ColorTheme colorTheme;
+        private String emoji;
 
         private Builder(T value, String label) {
             this.value = value;
@@ -67,6 +78,11 @@ public class Entry<T> {
 
         public Builder<T> colorTheme(ColorTheme theme) {
             this.colorTheme = theme;
+            return this;
+        }
+
+        public Builder<T> emoji(String emoji) {
+            this.emoji = emoji;
             return this;
         }
 

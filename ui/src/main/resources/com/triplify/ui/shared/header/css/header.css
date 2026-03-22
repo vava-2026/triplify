@@ -16,20 +16,6 @@
     -fx-font-family: -font-family-base;
 }
 
-.search-bar {
-    -fx-background-color: -color-surface-tint;
-    -fx-background-radius: 10;
-    -fx-border-color: transparent;
-    -fx-border-radius: 10;
-    -fx-effect: -shadow-card;
-    -fx-max-width: 500;
-    -fx-min-width: 200;
-    -fx-pref-height: 38;
-    -fx-min-height: 38;
-    -fx-max-height: 38;
-    -fx-padding: 0 15 0 15;
-}
-
 .search-icon {
     -fx-icon-color: -color-ink-muted;
     -fx-icon-size: 18;

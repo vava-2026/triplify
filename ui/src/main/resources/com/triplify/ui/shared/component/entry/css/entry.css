@@ -5,6 +5,11 @@
     -fx-pref-width: 0;
 }
 
+.app-entry-emoji {
+    -fx-font-family: "Segoe UI Emoji";
+    -fx-font-size: 16;
+}
+
 .app-entry-label {
     -fx-text-fill: -color-primary;
 }

@@ -9,15 +9,15 @@ import java.util.Optional;
 public class UserRepositoryImpl implements UserRepository {
 
     private static final List<User> USERS = List.of(
-            new User("1", "admin", "admin@triplify.com"),
-            new User("2", "user", "user@triplify.com")
+            User.of("admin", "admin@triplify.com", ""),
+            User.of("user", "user@triplify.com", "")
     );
 
     @Override
     public Optional<User> findByUsernameOrEmail(String username, String email) {
         return USERS.stream()
-                .filter(u -> u.username().equalsIgnoreCase(username)
-                          || u.email().equalsIgnoreCase(email))
+                .filter(u -> u.getUsername().equalsIgnoreCase(username)
+                          || u.getEmail().equalsIgnoreCase(email))
                 .findFirst();
     }
 

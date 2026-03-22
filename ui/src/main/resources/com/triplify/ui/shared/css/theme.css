@@ -1,5 +1,6 @@
 @import url("/com/triplify/ui/shared/component/entry/css/entry.css");
 @import url("/com/triplify/ui/shared/component/select/css/select.css");
+@import url("/com/triplify/ui/shared/component/search/css/search.css");
 @import url("/com/triplify/ui/shared/component/input_item/input_item.css");
 @import url("/com/triplify/ui/shared/toast/toast.css");
 
@@ -7,6 +8,7 @@
     -color-bg: #f0f0f0;
     -color-surface: #fafafa;
     -color-surface-tint: #ecf3f9;
+    -color-surface-dark: #d5e5ed;
     -color-ink: #0a090c;
     -color-ink-muted: #999999;
 

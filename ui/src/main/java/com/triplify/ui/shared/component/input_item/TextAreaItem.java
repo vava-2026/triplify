@@ -1,7 +1,7 @@
 package com.triplify.ui.shared.component.input_item;
 
 import com.triplify.ui.i18n.I18n;
-import com.triplify.ui.shared.component.input_item.model.InputVariant;
+import com.triplify.ui.shared.model.FieldVariant;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -24,14 +24,14 @@ public class TextAreaItem extends VBox {
     private StackPane fieldPane;
 
     public TextAreaItem(String placeholderKey) {
-        this(placeholderKey, InputVariant.OUTLINED);
+        this(placeholderKey, FieldVariant.OUTLINED);
     }
 
-    public TextAreaItem(String placeholderKey, InputVariant variant) {
+    public TextAreaItem(String placeholderKey, FieldVariant variant) {
         textArea = new TextArea();
         textArea.promptTextProperty().bind(
                 Bindings.createStringBinding(() -> I18n.t(placeholderKey), I18n.bundleProperty()));
-        textArea.getStyleClass().addAll("input-item", "textarea-item", variant.getStyleClass());
+        textArea.getStyleClass().addAll("input-item", "textarea-item", toStyleClass(variant));
         textArea.setWrapText(true);
 
         textArea.skinProperty().addListener((obs, oldSkin, newSkin) -> {
@@ -91,6 +91,14 @@ public class TextAreaItem extends VBox {
         setSpacing(5);
         setAlignment(Pos.CENTER_LEFT);
         getChildren().addAll(fieldPane, errorLabel);
+    }
+
+    private static String toStyleClass(FieldVariant variant) {
+        return switch (variant) {
+            case OUTLINED -> "input-item--outlined";
+            case FILLED -> "input-item--filled";
+            case GHOST -> "input-item--ghost";
+        };
     }
 
     public String getText() {

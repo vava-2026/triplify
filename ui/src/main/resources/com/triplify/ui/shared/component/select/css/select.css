@@ -13,7 +13,6 @@
     -fx-border-radius: 6 6 0 0;
 }
 
-/* Only SelectButtonCell */
 .app-select > .list-cell {
     -fx-background-color: transparent;
     -fx-text-fill: -color-ink-muted;
@@ -34,13 +33,30 @@
 }
 
 
+.select-emoji {
+    -fx-font-family: "Segoe UI Emoji";
+    -fx-font-size: 18;
+}
+
+.select-placeholder {
+    -fx-text-fill: -color-ink-muted;
+}
+
 .app-select-variant-filled {
+    -fx-background-color: -color-surface;
     -fx-border-color: transparent;
     -fx-border-width: 1;
 }
 
 .app-select-variant-outlined {
+    -fx-background-color: -color-on-surface;
     -fx-border-color: -color-primary;
+    -fx-border-width: 1;
+}
+
+.app-select-variant-ghost {
+    -fx-background-color: -color-primary-light;
+    -fx-border-color: transparent;
     -fx-border-width: 1;
 }
 
@@ -54,8 +70,22 @@
     -fx-border-width: 1;
 }
 
+.app-select-variant-ghost:showing {
+    -fx-border-color: -color-surface-tint;
+    -fx-border-width: 0 0 1 0;
+}
+
 .app-select-variant-outlined .list-view {
     -fx-border-color: -color-primary;
     -fx-border-width: 0 1 1 1;
     -fx-border-radius: 0 0 6 6;
+}
+
+.app-select-variant-ghost .list-view {
+    -fx-background-color: -color-primary-light;
+    -fx-effect: null;
+}
+
+.app-select-variant-ghost .list-view .list-cell:hover {
+    -fx-background-color: -color-surface-dark;
 }

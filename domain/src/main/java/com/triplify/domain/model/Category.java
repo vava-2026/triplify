@@ -40,7 +40,7 @@ public class Category {
     @Setter(AccessLevel.PRIVATE)
     private ColorEnum color;
 
-    @Builder(builderMethodName = "of")
+    @Builder
     private Category(@NonNull UUID createdById,
                      @NonNull String name,
                      @NonNull String nameSk,
