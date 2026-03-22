@@ -38,6 +38,9 @@ public class BadgeView extends VBox {
         badgeName.setText(badge.getName());
         badgeStat.setText("Countries visited: " + badge.getCurrentValue() + "/" + badge.getRequiredValue());
 
+        // for placeholder generation (TODO: replace with a proper placeholder image)
+        double imageSize = 50;
+
         if (badge.getImage() != null && !badge.getImage().isBlank()) {
             try {
                 badgeImage.setImage(new Image(badge.getImage(), true));
@@ -45,11 +48,11 @@ public class BadgeView extends VBox {
         }
         else {
             // Generate a red circle placeholder image (TODO: replace with a proper placeholder)
-            Canvas canvas = new Canvas(50, 50);
+            Canvas canvas = new Canvas(imageSize, imageSize);
             GraphicsContext gc = canvas.getGraphicsContext2D();
             gc.setFill(javafx.scene.paint.Color.RED);
-            gc.fillOval(0, 0, 50, 50);
-            WritableImage placeholderImage = new javafx.scene.image.WritableImage(50, 50);
+            gc.fillOval(0, 0, imageSize, imageSize);
+            WritableImage placeholderImage = new javafx.scene.image.WritableImage((int)imageSize, (int)imageSize);
             canvas.snapshot(null, placeholderImage);
             badgeImage.setImage(placeholderImage);
         }

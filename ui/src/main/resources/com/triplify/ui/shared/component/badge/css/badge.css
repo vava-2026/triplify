@@ -6,8 +6,9 @@
     -fx-padding: 16 12 16 12;
 }
 
-.badge-card .badge-locked {
-    -fx-opacity: 0.5;
+.badge-card.badge-locked {
+    -fx-opacity: 0.75;
+    -fx-background-color: -color-surface-dark;
 }
 
 .badge-image {
