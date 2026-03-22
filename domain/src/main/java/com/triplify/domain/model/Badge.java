@@ -28,6 +28,7 @@ public class Badge {
     @Setter(AccessLevel.PRIVATE)
     private String name;
 
+    @NonNull
     @Setter(AccessLevel.PRIVATE)
     private String nameSk;
 
