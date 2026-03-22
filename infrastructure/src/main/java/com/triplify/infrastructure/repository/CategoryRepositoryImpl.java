@@ -12,11 +12,11 @@ public class CategoryRepositoryImpl implements CategoryRepository {
     private static List<Category> CATEGORIES = new ArrayList<>();
 
     public void initializeCategories(UUID configurationManagerId) {
-        CATEGORIES.add(new Category(configurationManagerId,"Adventure", ColorEnum.GREEN));
-        CATEGORIES.add(new Category(configurationManagerId,"Beach", ColorEnum.RED));
-        CATEGORIES.add(new Category(configurationManagerId,"City Break", ColorEnum.BLUE));
-        CATEGORIES.add(new Category(configurationManagerId,"Cultural", ColorEnum.ORANGE));
-        CATEGORIES.add(new Category(configurationManagerId,"Nature", ColorEnum.TEAL));
+        CATEGORIES.add(new Category(configurationManagerId,"Adventure", "Advanture_SK", ColorEnum.GREEN));
+        CATEGORIES.add(new Category(configurationManagerId,"Beach", "Beach_SK", ColorEnum.RED));
+        CATEGORIES.add(new Category(configurationManagerId,"City Break", "City Break_SK", ColorEnum.BLUE));
+        CATEGORIES.add(new Category(configurationManagerId,"Cultural", "Cultural_SK", ColorEnum.ORANGE));
+        CATEGORIES.add(new Category(configurationManagerId,"Nature", "Nature_SK", ColorEnum.TEAL));
     }
 
     @Override
