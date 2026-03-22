@@ -9,11 +9,12 @@ import java.util.UUID;
 @Getter
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@RequiredArgsConstructor(access = AccessLevel.PUBLIC)
 public class Emotion {
 
     @EqualsAndHashCode.Include
     @NonNull
-    private final UUID id;
+    private final UUID id = UUID.randomUUID();
 
     @NonNull
     private final UUID createdById;
@@ -29,22 +30,6 @@ public class Emotion {
     @NonNull
     @Setter(AccessLevel.PRIVATE)
     private String emojiUnicode;
-
-    @Builder(builderMethodName = "of")
-    private Emotion(@NonNull UUID createdById,
-                    @NonNull String name,
-                    @NonNull String nameSk,
-                    @NonNull String emojiUnicode) throws IllegalArgumentException {
-        if (name.isBlank()) throw new IllegalArgumentException("Name must not be blank.");
-        if (nameSk.isBlank()) throw new IllegalArgumentException("Slovak name must not be blank.");
-        if (emojiUnicode.isBlank()) throw new IllegalArgumentException("Emoji unicode must not be blank.");
-        this.id = UUID.randomUUID();
-        this.createdById = createdById;
-        this.name = name;
-        this.nameSk = nameSk;
-        this.emojiUnicode = emojiUnicode;
-        log.debug("Emotion created: id={}, name={}", id, name);
-    }
 
     public void updateName(@NonNull String name) throws IllegalArgumentException {
         if (name.isBlank()) throw new IllegalArgumentException("Name must not be blank.");

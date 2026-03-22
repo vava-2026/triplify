@@ -14,11 +14,12 @@ import java.util.UUID;
 @Getter
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@RequiredArgsConstructor(access = AccessLevel.PUBLIC)
 public class TripRoute {
 
     @EqualsAndHashCode.Include
     @NonNull
-    private final UUID id;
+    private final UUID id = UUID.randomUUID();
 
     @NonNull
     private final UUID tripId;
@@ -40,27 +41,12 @@ public class TripRoute {
     private Instant endedAt;
 
     @NonNull
-    private final Instant createdAt;
+    private final Instant createdAt = Instant.now();
 
     @NonNull
-    private Instant updatedAt;
+    private Instant updatedAt = Instant.now();
 
     private final Set<UUID> imageIds = new LinkedHashSet<>();
-
-    @Builder(builderMethodName = "of")
-    private TripRoute(@NonNull UUID tripId,
-                      @NonNull UUID routeId,
-                      int order) throws IllegalArgumentException {
-        if (order < 0) throw new IllegalArgumentException("Order cannot be negative, got: " + order);
-        this.id = UUID.randomUUID();
-        this.tripId = tripId;
-        this.routeId = routeId;
-        this.order = order;
-        this.status = StatusEnum.PLANNED;
-        this.createdAt = Instant.now();
-        this.updatedAt = this.createdAt;
-        log.debug("TripRoute created: id={}, tripId={}, routeId={}, order={}", id, tripId, routeId, order);
-    }
 
     public Set<UUID> getImageIds() {
         return Collections.unmodifiableSet(imageIds);

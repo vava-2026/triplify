@@ -13,11 +13,12 @@ import java.util.UUID;
 @Getter
 @ToString(exclude = {"imageIds"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@RequiredArgsConstructor(access = AccessLevel.PUBLIC)
 public class TripPlace {
 
     @EqualsAndHashCode.Include
     @NonNull
-    private final UUID id;
+    private final UUID id = UUID.randomUUID();
 
     /** Reference to the owning Trip aggregate by ID only. */
     @NonNull
@@ -31,26 +32,13 @@ public class TripPlace {
     private Instant visitDate;
 
     @NonNull
-    private final Instant createdAt;
+    private final Instant createdAt =  Instant.now();
 
     @NonNull
     @Setter(AccessLevel.PRIVATE)
-    private Instant updatedAt;
+    private Instant updatedAt =  Instant.now();
 
     private final Set<UUID> imageIds = new LinkedHashSet<>();
-
-    @Builder(builderMethodName = "of")
-    private TripPlace(@NonNull UUID tripId,
-                      @NonNull UUID placeId,
-                      Instant visitDate) {
-        this.id = UUID.randomUUID();
-        this.tripId = tripId;
-        this.placeId = placeId;
-        this.visitDate = visitDate;
-        this.createdAt = Instant.now();
-        this.updatedAt = this.createdAt;
-        log.debug("TripPlace created: id={}, tripId={}, placeId={}", id, tripId, placeId);
-    }
 
     public Set<UUID> getImageIds() {
         return Collections.unmodifiableSet(imageIds);

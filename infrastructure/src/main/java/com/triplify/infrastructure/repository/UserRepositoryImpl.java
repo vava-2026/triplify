@@ -1,6 +1,7 @@
 package com.triplify.infrastructure.repository;
 
 import com.triplify.domain.model.User;
+import com.triplify.domain.model.enums.RoleEnum;
 import com.triplify.domain.repository.UserRepository;
 
 import java.util.List;
@@ -9,8 +10,8 @@ import java.util.Optional;
 public class UserRepositoryImpl implements UserRepository {
 
     private static final List<User> USERS = List.of(
-            User.of("admin", "admin@triplify.com", ""),
-            User.of("user", "user@triplify.com", "")
+            new User("admin","admin@triplify.com", "agdG658DGs", RoleEnum.CONFIGURATION_MANAGER),
+            new User("default_user", "user@triplify.com", "dga8871gdG",  RoleEnum.USER)
     );
 
     @Override
