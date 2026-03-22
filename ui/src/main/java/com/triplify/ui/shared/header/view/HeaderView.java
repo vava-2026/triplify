@@ -4,9 +4,9 @@ import com.triplify.application.model.ColorTheme;
 import com.triplify.ui.pages.trips.MyTripsController;
 import com.triplify.ui.shared.component.select.entry.model.Entry;
 import com.triplify.ui.shared.component.search.model.Search;
-import com.triplify.ui.shared.component.search.model.SearchVariant;
 import com.triplify.ui.shared.component.search.view.SearchView;
 import com.triplify.ui.shared.header.viewmodel.HeaderViewModel;
+import com.triplify.ui.shared.model.FieldVariant;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
@@ -41,7 +41,7 @@ public class HeaderView implements Initializable {
                         .debounceMs(200)
                         .maxResults(5)
                         .onResultSelected(trip -> log.info("Trip selected: {}", trip))
-                        .variant(SearchVariant.OUTLINED)
+                        .variant(FieldVariant.GHOST)
                         .build()
         );
 

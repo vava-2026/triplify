@@ -1,13 +1,17 @@
 .search-container {
     -fx-background-color: transparent;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 6, 0, 0, 2);
 }
 
 .search-input-box {
     -fx-background-color: -color-surface;
-    -fx-padding: 6 12 6 12;
-    -fx-border-radius: 6;
     -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-min-height: 36;
+    -fx-pref-height: 36;
+    -fx-max-height: 36;
+    -fx-border-width: 1;
+    -fx-cursor: text;
+    -fx-padding: 0 10 0 12;
 }
 
 .search-showing .search-input-box {
@@ -15,47 +19,56 @@
     -fx-border-radius: 6 6 0 0;
 }
 
+
 .search-icon {
+    -fx-icon-size: 14;
     -fx-icon-color: -color-ink-muted;
+    -fx-cursor: default;
+}
+
+.search-icon:hover {
+    -fx-icon-color: -color-primary;
+    -fx-cursor: hand;
 }
 
 .search-field {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-font-size: 14px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 0;
 }
 
 .search-field:focused {
     -fx-border-color: transparent;
 }
 
-.search-clear-button {
-    -fx-background-color: transparent;
-    -fx-text-fill: -color-ink-muted;
-    -fx-cursor: hand;
-    -fx-font-size: 14px;
-    -fx-padding: 2 4 2 4;
+.search-field,
+.search-field:focused {
+    -fx-text-fill: -color-primary-dark;
+    -fx-prompt-text-fill: -color-ink-muted
 }
+
 
 .search-results {
     -fx-background-color: -color-surface;
-    -fx-border-width: 2 0 0 0;
-    -fx-border-color: -color-surface-tint transparent transparent transparent;
-    -fx-border-radius: 0 0 6 6;
     -fx-background-radius: 0 0 6 6;
+    -fx-border-width: 0;
+    -fx-padding: 0;
+    -fx-background-insets: 0;
 }
 
 .search-results .list-cell {
-    -fx-background-color: transparent;
     -fx-padding: 5 10 5 10;
+    -fx-background-color: transparent;
 }
 
 .search-no-results {
+    -fx-background-color: -color-surface;
+    -fx-background-radius: 0 0 6 6;
     -fx-text-fill: -color-ink-muted;
     -fx-font-size: 14px;
-    -fx-font-style: italic;
-    -fx-border-radius: 0 0 6 6;
-    -fx-background-radius: 0 0 6 6;
+    -fx-padding: 8 10 8 10;
 }
 
 .search-popup-content {
@@ -63,59 +76,68 @@
     -fx-padding: 0;
 }
 
-/* ==========================================  FILLED ==========================================*/
-
 .app-search-variant-filled .search-input-box {
     -fx-background-color: -color-surface;
+    -fx-border-color: transparent;
+}
+
+.app-search-variant-filled.search-showing .search-input-box {
+    -fx-border-color: -color-surface-tint;
+    -fx-border-width: 0 0 1 0;
 }
 
 .app-search-variant-filled .search-results {
     -fx-background-color: -color-surface;
-    -fx-border-color: -color-surface-tint transparent transparent transparent;
+    -fx-padding: 0;
+    -fx-border-width: 0;
 }
 
 .app-search-variant-filled .search-results .list-cell:hover {
     -fx-background-color: -color-surface-tint;
 }
 
-/* ==========================================  OUTLINED ==========================================*/
 
 .app-search-variant-outlined .search-input-box {
-    -fx-background-color: -color-surface;
+    -fx-background-color: -color-on-surface;
+    -fx-border-color: -color-primary;
+    -fx-border-width: 1;
 }
 
-.app-search-variant-outlined .search-results {
-    -fx-background-color: -color-surface;
-    -fx-border-color: transparent -color-primary -color-primary -color-primary;
+.app-search-variant-outlined.search-showing .search-input-box {
+    -fx-border-color: -color-primary -color-primary -color-surface-tint -color-primary;
+    -fx-border-width: 1;
+}
+
+.app-search-variant-outlined .search-results,
+.app-search-variant-outlined .search-no-results{
+    -fx-background-color: -color-on-surface;
+    -fx-border-color: -color-primary;
+    -fx-border-width: 0 1 1 1;
+    -fx-border-radius: 0 0 6 6;
 }
 
 .app-search-variant-outlined .search-results .list-cell:hover {
     -fx-background-color: -color-surface-tint;
 }
 
-.app-search-variant-outlined.search-showing .search-input-box {
-    -fx-border-color: -color-primary -color-primary transparent -color-primary;
-    -fx-border-width: 1.5px;
+
+.app-search-variant-ghost .search-input-box {
+    -fx-background-color: -color-primary-light;
+    -fx-border-color: transparent;
+    -fx-border-width: 1;
 }
 
-.app-search-variant-outlined.search-showing .search-results {
-    -fx-border-color: transparent -color-primary -color-primary -color-primary;
-    -fx-border-width: 1.5px;
+.app-search-variant-ghost.search-showing .search-input-box{
+    -fx-border-color: -color-surface-tint;
+    -fx-border-width: 0 0 1 0;
 }
 
-
-/* ==========================================  BLUE ==========================================*/
-
-.app-search-variant-blue .search-input-box {
-    -fx-background-color: -color-surface-tint;
+.app-search-variant-ghost .search-results,
+.app-search-variant-ghost .search-no-results{
+    -fx-background-color: -color-primary-light;
+    -fx-effect: null;
 }
 
-.app-search-variant-blue .search-results {
-    -fx-background-color: -color-surface-tint;
-    -fx-border-color: -color-surface transparent transparent transparent;
-}
-
-.app-search-variant-blue .search-results .list-cell:hover {
+.app-search-variant-ghost .search-results .list-cell:hover {
     -fx-background-color: -color-surface-dark;
 }
-

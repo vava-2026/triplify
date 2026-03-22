@@ -3,7 +3,7 @@ package com.triplify.ui.shared.component.search.view;
 import com.triplify.ui.shared.component.select.entry.model.Entry;
 import com.triplify.ui.shared.component.select.entry.view.EntryCell;
 import com.triplify.ui.shared.component.search.model.Search;
-import com.triplify.ui.shared.component.search.model.SearchVariant;
+import com.triplify.ui.shared.model.FieldVariant;
 import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -17,6 +17,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Popup;
 import javafx.util.Duration;
 import lombok.Getter;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.io.IOException;
 import java.util.List;
@@ -27,7 +28,7 @@ public class SearchView<T> extends VBox {
 
     @FXML @Getter private TextField searchField;
     @FXML private HBox searchBox;
-    @FXML private Button clearButton;
+    @FXML private FontIcon searchIcon;
 
     @Getter private final ListView<Entry<T>> resultsListView = new ListView<>();
     private final Label noResultsLabel = new Label();
@@ -37,7 +38,7 @@ public class SearchView<T> extends VBox {
     private Search<T> model;
     private PauseTransition debounce;
 
-    private SearchVariant lastVariant = null;
+    private FieldVariant lastVariant = null;
     private boolean isFocused = false;
 
     public SearchView(Search<T> model) {
@@ -59,16 +60,22 @@ public class SearchView<T> extends VBox {
     private void setupPopup() {
         resultsListView.getStyleClass().add("search-results");
         resultsListView.setFixedCellSize(ROW_HEIGHT);
+        resultsListView.setPrefWidth(Double.MAX_VALUE);
 
-        // Style the no-results label
         noResultsLabel.getStyleClass().add("search-no-results");
-        //noResultsLabel.setPadding(new Insets(6, 10, 6, 10));
 
         popupContent.getStyleClass().add("search-popup-content");
         popupContent.getChildren().addAll(resultsListView, noResultsLabel);
 
         popup.getContent().add(popupContent);
-        popup.setAutoHide(false);  // manage hide manually
+        popup.setAutoHide(true);
+        popup.setConsumeAutoHidingEvents(false);
+        popup.showingProperty().addListener((obs, wasShowing, isShowing) -> {
+            if (!isShowing) {
+                getStyleClass().remove("search-showing");
+                popupContent.getStyleClass().remove("search-showing");
+            }
+        });
     }
 
     private void showPopup() {
@@ -76,7 +83,7 @@ public class SearchView<T> extends VBox {
         Bounds fieldBounds = searchBox.localToScreen(searchBox.getBoundsInLocal());
         if (fieldBounds == null) return;
 
-        double x = fieldBounds.getMinX() - 2;
+        double x = fieldBounds.getMinX();
         double y = fieldBounds.getMaxY();
         double width = fieldBounds.getWidth();
 
@@ -85,7 +92,7 @@ public class SearchView<T> extends VBox {
         popupContent.setMaxWidth(width);
 
         if (!popup.isShowing()) {
-            popup.show(getScene().getWindow(), x, y);
+            popup.show(searchBox, x, y);
         } else {
             popup.setX(x);
             popup.setY(y);
@@ -101,17 +108,9 @@ public class SearchView<T> extends VBox {
         debounce = new PauseTransition(Duration.millis(model.getDebounceMs()));
         debounce.setOnFinished(e -> runSearch(searchField.getText()));
 
-        searchField.textProperty().addListener((obs, oldVal, newVal) -> {
-            boolean hasText = newVal != null && !newVal.isEmpty();
-            clearButton.setVisible(hasText);
-            clearButton.setManaged(hasText);
-            debounce.playFromStart();
-        });
-
         searchField.focusedProperty().addListener((obs, wasFocused, isFocused) -> {
             this.isFocused = isFocused;
             if (!isFocused) {
-                // Delay hiding so a click on a list item can register first
                 PauseTransition hideDelay = new PauseTransition(Duration.millis(150));
                 hideDelay.setOnFinished(e -> showNothing());
                 hideDelay.play();
@@ -168,17 +167,27 @@ public class SearchView<T> extends VBox {
         resultsListView.setMaxHeight(height);
     }
 
-    private void applyVariant(SearchVariant variant) {
+    private void applyVariant(FieldVariant variant) {
         if (lastVariant == variant) return;
         if (lastVariant != null) {
-            getStyleClass().remove(lastVariant.getStyleClass());
-            popupContent.getStyleClass().remove(lastVariant.getStyleClass());
+            String cls = toStyleClass(lastVariant);
+            getStyleClass().remove(cls);
+            popupContent.getStyleClass().remove(cls);
         }
         if (variant != null) {
-            getStyleClass().add(variant.getStyleClass());
-            popupContent.getStyleClass().add(variant.getStyleClass());
+            String cls = toStyleClass(variant);
+            getStyleClass().add(cls);
+            popupContent.getStyleClass().add(cls);
         }
         lastVariant = variant;
+    }
+
+    private static String toStyleClass(FieldVariant variant) {
+        return switch (variant) {
+            case OUTLINED -> "app-search-variant-outlined";
+            case FILLED -> "app-search-variant-filled";
+            case GHOST -> "app-search-variant-ghost";
+        };
     }
 
     private void showNothing() {
@@ -188,10 +197,13 @@ public class SearchView<T> extends VBox {
     }
 
     private void showNoResults() {
-        getStyleClass().remove("search-showing");
-        popupContent.getStyleClass().remove("search-showing");
+        if (!getStyleClass().contains("search-showing"))
+            getStyleClass().add("search-showing");
+        if (!popupContent.getStyleClass().contains("search-showing"))
+            popupContent.getStyleClass().add("search-showing");
         noResultsLabel.setVisible(true);
         noResultsLabel.setManaged(true);
+        noResultsLabel.setPrefWidth(Double.MAX_VALUE);
         resultsListView.setVisible(false);
         resultsListView.setManaged(false);
         showPopup();
@@ -207,10 +219,5 @@ public class SearchView<T> extends VBox {
         resultsListView.setVisible(true);
         resultsListView.setManaged(true);
         showPopup();
-    }
-
-    @FXML
-    private void onClearClicked() {
-        searchField.clear();
     }
 }

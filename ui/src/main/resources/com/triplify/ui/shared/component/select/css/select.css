@@ -13,7 +13,6 @@
     -fx-border-radius: 6 6 0 0;
 }
 
-/* Only SelectButtonCell */
 .app-select > .list-cell {
     -fx-background-color: transparent;
     -fx-text-fill: -color-ink-muted;

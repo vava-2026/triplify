@@ -10,20 +10,12 @@
       styleClass="search-container"
       maxHeight="-Infinity">
 
-    <!-- Search input row -->
     <HBox fx:id="searchBox" styleClass="search-input-box" alignment="CENTER_LEFT" spacing="6">
-        <FontIcon fx:id="searchIcon" iconLiteral="fth-search" iconSize="14" styleClass="search-icon"/>
         <TextField fx:id="searchField"
                    styleClass="search-field"
                    HBox.hgrow="ALWAYS"
-                    minHeight="26"
-                   maxHeight="26"/>
-        <Button fx:id="clearButton"
-                styleClass="search-clear-button"
-                text="✕"
-                onAction="#onClearClicked"
-                visible="false"
-                managed="false"/>
+                   maxHeight="Infinity"/>
+        <FontIcon fx:id="searchIcon" iconLiteral="fth-search" styleClass="search-icon"/>
     </HBox>
 
 </fx:root>

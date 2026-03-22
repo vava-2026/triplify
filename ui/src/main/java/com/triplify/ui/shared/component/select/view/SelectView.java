@@ -55,6 +55,12 @@ public class SelectView<T> extends HBox {
         applyVariant(select.getVariant());
 
         select.variantProperty().addListener((obs, oldVal, newVal) -> applyVariant(newVal));
+
+        comboBox.showingProperty().addListener((obs, wasShowing, isShowing) -> {
+            if (!isShowing && comboBox.getScene() != null) {
+                comboBox.getScene().getRoot().requestFocus();
+            }
+        });
     }
 
     private static String toStyleClass(FieldVariant variant) {
