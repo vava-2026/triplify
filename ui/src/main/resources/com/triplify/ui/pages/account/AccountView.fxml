@@ -6,6 +6,8 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
 
 <StackPane xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
@@ -31,6 +33,22 @@
             <HBox styleClass="account-form-actions">
                 <Button text="Save changes" onAction="#onSave" styleClass="account-save-btn"/>
             </HBox>
+        </VBox>
+
+        <VBox styleClass="page-card" spacing="12">
+            <Label text="Badges"/>
+
+            <GridPane fx:id="badgesGrid" hgap="12" vgap="12">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="25"/>
+                    <ColumnConstraints percentWidth="25"/>
+                    <ColumnConstraints percentWidth="25"/>
+                    <ColumnConstraints percentWidth="25"/>
+                    <ColumnConstraints percentWidth="25"/>
+                    <ColumnConstraints percentWidth="25"/>
+                </columnConstraints>
+            </GridPane>
+
         </VBox>
     </VBox>
 </StackPane>
