@@ -12,10 +12,6 @@ dependencies {
 
     // Routing
     implementation("com.github.rahulstech:javafx-routing:2.0.0")
-
-    // Lombok
-    compileOnly("org.projectlombok:lombok:1.18.42")
-    annotationProcessor("org.projectlombok:lombok:1.18.42")
 }
 
 javafx {
