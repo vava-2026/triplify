@@ -23,6 +23,7 @@ public class Emotion {
     @Setter(AccessLevel.PRIVATE)
     private String name;
 
+    @NonNull
     @Setter(AccessLevel.PRIVATE)
     private String nameSk;
 

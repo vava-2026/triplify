@@ -24,6 +24,7 @@ public class Category {
     @Setter(AccessLevel.PRIVATE)
     private String name;
 
+    @NonNull
     @Setter(AccessLevel.PRIVATE)
     private String nameSk;
 

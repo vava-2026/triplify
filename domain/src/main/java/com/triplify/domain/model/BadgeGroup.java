@@ -19,6 +19,7 @@ public class BadgeGroup {
     @Setter(AccessLevel.PRIVATE)
     private String name;
 
+    @NonNull
     @Setter(AccessLevel.PRIVATE)
     private String nameSk;
 
