@@ -2,16 +2,23 @@ package com.triplify.application.di;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
+import com.google.inject.Provider;
 import com.triplify.application.usecase.auth.AuthService;
 import com.triplify.application.usecase.auth.AuthServiceImpl;
 import com.triplify.application.usecase.category.CategoryService;
 import com.triplify.application.usecase.category.CategoryServiceImpl;
+import com.triplify.application.validation.ValidatingProxy;
 
 public class ApplicationModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(CategoryService.class).to(CategoryServiceImpl.class).in(Singleton.class);
-        bind(AuthService.class).to(AuthServiceImpl.class).in(Singleton.class);
+        bindValidated(CategoryService.class, CategoryServiceImpl.class);
+        bindValidated(AuthService.class, AuthServiceImpl.class);
+    }
+
+    private <T> void bindValidated(Class<T> iface, Class<? extends T> impl) {
+        Provider<? extends T> implProvider = getProvider(impl);
+        bind(iface).toProvider(() -> ValidatingProxy.wrap(implProvider.get(), iface)).in(Singleton.class);
     }
 }

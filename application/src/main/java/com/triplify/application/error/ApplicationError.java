@@ -1,0 +1,45 @@
+package com.triplify.application.error;
+
+import com.triplify.domain.error.AppError;
+
+public sealed interface ApplicationError extends AppError permits
+        ApplicationError.Unexpected,
+        ApplicationError.StorageFailure,
+        ApplicationError.FileFailure {
+
+    record Unexpected(String detail) implements ApplicationError {
+        @Override
+        public String code() {
+            return "APPLICATION_UNEXPECTED";
+        }
+
+        @Override
+        public String message() {
+            return detail == null || detail.isBlank() ? "Unexpected application error" : detail;
+        }
+    }
+
+    record StorageFailure(String operation, Throwable cause) implements ApplicationError {
+        @Override
+        public String code() {
+            return "APPLICATION_STORAGE_FAILURE";
+        }
+
+        @Override
+        public String message() {
+            return "Storage failure during operation '%s'".formatted(operation);
+        }
+    }
+
+    record FileFailure(String operation, Throwable cause) implements ApplicationError {
+        @Override
+        public String code() {
+            return "APPLICATION_FILE_FAILURE";
+        }
+
+        @Override
+        public String message() {
+            return "File failure during operation '%s'".formatted(operation);
+        }
+    }
+}

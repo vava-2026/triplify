@@ -1,6 +1,6 @@
 package com.triplify.application.usecase.auth;
 
-import com.triplify.application.result.Result;
+import com.triplify.domain.result.Result;
 
 public interface AuthService {
 
