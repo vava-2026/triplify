@@ -106,35 +106,42 @@ public class SQLiteConnectionFactory {
         throw new RuntimeException("Unsupported OS: " + os);
     }
 
-    // Windows: dependency DLLs must be pre-loaded via System.load() in order,
-    // because Windows does not search the DLL's own directory for its dependencies.
-    // mod_spatialite.dll must come last.
+    // Windows: dependency DLLs must be pre-loaded via System.load() in topological
+    // (leaf-first) order, because Windows does not search the DLL's own directory
+    // for its dependencies. mod_spatialite.dll must come last.
     private static final java.util.List<String> WINDOWS_DLL_LOAD_ORDER = java.util.List.of(
+            // ── tier 0: no native deps ──
             "zlib1.dll",
             "libwinpthread-1.dll",
             "libgcc_s_seh-1.dll",
             "libstdc++-6.dll",
+            // ── tier 1: depend only on tier 0 ──
             "libiconv-2.dll",
             "libtermcap-0.dll",
-            "libreadline8.dll",
             "liblzma-5.dll",
-            "libcrypto-3-x64.dll",
-            "libssl-3-x64.dll",
             "libexpat-1.dll",
-            "libxml2.dll",
             "libjpeg-62.dll",
             "libzstd.dll",
             "libsharpyuv-0.dll",
-            "libwebp-7.dll",
-            "libtiff-6.dll",
-            "libminizip-1.dll",
-            "libfreexl-1.dll",
             "libsqlite3-0.dll",
-            "libgeos.dll",
-            "libgeos_c.dll",
-            "libproj_9_2.dll",
-            "librttopo-1.dll",
-            "libcurl-4.dll",
+            // ── tier 2 ──
+            "libreadline8.dll",      // → libtermcap
+            "libcrypto-3-x64.dll",   // → base
+            "libwebp-7.dll",         // → libsharpyuv
+            "libminizip-1.dll",      // → zlib
+            "libgeos.dll",           // → libstdc++
+            // ── tier 3 ──
+            "libssl-3-x64.dll",      // → libcrypto
+            "libxml2.dll",           // → libiconv, liblzma, zlib
+            "libtiff-6.dll",         // → libjpeg, libzstd, liblzma, zlib
+            "libgeos_c.dll",         // → libgeos
+            "libfreexl-1.dll",       // → libiconv, libminizip
+            // ── tier 4 ──
+            "libcurl-4.dll",         // → libssl, libcrypto, zlib, libzstd
+            "librttopo-1.dll",       // → libgeos_c
+            // ── tier 5 ──
+            "libproj_9_2.dll",       // → libcurl, libsqlite3, libtiff
+            // ── tier 6 (top) ──
             "mod_spatialite.dll"
     );
 
