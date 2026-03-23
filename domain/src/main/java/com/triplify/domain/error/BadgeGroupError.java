@@ -5,7 +5,7 @@ public sealed interface BadgeGroupError extends DomainError permits BadgeGroupEr
     record NotFound(String groupId) implements BadgeGroupError {
         @Override
         public String code() {
-            return "BADGE_GROUP_NOT_FOUND";
+            return "error.badge.group.not.found";
         }
 
         @Override

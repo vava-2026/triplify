@@ -5,7 +5,7 @@ public sealed interface EmotionError extends DomainError permits EmotionError.No
     record NotFound(String emotionId) implements EmotionError {
         @Override
         public String code() {
-            return "EMOTION_NOT_FOUND";
+            return "error.emotion.not.found";
         }
 
         @Override
@@ -17,7 +17,7 @@ public sealed interface EmotionError extends DomainError permits EmotionError.No
     record AlreadyExists(String name) implements EmotionError {
         @Override
         public String code() {
-            return "EMOTION_ALREADY_EXISTS";
+            return "error.emotion.already.exists";
         }
 
         @Override

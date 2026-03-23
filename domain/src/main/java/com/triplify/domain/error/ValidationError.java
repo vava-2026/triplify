@@ -6,7 +6,7 @@ public record ValidationError(List<FieldViolation> violations) implements Domain
 
     @Override
     public String code() {
-        return "VALIDATION_FAILED";
+        return "error.validation.failed";
     }
 
     @Override

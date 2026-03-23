@@ -9,7 +9,7 @@ public sealed interface StoryError extends DomainError permits
     record NotFound(String storyId) implements StoryError {
         @Override
         public String code() {
-            return "STORY_NOT_FOUND";
+            return "error.story.not.found";
         }
 
         @Override
@@ -21,7 +21,7 @@ public sealed interface StoryError extends DomainError permits
     record NotOwner(String storyId) implements StoryError {
         @Override
         public String code() {
-            return "STORY_NOT_OWNER";
+            return "error.story.not.owner";
         }
 
         @Override
@@ -33,7 +33,7 @@ public sealed interface StoryError extends DomainError permits
     record PremiumRequired() implements StoryError {
         @Override
         public String code() {
-            return "STORY_PREMIUM_REQUIRED";
+            return "error.story.premium.required";
         }
 
         @Override
@@ -45,7 +45,7 @@ public sealed interface StoryError extends DomainError permits
     record InvalidStatusTransition(String from, String to) implements StoryError {
         @Override
         public String code() {
-            return "STORY_INVALID_STATUS_TRANSITION";
+            return "error.story.invalid.status.transition";
         }
 
         @Override

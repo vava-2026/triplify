@@ -5,7 +5,7 @@ public sealed interface TripPlaceError extends DomainError permits TripPlaceErro
     record NotFound(String tripPlaceId) implements TripPlaceError {
         @Override
         public String code() {
-            return "TRIP_PLACE_NOT_FOUND";
+            return "error.trip.place.not.found";
         }
 
         @Override
@@ -17,7 +17,7 @@ public sealed interface TripPlaceError extends DomainError permits TripPlaceErro
     record InvalidStatusTransition(String from, String to) implements TripPlaceError {
         @Override
         public String code() {
-            return "TRIP_PLACE_INVALID_STATUS_TRANSITION";
+            return "error.trip.place.invalid.status.transition";
         }
 
         @Override

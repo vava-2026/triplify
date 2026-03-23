@@ -5,7 +5,7 @@ public sealed interface TripRouteError extends DomainError permits TripRouteErro
     record NotFound(String tripRouteId) implements TripRouteError {
         @Override
         public String code() {
-            return "TRIP_ROUTE_NOT_FOUND";
+            return "error.trip.route.not.found";
         }
 
         @Override
@@ -17,7 +17,7 @@ public sealed interface TripRouteError extends DomainError permits TripRouteErro
     record InvalidStatusTransition(String from, String to) implements TripRouteError {
         @Override
         public String code() {
-            return "TRIP_ROUTE_INVALID_STATUS_TRANSITION";
+            return "error.trip.route.invalid.status.transition";
         }
 
         @Override

@@ -10,7 +10,7 @@ public sealed interface ApplicationError extends AppError permits
     record Unexpected(String detail) implements ApplicationError {
         @Override
         public String code() {
-            return "APPLICATION_UNEXPECTED";
+            return "error.application.unexpected";
         }
 
         @Override
@@ -22,7 +22,7 @@ public sealed interface ApplicationError extends AppError permits
     record StorageFailure(String operation, Throwable cause) implements ApplicationError {
         @Override
         public String code() {
-            return "APPLICATION_STORAGE_FAILURE";
+            return "error.application.storage.failure";
         }
 
         @Override
@@ -34,7 +34,7 @@ public sealed interface ApplicationError extends AppError permits
     record FileFailure(String operation, Throwable cause) implements ApplicationError {
         @Override
         public String code() {
-            return "APPLICATION_FILE_FAILURE";
+            return "error.application.file.failure";
         }
 
         @Override

@@ -5,7 +5,7 @@ public sealed interface CategoryError extends DomainError permits CategoryError.
     record NotFound(String categoryId) implements CategoryError {
         @Override
         public String code() {
-            return "CATEGORY_NOT_FOUND";
+            return "error.category.not.found";
         }
 
         @Override
@@ -17,7 +17,7 @@ public sealed interface CategoryError extends DomainError permits CategoryError.
     record AlreadyExists(String name) implements CategoryError {
         @Override
         public String code() {
-            return "CATEGORY_ALREADY_EXISTS";
+            return "error.category.already.exists";
         }
 
         @Override

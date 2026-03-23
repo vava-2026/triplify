@@ -5,7 +5,7 @@ public sealed interface AuthError extends DomainError permits AuthError.InvalidC
     record InvalidCredentials() implements AuthError {
         @Override
         public String code() {
-            return "AUTH_INVALID_CREDENTIALS";
+            return "error.auth.invalid.credentials";
         }
 
         @Override
@@ -17,7 +17,7 @@ public sealed interface AuthError extends DomainError permits AuthError.InvalidC
     record SessionExpired() implements AuthError {
         @Override
         public String code() {
-            return "AUTH_SESSION_EXPIRED";
+            return "error.auth.session.expired";
         }
 
         @Override

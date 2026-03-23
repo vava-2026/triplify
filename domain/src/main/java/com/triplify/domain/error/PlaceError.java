@@ -5,7 +5,7 @@ public sealed interface PlaceError extends DomainError permits PlaceError.NotFou
     record NotFound(String placeId) implements PlaceError {
         @Override
         public String code() {
-            return "PLACE_NOT_FOUND";
+            return "error.place.not.found";
         }
 
         @Override
@@ -17,7 +17,7 @@ public sealed interface PlaceError extends DomainError permits PlaceError.NotFou
     record NotOwner(String placeId) implements PlaceError {
         @Override
         public String code() {
-            return "PLACE_NOT_OWNER";
+            return "error.place.not.owner";
         }
 
         @Override
@@ -29,7 +29,7 @@ public sealed interface PlaceError extends DomainError permits PlaceError.NotFou
     record InvalidCoordinates(double latitude, double longitude) implements PlaceError {
         @Override
         public String code() {
-            return "PLACE_INVALID_COORDINATES";
+            return "error.place.invalid.coordinates";
         }
 
         @Override

@@ -11,7 +11,7 @@ public sealed interface InfrastructureError extends AppError permits
     record DatabaseError(String operation, Throwable cause) implements InfrastructureError {
         @Override
         public String code() {
-            return "DB_ERROR";
+            return "error.infrastructure.database";
         }
 
         @Override
@@ -23,7 +23,7 @@ public sealed interface InfrastructureError extends AppError permits
     record FileError(Path path, String reason) implements InfrastructureError {
         @Override
         public String code() {
-            return "FILE_ERROR";
+            return "error.infrastructure.file";
         }
 
         @Override

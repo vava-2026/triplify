@@ -5,7 +5,7 @@ public sealed interface ImageError extends DomainError permits ImageError.NotFou
     record NotFound(String imageId) implements ImageError {
         @Override
         public String code() {
-            return "IMAGE_NOT_FOUND";
+            return "error.image.not.found";
         }
 
         @Override
@@ -17,7 +17,7 @@ public sealed interface ImageError extends DomainError permits ImageError.NotFou
     record InvalidFormat(String format) implements ImageError {
         @Override
         public String code() {
-            return "IMAGE_INVALID_FORMAT";
+            return "error.image.invalid.format";
         }
 
         @Override
@@ -29,7 +29,7 @@ public sealed interface ImageError extends DomainError permits ImageError.NotFou
     record TooLarge(long sizeBytes, long maxBytes) implements ImageError {
         @Override
         public String code() {
-            return "IMAGE_TOO_LARGE";
+            return "error.image.too.large";
         }
 
         @Override

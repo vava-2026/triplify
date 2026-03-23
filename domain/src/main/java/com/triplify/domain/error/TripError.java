@@ -11,7 +11,7 @@ public sealed interface TripError extends DomainError permits
     record NotFound(String tripId) implements TripError {
         @Override
         public String code() {
-            return "TRIP_NOT_FOUND";
+            return "error.trip.not.found";
         }
 
         @Override
@@ -23,7 +23,7 @@ public sealed interface TripError extends DomainError permits
     record NotOwner(String tripId) implements TripError {
         @Override
         public String code() {
-            return "TRIP_NOT_OWNER";
+            return "error.trip.not.owner";
         }
 
         @Override
@@ -35,7 +35,7 @@ public sealed interface TripError extends DomainError permits
     record InvalidDates(LocalDate start, LocalDate end) implements TripError {
         @Override
         public String code() {
-            return "TRIP_INVALID_DATES";
+            return "error.trip.invalid.dates";
         }
 
         @Override
@@ -47,7 +47,7 @@ public sealed interface TripError extends DomainError permits
     record InvalidStatusTransition(String from, String to) implements TripError {
         @Override
         public String code() {
-            return "TRIP_INVALID_STATUS_TRANSITION";
+            return "error.trip.invalid.status.transition";
         }
 
         @Override

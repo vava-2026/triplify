@@ -10,7 +10,7 @@ public sealed interface UserError extends DomainError permits
     record NotFound(String userId) implements UserError {
         @Override
         public String code() {
-            return "USER_NOT_FOUND";
+            return "error.user.not.found";
         }
 
         @Override
@@ -22,7 +22,7 @@ public sealed interface UserError extends DomainError permits
     record AlreadyExists(String identity) implements UserError {
         @Override
         public String code() {
-            return "USER_ALREADY_EXISTS";
+            return "error.user.already.exists";
         }
 
         @Override
@@ -34,7 +34,7 @@ public sealed interface UserError extends DomainError permits
     record Unauthorized() implements UserError {
         @Override
         public String code() {
-            return "USER_UNAUTHORIZED";
+            return "error.user.unauthorized";
         }
 
         @Override
@@ -46,7 +46,7 @@ public sealed interface UserError extends DomainError permits
     record Forbidden() implements UserError {
         @Override
         public String code() {
-            return "USER_FORBIDDEN";
+            return "error.user.forbidden";
         }
 
         @Override
@@ -58,7 +58,7 @@ public sealed interface UserError extends DomainError permits
     record InvalidCurrentPassword() implements UserError {
         @Override
         public String code() {
-            return "USER_INVALID_CURRENT_PASSWORD";
+            return "error.user.invalid.current.password";
         }
 
         @Override

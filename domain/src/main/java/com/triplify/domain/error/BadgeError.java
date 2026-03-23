@@ -5,7 +5,7 @@ public sealed interface BadgeError extends DomainError permits BadgeError.NotFou
     record NotFound(String badgeId) implements BadgeError {
         @Override
         public String code() {
-            return "BADGE_NOT_FOUND";
+            return "error.badge.not.found";
         }
 
         @Override
@@ -17,7 +17,7 @@ public sealed interface BadgeError extends DomainError permits BadgeError.NotFou
     record AlreadyExists(String name) implements BadgeError {
         @Override
         public String code() {
-            return "BADGE_ALREADY_EXISTS";
+            return "error.badge.already.exists";
         }
 
         @Override

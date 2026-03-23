@@ -10,7 +10,7 @@ public sealed interface CountryError extends DomainError permits
     record NotFound(String countryId) implements CountryError {
         @Override
         public String code() {
-            return "COUNTRY_NOT_FOUND";
+            return "error.country.not.found";
         }
 
         @Override
@@ -22,7 +22,7 @@ public sealed interface CountryError extends DomainError permits
     record AlreadyExists(String name) implements CountryError {
         @Override
         public String code() {
-            return "COUNTRY_ALREADY_EXISTS";
+            return "error.country.already.exists";
         }
 
         @Override
@@ -34,7 +34,7 @@ public sealed interface CountryError extends DomainError permits
     record AlreadyBanned(String countryId) implements CountryError {
         @Override
         public String code() {
-            return "COUNTRY_ALREADY_BANNED";
+            return "error.country.already.banned";
         }
 
         @Override
@@ -46,7 +46,7 @@ public sealed interface CountryError extends DomainError permits
     record NotBanned(String countryId) implements CountryError {
         @Override
         public String code() {
-            return "COUNTRY_NOT_BANNED";
+            return "error.country.not.banned";
         }
 
         @Override
@@ -58,7 +58,7 @@ public sealed interface CountryError extends DomainError permits
     record NotOwner(String countryId) implements CountryError {
         @Override
         public String code() {
-            return "COUNTRY_NOT_OWNER";
+            return "error.country.not.owner";
         }
 
         @Override

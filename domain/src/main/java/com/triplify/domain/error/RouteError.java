@@ -10,7 +10,7 @@ public sealed interface RouteError extends DomainError permits
     record NotFound(String routeId) implements RouteError {
         @Override
         public String code() {
-            return "ROUTE_NOT_FOUND";
+            return "error.route.not.found";
         }
 
         @Override
@@ -22,7 +22,7 @@ public sealed interface RouteError extends DomainError permits
     record NotOwner(String routeId) implements RouteError {
         @Override
         public String code() {
-            return "ROUTE_NOT_OWNER";
+            return "error.route.not.owner";
         }
 
         @Override
@@ -34,7 +34,7 @@ public sealed interface RouteError extends DomainError permits
     record PlaceNotInRoute(String placeId, String routeId) implements RouteError {
         @Override
         public String code() {
-            return "ROUTE_PLACE_NOT_FOUND";
+            return "error.route.place.not.in.route";
         }
 
         @Override
@@ -46,7 +46,7 @@ public sealed interface RouteError extends DomainError permits
     record InvalidStatusTransition(String from, String to) implements RouteError {
         @Override
         public String code() {
-            return "ROUTE_INVALID_STATUS_TRANSITION";
+            return "error.route.invalid.status.transition";
         }
 
         @Override
@@ -58,7 +58,7 @@ public sealed interface RouteError extends DomainError permits
     record TooFewPlaces(int placeCount) implements RouteError {
         @Override
         public String code() {
-            return "ROUTE_TOO_FEW_PLACES";
+            return "error.route.too.few.places";
         }
 
         @Override
