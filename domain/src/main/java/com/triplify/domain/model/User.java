@@ -11,11 +11,12 @@ import java.util.UUID;
 @Getter
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@RequiredArgsConstructor(access = AccessLevel.PUBLIC)
 public class User {
 
     @EqualsAndHashCode.Include
     @NonNull
-    private final UUID id;
+    private final UUID id = UUID.randomUUID();
 
     @NonNull
     @Setter(AccessLevel.PRIVATE)
@@ -38,29 +39,11 @@ public class User {
     private UUID avatarImageId;
 
     @NonNull
-    private final Instant createdAt;
+    private final Instant createdAt = Instant.now();
 
     @NonNull
     @Setter(AccessLevel.PRIVATE)
-    private Instant updatedAt;
-
-    public static User of(@NonNull String username, @NonNull String email, @NonNull String passwordHash) {
-        return new User(username, email, passwordHash);
-    }
-
-    private User(@NonNull String username, @NonNull String email, @NonNull String passwordHash) {
-        if (username.isBlank()) throw new IllegalArgumentException("Username must not be blank.");
-        if (email.isBlank()) throw new IllegalArgumentException("Email must not be blank.");
-        if (passwordHash.isBlank()) throw new IllegalArgumentException("Password hash must not be blank.");
-        this.id = UUID.randomUUID();
-        this.username = username;
-        this.email = email;
-        this.passwordHash = passwordHash;
-        this.role = RoleEnum.USER;
-        this.createdAt = Instant.now();
-        this.updatedAt = this.createdAt;
-        log.debug("User created: id={}, username={}, role={}", id, username, role);
-    }
+    private Instant updatedAt = Instant.now();
 
     public void updateUsername(@NonNull String username) {
         if (username.isBlank()) throw new IllegalArgumentException("Username must not be blank.");

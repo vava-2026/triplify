@@ -11,11 +11,12 @@ import java.util.*;
 @Getter
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@RequiredArgsConstructor(access = AccessLevel.PUBLIC)
 public class Trip {
 
     @EqualsAndHashCode.Include
     @NonNull
-    private final UUID id;
+    private final UUID id = UUID.randomUUID();
 
     @NonNull
     private final UUID userId;
@@ -42,32 +43,15 @@ public class Trip {
     private Instant endedAt;
 
     @NonNull
-    private final Instant createdAt;
+    private final Instant createdAt = Instant.now();
 
     @NonNull
     @Setter(AccessLevel.PRIVATE)
-    private Instant updatedAt;
+    private Instant updatedAt = Instant.now();
 
     private final Set<UUID> tagIds = new HashSet<>();
     private final Set<UUID> imageIds = new LinkedHashSet<>();
     private final Set<UUID> countryIds = new HashSet<>();
-
-    @Builder(builderMethodName = "of")
-    private Trip(@NonNull UUID userId,
-                 @NonNull UUID categoryId,
-                 @NonNull String title,
-                 String description) {
-        if (title.isBlank()) throw new IllegalArgumentException("Title must not be blank.");
-        this.id = UUID.randomUUID();
-        this.userId = userId;
-        this.categoryId = categoryId;
-        this.title = title;
-        this.description = description;
-        this.status = StatusEnum.PLANNED;
-        this.createdAt = Instant.now();
-        this.updatedAt = this.createdAt;
-        log.debug("Trip created: id={}, title={}, userId={}", id, title, userId);
-    }
 
     public Set<UUID> getTagIds() {
         return Collections.unmodifiableSet(tagIds);
