@@ -10,6 +10,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -17,6 +18,11 @@ public class ValidatingProxy implements InvocationHandler {
 
     private static final jakarta.validation.Validator VALIDATOR =
             Validation.buildDefaultValidatorFactory().getValidator();
+    private static final Comparator<FieldViolation> VIOLATION_ORDER = Comparator
+            .comparing(FieldViolation::field)
+            .thenComparingInt(violation -> constraintPriority(violation.constraint()))
+            .thenComparing(FieldViolation::messageKey)
+            .thenComparing(FieldViolation::constraint);
 
     private final Object target;
 
@@ -53,23 +59,32 @@ public class ValidatingProxy implements InvocationHandler {
         }
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
     private Result<?> validate(Object arg) {
-        Set<ConstraintViolation<Object>> violations = (Set) VALIDATOR.validate(arg);
+        Set<ConstraintViolation<Object>> violations = VALIDATOR.validate(arg);
         if (violations.isEmpty()) {
             return Result.ok();
         }
 
-        List<FieldViolation> fieldViolations = violations.stream()
+        List<FieldViolation> sortedViolations = violations.stream()
                 .map(v -> new FieldViolation(
                         v.getPropertyPath().toString(),
                         v.getInvalidValue(),
                         v.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName(),
                         stripBraces(v.getMessageTemplate())
                 ))
+                .sorted(VIOLATION_ORDER)
                 .toList();
 
-        return Result.fail(new ValidationError(fieldViolations));
+        return Result.fail(new ValidationError(sortedViolations));
+    }
+
+    private static int constraintPriority(String constraint) {
+        return switch (constraint) {
+            case "NotBlank", "NotNull" -> 0;
+            case "Email" -> 1;
+            case "Size" -> 2;
+            default -> Integer.MAX_VALUE;
+        };
     }
 
     private String stripBraces(String template) {

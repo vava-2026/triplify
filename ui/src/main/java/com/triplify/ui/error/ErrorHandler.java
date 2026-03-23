@@ -27,7 +27,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public class ErrorHandler {
@@ -47,7 +49,7 @@ public class ErrorHandler {
 
     public void handle(AppError error, Map<String, Consumer<String>> fieldHandlers) {
         switch (error) {
-            case ValidationError validationError -> validationError.violations().forEach(v -> handleValidationViolation(v, fieldHandlers));
+            case ValidationError validationError -> handleValidationError(validationError, fieldHandlers);
 
             case AuthError.InvalidCredentials ignored -> toast.error(I18n.t("error.auth.invalid.credentials"));
             case AuthError.SessionExpired ignored -> toast.error(I18n.t("error.auth.session.expired"));
@@ -128,6 +130,15 @@ public class ErrorHandler {
                 toast.error(I18n.t("error.unexpected"));
             }
         }
+    }
+
+    private void handleValidationError(ValidationError validationError, Map<String, Consumer<String>> fieldHandlers) {
+        Set<String> handledFields = new HashSet<>();
+        validationError.violations().forEach(violation -> {
+            if (handledFields.add(violation.field())) {
+                handleValidationViolation(violation, fieldHandlers);
+            }
+        });
     }
 
     private void handleValidationViolation(FieldViolation violation, Map<String, Consumer<String>> fieldHandlers) {
