@@ -3,11 +3,7 @@ package com.triplify.ui.pages.account;
 import com.google.inject.Inject;
 import com.triplify.application.error.ValidationMapper;
 import com.triplify.application.error.ValidationResult;
-import com.triplify.application.usecase.auth.AuthService;
-import com.triplify.application.usecase.auth.SignUpRequest;
-import com.triplify.application.usecase.session.SessionUser;
-import com.triplify.application.usecase.session.UserSessionContext;
-import com.triplify.domain.model.enums.RoleEnum;
+import com.triplify.application.usecase.account.UpdateProfileRequest;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.input_item.PasswordItem;
@@ -63,10 +59,6 @@ public class AccountController extends SimpleLifecycleAwareController {
 
     @FXML
     private void onSave() {
-        if (userSessionContext.isLoggedIn()) {
-            return;
-        }
-
         clearErrors();
 
         String rawPassword = passwordInput.getText();
@@ -77,33 +69,30 @@ public class AccountController extends SimpleLifecycleAwareController {
                 RoleEnum.USER
         );
 
-        ValidationResult<SignUpRequest> validation = ValidationMapper.validate(request);
+        ValidationResult<UpdateProfileRequest> validation = ValidationMapper.validate(request);
         if (validation.isFailure()) {
             validation.getViolations().forEach(v -> {
                 String msg = I18n.t(v.getMessageKey());
                 switch (v.getField()) {
-                    case "username" -> usernameInput.showError(msg);
+                    case "name" -> nameInput.showError(msg);
                     case "email" -> emailInput.showError(msg);
-                    case "password" -> passwordInput.showError(msg);
+                    case "newPassword" -> passwordInput.showError(msg);
+                    case "bio" -> bioInput.showError(msg);
                     default -> log.warn("No input mapped for violated field '{}'", v.getField());
                 }
             });
             return;
         }
 
-        authService.signUp(request).onSuccess(v -> {
-            toast.success("Signed up successfully");
-            render();
-        }).onFailure(errors -> {
-            if (!errors.isEmpty()) {
-                toast.error(I18n.t(errors.getFirst().messageKey()));
-            }
-        });
+        // TODO: call AccountService once available
+        log.info("Profile update validated successfully");
+        toast.success(I18n.t("account.profile.saved"));
     }
 
     private void clearErrors() {
-        if (usernameInput != null) usernameInput.clearError();
-        if (emailInput != null) emailInput.clearError();
-        if (passwordInput != null) passwordInput.clearError();
+        nameInput.clearError();
+        emailInput.clearError();
+        passwordInput.clearError();
+        bioInput.clearError();
     }
 }
