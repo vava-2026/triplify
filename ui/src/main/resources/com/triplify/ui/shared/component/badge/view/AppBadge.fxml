@@ -4,6 +4,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.VBox?>
 
+
 <fx:root type="VBox"
          xmlns="http://javafx.com/javafx"
          xmlns:fx="http://javafx.com/fxml"
@@ -13,6 +14,7 @@
          spacing="8"
          prefWidth="160"
          prefHeight="220">
+
 
     <ImageView fx:id="badgeImage"
                fitWidth="80"

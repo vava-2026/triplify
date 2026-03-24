@@ -1,6 +1,8 @@
 package com.triplify.ui.shared.component.badge.view;
 
+import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.component.badge.model.Badge;
+import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.canvas.Canvas;
@@ -36,10 +38,18 @@ public class BadgeView extends VBox {
 
     public void update(Badge badge) {
         badgeName.setText(badge.getName());
-        badgeStat.setText("Countries visited: " + badge.getCurrentValue() + "/" + badge.getRequiredValue());
+
+        badgeStat.textProperty().bind(
+                Bindings.createStringBinding(() -> I18n.t("badge.countriesVisited")
+                        + ": "
+                        + badge.getCurrentValue()
+                        + "/"
+                        + badge.getRequiredValue()
+                        , I18n.bundleProperty())
+        );
 
         // for placeholder generation (TODO: replace with a proper placeholder image)
-        double imageSize = 50;
+        double imageSize = 75;
 
         if (badge.getImage() != null && !badge.getImage().isBlank()) {
             try {
