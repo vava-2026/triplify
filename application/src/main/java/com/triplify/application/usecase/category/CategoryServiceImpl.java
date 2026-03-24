@@ -1,7 +1,9 @@
 package com.triplify.application.usecase.category;
 
 import com.google.inject.Inject;
+import com.triplify.application.error.ApplicationError;
 import com.triplify.domain.repository.CategoryRepository;
+import com.triplify.domain.result.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,11 +20,15 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public List<CategoryResponse> getAllCategories() {
+    public Result<List<CategoryResponse>> getAllCategories() {
         log.debug("Getting all categories");
-        return categoryRepository.findAll().stream()
-                .map(c -> new CategoryResponse(c.getId().toString(), c.getName()))
-                .toList();
+        try {
+            List<CategoryResponse> categories = categoryRepository.findAll().stream()
+                    .map(c -> new CategoryResponse(c.getId().toString(), c.getName()))
+                    .toList();
+            return Result.ok(categories);
+        } catch (Exception ex) {
+            return Result.fail(new ApplicationError.StorageFailure("getAllCategories", ex));
+        }
     }
 }
-
