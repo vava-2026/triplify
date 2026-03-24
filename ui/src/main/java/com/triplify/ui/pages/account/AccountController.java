@@ -53,7 +53,7 @@ public class AccountController extends SimpleLifecycleAwareController {
             });
             editFormContainer.getChildren().addAll(usernameLabel, logOffButton);
         } else {
-            usernameInput = new InputItem("Username", FieldVariant.FILLED);
+            usernameInput = new InputItem("input.placeholder.username", FieldVariant.FILLED);
             emailInput = new InputItem("input.placeholder.email");
             passwordInput = new PasswordItem("input.placeholder.password", FieldVariant.GHOST);
 
