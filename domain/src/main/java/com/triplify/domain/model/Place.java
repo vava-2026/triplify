@@ -10,12 +10,12 @@ import java.util.UUID;
 @Getter
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@RequiredArgsConstructor(access = AccessLevel.PUBLIC)
+@AllArgsConstructor
 public class Place {
 
     @EqualsAndHashCode.Include
     @NonNull
-    private final UUID id = UUID.randomUUID();
+    private final UUID id;
 
     @NonNull
     private final UUID userId;
@@ -41,12 +41,20 @@ public class Place {
     private double longitude;
 
     @NonNull
-    private final Instant createdAt = Instant.now();
+    private final Instant createdAt;
 
     @NonNull
     @Setter(AccessLevel.PRIVATE)
-    private Instant updatedAt = Instant.now();
+    private Instant updatedAt;
 
+    public Place(@NonNull UUID userId, @NonNull UUID countryId, @NonNull String title) {
+        this.id = UUID.randomUUID();
+        this.userId = userId;
+        this.countryId = countryId;
+        this.title = title;
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
+    }
 
     public void updateTitle(@NonNull String title) throws IllegalArgumentException {
         if (title.isBlank()) throw new IllegalArgumentException("Title must not be blank.");

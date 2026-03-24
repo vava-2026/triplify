@@ -9,11 +9,11 @@ import java.util.UUID;
 @Getter
 @ToString(exclude = {"createdById"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@RequiredArgsConstructor(access = AccessLevel.PUBLIC)
+@AllArgsConstructor
 public class BadgeGroup {
     @EqualsAndHashCode.Include
     @NonNull
-    private final UUID id = UUID.randomUUID();
+    private final UUID id;
 
     @NonNull
     @Setter(AccessLevel.PRIVATE)
@@ -31,6 +31,13 @@ public class BadgeGroup {
 
     @NonNull
     private final UUID createdById;
+
+    public BadgeGroup(@NonNull String name, @NonNull String nameSk, @NonNull UUID createdById) {
+        this.id = UUID.randomUUID();
+        this.name = name;
+        this.nameSk = nameSk;
+        this.createdById = createdById;
+    }
 
     public void updateName(@NonNull String name) throws IllegalArgumentException{
         if (name.isBlank()) throw new IllegalArgumentException("Name must not be blank.");

@@ -104,6 +104,6 @@ public class UserRepositoryImpl implements UserRepository {
         Instant createdAt = Instant.parse(rs.getString("created_at"));
         Instant updatedAt = Instant.parse(rs.getString("updated_at"));
         
-        return User.reconstitute(id, username, email, passwordHash, role, avatarImageId, createdAt, updatedAt);
+        return new User(id, username, email, passwordHash, role, avatarImageId, createdAt, updatedAt);
     }
 }

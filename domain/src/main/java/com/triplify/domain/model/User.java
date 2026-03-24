@@ -11,6 +11,7 @@ import java.util.UUID;
 @Getter
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@AllArgsConstructor
 public class User {
 
     @EqualsAndHashCode.Include
@@ -44,37 +45,17 @@ public class User {
     @Setter(AccessLevel.PRIVATE)
     private Instant updatedAt;
 
-    public static User of(@NonNull String username, @NonNull String email, @NonNull String passwordHash, @NonNull RoleEnum role) {
-        return new User(username, email, passwordHash, role);
-    }
-
-    public static User reconstitute(@NonNull UUID id, @NonNull String username, @NonNull String email, @NonNull String passwordHash, @NonNull RoleEnum role, UUID avatarImageId, @NonNull Instant createdAt, @NonNull Instant updatedAt) {
-        return new User(id, username, email, passwordHash, role, avatarImageId, createdAt, updatedAt);
-    }
-
-    private User(@NonNull String username, @NonNull String email, @NonNull String passwordHash, @NonNull RoleEnum role) {
-        if (username.isBlank()) throw new IllegalArgumentException("Username must not be blank.");
-        if (email.isBlank()) throw new IllegalArgumentException("Email must not be blank.");
-        if (passwordHash.isBlank()) throw new IllegalArgumentException("Password hash must not be blank.");
+    public User(@NonNull String username,
+                @NonNull String email,
+                @NonNull String passwordHash,
+                @NonNull RoleEnum role) {
         this.id = UUID.randomUUID();
-        this.username = username;
-        this.email = email;
-        this.passwordHash = passwordHash;
-        this.role = role;
         this.createdAt = Instant.now();
-        this.updatedAt = this.createdAt;
-        log.debug("User created: id={}, username={}, role={}", id, username, role);
-    }
-
-    private User(@NonNull UUID id, @NonNull String username, @NonNull String email, @NonNull String passwordHash, @NonNull RoleEnum role, UUID avatarImageId, @NonNull Instant createdAt, @NonNull Instant updatedAt) {
-        this.id = id;
+        this.updatedAt = Instant.now();
         this.username = username;
         this.email = email;
         this.passwordHash = passwordHash;
         this.role = role;
-        this.avatarImageId = avatarImageId;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
     }
 
     public void updateUsername(@NonNull String username) {

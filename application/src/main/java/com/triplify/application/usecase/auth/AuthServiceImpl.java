@@ -47,7 +47,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         String passwordHash = passwordEncoder.encode(command.password());
-        User user = User.of(command.username(), command.email(), passwordHash, command.role());
+        User user = new User(command.username(), command.email(), passwordHash, command.role());
         userRepository.save(user);
 
         log.info("User '{}' registered successfully", user.getUsername());
