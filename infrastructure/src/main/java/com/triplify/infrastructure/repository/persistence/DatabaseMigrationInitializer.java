@@ -50,43 +50,12 @@ public class DatabaseMigrationInitializer {
     }
 
     private void runBaselineMigration(Connection connection) throws IOException, SQLException {
-        String sql = readMigrationSql();
+        String sqlScript = readMigrationSql();
+
         try (Statement stmt = connection.createStatement()) {
-            StringBuilder currentStatement = new StringBuilder();
-            boolean insideTrigger = false;
-
-            for (String line : sql.split("\\R")) {
-                int commentIndex = line.indexOf("--");
-                if (commentIndex >= 0) {
-                    line = line.substring(0, commentIndex);
-                }
-                String trimmed = line.trim();
-
-                if (trimmed.isEmpty()) {
-                    continue;
-                }
-
-                if (trimmed.toUpperCase().startsWith("CREATE TRIGGER")) {
-                    insideTrigger = true;
-                }
-
-                currentStatement.append(trimmed).append(" ");
-
-                if (trimmed.endsWith(";")) {
-                    if (insideTrigger) {
-                        if (trimmed.equalsIgnoreCase("END;")) {
-                            insideTrigger = false;
-                            executeStatement(stmt, currentStatement.toString());
-                            currentStatement.setLength(0);
-                        }
-                    } else {
-                        executeStatement(stmt, currentStatement.toString());
-                        currentStatement.setLength(0);
-                    }
-                }
-            }
+            stmt.executeUpdate(sqlScript);
         } catch (SQLException e) {
-            logger.error("Migration failed on SQL statement", e);
+            logger.error("Migration failed. Please check the SQL script syntax", e);
             throw new RuntimeException("Could not execute migration SQL", e);
         }
     }
