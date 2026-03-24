@@ -1,9 +1,14 @@
 package com.triplify.ui.pages.account;
 
 import com.google.inject.Inject;
-import com.triplify.application.error.ValidationMapper;
-import com.triplify.application.error.ValidationResult;
 import com.triplify.application.usecase.account.UpdateProfileRequest;
+import com.triplify.application.usecase.auth.AuthService;
+import com.triplify.application.usecase.auth.SignUpRequest;
+import com.triplify.application.usecase.session.SessionUser;
+import com.triplify.application.usecase.session.UserSessionContext;
+import com.triplify.domain.model.enums.RoleEnum;
+import com.triplify.domain.result.Result;
+import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.input_item.PasswordItem;
@@ -12,10 +17,13 @@ import com.triplify.ui.shared.toast.ToastService;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
+
+import java.util.Map;
 
 public class AccountController extends SimpleLifecycleAwareController {
 
@@ -26,6 +34,7 @@ public class AccountController extends SimpleLifecycleAwareController {
     @Inject private ToastService toast;
     @Inject private AuthService authService;
     @Inject private UserSessionContext userSessionContext;
+    @Inject private ErrorHandler errorHandler;
 
     private InputItem usernameInput;
     private InputItem emailInput;
@@ -69,30 +78,28 @@ public class AccountController extends SimpleLifecycleAwareController {
                 RoleEnum.USER
         );
 
-        ValidationResult<UpdateProfileRequest> validation = ValidationMapper.validate(request);
-        if (validation.isFailure()) {
-            validation.getViolations().forEach(v -> {
-                String msg = I18n.t(v.getMessageKey());
-                switch (v.getField()) {
-                    case "name" -> nameInput.showError(msg);
-                    case "email" -> emailInput.showError(msg);
-                    case "newPassword" -> passwordInput.showError(msg);
-                    case "bio" -> bioInput.showError(msg);
-                    default -> log.warn("No input mapped for violated field '{}'", v.getField());
+        Result<Void> result = authService.signUp(request);
+        result.onSuccess(v -> {
+            log.info("Profile updated successfully");
+            toast.success(I18n.t("account.profile.saved"));
+            render();
+        });
+        result.onFailure(error -> errorHandler.handle(error, Map.of(
+                "username", message -> {
+                    this.usernameInput.showError(I18n.t(message));
+                },
+                "email", message -> {
+                    this.emailInput.showError(I18n.t(message));
+                },
+                "password", message -> {
+                    this.passwordInput.showError(I18n.t(message));
                 }
-            });
-            return;
-        }
-
-        // TODO: call AccountService once available
-        log.info("Profile update validated successfully");
-        toast.success(I18n.t("account.profile.saved"));
+        )));
     }
 
     private void clearErrors() {
-        nameInput.clearError();
+        usernameInput.clearError();
         emailInput.clearError();
         passwordInput.clearError();
-        bioInput.clearError();
     }
 }

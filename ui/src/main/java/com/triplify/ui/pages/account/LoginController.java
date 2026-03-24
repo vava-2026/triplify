@@ -1,12 +1,11 @@
 package com.triplify.ui.pages.account;
 
 import com.google.inject.Inject;
-import com.triplify.application.error.ValidationMapper;
-import com.triplify.application.error.ValidationResult;
-import com.triplify.application.result.Result;
 import com.triplify.application.usecase.auth.AuthService;
 import com.triplify.application.usecase.auth.LoginRequest;
 import com.triplify.application.usecase.session.UserSessionContext;
+import com.triplify.domain.result.Result;
+import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.toast.ToastService;
 import javafx.fxml.FXML;
@@ -33,6 +32,7 @@ public class LoginController extends SimpleLifecycleAwareController {
     @Inject private AuthService authService;
     @Inject private ToastService toast;
     @Inject private UserSessionContext sessionContext;
+    @Inject private ErrorHandler errorHandler;
 
     @FXML
     public void onLogin() {
@@ -42,40 +42,27 @@ public class LoginController extends SimpleLifecycleAwareController {
     private void attemptLogin(String username, String pass) {
         clearFieldErrors();
 
-        LoginRequest command = new LoginRequest(username, pass);
+        LoginRequest request = new LoginRequest(username, pass);
 
         Map<String, TextField> fieldMap = Map.of("username", this.username, "password", password);
-        Map<String, Label> errorMap = Map.of("username", usernameError, "password", passwordError);
         clearFieldStyles(fieldMap);
 
-        ValidationResult<LoginRequest> validation = ValidationMapper.validate(command);
-        if (validation.isFailure()) {
-            validation.getViolations().forEach(v -> {
-                TextField field = fieldMap.get(v.getField());
-                if (field != null) {
-                    markFieldError(field);
-                } else {
-                    log.warn("No TextField mapped for violated field '{}'", v.getField());
-                }
-
-                Label label = errorMap.get(v.getField());
-                if (label != null) {
-                    showFieldError(label, v.getMessageKey());
-                }
-            });
-            return;
-        }
-
-        // Step 2 - use-case
-        Result<Void> result = authService.login(command);
+        Result<Void> result = authService.login(request);
         result.onSuccess(auth -> {
             var user = sessionContext.getCurrent().orElseThrow(() -> new IllegalStateException("User should be set in session after successful login"));
             log.info("Login successful for user '{}'", user.username());
             toast.success("Welcome back, " + user.username() + "!");
-        }).onFailureResponse(errors -> {
-                  log.info("Login failed: {}", result.getFirstErrorResponse().messageKey());
-                  toast.error(I18n.t((result.getFirstErrorResponse().messageKey())));
-              });
+        });
+        result.onFailure(error -> errorHandler.handle(error, Map.of(
+                "username", message -> {
+                    markFieldError(this.username);
+                    showFieldError(usernameError, message);
+                },
+                "password", message -> {
+                    markFieldError(this.password);
+                    showFieldError(passwordError, message);
+                }
+        )));
     }
 
     private void clearFieldErrors() {

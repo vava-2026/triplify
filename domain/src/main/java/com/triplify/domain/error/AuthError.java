@@ -1,6 +1,10 @@
 package com.triplify.domain.error;
 
-public sealed interface AuthError extends DomainError permits AuthError.InvalidCredentials, AuthError.SessionExpired {
+public sealed interface AuthError extends DomainError permits
+        AuthError.EmailAlreadyTaken,
+        AuthError.InvalidCredentials,
+        AuthError.SessionExpired,
+        AuthError.UsernameAlreadyTaken {
 
     record InvalidCredentials() implements AuthError {
         @Override
@@ -23,6 +27,30 @@ public sealed interface AuthError extends DomainError permits AuthError.InvalidC
         @Override
         public String message() {
             return "Session has expired, please log in again";
+        }
+    }
+
+    record UsernameAlreadyTaken() implements AuthError {
+        @Override
+        public String code() {
+            return "error.auth.username.already.taken";
+        }
+
+        @Override
+        public String message() {
+            return "Username is already taken";
+        }
+    }
+
+    record EmailAlreadyTaken() implements AuthError {
+        @Override
+        public String code() {
+            return "error.auth.email.already.taken";
+        }
+
+        @Override
+        public String message() {
+            return "Email is already taken";
         }
     }
 }
