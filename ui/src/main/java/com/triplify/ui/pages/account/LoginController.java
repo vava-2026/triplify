@@ -4,9 +4,9 @@ import com.google.inject.Inject;
 import com.triplify.application.error.ValidationMapper;
 import com.triplify.application.error.ValidationResult;
 import com.triplify.application.result.Result;
-import com.triplify.application.usecase.auth.AuthResponse;
 import com.triplify.application.usecase.auth.AuthService;
 import com.triplify.application.usecase.auth.LoginRequest;
+import com.triplify.application.usecase.session.UserSessionContext;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.toast.ToastService;
 import javafx.fxml.FXML;
@@ -32,18 +32,19 @@ public class LoginController extends SimpleLifecycleAwareController {
 
     @Inject private AuthService authService;
     @Inject private ToastService toast;
+    @Inject private UserSessionContext sessionContext;
 
     @FXML
     public void onLogin() {
         attemptLogin(username.getText().trim(), password.getText());
     }
 
-    private void attemptLogin(String user, String pass) {
+    private void attemptLogin(String username, String pass) {
         clearFieldErrors();
 
-        LoginRequest command = new LoginRequest(user, pass);
+        LoginRequest command = new LoginRequest(username, pass);
 
-        Map<String, TextField> fieldMap = Map.of("username", username, "password", password);
+        Map<String, TextField> fieldMap = Map.of("username", this.username, "password", password);
         Map<String, Label> errorMap = Map.of("username", usernameError, "password", passwordError);
         clearFieldStyles(fieldMap);
 
@@ -66,10 +67,11 @@ public class LoginController extends SimpleLifecycleAwareController {
         }
 
         // Step 2 - use-case
-        Result<AuthResponse> result = authService.login(command);
+        Result<Void> result = authService.login(command);
         result.onSuccess(auth -> {
-            log.info("Login successful for user '{}'", auth.username());
-            toast.success("Welcome back, " + auth.username() + "!");
+            var user = sessionContext.getCurrent().orElseThrow(() -> new IllegalStateException("User should be set in session after successful login"));
+            log.info("Login successful for user '{}'", user.username());
+            toast.success("Welcome back, " + user.username() + "!");
         }).onFailureResponse(errors -> {
                   log.info("Login failed: {}", result.getFirstErrorResponse().messageKey());
                   toast.error(I18n.t((result.getFirstErrorResponse().messageKey())));

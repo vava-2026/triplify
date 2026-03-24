@@ -4,6 +4,8 @@ import com.google.inject.Inject;
 import com.triplify.application.error.ValidationMapper;
 import com.triplify.application.error.ValidationResult;
 import com.triplify.application.result.Result;
+import com.triplify.application.usecase.session.SessionUser;
+import com.triplify.application.usecase.session.UserSessionContext;
 import com.triplify.domain.error.ErrorCode;
 import com.triplify.domain.model.User;
 import com.triplify.domain.repository.UserRepository;
@@ -14,35 +16,72 @@ public class AuthServiceImpl implements AuthService {
 
     private static final Logger log = LoggerFactory.getLogger(AuthServiceImpl.class);
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final UserSessionContext sessionContext;
 
     @Inject
-    public AuthServiceImpl(UserRepository userRepository) {
+    public AuthServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, UserSessionContext sessionContext) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.sessionContext = sessionContext;
     }
 
     @Override
-    public Result<AuthResponse> login(LoginRequest command) {
-        ValidationResult<LoginRequest> validation = ValidationMapper.validate(command);
+    public Result<Void> login(LoginRequest request) {
+        ValidationResult<LoginRequest> validation = ValidationMapper.validate(request);
         if (validation.isFailure()) {
             log.debug("Login validation failed: {}", validation.getViolations());
             return Result.failure(validation.getErrors());
         }
 
-        return userRepository.findByUsernameOrEmail(command.username(), command.username())
-                .map(user -> authenticate(user, command.password()))
+        return userRepository.findByEmail(request.email())
+                .map(user -> authenticate(user, request.password()))
                 .orElseGet(() -> {
-                    log.warn("Login attempt for unknown username='{}'", command.username());
+                    log.warn("Login attempt for unknown username='{}'", request.email());
                     return Result.failure(ErrorCode.AUTH_INVALID_CREDENTIALS);
                 });
     }
 
-    private Result<AuthResponse> authenticate(User user, String rawPassword) {
-        if (!userRepository.verifyPassword(user.getId().toString(), rawPassword)) {
-            log.warn("Invalid password attempt for username='{}'", user.getUsername());
+    @Override
+    public Result<Void> signUp(SignUpRequest command) {
+        ValidationResult<SignUpRequest> validation = ValidationMapper.validate(command);
+        if (validation.isFailure()) {
+            log.debug("SignUp validation failed: {}", validation.getViolations());
+            return Result.failure(validation.getErrors());
+        }
+
+        if (userRepository.existsByUsername(command.username())) {
+            log.info("SignUp attempt with taken username='{}'", command.username());
+            return Result.failure(ErrorCode.AUTH_USERNAME_TAKEN);
+        }
+
+        if (userRepository.existsByEmail(command.email())) {
+            log.info("SignUp attempt with taken email='{}'", command.email());
+            return Result.failure(ErrorCode.AUTH_EMAIL_TAKEN);
+        }
+
+        String passwordHash = passwordEncoder.encode(command.password());
+        User user = User.of(command.username(), command.email(), passwordHash, command.role());
+        userRepository.save(user);
+
+        log.info("User '{}' registered successfully", user.getUsername());
+        sessionContext.set(new SessionUser(user.getId(), user.getUsername(), user.getEmail(), user.getRole()));
+        return Result.success();
+    }
+
+    @Override
+    public void logout() {
+        sessionContext.clear();
+    }
+
+    private Result<Void> authenticate(User user, String rawPassword) {
+        if (!passwordEncoder.matches(rawPassword, user.getPasswordHash())) {
+            log.info("Invalid password attempt for username='{}'", user.getUsername());
             return Result.failure(ErrorCode.AUTH_INVALID_CREDENTIALS);
         }
 
         log.info("User '{}' authenticated successfully", user.getUsername());
-        return Result.success(new AuthResponse(user.getId().toString(), user.getUsername()));
+        sessionContext.set(new SessionUser(user.getId(), user.getUsername(), user.getEmail(), user.getRole()));
+        return Result.success();
     }
 }

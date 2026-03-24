@@ -49,15 +49,51 @@ public class DatabaseMigrationInitializer {
         }
     }
 
-    private void runBaselineMigration(Connection connection) throws IOException {
+    private void runBaselineMigration(Connection connection) throws IOException, SQLException {
         String sql = readMigrationSql();
-        try {
-            connection.unwrap(SQLiteConnection.class)
-                    .getDatabase()
-                    .exec(sql, true);
-        } catch (Exception e) {
+        try (Statement stmt = connection.createStatement()) {
+            StringBuilder currentStatement = new StringBuilder();
+            boolean insideTrigger = false;
+
+            for (String line : sql.split("\\R")) {
+                int commentIndex = line.indexOf("--");
+                if (commentIndex >= 0) {
+                    line = line.substring(0, commentIndex);
+                }
+                String trimmed = line.trim();
+
+                if (trimmed.isEmpty()) {
+                    continue;
+                }
+
+                if (trimmed.toUpperCase().startsWith("CREATE TRIGGER")) {
+                    insideTrigger = true;
+                }
+
+                currentStatement.append(trimmed).append(" ");
+
+                if (trimmed.endsWith(";")) {
+                    if (insideTrigger) {
+                        if (trimmed.equalsIgnoreCase("END;")) {
+                            insideTrigger = false;
+                            executeStatement(stmt, currentStatement.toString());
+                            currentStatement.setLength(0);
+                        }
+                    } else {
+                        executeStatement(stmt, currentStatement.toString());
+                        currentStatement.setLength(0);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Migration failed on SQL statement", e);
             throw new RuntimeException("Could not execute migration SQL", e);
         }
+    }
+
+    private void executeStatement(Statement stmt, String sql) throws SQLException {
+        logger.info("Executing migration SQL: {}", sql);
+        stmt.execute(sql);
     }
 
     private String readMigrationSql() throws IOException {

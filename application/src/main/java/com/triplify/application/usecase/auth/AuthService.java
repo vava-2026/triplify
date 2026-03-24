@@ -4,5 +4,7 @@ import com.triplify.application.result.Result;
 
 public interface AuthService {
 
-    Result<AuthResponse> login(LoginRequest command);
+    Result<Void> login(LoginRequest request);
+    Result<Void> signUp(SignUpRequest request);
+    void logout();
 }

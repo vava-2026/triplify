@@ -5,6 +5,7 @@ plugins {
 
 dependencies {
     implementation(project(":application"))
+    implementation(project(":domain"))
 
     // Icon library – Ikonli with Feather pack
     implementation("org.kordamp.ikonli:ikonli-javafx:12.4.0")

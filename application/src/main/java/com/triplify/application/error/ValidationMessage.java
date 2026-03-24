@@ -6,7 +6,8 @@ public enum ValidationMessage {
     EMAIL_INVALID(Constants.EMAIL_INVALID, 1),
     PASSWORD_TOO_SHORT(Constants.PASSWORD_TOO_SHORT, 2),
     USERNAME_TOO_SHORT(Constants.USERNAME_TOO_SHORT, 3),
-    DESCRIPTION_TOO_LONG(Constants.DESCRIPTION_TOO_LONG, 4);
+    DESCRIPTION_TOO_LONG(Constants.DESCRIPTION_TOO_LONG, 4),
+    SIGN_UP_INVALID_ROLE(Constants.SIGN_UP_INVALID_ROLE, 5);
 
     public static final class Constants {
         public static final String REQUIRED = "validation.field.required";
@@ -14,6 +15,7 @@ public enum ValidationMessage {
         public static final String PASSWORD_TOO_SHORT = "validation.password.too.short";
         public static final String USERNAME_TOO_SHORT = "validation.username.too.short";
         public static final String DESCRIPTION_TOO_LONG = "validation.description.too.long";
+        public static final String SIGN_UP_INVALID_ROLE = "validation.signUp.invalidRole";
     }
 
     private final String messageKey;

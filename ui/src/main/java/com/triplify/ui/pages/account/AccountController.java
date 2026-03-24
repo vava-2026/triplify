@@ -3,14 +3,19 @@ package com.triplify.ui.pages.account;
 import com.google.inject.Inject;
 import com.triplify.application.error.ValidationMapper;
 import com.triplify.application.error.ValidationResult;
-import com.triplify.application.usecase.account.UpdateProfileRequest;
+import com.triplify.application.usecase.auth.AuthService;
+import com.triplify.application.usecase.auth.SignUpRequest;
+import com.triplify.application.usecase.session.SessionUser;
+import com.triplify.application.usecase.session.UserSessionContext;
+import com.triplify.domain.model.enums.RoleEnum;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.input_item.PasswordItem;
-import com.triplify.ui.shared.component.input_item.TextAreaItem;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.toast.ToastService;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,60 +28,82 @@ public class AccountController extends SimpleLifecycleAwareController {
     @FXML private VBox editFormContainer;
 
     @Inject private ToastService toast;
+    @Inject private AuthService authService;
+    @Inject private UserSessionContext userSessionContext;
 
-    private InputItem nameInput;
+    private InputItem usernameInput;
     private InputItem emailInput;
     private PasswordItem passwordInput;
-    private TextAreaItem bioInput;
 
     @FXML
     public void initialize() {
-        nameInput = new InputItem("input.placeholder.fullName", FieldVariant.FILLED);
-        emailInput = new InputItem("input.placeholder.email");
-        passwordInput = new PasswordItem("input.placeholder.password", FieldVariant.GHOST);
-        bioInput = new TextAreaItem("input.placeholder.bio");
+        render();
+    }
 
-        editFormContainer.getChildren().addAll(nameInput, emailInput, passwordInput, bioInput);
+    private void render() {
+        editFormContainer.getChildren().clear();
+        if (userSessionContext.isLoggedIn()) {
+            SessionUser user = userSessionContext.getCurrent().orElseThrow();
+            Label usernameLabel = new Label("Username: " + user.username());
+            Button logOffButton = new Button("Log off");
+            logOffButton.setOnAction(e -> {
+                authService.logout();
+                toast.success("Logged off successfully");
+                render();
+            });
+            editFormContainer.getChildren().addAll(usernameLabel, logOffButton);
+        } else {
+            usernameInput = new InputItem("Username", FieldVariant.FILLED);
+            emailInput = new InputItem("input.placeholder.email");
+            passwordInput = new PasswordItem("input.placeholder.password", FieldVariant.GHOST);
+
+            editFormContainer.getChildren().addAll(usernameInput, emailInput, passwordInput);
+        }
     }
 
     @FXML
     private void onSave() {
+        if (userSessionContext.isLoggedIn()) {
+            return;
+        }
+
         clearErrors();
 
         String rawPassword = passwordInput.getText();
-        UpdateProfileRequest request = new UpdateProfileRequest(
-                nameInput.getText().trim(),
+        SignUpRequest request = new SignUpRequest(
+                usernameInput.getText().trim(),
                 emailInput.getText().trim(),
-                rawPassword.isBlank() ? null : rawPassword,
-                bioInput.getText().trim()
+                rawPassword,
+                RoleEnum.USER
         );
 
-        ValidationResult<UpdateProfileRequest> validation = ValidationMapper.validate(request);
+        ValidationResult<SignUpRequest> validation = ValidationMapper.validate(request);
         if (validation.isFailure()) {
             validation.getViolations().forEach(v -> {
                 String msg = I18n.t(v.getMessageKey());
                 switch (v.getField()) {
-                    case "name" -> nameInput.showError(msg);
+                    case "username" -> usernameInput.showError(msg);
                     case "email" -> emailInput.showError(msg);
-                    case "newPassword" -> passwordInput.showError(msg);
-                    case "bio" -> bioInput.showError(msg);
+                    case "password" -> passwordInput.showError(msg);
                     default -> log.warn("No input mapped for violated field '{}'", v.getField());
                 }
             });
             return;
         }
 
-        // TODO: call AccountService once available
-        log.info("Profile update validated successfully");
-        toast.success(I18n.t("account.profile.saved"));
+        authService.signUp(request).onSuccess(v -> {
+            toast.success("Signed up successfully");
+            render();
+        }).onFailure(errors -> {
+            if (!errors.isEmpty()) {
+                toast.error(I18n.t(errors.getFirst().messageKey()));
+            }
+        });
     }
 
     private void clearErrors() {
-        nameInput.clearError();
-        emailInput.clearError();
-        passwordInput.clearError();
-        bioInput.clearError();
+        if (usernameInput != null) usernameInput.clearError();
+        if (emailInput != null) emailInput.clearError();
+        if (passwordInput != null) passwordInput.clearError();
     }
 }
-
-
