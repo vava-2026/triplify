@@ -1,0 +1,83 @@
+.input-item {
+    -fx-text-fill: -color-primary-dark;
+    -fx-prompt-text-fill: -color-ink-muted;
+    -fx-font-size: 16;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-width: 1.5;
+    -fx-padding: 0 12 0 12;
+}
+
+.input-item.input-item--outlined {
+    -fx-background-color: -color-on-surface;
+    -fx-border-color: -color-primary;
+}
+
+.input-item.input-item--filled {
+    -fx-background-color: -color-surface;
+    -fx-border-color: transparent;
+}
+
+.input-item.input-item--ghost {
+    -fx-background-color: -color-primary-light;
+    -fx-border-color: transparent;
+}
+
+.input-item-with-action {
+    -fx-padding: 0 44 0 12;
+}
+
+.textarea-item {
+    -fx-padding: 10 12 10 12;
+}
+
+.textarea-item.textarea-item-with-action {
+    -fx-padding: 10 44 10 12;
+}
+
+.textarea-item .scroll-pane {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-padding: 0;
+}
+
+.textarea-item .scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+.textarea-item .scroll-pane .content {
+    -fx-background-color: transparent;
+}
+
+.textarea-item .corner {
+    -fx-background-color: transparent;
+}
+
+.input-item.input-item-error {
+    -fx-border-color: -color-danger;
+    -fx-text-fill: -color-danger;
+}
+
+.input-error-label {
+    -fx-text-fill: -color-danger;
+    -fx-font-size: 12;
+}
+
+.input-action-btn {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-cursor: hand;
+    -fx-padding: 0;
+}
+
+.input-action-icon {
+    -fx-icon-color: -color-primary-dark;
+    -fx-icon-size: 20;
+}
+
+.input-action-btn:hover .input-action-icon {
+    -fx-icon-color: -color-ink;
+}

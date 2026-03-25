@@ -1,19 +1,28 @@
 package com.triplify.infrastructure.repository;
 
 import com.triplify.domain.model.Category;
+import com.triplify.domain.model.enums.ColorEnum;
 import com.triplify.domain.repository.CategoryRepository;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class CategoryRepositoryImpl implements CategoryRepository {
+    private static List<Category> CATEGORIES = new ArrayList<>();
 
-    private static final List<Category> CATEGORIES = List.of(
-            new Category("1", "Adventure"),
-            new Category("2", "Beach"),
-            new Category("3", "City Break"),
-            new Category("4", "Cultural"),
-            new Category("5", "Nature")
-    );
+    public void initializeCategories(UUID configurationManagerId) {
+        CATEGORIES.add(new Category(configurationManagerId,"Adventure", "Advanture_SK", ColorEnum.GREEN));
+        CATEGORIES.add(new Category(configurationManagerId,"Beach", "Beach_SK", ColorEnum.RED));
+        CATEGORIES.add(new Category(configurationManagerId,"City Break", "City Break_SK", ColorEnum.BLUE));
+        CATEGORIES.add(new Category(configurationManagerId,"Cultural", "Cultural_SK", ColorEnum.ORANGE));
+        CATEGORIES.add(new Category(configurationManagerId,"Nature", "Nature_SK", ColorEnum.TEAL));
+    }
+
+    @Override
+    public void save(Category category) {
+        CategoryRepositoryImpl.CATEGORIES.add(category);
+    }
 
     @Override
     public List<Category> findAll() {

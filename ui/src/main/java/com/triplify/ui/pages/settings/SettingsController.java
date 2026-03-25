@@ -1,9 +1,9 @@
 package com.triplify.ui.pages.settings;
 
 import com.triplify.application.model.ColorTheme;
-import com.triplify.ui.shared.component.entry.model.Entry;
+import com.triplify.ui.shared.component.select.entry.model.Entry;
 import com.triplify.ui.shared.component.select.model.Select;
-import com.triplify.ui.shared.component.select.model.SelectVariant;
+import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.component.select.view.SelectView;
 import javafx.fxml.FXML;
 import javafx.scene.layout.VBox;
@@ -21,11 +21,11 @@ public class SettingsController extends SimpleLifecycleAwareController {
         SelectView<Integer> selectView = new SelectView<>();
         selectView.update(Select.<Integer>builder()
                 .placeholder("Choose a number...")
-                .variant(SelectVariant.OUTLINED)
+                .variant(FieldVariant.GHOST)
                 .items(Arrays.asList(
                         Entry.builder(1, "One").colorTheme(ColorTheme.BLUE).icon("fth-globe").build(),
-                        Entry.builder(2, "Two").colorTheme(ColorTheme.GREEN).build(),
-                        Entry.builder(3, "Three").colorTheme(ColorTheme.RED).build(),
+                        Entry.builder(2, "Two").colorTheme(ColorTheme.GREEN).emoji("\uD83C\uDFD6\uFE0F").build(),
+                        Entry.builder(3, "Three").colorTheme(ColorTheme.RED).emoji("\uD83D\uDD25").build(),
                         Entry.builder(1, "Option A").build(),
                         Entry.builder(2, "Option B").colorTheme(ColorTheme.ORANGE).build(),
                         Entry.builder(3, "Option C").colorTheme(ColorTheme.PURPLE).build(),

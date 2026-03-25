@@ -137,3 +137,33 @@
     -fx-progress-color: white;
 }
 
+.app-btn-login {
+    -fx-background-color: -color-login;
+    -fx-text-fill: -color-on-login;
+    -fx-min-width: 150;
+    -fx-pref-width: 150;
+    -fx-min-height: 52;
+    -fx-pref-height: 52;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.app-btn-login:hover {
+    -fx-background-color: -color-login-hover;
+}
+
+.app-btn-sign-up {
+    -fx-background-color: -color-sign-up;
+    -fx-text-fill: -color-on-sign-up;
+    -fx-min-width: 150;
+    -fx-pref-width: 150;
+    -fx-min-height: 52;
+    -fx-pref-height: 52;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.app-btn-sign-up:hover {
+    -fx-background-color: -color-sign-up-hover;
+}
+

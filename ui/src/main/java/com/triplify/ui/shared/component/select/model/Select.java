@@ -1,6 +1,7 @@
 package com.triplify.ui.shared.component.select.model;
 
-import com.triplify.ui.shared.component.entry.model.Entry;
+import com.triplify.ui.shared.component.select.entry.model.Entry;
+import com.triplify.ui.shared.model.FieldVariant;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -12,7 +13,8 @@ public class Select<T> {
     private final BooleanProperty disabled = new SimpleBooleanProperty(false);
     private final ObjectProperty<Entry<T>> selectedItem = new SimpleObjectProperty<>(null);
     private final ListProperty<Entry<T>> items = new SimpleListProperty<>(FXCollections.observableArrayList());
-    private final ObjectProperty<SelectVariant> variant = new SimpleObjectProperty<>(SelectVariant.FILLED);
+    private final ObjectProperty<FieldVariant> variant = new SimpleObjectProperty<>(FieldVariant.FILLED);
+    private String emoji = null;
 
     private java.util.function.Consumer<Entry<T>> onSelect = null;
 
@@ -64,16 +66,24 @@ public class Select<T> {
         items.set(v);
     }
 
-    public ObjectProperty<SelectVariant> variantProperty() {
+    public ObjectProperty<FieldVariant> variantProperty() {
         return variant;
     }
 
-    public SelectVariant getVariant() {
+    public FieldVariant getVariant() {
         return variant.get();
     }
 
-    public void setVariant(SelectVariant v) {
+    public void setVariant(FieldVariant v) {
         variant.set(v);
+    }
+
+    public String getEmoji() {
+        return emoji;
+    }
+
+    public void setEmoji(String emoji) {
+        this.emoji = emoji;
     }
 
     public void setOnSelect(java.util.function.Consumer<Entry<T>> r) {
@@ -93,7 +103,8 @@ public class Select<T> {
         private boolean disabled = false;
         private Entry<T> selectedItem = null;
         private ObservableList<Entry<T>> items = FXCollections.observableArrayList();
-        private SelectVariant variant = SelectVariant.FILLED;
+        private FieldVariant variant = FieldVariant.FILLED;
+        private String emoji = null;
         private java.util.function.Consumer<Entry<T>> onSelect = null;
 
         private Builder() {}
@@ -123,8 +134,13 @@ public class Select<T> {
             return this;
         }
 
-        public Builder<T> variant(SelectVariant variant) {
+        public Builder<T> variant(FieldVariant variant) {
             this.variant = variant;
+            return this;
+        }
+
+        public Builder<T> emoji(String emoji) {
+            this.emoji = emoji;
             return this;
         }
 
@@ -140,6 +156,7 @@ public class Select<T> {
             select.setSelectedItem(selectedItem);
             select.setItems(items);
             select.setVariant(variant);
+            select.setEmoji(emoji);
             select.setOnSelect(onSelect);
             return select;
         }

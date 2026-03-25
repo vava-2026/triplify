@@ -2,6 +2,7 @@ package com.triplify.ui.shared.menu.view;
 
 import com.triplify.application.usecase.category.CategoryResponse;
 import com.triplify.application.usecase.category.CategoryService;
+import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.menu.model.MenuItem;
 import com.triplify.ui.shared.menu.model.NavItem;
@@ -14,7 +15,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import org.slf4j.Logger;
@@ -40,23 +40,28 @@ public class MenuView implements Initializable {
     private final List<NavButtonView> navButtons = new ArrayList<>();
 
     private final CategoryService categoryService;
+    private final ErrorHandler errorHandler;
     private final FxmlLoaderHelper fxmlLoader;
     private static final Logger log = LoggerFactory.getLogger(MenuView.class);
     private SidebarIslandView islandController;
 
     @Inject
-    public MenuView(CategoryService categoryService, FxmlLoaderHelper fxmlLoader) {
+    public MenuView(CategoryService categoryService, ErrorHandler errorHandler, FxmlLoaderHelper fxmlLoader) {
         this.categoryService = categoryService;
+        this.errorHandler = errorHandler;
         this.fxmlLoader = fxmlLoader;
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // TODO: This is just for testing, remove when categories are integrated into the UI
-        List<CategoryResponse> categories = categoryService.getAllCategories();
-        for (CategoryResponse category : categories) {
-            log.info("Category: " + category.name());
-        }
+        var categoriesResult = categoryService.getAllCategories();
+        categoriesResult.onSuccess(categories -> {
+            for (CategoryResponse category : categories) {
+                log.info("Category: {}", category.name());
+            }
+        });
+        categoriesResult.onFailure(errorHandler::handle);
 
         sidebarRoot.setMaxHeight(Double.MAX_VALUE);
         mainPageInner.setMaxHeight(Double.MAX_VALUE);
@@ -107,6 +112,7 @@ public class MenuView implements Initializable {
         double width = collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH;
         sidebarRoot.setPrefWidth(width);
         sidebarRoot.setMaxWidth(width);
+        sidebarRoot.setMinWidth(width);
 
         if (islandController != null) {
             islandController.setCollapsed(collapsed, viewModel.isHideHeader());

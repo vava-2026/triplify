@@ -1,0 +1,31 @@
+
+.account-section-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-ink;
+}
+
+.account-form-actions {
+    -fx-padding: 4 0 0 0;
+}
+
+.account-save-btn {
+    -fx-background-color: -color-primary;
+    -fx-text-fill: -color-on-primary;
+    -fx-background-radius: 8;
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+    -fx-cursor: hand;
+    -fx-padding: 8 20 8 20;
+}
+
+.account-save-btn:hover {
+    -fx-background-color: -color-primary-hover;
+}
+
+.account-save-btn:pressed {
+    -fx-background-color: -color-primary-pressed;
+    -fx-scale-x: 0.97;
+    -fx-scale-y: 0.97;
+}
+

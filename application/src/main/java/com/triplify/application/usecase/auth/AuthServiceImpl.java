@@ -1,12 +1,10 @@
 package com.triplify.application.usecase.auth;
 
 import com.google.inject.Inject;
-import com.triplify.application.error.ValidationMapper;
-import com.triplify.application.error.ValidationResult;
-import com.triplify.application.result.Result;
-import com.triplify.domain.error.ErrorCode;
+import com.triplify.domain.error.AuthError;
 import com.triplify.domain.model.User;
 import com.triplify.domain.repository.UserRepository;
+import com.triplify.domain.result.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,27 +20,27 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public Result<AuthResponse> login(LoginRequest command) {
-        ValidationResult<LoginRequest> validation = ValidationMapper.validate(command);
-        if (validation.isFailure()) {
-            log.debug("Login validation failed: {}", validation.getViolations());
-            return Result.failure(validation.getErrors());
-        }
+        return findUser(command.username())
+                .flatMap(user -> authenticate(user, command.password()))
+                .map(user -> new AuthResponse(user.getId().toString(), user.getUsername()));
+    }
 
-        return userRepository.findByUsernameOrEmail(command.username(), command.username())
-                .map(user -> authenticate(user, command.password()))
+    private Result<User> findUser(String usernameOrEmail) {
+        return userRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail)
+                .map(Result::ok)
                 .orElseGet(() -> {
-                    log.warn("Login attempt for unknown username='{}'", command.username());
-                    return Result.failure(ErrorCode.AUTH_INVALID_CREDENTIALS);
+                    log.warn("Login attempt for unknown username='{}'", usernameOrEmail);
+                    return Result.fail(new AuthError.InvalidCredentials());
                 });
     }
 
-    private Result<AuthResponse> authenticate(User user, String rawPassword) {
-        if (!userRepository.verifyPassword(user.id(), rawPassword)) {
-            log.warn("Invalid password attempt for username='{}'", user.username());
-            return Result.failure(ErrorCode.AUTH_INVALID_CREDENTIALS);
+    private Result<User> authenticate(User user, String rawPassword) {
+        if (!userRepository.verifyPassword(user.getId().toString(), rawPassword)) {
+            log.warn("Invalid password attempt for username='{}'", user.getUsername());
+            return Result.fail(new AuthError.InvalidCredentials());
         }
 
-        log.info("User '{}' authenticated successfully", user.username());
-        return Result.success(new AuthResponse(user.id(), user.username()));
+        log.info("User '{}' authenticated successfully", user.getUsername());
+        return Result.ok(user);
     }
 }
