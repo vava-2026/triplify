@@ -14,11 +14,11 @@ public class AuthServiceImpl implements AuthService {
 
     private static final Logger log = LoggerFactory.getLogger(AuthServiceImpl.class);
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final com.triplify.domain.service.PasswordEncoder passwordEncoder;
     private final UserSessionContext sessionContext;
 
     @Inject
-    public AuthServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, UserSessionContext sessionContext) {
+    public AuthServiceImpl(UserRepository userRepository, com.triplify.domain.service.PasswordEncoder passwordEncoder, UserSessionContext sessionContext) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.sessionContext = sessionContext;
@@ -29,7 +29,7 @@ public class AuthServiceImpl implements AuthService {
         return userRepository.findByEmail(request.email())
                 .map(user -> authenticate(user, request.password()))
                 .orElseGet(() -> {
-                    log.warn("Login attempt for unknown username='{}'", request.email());
+                    log.warn("Login attempt for unknown email='{}'", request.email());
                     return Result.fail(new AuthError.InvalidCredentials());
                 });
     }

@@ -2,7 +2,7 @@ package com.triplify.infrastructure.di;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
-import com.triplify.application.usecase.auth.PasswordEncoder;
+import com.triplify.domain.service.PasswordEncoder;
 import com.triplify.domain.repository.CategoryRepository;
 import com.triplify.domain.repository.UserRepository;
 import com.triplify.infrastructure.repository.CategoryRepositoryImpl;

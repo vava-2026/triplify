@@ -86,13 +86,13 @@ public class AccountController extends SimpleLifecycleAwareController {
         });
         result.onFailure(error -> errorHandler.handle(error, Map.of(
                 "username", message -> {
-                    this.usernameInput.showError(I18n.t(message));
+                    this.usernameInput.showError(message);
                 },
                 "email", message -> {
-                    this.emailInput.showError(I18n.t(message));
+                    this.emailInput.showError(message);
                 },
                 "password", message -> {
-                    this.passwordInput.showError(I18n.t(message));
+                    this.passwordInput.showError(message);
                 }
         )));
     }

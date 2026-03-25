@@ -28,17 +28,23 @@ public class RoutePlace {
     @NonNull
     private final Instant createdAt;
 
+    @NonNull
+    @Setter(AccessLevel.PRIVATE)
+    private Instant updatedAt;
+
     public RoutePlace(@NonNull UUID routeId, @NonNull UUID placeId, int order) {
         this.id = UUID.randomUUID();
         this.routeId = routeId;
         this.placeId = placeId;
         this.order = order;
         this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
     }
 
     public void updateOrder(int order) throws IllegalArgumentException {
         if (order < 0) throw new IllegalArgumentException("Order cannot be negative, got: " + order);
         log.debug("RoutePlace [{}] order: {} to {}", id, this.order, order);
         setOrder(order);
+        this.updatedAt = Instant.now();
     }
 }

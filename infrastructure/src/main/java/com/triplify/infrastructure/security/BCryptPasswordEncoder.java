@@ -1,7 +1,7 @@
 package com.triplify.infrastructure.security;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
-import com.triplify.application.usecase.auth.PasswordEncoder;
+import com.triplify.domain.service.PasswordEncoder;
 
 public class BCryptPasswordEncoder implements PasswordEncoder {
 

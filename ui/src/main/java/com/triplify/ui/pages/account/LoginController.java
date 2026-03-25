@@ -70,8 +70,8 @@ public class LoginController extends SimpleLifecycleAwareController {
         hideFieldError(passwordError);
     }
 
-    private void showFieldError(Label label, String messageKey) {
-        label.setText(I18n.t(messageKey));
+    private void showFieldError(Label label, String message) {
+        label.setText(message);
         label.setVisible(true);
         label.setManaged(true);
     }

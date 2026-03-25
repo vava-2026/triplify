@@ -1,4 +1,4 @@
-package com.triplify.application.usecase.auth;
+package com.triplify.domain.service;
 
 public interface PasswordEncoder {
 
