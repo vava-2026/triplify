@@ -10,6 +10,7 @@ import java.util.UUID;
 @Getter
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@AllArgsConstructor
 public class Image {
 
     @EqualsAndHashCode.Include
@@ -28,18 +29,11 @@ public class Image {
     @NonNull
     private final Instant uploadedAt;
 
-    @Builder(builderMethodName = "of")
-    private Image(@NonNull String url,
-                  @NonNull String storageKey,
-                  String description) throws IllegalArgumentException {
-        if (url.isBlank()) throw new IllegalArgumentException("Image url must not be blank.");
-        if (storageKey.isBlank()) throw new IllegalArgumentException("Storage key must not be blank.");
+    public Image(@NonNull String url, @NonNull String storageKey) {
         this.id = UUID.randomUUID();
         this.url = url;
         this.storageKey = storageKey;
-        this.description = description;
         this.uploadedAt = Instant.now();
-        log.debug("Image created: id={}, storageKey={}", id, storageKey);
     }
 
     public void updateDescription(String description) {

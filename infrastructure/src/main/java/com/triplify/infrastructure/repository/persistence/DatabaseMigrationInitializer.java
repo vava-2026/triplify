@@ -49,15 +49,20 @@ public class DatabaseMigrationInitializer {
         }
     }
 
-    private void runBaselineMigration(Connection connection) throws IOException {
-        String sql = readMigrationSql();
-        try {
-            connection.unwrap(SQLiteConnection.class)
-                    .getDatabase()
-                    .exec(sql, true);
-        } catch (Exception e) {
+    private void runBaselineMigration(Connection connection) throws IOException, SQLException {
+        String sqlScript = readMigrationSql();
+
+        try (Statement stmt = connection.createStatement()) {
+            stmt.executeUpdate(sqlScript);
+        } catch (SQLException e) {
+            logger.error("Migration failed. Please check the SQL script syntax", e);
             throw new RuntimeException("Could not execute migration SQL", e);
         }
+    }
+
+    private void executeStatement(Statement stmt, String sql) throws SQLException {
+        logger.info("Executing migration SQL: {}", sql);
+        stmt.execute(sql);
     }
 
     private String readMigrationSql() throws IOException {

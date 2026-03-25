@@ -10,8 +10,8 @@ import java.util.UUID;
 @Getter
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@AllArgsConstructor
 public class RoutePlace {
-
     @EqualsAndHashCode.Include
     @NonNull
     private final UUID id;
@@ -29,20 +29,16 @@ public class RoutePlace {
     private final Instant createdAt;
 
     @NonNull
+    @Setter(AccessLevel.PRIVATE)
     private Instant updatedAt;
 
-    @Builder(builderMethodName = "of")
-    private RoutePlace(@NonNull UUID routeId,
-                       @NonNull UUID placeId,
-                       int order) throws IllegalArgumentException {
-        if (order < 0) throw new IllegalArgumentException("Order cannot be negative, got: " + order);
+    public RoutePlace(@NonNull UUID routeId, @NonNull UUID placeId, int order) {
         this.id = UUID.randomUUID();
         this.routeId = routeId;
         this.placeId = placeId;
         this.order = order;
         this.createdAt = Instant.now();
-        this.updatedAt = this.createdAt;
-        log.debug("RoutePlace created: id={}, routeId={}, placeId={}, order={}", id, routeId, placeId, order);
+        this.updatedAt = Instant.now();
     }
 
     public void updateOrder(int order) throws IllegalArgumentException {

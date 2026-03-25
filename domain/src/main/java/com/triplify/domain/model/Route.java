@@ -1,8 +1,7 @@
 package com.triplify.domain.model;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
+import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;
 import java.util.Collections;
@@ -10,17 +9,39 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
 
+@Slf4j
+@Getter
 @ToString
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@AllArgsConstructor
 public class Route {
-    @Getter private final UUID id;
-    @Getter private final UUID userID;
-    @Getter private UUID coverImageID;
-    @Getter private String title;
-    @Getter private String description;
-    @Getter private Double length;
-    @Getter private final Instant createdAt;
-    @Getter private Instant updatedAt;
-    private final Set<UUID> imagesID = new LinkedHashSet<>();
+    @EqualsAndHashCode.Include
+    @NonNull
+    private final UUID id;
+    
+    @NonNull
+    private final UUID userID;
+    
+    @Setter(AccessLevel.PRIVATE)
+    private UUID coverImageID;
+    
+    @NonNull
+    @Setter(AccessLevel.PRIVATE)
+    private String title;
+    
+    @Setter(AccessLevel.PRIVATE)
+    private String description;
+    
+    @Setter(AccessLevel.PRIVATE)
+    private Double length;
+    
+    @NonNull
+    private final Instant createdAt;
+    
+    @Setter(AccessLevel.PRIVATE)
+    private Instant updatedAt;
+    
+    private final Set<UUID> imagesID;
 
     public Route(@NonNull UUID userID, @NonNull String title, @NonNull String description, @NonNull Double length) throws IllegalArgumentException{
         if (title.isBlank()) throw new IllegalArgumentException("Title must not be blank.");
@@ -31,6 +52,8 @@ public class Route {
         this.description = description;
         this.length = length;
         this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
+        this.imagesID = new LinkedHashSet<>();
     }
 
     public Set<UUID> getImages() {

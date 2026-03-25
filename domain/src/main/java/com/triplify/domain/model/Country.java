@@ -9,6 +9,7 @@ import java.util.UUID;
 @Getter
 @ToString(exclude = {"createdById"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@AllArgsConstructor
 public class Country {
 
     @EqualsAndHashCode.Include
@@ -33,21 +34,13 @@ public class Country {
     @Setter(AccessLevel.PRIVATE)
     private boolean isAvailable;
 
-    @Builder(builderMethodName = "of")
-    private Country(@NonNull UUID createdById,
-                    @NonNull String name,
-                    @NonNull String nameSk,
-                    @NonNull String emojiUnicode) throws IllegalArgumentException{
-        if (name.isBlank()) throw new IllegalArgumentException("Name must not be blank.");
-        if (nameSk.isBlank()) throw new IllegalArgumentException("Slovak name must not be blank.");
-        if (emojiUnicode.isBlank()) throw new IllegalArgumentException("Emoji unicode must not be blank.");
+    public Country(@NonNull UUID createdById, @NonNull String name, @NonNull String nameSk, @NonNull String emojiUnicode) {
         this.id = UUID.randomUUID();
         this.createdById = createdById;
         this.name = name;
         this.nameSk = nameSk;
         this.emojiUnicode = emojiUnicode;
         this.isAvailable = true;
-        log.debug("Country created: id={}, name={}", id, name);
     }
 
     public void updateName(@NonNull String name) throws IllegalArgumentException{

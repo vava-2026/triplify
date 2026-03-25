@@ -11,6 +11,7 @@ import java.util.*;
 @Getter
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@AllArgsConstructor
 public class Trip {
 
     @EqualsAndHashCode.Include
@@ -48,25 +49,21 @@ public class Trip {
     @Setter(AccessLevel.PRIVATE)
     private Instant updatedAt;
 
-    private final Set<UUID> tagIds = new HashSet<>();
-    private final Set<UUID> imageIds = new LinkedHashSet<>();
-    private final Set<UUID> countryIds = new HashSet<>();
+    private final Set<UUID> tagIds;
+    private final Set<UUID> imageIds;
+    private final Set<UUID> countryIds;
 
-    @Builder(builderMethodName = "of")
-    private Trip(@NonNull UUID userId,
-                 @NonNull UUID categoryId,
-                 @NonNull String title,
-                 String description) {
-        if (title.isBlank()) throw new IllegalArgumentException("Title must not be blank.");
+    public Trip(@NonNull UUID userId, @NonNull UUID categoryId, @NonNull String title, @NonNull StatusEnum status) {
         this.id = UUID.randomUUID();
         this.userId = userId;
         this.categoryId = categoryId;
         this.title = title;
-        this.description = description;
-        this.status = StatusEnum.PLANNED;
+        this.status = status;
         this.createdAt = Instant.now();
-        this.updatedAt = this.createdAt;
-        log.debug("Trip created: id={}, title={}, userId={}", id, title, userId);
+        this.updatedAt = Instant.now();
+        this.tagIds = new HashSet<>();
+        this.imageIds = new LinkedHashSet<>();
+        this.countryIds = new HashSet<>();
     }
 
     public Set<UUID> getTagIds() {

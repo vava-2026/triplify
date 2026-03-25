@@ -6,12 +6,13 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.UUID;
 
+
 @Slf4j
 @Getter
 @ToString(exclude = {"createdById"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@AllArgsConstructor
 public class Category {
-
     @EqualsAndHashCode.Include
     @NonNull
     private final UUID id;
@@ -40,25 +41,12 @@ public class Category {
     @Setter(AccessLevel.PRIVATE)
     private ColorEnum color;
 
-    @Builder
-    private Category(@NonNull UUID createdById,
-                     @NonNull String name,
-                     @NonNull String nameSk,
-                     String description,
-                     String descriptionSk,
-                     String emojiUnicode,
-                     ColorEnum color) throws IllegalArgumentException{
-        if (name.isBlank()) throw new IllegalArgumentException("Name must not be blank.");
-        if (nameSk.isBlank()) throw new IllegalArgumentException("Slovak name must not be blank.");
+    public Category(@NonNull UUID createdById, @NonNull String name, @NonNull String nameSk, @NonNull ColorEnum color) {
         this.id = UUID.randomUUID();
         this.createdById = createdById;
         this.name = name;
         this.nameSk = nameSk;
-        this.description = description;
-        this.descriptionSk = descriptionSk;
-        this.emojiUnicode = emojiUnicode;
-        this.color = color != null ? color : ColorEnum.TEAL;
-        log.debug("Category created: id={}, name={}, color={}", id, name, this.color);
+        this.color = color;
     }
 
     public void updateName(@NonNull String name) throws IllegalArgumentException {

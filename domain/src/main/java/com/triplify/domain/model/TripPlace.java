@@ -13,6 +13,7 @@ import java.util.UUID;
 @Getter
 @ToString(exclude = {"imageIds"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@AllArgsConstructor
 public class TripPlace {
 
     @EqualsAndHashCode.Include
@@ -37,19 +38,15 @@ public class TripPlace {
     @Setter(AccessLevel.PRIVATE)
     private Instant updatedAt;
 
-    private final Set<UUID> imageIds = new LinkedHashSet<>();
+    private final Set<UUID> imageIds;
 
-    @Builder(builderMethodName = "of")
-    private TripPlace(@NonNull UUID tripId,
-                      @NonNull UUID placeId,
-                      Instant visitDate) {
+    public TripPlace(@NonNull UUID tripId, @NonNull UUID placeId) {
         this.id = UUID.randomUUID();
         this.tripId = tripId;
         this.placeId = placeId;
-        this.visitDate = visitDate;
         this.createdAt = Instant.now();
-        this.updatedAt = this.createdAt;
-        log.debug("TripPlace created: id={}, tripId={}, placeId={}", id, tripId, placeId);
+        this.updatedAt = Instant.now();
+        this.imageIds = new LinkedHashSet<>();
     }
 
     public Set<UUID> getImageIds() {

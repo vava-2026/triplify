@@ -10,6 +10,7 @@ import java.util.UUID;
 @Getter
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@AllArgsConstructor
 public class Place {
 
     @EqualsAndHashCode.Include
@@ -46,25 +47,13 @@ public class Place {
     @Setter(AccessLevel.PRIVATE)
     private Instant updatedAt;
 
-    @Builder(builderMethodName = "of")
-    private Place(@NonNull UUID userId,
-                  @NonNull UUID countryId,
-                  @NonNull String title,
-                  String description,
-                  double latitude,
-                  double longitude) throws IllegalArgumentException {
-        if (title.isBlank()) throw new IllegalArgumentException("Title must not be blank.");
-        validateLocation(latitude, longitude);
+    public Place(@NonNull UUID userId, @NonNull UUID countryId, @NonNull String title) {
         this.id = UUID.randomUUID();
         this.userId = userId;
         this.countryId = countryId;
         this.title = title;
-        this.description = description;
-        this.latitude = latitude;
-        this.longitude = longitude;
         this.createdAt = Instant.now();
-        this.updatedAt = this.createdAt;
-        log.debug("Place created: id={}, title={}, lat={}, lon={}", id, title, latitude, longitude);
+        this.updatedAt = Instant.now();
     }
 
     public void updateTitle(@NonNull String title) throws IllegalArgumentException {

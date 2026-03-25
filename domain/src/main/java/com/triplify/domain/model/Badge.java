@@ -9,8 +9,8 @@ import java.util.UUID;
 @Getter
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@AllArgsConstructor
 public class Badge {
-
     @EqualsAndHashCode.Include
     @NonNull
     private final UUID id;
@@ -43,29 +43,17 @@ public class Badge {
     @Setter(AccessLevel.PRIVATE)
     private int requiredValue;
 
-    @Builder(builderMethodName = "of")
-    private Badge(@NonNull UUID createdById,
-                  @NonNull UUID groupId,
-                  @NonNull String name,
-                  @NonNull String nameSk,
-                  String description,
-                  String descriptionSk,
-                  int level,
-                  int requiredValue,
-                  UUID imageId) throws IllegalArgumentException {
-        if (level < 1) throw new IllegalArgumentException("Badge level must be >= 1, got: " + level);
-        if (requiredValue < 0) throw new IllegalArgumentException("Required value cannot be negative, got: " + requiredValue);
+    public Badge(@NonNull UUID createdById,
+                 @NonNull UUID groupId,
+                 @NonNull String name,
+                 @NonNull String nameSk,
+                 int level) {
         this.id = UUID.randomUUID();
         this.createdById = createdById;
         this.groupId = groupId;
         this.name = name;
         this.nameSk = nameSk;
-        this.description = description;
-        this.descriptionSk = descriptionSk;
         this.level = level;
-        this.requiredValue = requiredValue;
-        this.imageId = imageId;
-        log.debug("Badge created: id={}, name={}, level={}, requiredValue={}", id, name, level, requiredValue);
     }
 
     public void updateName(@NonNull String name) throws IllegalArgumentException {

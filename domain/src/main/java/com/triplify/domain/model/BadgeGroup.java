@@ -9,8 +9,8 @@ import java.util.UUID;
 @Getter
 @ToString(exclude = {"createdById"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@AllArgsConstructor
 public class BadgeGroup {
-
     @EqualsAndHashCode.Include
     @NonNull
     private final UUID id;
@@ -32,19 +32,11 @@ public class BadgeGroup {
     @NonNull
     private final UUID createdById;
 
-    @Builder(builderMethodName = "of")
-    private BadgeGroup(@NonNull UUID createdById,
-                       @NonNull String name,
-                       @NonNull String nameSk,
-                       String description,
-                       String descriptionSk) {
+    public BadgeGroup(@NonNull String name, @NonNull String nameSk, @NonNull UUID createdById) {
         this.id = UUID.randomUUID();
-        this.createdById = createdById;
         this.name = name;
         this.nameSk = nameSk;
-        this.description = description;
-        this.descriptionSk = descriptionSk;
-        log.debug("BadgeGroup created: id={}, name={}", id, name);
+        this.createdById = createdById;
     }
 
     public void updateName(@NonNull String name) throws IllegalArgumentException{

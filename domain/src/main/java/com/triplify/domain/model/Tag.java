@@ -10,6 +10,7 @@ import java.util.UUID;
 @Getter
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@AllArgsConstructor
 public class Tag {
 
     @EqualsAndHashCode.Include
@@ -27,14 +28,11 @@ public class Tag {
     @Setter(AccessLevel.PRIVATE)
     private ColorEnum color;
 
-    @Builder(builderMethodName = "of")
-    private Tag(@NonNull UUID userId, @NonNull String name, ColorEnum color) {
-        if (name.isBlank()) throw new IllegalArgumentException("Tag name must not be blank.");
+    public Tag(@NonNull UUID userId, @NonNull String name, @NonNull ColorEnum color) {
         this.id = UUID.randomUUID();
         this.userId = userId;
         this.name = name;
-        this.color = color != null ? color : ColorEnum.TEAL;
-        log.debug("Tag created: id={}, name={}, color={}", id, name, this.color);
+        this.color = color;
     }
 
     public void updateName(@NonNull String name) {
