@@ -21,4 +21,12 @@ public record PageRequest(int page, int size) {
     public int offset() {
         return page * size;
     }
+
+    public PageRequest next() {
+        return new PageRequest(page + 1, size);
+    }
+
+    public PageRequest previous() {
+        return page == 0 ? this : new PageRequest(page - 1, size);
+    }
 }
