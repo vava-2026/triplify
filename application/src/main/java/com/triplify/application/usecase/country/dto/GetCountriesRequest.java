@@ -4,14 +4,28 @@ import com.triplify.domain.pagination.PageRequest;
 
 public record GetCountriesRequest(
         PageRequest pageRequest,
-        String name,
-        CountryBanFilter banFilter,
-        boolean hasTripOrPlace
+        Filter filter
 ) {
 
     public GetCountriesRequest {
         pageRequest = pageRequest == null ? PageRequest.defaultRequest() : pageRequest;
-        banFilter = banFilter == null ? CountryBanFilter.ALL : banFilter;
-        name = name == null ? null : name.trim();
+    }
+
+    public record Filter(
+            String name,
+            CountryBanFilter banFilter,
+            boolean hasTripOrPlace
+    ) {
+
+        public enum CountryBanFilter {
+            ALL,
+            ONLY_BANNED,
+            ONLY_UNBANNED
+        }
+
+        public Filter {
+            name = name == null ? null : name.trim();
+            banFilter = banFilter == null ? CountryBanFilter.ALL : banFilter;
+        }
     }
 }
