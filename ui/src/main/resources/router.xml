@@ -21,6 +21,11 @@
                  arguments="tripDetailsArgs"
                  singleTop="true"/>
 
+    <destination id="add_place"
+                 fxml="com/triplify/ui/pages/places/AddPlaceView.fxml"
+                 arguments="tripDetailsArgs"
+                 singleTop="true"/>
+
     <destination id="calendar"
                  fxml="com/triplify/ui/pages/calendar/CalendarView.fxml"
                  singleTop="true"/>

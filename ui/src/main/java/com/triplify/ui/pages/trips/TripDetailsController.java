@@ -1,5 +1,6 @@
 package com.triplify.ui.pages.trips;
 
+import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.routing.TriplifyRouterContext;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -42,5 +43,20 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
     @FXML
     private void onBack() {
         getRouter().popBackStack();
+    }
+
+    @FXML
+    private void onAddPlace() {
+        RouterArgument currentData = getRouter().getCurrentData();
+        Integer id = currentData == null ? null : currentData.getValue("tripId");
+        String name = currentData == null ? null : currentData.getValue("tripName");
+        if (id == null) {
+            return;
+        }
+
+        RouterArgument args = new RouterArgument();
+        args.addArgument("tripId", id);
+        args.addArgument("tripName", name == null ? tripNameLabel.getText() : name);
+        getRouter().moveto(RouteIds.ADD_PLACE, args);
     }
 }

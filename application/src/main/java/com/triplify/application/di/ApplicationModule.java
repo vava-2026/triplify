@@ -6,6 +6,8 @@ import com.triplify.application.usecase.auth.AuthService;
 import com.triplify.application.usecase.auth.AuthServiceImpl;
 import com.triplify.application.usecase.category.CategoryService;
 import com.triplify.application.usecase.category.CategoryServiceImpl;
+import com.triplify.application.usecase.page.PagesService;
+import com.triplify.application.usecase.page.PagesServiceImpl;
 
 public class ApplicationModule extends AbstractModule {
 
@@ -13,5 +15,6 @@ public class ApplicationModule extends AbstractModule {
     protected void configure() {
         bind(CategoryService.class).to(CategoryServiceImpl.class).in(Singleton.class);
         bind(AuthService.class).to(AuthServiceImpl.class).in(Singleton.class);
+        bind(PagesService.class).to(PagesServiceImpl.class).in(Singleton.class);
     }
 }
