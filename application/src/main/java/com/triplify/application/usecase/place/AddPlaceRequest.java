@@ -1,9 +1,9 @@
-package com.triplify.application.usecase.page;
+package com.triplify.application.usecase.place;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public record AddPageRequest(
+public record AddPlaceRequest(
         @NotNull(message = "validation.field.required")
         Integer tripId,
         @NotBlank(message = "validation.field.required")

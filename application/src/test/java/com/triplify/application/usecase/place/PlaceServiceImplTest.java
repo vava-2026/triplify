@@ -1,17 +1,20 @@
-package com.triplify.application.usecase.page;
+package com.triplify.application.usecase.place;
 
+import com.triplify.application.validation.ValidatingProxy;
+import com.triplify.domain.error.ValidationError;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class PagesServiceImplTest {
+class PlaceServiceImplTest {
 
-    private final PagesServiceImpl service = new PagesServiceImpl();
+    private final PlaceService service = ValidatingProxy.wrap(new PlaceServiceImpl(), PlaceService.class);
 
     @Test
     void addPlaceReturnsValidationErrorsForInvalidRequest() {
-        AddPageRequest request = new AddPageRequest(
+        AddPlaceRequest request = new AddPlaceRequest(
                 null,
                 "",
                 "",
@@ -24,12 +27,13 @@ class PagesServiceImplTest {
         var result = service.addPlace(request);
 
         assertTrue(result.isFailure());
-        assertEquals(5, result.getErrors().size());
+        ValidationError error = assertInstanceOf(ValidationError.class, result.getError());
+        assertEquals(5, error.violations().size());
     }
 
     @Test
     void addPlaceReturnsSuccessForValidRequest() {
-        AddPageRequest request = new AddPageRequest(
+        AddPlaceRequest request = new AddPlaceRequest(
                 42,
                 "Bratislava Old Town",
                 "Slovakia",

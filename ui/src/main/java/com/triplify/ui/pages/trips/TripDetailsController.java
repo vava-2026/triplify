@@ -25,7 +25,7 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
     @Override
     public void onLifecycleShow() {
         TriplifyRouterContext context = (TriplifyRouterContext) getRouter().getContext();
-        context.setFullScreenContent(true);
+        context.setFullScreenContent(false);
     }
 
     @Override

@@ -1,20 +1,19 @@
 package com.triplify.ui.pages.places;
 
 import com.google.inject.Inject;
-import com.triplify.application.error.ValidationMapper;
-import com.triplify.application.error.ValidationResult;
-import com.triplify.application.usecase.page.AddPageRequest;
-import com.triplify.application.usecase.page.PagesService;
+import com.triplify.application.usecase.place.AddPlaceRequest;
+import com.triplify.application.usecase.place.PlaceService;
+import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.routing.TriplifyRouterContext;
+import com.triplify.ui.shared.component.input_item.InputItem;
+import com.triplify.ui.shared.component.input_item.TextAreaItem;
+import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.toast.ToastService;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TextInputControl;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.DragEvent;
@@ -31,12 +30,13 @@ import rahulstech.jfx.routing.element.RouterArgument;
 import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 
 import java.io.File;
+import java.util.Map;
+import java.util.function.Consumer;
 
 public class AddPlaceController extends SimpleLifecycleAwareController {
 
     private static final String MAP_URL =
             "https://staticmap.openstreetmap.de/staticmap.php?center=48.1485965,17.1077477&zoom=13&size=900x540&maptype=mapnik";
-    private static final String ERROR_STYLE_CLASS = "input-error";
 
     private static final double DEFAULT_LATITUDE = 48.1485965;
     private static final double DEFAULT_LONGITUDE = 17.1077477;
@@ -48,11 +48,9 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     @FXML private VBox contentContainer;
     @FXML private FlowPane contentFlow;
 
-    @FXML private TextField titleField;
-    @FXML private TextField countryField;
-    @FXML private TextArea descriptionArea;
-    @FXML private Label titleError;
-    @FXML private Label countryError;
+    @FXML private VBox titleInputContainer;
+    @FXML private VBox countryInputContainer;
+    @FXML private VBox descriptionInputContainer;
 
     @FXML private StackPane uploadArea;
     @FXML private ImageView coverPreview;
@@ -69,17 +67,29 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     @FXML private Button discardButton;
     @FXML private Button recenterButton;
 
-    @Inject private PagesService pagesService;
+    @Inject private PlaceService placeService;
     @Inject private ToastService toast;
+    @Inject private ErrorHandler errorHandler;
 
     private Integer tripId;
     private String tripName;
     private Double selectedLatitude = DEFAULT_LATITUDE;
     private Double selectedLongitude = DEFAULT_LONGITUDE;
     private String coverImagePath;
+    private InputItem titleInput;
+    private InputItem countryInput;
+    private TextAreaItem descriptionInput;
 
     @FXML
     public void initialize() {
+        titleInput = createInput("input.placeholder.placeTitle");
+        countryInput = createInput("input.placeholder.country");
+        descriptionInput = createTextArea("input.placeholder.placeDescription");
+
+        titleInputContainer.getChildren().add(titleInput);
+        countryInputContainer.getChildren().add(countryInput);
+        descriptionInputContainer.getChildren().add(descriptionInput);
+
         contentFlow.prefWrapLengthProperty().bind(contentContainer.widthProperty());
 
         mapImageView.fitWidthProperty().bind(mapShell.widthProperty());
@@ -94,7 +104,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         mapOverlay.widthProperty().addListener((obs, oldVal, newVal) -> positionPinForCurrentSelection());
         mapOverlay.heightProperty().addListener((obs, oldVal, newVal) -> positionPinForCurrentSelection());
 
-        configureButtonIcon(saveButton, "fth-check");
+        configureButtonIcon(saveButton, "fth-save");
         configureButtonIcon(discardButton, "fth-trash-2");
         configureButtonIcon(recenterButton, "fth-crosshair");
 
@@ -114,7 +124,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
 
     @Override
     public void onLifecycleShow() {
-        updateFullScreenMode(true);
+        updateFullScreenMode(false);
     }
 
     @Override
@@ -131,31 +141,30 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     private void onSave() {
         clearFieldErrors();
 
-        AddPageRequest request = new AddPageRequest(
+        AddPlaceRequest request = new AddPlaceRequest(
                 tripId,
-                normalize(titleField.getText()),
-                normalize(countryField.getText()),
-                normalizeNullable(descriptionArea.getText()),
+                normalize(titleInput.getText()),
+                normalize(countryInput.getText()),
+                normalizeNullable(descriptionInput.getText()),
                 selectedLatitude,
                 selectedLongitude,
                 coverImagePath
         );
 
-        ValidationResult<AddPageRequest> validation = ValidationMapper.validate(request);
-        if (validation.isFailure()) {
-            applyValidationErrors(validation);
-            return;
-        }
+        Map<String, Consumer<String>> fieldHandlers = Map.of(
+                "title", message -> titleInput.showError(message),
+                "country", message -> countryInput.showError(message)
+        );
 
-        pagesService.addPlace(request)
-                .onSuccess(ignored -> {
-                    String message = tripName == null || tripName.isBlank()
-                            ? "Place saved successfully."
-                            : "Place added to " + tripName + ".";
-                    toast.success("Place saved", message);
-                    getRouter().popBackStack();
-                })
-                .onFailureResponse(errors -> toast.error(I18n.t("error.validation.failed")));
+        var result = placeService.addPlace(request);
+        result.onSuccess(ignored -> {
+            String message = tripName == null || tripName.isBlank()
+                    ? "Place saved successfully."
+                    : "Place added to " + tripName + ".";
+            toast.success("Place saved", message);
+            getRouter().popBackStack();
+        });
+        result.onFailure(error -> errorHandler.handle(error, fieldHandlers));
     }
 
     @FXML
@@ -220,36 +229,9 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         positionPinForCurrentSelection();
     }
 
-    private void applyValidationErrors(ValidationResult<AddPageRequest> validation) {
-        validation.getViolations().forEach(violation -> {
-            switch (violation.getField()) {
-                case "title" -> showFieldError(titleField, titleError, violation.getMessageKey());
-                case "country" -> showFieldError(countryField, countryError, violation.getMessageKey());
-                default -> toast.error(I18n.t("error.validation.failed"));
-            }
-        });
-    }
-
     private void clearFieldErrors() {
-        clearFieldError(titleField, titleError);
-        clearFieldError(countryField, countryError);
-    }
-
-    private void clearFieldError(TextInputControl field, Label errorLabel) {
-        field.getStyleClass().remove(ERROR_STYLE_CLASS);
-        errorLabel.setText("");
-        errorLabel.setVisible(false);
-        errorLabel.setManaged(false);
-    }
-
-    private void showFieldError(TextInputControl field, Label errorLabel, String messageKey) {
-        if (!field.getStyleClass().contains(ERROR_STYLE_CLASS)) {
-            field.getStyleClass().add(ERROR_STYLE_CLASS);
-        }
-
-        errorLabel.setText(I18n.t(messageKey));
-        errorLabel.setVisible(true);
-        errorLabel.setManaged(true);
+        titleInput.clearError();
+        countryInput.clearError();
     }
 
     private void handleCoverImage(File file) {
@@ -399,6 +381,19 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
 
     private boolean isVectorImage(File file) {
         return file.getName().toLowerCase().endsWith(".svg");
+    }
+
+    private InputItem createInput(String placeholderKey) {
+        InputItem input = new InputItem(placeholderKey, FieldVariant.FILLED);
+        input.getStyleClass().add("add-place-field");
+        return input;
+    }
+
+    private TextAreaItem createTextArea(String placeholderKey) {
+        TextAreaItem input = new TextAreaItem(placeholderKey, FieldVariant.FILLED);
+        input.getStyleClass().addAll("add-place-field", "add-place-textarea-field");
+        input.setRows(6);
+        return input;
     }
 
     private String normalize(String value) {

@@ -82,7 +82,7 @@
 }
 
 .app-btn-danger-outline {
-    -fx-background-color: white;
+    -fx-background-color: transparent;
     -fx-border-color: #e43f3f;
     -fx-border-width: 1.5;
     -fx-text-fill: #e43f3f;
@@ -93,11 +93,23 @@
 }
 
 .app-btn-danger-outline:hover {
-    -fx-background-color: rgba(228, 63, 63, 0.08);
+    -fx-background-color: #e43f3f;
+    -fx-border-color: #e43f3f;
+    -fx-text-fill: white;
+}
+
+.app-btn-danger-outline:hover .app-btn-icon {
+    -fx-icon-color: white;
 }
 
 .app-btn-danger-outline:pressed {
-    -fx-background-color: rgba(228, 63, 63, 0.16);
+    -fx-background-color: #c83535;
+    -fx-border-color: #c83535;
+    -fx-text-fill: white;
+}
+
+.app-btn-danger-outline:pressed .app-btn-icon {
+    -fx-icon-color: white;
 }
 
 .app-btn-ghost {
