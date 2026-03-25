@@ -13,6 +13,7 @@ import java.util.UUID;
 @Getter
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@AllArgsConstructor
 public class Story {
     @EqualsAndHashCode.Include
     @NonNull
@@ -44,10 +45,10 @@ public class Story {
     @NonNull
     private final Instant createdAt;
 
-    private final Set<UUID> tagIds = new LinkedHashSet<>();
-    private final Set<UUID> imageIds = new LinkedHashSet<>();
+    private final Set<UUID> tagIds;
+    private final Set<UUID> imageIds;
 
-    private Story(@NonNull UUID userId,
+    public Story(@NonNull UUID userId,
                   UUID tripId,
                   UUID tripRouteId,
                   UUID tripPlaceId,
@@ -69,6 +70,8 @@ public class Story {
         this.description = description;
         this.storyTime = storyTime;
         this.createdAt = Instant.now();
+        this.tagIds = new LinkedHashSet<>();
+        this.imageIds = new LinkedHashSet<>();
         log.debug("Story created: id={}, userId={}, tripId={}, tripRouteId={}, tripPlaceId={}",
                 id, userId, tripId, tripRouteId, tripPlaceId);
     }

@@ -11,12 +11,12 @@ import java.util.UUID;
 @Getter
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@RequiredArgsConstructor(access = AccessLevel.PUBLIC)
+@AllArgsConstructor
 public class User {
 
     @EqualsAndHashCode.Include
     @NonNull
-    private final UUID id = UUID.randomUUID();
+    private final UUID id;
 
     @NonNull
     @Setter(AccessLevel.PRIVATE)
@@ -39,11 +39,24 @@ public class User {
     private UUID avatarImageId;
 
     @NonNull
-    private final Instant createdAt = Instant.now();
+    private final Instant createdAt;
 
     @NonNull
     @Setter(AccessLevel.PRIVATE)
-    private Instant updatedAt = Instant.now();
+    private Instant updatedAt;
+
+    public User(@NonNull String username,
+                @NonNull String email,
+                @NonNull String passwordHash,
+                @NonNull RoleEnum role) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
+        this.username = username;
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.role = role;
+    }
 
     public void updateUsername(@NonNull String username) {
         if (username.isBlank()) throw new IllegalArgumentException("Username must not be blank.");

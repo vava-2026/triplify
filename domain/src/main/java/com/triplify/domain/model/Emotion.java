@@ -9,12 +9,12 @@ import java.util.UUID;
 @Getter
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@RequiredArgsConstructor(access = AccessLevel.PUBLIC)
+@AllArgsConstructor
 public class Emotion {
 
     @EqualsAndHashCode.Include
     @NonNull
-    private final UUID id = UUID.randomUUID();
+    private final UUID id;
 
     @NonNull
     private final UUID createdById;
@@ -30,6 +30,14 @@ public class Emotion {
     @NonNull
     @Setter(AccessLevel.PRIVATE)
     private String emojiUnicode;
+
+    public Emotion(@NonNull UUID createdById, @NonNull String name, @NonNull String nameSk, @NonNull String emojiUnicode) {
+        this.id = UUID.randomUUID();
+        this.createdById = createdById;
+        this.name = name;
+        this.nameSk = nameSk;
+        this.emojiUnicode = emojiUnicode;
+    }
 
     public void updateName(@NonNull String name) throws IllegalArgumentException {
         if (name.isBlank()) throw new IllegalArgumentException("Name must not be blank.");

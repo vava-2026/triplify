@@ -11,12 +11,12 @@ import java.util.*;
 @Getter
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@RequiredArgsConstructor(access = AccessLevel.PUBLIC)
+@AllArgsConstructor
 public class Trip {
 
     @EqualsAndHashCode.Include
     @NonNull
-    private final UUID id = UUID.randomUUID();
+    private final UUID id;
 
     @NonNull
     private final UUID userId;
@@ -43,15 +43,28 @@ public class Trip {
     private Instant endedAt;
 
     @NonNull
-    private final Instant createdAt = Instant.now();
+    private final Instant createdAt;
 
     @NonNull
     @Setter(AccessLevel.PRIVATE)
-    private Instant updatedAt = Instant.now();
+    private Instant updatedAt;
 
-    private final Set<UUID> tagIds = new HashSet<>();
-    private final Set<UUID> imageIds = new LinkedHashSet<>();
-    private final Set<UUID> countryIds = new HashSet<>();
+    private final Set<UUID> tagIds;
+    private final Set<UUID> imageIds;
+    private final Set<UUID> countryIds;
+
+    public Trip(@NonNull UUID userId, @NonNull UUID categoryId, @NonNull String title, @NonNull StatusEnum status) {
+        this.id = UUID.randomUUID();
+        this.userId = userId;
+        this.categoryId = categoryId;
+        this.title = title;
+        this.status = status;
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
+        this.tagIds = new HashSet<>();
+        this.imageIds = new LinkedHashSet<>();
+        this.countryIds = new HashSet<>();
+    }
 
     public Set<UUID> getTagIds() {
         return Collections.unmodifiableSet(tagIds);

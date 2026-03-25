@@ -11,11 +11,11 @@ import java.util.UUID;
 @Getter
 @ToString(exclude = {"createdById"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@RequiredArgsConstructor(access = AccessLevel.PUBLIC)
+@AllArgsConstructor
 public class Category {
     @EqualsAndHashCode.Include
     @NonNull
-    private final UUID id = UUID.randomUUID();
+    private final UUID id;
 
     @NonNull
     private final UUID createdById;
@@ -40,6 +40,14 @@ public class Category {
     @NonNull
     @Setter(AccessLevel.PRIVATE)
     private ColorEnum color;
+
+    public Category(@NonNull UUID createdById, @NonNull String name, @NonNull String nameSk, @NonNull ColorEnum color) {
+        this.id = UUID.randomUUID();
+        this.createdById = createdById;
+        this.name = name;
+        this.nameSk = nameSk;
+        this.color = color;
+    }
 
     public void updateName(@NonNull String name) throws IllegalArgumentException {
         if (name.isBlank()) throw new IllegalArgumentException("Name must not be blank.");

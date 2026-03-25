@@ -13,12 +13,12 @@ import java.util.UUID;
 @Getter
 @ToString(exclude = {"imageIds"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@RequiredArgsConstructor(access = AccessLevel.PUBLIC)
+@AllArgsConstructor
 public class TripPlace {
 
     @EqualsAndHashCode.Include
     @NonNull
-    private final UUID id = UUID.randomUUID();
+    private final UUID id;
 
     /** Reference to the owning Trip aggregate by ID only. */
     @NonNull
@@ -32,13 +32,22 @@ public class TripPlace {
     private Instant visitDate;
 
     @NonNull
-    private final Instant createdAt =  Instant.now();
+    private final Instant createdAt;
 
     @NonNull
     @Setter(AccessLevel.PRIVATE)
-    private Instant updatedAt =  Instant.now();
+    private Instant updatedAt;
 
-    private final Set<UUID> imageIds = new LinkedHashSet<>();
+    private final Set<UUID> imageIds;
+
+    public TripPlace(@NonNull UUID tripId, @NonNull UUID placeId) {
+        this.id = UUID.randomUUID();
+        this.tripId = tripId;
+        this.placeId = placeId;
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
+        this.imageIds = new LinkedHashSet<>();
+    }
 
     public Set<UUID> getImageIds() {
         return Collections.unmodifiableSet(imageIds);
