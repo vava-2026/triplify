@@ -1,6 +1,8 @@
 package com.triplify.application.usecase.auth;
 
 import com.google.inject.Inject;
+import com.triplify.application.usecase.auth.dto.LogInRequest;
+import com.triplify.application.usecase.auth.dto.SignUpRequest;
 import com.triplify.application.usecase.session.SessionUser;
 import com.triplify.application.usecase.session.UserSessionContext;
 import com.triplify.domain.error.AuthError;
@@ -25,7 +27,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public Result<Void> login(LoginRequest request) {
+    public Result<Void> login(LogInRequest request) {
         return userRepository.findByEmail(request.email())
                 .map(user -> authenticate(user, request.password()))
                 .orElseGet(() -> {

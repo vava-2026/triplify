@@ -1,14 +1,12 @@
-package com.triplify.application.usecase.auth;
+package com.triplify.application.usecase.auth.dto;
 
 import com.triplify.application.error.ValidationMessage;
-import com.triplify.domain.model.enums.RoleEnum;
-import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 
-public record LoginRequest(
+public record LogInRequest(
     @NotBlank(message = ValidationMessage.Constants.REQUIRED)
     @Email(message = ValidationMessage.Constants.EMAIL_INVALID)
     String email,

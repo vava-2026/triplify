@@ -1,4 +1,4 @@
-package com.triplify.application.usecase.auth;
+package com.triplify.application.usecase.auth.dto;
 
 import com.triplify.application.error.ValidationMessage;
 import com.triplify.domain.model.enums.RoleEnum;

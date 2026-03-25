@@ -2,11 +2,10 @@ package com.triplify.ui.pages.account;
 
 import com.google.inject.Inject;
 import com.triplify.application.usecase.auth.AuthService;
-import com.triplify.application.usecase.auth.LoginRequest;
+import com.triplify.application.usecase.auth.dto.LogInRequest;
 import com.triplify.application.usecase.session.UserSessionContext;
 import com.triplify.domain.result.Result;
 import com.triplify.ui.error.ErrorHandler;
-import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.toast.ToastService;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -42,7 +41,7 @@ public class LoginController extends SimpleLifecycleAwareController {
     private void attemptLogin(String username, String pass) {
         clearFieldErrors();
 
-        LoginRequest request = new LoginRequest(username, pass);
+        LogInRequest request = new LogInRequest(username, pass);
 
         Map<String, TextField> fieldMap = Map.of("username", this.username, "password", password);
         clearFieldStyles(fieldMap);

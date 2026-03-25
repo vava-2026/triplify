@@ -1,5 +1,7 @@
 package com.triplify.application.usecase.auth;
 
+import com.triplify.application.usecase.auth.dto.LogInRequest;
+import com.triplify.application.usecase.auth.dto.SignUpRequest;
 import com.triplify.domain.result.Result;
 
 /**
@@ -13,7 +15,7 @@ public interface AuthService {
      * @return Possible errors:
      * {@link com.triplify.domain.error.AuthError.InvalidCredentials}
      */
-    Result<Void> login(LoginRequest request);
+    Result<Void> login(LogInRequest request);
 
     /**
      * Registers a new user account and immediately authenticates (and creates a session).

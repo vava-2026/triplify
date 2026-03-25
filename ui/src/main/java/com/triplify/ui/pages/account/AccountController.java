@@ -1,9 +1,8 @@
 package com.triplify.ui.pages.account;
 
 import com.google.inject.Inject;
-import com.triplify.application.usecase.account.UpdateProfileRequest;
 import com.triplify.application.usecase.auth.AuthService;
-import com.triplify.application.usecase.auth.SignUpRequest;
+import com.triplify.application.usecase.auth.dto.SignUpRequest;
 import com.triplify.application.usecase.session.SessionUser;
 import com.triplify.application.usecase.session.UserSessionContext;
 import com.triplify.domain.model.enums.RoleEnum;
@@ -17,7 +16,6 @@ import com.triplify.ui.shared.toast.ToastService;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
