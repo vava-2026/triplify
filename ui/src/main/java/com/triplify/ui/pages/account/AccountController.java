@@ -47,8 +47,6 @@ public class AccountController extends SimpleLifecycleAwareController {
     public void initialize() {
         render();
 
-        editFormContainer.getChildren().addAll(nameInput, emailInput, passwordInput, bioInput);
-
         BadgeView badgeView = new BadgeView();
         badgeView.update(new Badge("Super Traveler", "Awarded for completing 10 trips", null, BadgeGroup.RED, 1, 10, 5, false));
         BadgeView badgeView2 = new BadgeView();
