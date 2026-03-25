@@ -7,6 +7,8 @@ import com.triplify.application.usecase.auth.AuthService;
 import com.triplify.application.usecase.auth.AuthServiceImpl;
 import com.triplify.application.usecase.category.CategoryService;
 import com.triplify.application.usecase.category.CategoryServiceImpl;
+import com.triplify.application.usecase.country.CountryService;
+import com.triplify.application.usecase.country.CountryServiceImpl;
 import com.triplify.application.validation.ValidatingProxy;
 
 public class ApplicationModule extends AbstractModule {
@@ -15,6 +17,7 @@ public class ApplicationModule extends AbstractModule {
     protected void configure() {
         bindValidated(CategoryService.class, CategoryServiceImpl.class);
         bindValidated(AuthService.class, AuthServiceImpl.class);
+        bindValidated(CountryService.class, CountryServiceImpl.class);
     }
 
     private <T> void bindValidated(Class<T> iface, Class<? extends T> impl) {
