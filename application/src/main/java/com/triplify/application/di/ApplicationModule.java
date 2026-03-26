@@ -15,6 +15,8 @@ import com.triplify.application.usecase.country.CountryService;
 import com.triplify.application.usecase.country.CountryServiceImpl;
 import com.triplify.application.usecase.emotion.EmotionService;
 import com.triplify.application.usecase.emotion.EmotionServiceImpl;
+import com.triplify.application.usecase.place.PlaceService;
+import com.triplify.application.usecase.place.PlaceServiceImpl;
 import com.triplify.application.usecase.tag.TagService;
 import com.triplify.application.usecase.tag.TagServiceImpl;
 import com.triplify.application.validation.ValidatingProxy;
@@ -29,6 +31,7 @@ public class ApplicationModule extends AbstractModule {
         bindValidated(AuthService.class, AuthServiceImpl.class);
         bindValidated(CountryService.class, CountryServiceImpl.class);
         bindValidated(EmotionService.class, EmotionServiceImpl.class);
+        bindValidated(PlaceService.class, PlaceServiceImpl.class);
         bindValidated(TagService.class, TagServiceImpl.class);
     }
 
