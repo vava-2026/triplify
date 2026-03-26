@@ -1,0 +1,43 @@
+package com.triplify.application.usecase.trip.dto;
+
+import com.triplify.domain.model.enums.StatusEnum;
+import com.triplify.domain.pagination.PageRequest;
+
+import java.time.Instant;
+import java.util.Set;
+
+public record GetTripsRequest(
+        PageRequest pageRequest,
+        Filter filter,
+        OrderBy orderBy
+) {
+
+    public GetTripsRequest {
+        pageRequest = pageRequest == null ? PageRequest.defaultRequest() : pageRequest;
+    }
+
+    public record Filter(
+            String userId,
+            String name,
+            String countryId,
+            StatusEnum status,
+            String categoryId,
+            Set<String> tagIds,
+            Instant startedFrom,
+            Instant startedTo
+    ) {
+
+        public Filter {
+            userId = userId == null ? null : userId.trim();
+            name = name == null ? null : name.trim();
+            countryId = countryId == null ? null : countryId.trim();
+            categoryId = categoryId == null ? null : categoryId.trim();
+            tagIds = tagIds == null ? null : Set.copyOf(tagIds);
+        }
+    }
+
+    public record OrderBy(
+            boolean startTimeDirectionAsc
+    ) {
+    }
+}

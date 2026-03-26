@@ -19,6 +19,8 @@ import com.triplify.application.usecase.place.PlaceService;
 import com.triplify.application.usecase.place.PlaceServiceImpl;
 import com.triplify.application.usecase.tag.TagService;
 import com.triplify.application.usecase.tag.TagServiceImpl;
+import com.triplify.application.usecase.trip.TripService;
+import com.triplify.application.usecase.trip.TripServiceImpl;
 import com.triplify.application.validation.ValidatingProxy;
 
 public class ApplicationModule extends AbstractModule {
@@ -33,6 +35,7 @@ public class ApplicationModule extends AbstractModule {
         bindValidated(EmotionService.class, EmotionServiceImpl.class);
         bindValidated(PlaceService.class, PlaceServiceImpl.class);
         bindValidated(TagService.class, TagServiceImpl.class);
+        bindValidated(TripService.class, TripServiceImpl.class);
     }
 
     private <T> void bindValidated(Class<T> iface, Class<? extends T> impl) {
