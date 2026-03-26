@@ -1,9 +1,8 @@
 package com.triplify.application.usecase.route.dto;
 
-import com.triplify.domain.model.enums.StatusEnum;
-
 import java.time.Instant;
 import java.util.Set;
+import java.util.SortedSet;
 
 public record RouteResponse(
         String id,
@@ -15,6 +14,6 @@ public record RouteResponse(
         Instant createdAt,
         Instant updatedAt,
         Set<String> imageIds,
-        Set<String> placeIds
+        SortedSet<String> placeIds
 ) {
 }
