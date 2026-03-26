@@ -33,6 +33,8 @@ import com.triplify.application.usecase.triproute.TripRouteService;
 import com.triplify.application.usecase.triproute.TripRouteServiceImpl;
 import com.triplify.application.usecase.trip.TripService;
 import com.triplify.application.usecase.trip.TripServiceImpl;
+import com.triplify.application.usecase.user.UserService;
+import com.triplify.application.usecase.user.UserServiceImpl;
 import com.triplify.application.usecase.session.UserSessionContext;
 import com.triplify.application.usecase.session.UserSessionContextImpl;
 import com.triplify.application.validation.ValidatingProxy;
@@ -57,6 +59,7 @@ public class ApplicationModule extends AbstractModule {
         bindValidated(TripPlaceService.class, TripPlaceServiceImpl.class);
         bindValidated(TripRouteService.class, TripRouteServiceImpl.class);
         bindValidated(TripService.class, TripServiceImpl.class);
+        bindValidated(UserService.class, UserServiceImpl.class);
     }
 
     private <T> void bindValidated(Class<T> iface, Class<? extends T> impl) {
