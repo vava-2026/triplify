@@ -5,6 +5,8 @@ import com.google.inject.Singleton;
 import com.google.inject.Provider;
 import com.triplify.application.usecase.auth.AuthService;
 import com.triplify.application.usecase.auth.AuthServiceImpl;
+import com.triplify.application.usecase.badge.BadgeService;
+import com.triplify.application.usecase.badge.BadgeServiceImpl;
 import com.triplify.application.usecase.badgegroup.BadgeGroupService;
 import com.triplify.application.usecase.badgegroup.BadgeGroupServiceImpl;
 import com.triplify.application.usecase.category.CategoryService;
@@ -21,6 +23,7 @@ public class ApplicationModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        bindValidated(BadgeService.class, BadgeServiceImpl.class);
         bindValidated(BadgeGroupService.class, BadgeGroupServiceImpl.class);
         bindValidated(CategoryService.class, CategoryServiceImpl.class);
         bindValidated(AuthService.class, AuthServiceImpl.class);
