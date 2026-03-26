@@ -1,9 +1,9 @@
 package com.triplify.ui.pages.account;
 
 import com.google.inject.Inject;
-import com.triplify.application.usecase.auth.AuthResponse;
 import com.triplify.application.usecase.auth.AuthService;
-import com.triplify.application.usecase.auth.LoginRequest;
+import com.triplify.application.usecase.auth.dto.LogInRequest;
+import com.triplify.application.usecase.session.UserSessionContext;
 import com.triplify.domain.result.Result;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.shared.toast.ToastService;
@@ -17,6 +17,7 @@ import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 
 import java.util.Map;
 
+// TODO: Remove, this is just for example
 public class LoginController extends SimpleLifecycleAwareController {
 
     private static final Logger log = LoggerFactory.getLogger(LoginController.class);
@@ -29,6 +30,7 @@ public class LoginController extends SimpleLifecycleAwareController {
 
     @Inject private AuthService authService;
     @Inject private ToastService toast;
+    @Inject private UserSessionContext sessionContext;
     @Inject private ErrorHandler errorHandler;
 
     @FXML
@@ -36,27 +38,27 @@ public class LoginController extends SimpleLifecycleAwareController {
         attemptLogin(username.getText().trim(), password.getText());
     }
 
-    private void attemptLogin(String user, String pass) {
+    private void attemptLogin(String username, String pass) {
         clearFieldErrors();
 
-        Map<String, TextField> fieldMap = Map.of("username", username, "password", password);
+        LogInRequest request = new LogInRequest(username, pass);
+
+        Map<String, TextField> fieldMap = Map.of("username", this.username, "password", password);
         clearFieldStyles(fieldMap);
 
-        LoginRequest command = new LoginRequest(user, pass);
-        Result<AuthResponse> result = authService.login(command);
-
+        Result<Void> result = authService.login(request);
         result.onSuccess(auth -> {
-            log.info("Login successful for user '{}'", auth.username());
-            toast.success("Welcome back, " + auth.username() + "!");
+            var user = sessionContext.getCurrent().orElseThrow(() -> new IllegalStateException("User should be set in session after successful login"));
+            log.info("Login successful for user '{}'", user.username());
+            toast.success("Welcome back, " + user.username() + "!");
         });
-
         result.onFailure(error -> errorHandler.handle(error, Map.of(
                 "username", message -> {
-                    markFieldError(username);
+                    markFieldError(this.username);
                     showFieldError(usernameError, message);
                 },
                 "password", message -> {
-                    markFieldError(password);
+                    markFieldError(this.password);
                     showFieldError(passwordError, message);
                 }
         )));

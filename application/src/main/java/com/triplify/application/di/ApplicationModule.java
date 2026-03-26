@@ -23,12 +23,15 @@ import com.triplify.application.usecase.tag.TagService;
 import com.triplify.application.usecase.tag.TagServiceImpl;
 import com.triplify.application.usecase.trip.TripService;
 import com.triplify.application.usecase.trip.TripServiceImpl;
+import com.triplify.application.usecase.session.UserSessionContext;
+import com.triplify.application.usecase.session.UserSessionContextImpl;
 import com.triplify.application.validation.ValidatingProxy;
 
 public class ApplicationModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        bind(UserSessionContext.class).to(UserSessionContextImpl.class).in(Singleton.class);
         bindValidated(BadgeService.class, BadgeServiceImpl.class);
         bindValidated(BadgeGroupService.class, BadgeGroupServiceImpl.class);
         bindValidated(CategoryService.class, CategoryServiceImpl.class);

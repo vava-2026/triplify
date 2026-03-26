@@ -2,10 +2,12 @@ package com.triplify.infrastructure.di;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
+import com.triplify.domain.service.PasswordEncoder;
 import com.triplify.domain.repository.CategoryRepository;
 import com.triplify.domain.repository.UserRepository;
 import com.triplify.infrastructure.repository.CategoryRepositoryImpl;
 import com.triplify.infrastructure.repository.UserRepositoryImpl;
+import com.triplify.infrastructure.security.BCryptPasswordEncoder;
 
 public class InfrastructureModule extends AbstractModule {
 
@@ -13,6 +15,7 @@ public class InfrastructureModule extends AbstractModule {
     protected void configure() {
         bind(CategoryRepository.class).to(CategoryRepositoryImpl.class).in(Singleton.class);
         bind(UserRepository.class).to(UserRepositoryImpl.class).in(Singleton.class);
+        bind(PasswordEncoder.class).to(BCryptPasswordEncoder.class).in(Singleton.class);
     }
 }
 
