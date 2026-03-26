@@ -23,6 +23,8 @@ import com.triplify.application.usecase.tag.TagService;
 import com.triplify.application.usecase.tag.TagServiceImpl;
 import com.triplify.application.usecase.tripplace.TripPlaceService;
 import com.triplify.application.usecase.tripplace.TripPlaceServiceImpl;
+import com.triplify.application.usecase.triproute.TripRouteService;
+import com.triplify.application.usecase.triproute.TripRouteServiceImpl;
 import com.triplify.application.usecase.trip.TripService;
 import com.triplify.application.usecase.trip.TripServiceImpl;
 import com.triplify.application.usecase.session.UserSessionContext;
@@ -44,6 +46,7 @@ public class ApplicationModule extends AbstractModule {
         bindValidated(RouteService.class, RouteServiceImpl.class);
         bindValidated(TagService.class, TagServiceImpl.class);
         bindValidated(TripPlaceService.class, TripPlaceServiceImpl.class);
+        bindValidated(TripRouteService.class, TripRouteServiceImpl.class);
         bindValidated(TripService.class, TripServiceImpl.class);
     }
 
