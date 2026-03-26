@@ -19,7 +19,7 @@ public class StatisticsController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Пока статичные данные
+        // TODO: Replace with actual data fetching logic
         countriesValue.setText("33");
         tripsValue.setText("67");
         placesValue.setText("128");

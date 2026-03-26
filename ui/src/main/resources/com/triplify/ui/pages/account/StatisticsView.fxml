@@ -3,11 +3,13 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.geometry.Insets?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <VBox xmlns:fx="http://javafx.com/fxml/1"
       xmlns="http://javafx.com/javafx/21"
       fx:controller="com.triplify.ui.pages.account.StatisticsController"
       styleClass="stats-page"
+      stylesheets="@../../shared/css/theme.css, @account.css"
       spacing="20">
 
     <padding>
@@ -16,68 +18,63 @@
 
     <!-- Header -->
     <HBox styleClass="section-header" alignment="CENTER_LEFT" spacing="8">
-        <Label text="📊" styleClass="header-icon"/>
-        <Label text="Travel Statistics" styleClass="section-title"/>
+        <FontIcon iconLiteral="fth-bar-chart" iconSize="24" styleClass="header-icon"/>
+        <Label text="Travel Statistics"/>
     </HBox>
 
     <!-- Statistic cards -->
-    <HBox spacing="12">
+    <GridPane hgap="12" vgap="12">
+        <columnConstraints>
+            <ColumnConstraints percentWidth="20.0" />
+            <ColumnConstraints percentWidth="20.0" />
+            <ColumnConstraints percentWidth="20.0" />
+            <ColumnConstraints percentWidth="20.0" />
+            <ColumnConstraints percentWidth="20.0" />
+        </columnConstraints>
 
-        <!-- Countries Visited -->
-        <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="8">
-            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
-            <StackPane styleClass="icon-circle, icon-green" maxWidth="44" minWidth="44" maxHeight="44" minHeight="44">
-                <Label text="🌍" styleClass="card-icon"/>
+        <VBox styleClass="stat-card" GridPane.columnIndex="0" alignment="CENTER_LEFT">
+            <padding><Insets top="20" right="15" bottom="20" left="20"/></padding>
+            <StackPane styleClass="icon-circle, icon-green" maxWidth="40" minWidth="40" maxHeight="40" minHeight="40">
+                <FontIcon iconLiteral="fth-globe" iconSize="24" styleClass="card-icon"/>
             </StackPane>
-            <Region prefHeight="4"/>
             <Label text="Countries Visited" styleClass="card-label" wrapText="true"/>
             <Label fx:id="countriesValue" text="—" styleClass="card-value"/>
         </VBox>
 
-        <!-- Total Trips -->
-        <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="8">
-            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
-            <StackPane styleClass="icon-circle, icon-blue" maxWidth="44" minWidth="44" maxHeight="44" minHeight="44">
-                <Label text="✈" styleClass="card-icon"/>
+        <VBox styleClass="stat-card" GridPane.columnIndex="1" alignment="CENTER_LEFT">
+            <padding><Insets top="20" right="15" bottom="20" left="20"/></padding>
+            <StackPane styleClass="icon-circle, icon-blue" maxWidth="40" minWidth="40" maxHeight="40" minHeight="40">
+                <FontIcon iconLiteral="fth-navigation" iconSize="24" styleClass="card-icon"/>
             </StackPane>
-            <Region prefHeight="4"/>
-            <Label text="Total Trips" styleClass="card-label"/>
+            <Label text="Total Trips" styleClass="card-label" wrapText="true"/>
             <Label fx:id="tripsValue" text="—" styleClass="card-value"/>
         </VBox>
 
-        <!-- Places Visited -->
-        <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="8">
-            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
-            <StackPane styleClass="icon-circle, icon-yellow" maxWidth="44" minWidth="44" maxHeight="44" minHeight="44">
-                <Label text="📍" styleClass="card-icon"/>
+        <VBox styleClass="stat-card" GridPane.columnIndex="2" alignment="CENTER_LEFT">
+            <padding><Insets top="20" right="15" bottom="20" left="20"/></padding>
+            <StackPane styleClass="icon-circle, icon-yellow" maxWidth="40" minWidth="40" maxHeight="40" minHeight="40">
+                <FontIcon iconLiteral="fth-triangle" iconSize="24" styleClass="card-icon"/>
             </StackPane>
-            <Region prefHeight="4"/>
-            <Label text="Places Visited" styleClass="card-label"/>
+            <Label text="Places Visited" styleClass="card-label" wrapText="true"/>
             <Label fx:id="placesValue" text="—" styleClass="card-value"/>
         </VBox>
 
-        <!-- Travel Days -->
-        <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="8">
-            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
-            <StackPane styleClass="icon-circle, icon-purple" maxWidth="44" minWidth="44" maxHeight="44" minHeight="44">
-                <Label text="📅" styleClass="card-icon"/>
+        <VBox styleClass="stat-card" GridPane.columnIndex="3" alignment="CENTER_LEFT">
+            <padding><Insets top="20" right="15" bottom="20" left="20"/></padding>
+            <StackPane styleClass="icon-circle, icon-purple" maxWidth="40" minWidth="40" maxHeight="40" minHeight="40">
+                <FontIcon iconLiteral="fth-calendar" iconSize="24" styleClass="card-icon"/>
             </StackPane>
-            <Region prefHeight="4"/>
-            <Label text="Travel Days" styleClass="card-label"/>
+            <Label text="Travel Days" styleClass="card-label" wrapText="true"/>
             <Label fx:id="travelDaysValue" text="—" styleClass="card-value"/>
         </VBox>
 
-        <!-- Photos Uploaded -->
-        <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="8">
-            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
-            <StackPane styleClass="icon-circle, icon-pink" maxWidth="44" minWidth="44" maxHeight="44" minHeight="44">
-                <Label text="📷" styleClass="card-icon"/>
+        <VBox styleClass="stat-card" GridPane.columnIndex="4" alignment="CENTER_LEFT">
+            <padding><Insets top="20" right="15" bottom="20" left="20"/></padding>
+            <StackPane styleClass="icon-circle, icon-pink" maxWidth="40" minWidth="40" maxHeight="40" minHeight="40">
+                <FontIcon iconLiteral="fth-image" iconSize="24" styleClass="card-icon"/>
             </StackPane>
-            <Region prefHeight="4"/>
-            <Label text="Photos Uploaded" styleClass="card-label"/>
+            <Label text="Photos Uploaded" styleClass="card-label" wrapText="true"/>
             <Label fx:id="photosValue" text="—" styleClass="card-value"/>
         </VBox>
-
-    </HBox>
-
+    </GridPane>
 </VBox>
