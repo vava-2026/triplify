@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <router xmlns="https://github.com/rahulstech/javafx-routing"
-        home="map">
+        home="start">
 
     <arguments id="tripDetailsArgs">
         <argument name="tripId" type="int" required="true"/>
@@ -10,6 +10,10 @@
 
     <destination id="start"
                  fxml="com/triplify/ui/pages/start/StartPageView.fxml"
+                 singleTop="true"/>
+
+    <destination id="login"
+                 fxml="com/triplify/ui/pages/login/LoginView.fxml"
                  singleTop="true"/>
 
     <destination id="map"
@@ -35,9 +39,5 @@
 
     <destination id="account"
                  fxml="com/triplify/ui/pages/account/AccountView.fxml"
-                 singleTop="true"/>
-
-    <destination id="login"
-                 fxml="com/triplify/ui/pages/account/LoginView.fxml"
                  singleTop="true"/>
 </router>

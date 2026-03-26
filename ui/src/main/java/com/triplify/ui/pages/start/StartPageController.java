@@ -2,6 +2,7 @@ package com.triplify.ui.pages.start;
 
 import com.google.inject.Inject;
 import com.triplify.ui.i18n.I18n;
+import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.component.button.model.ButtonVariant;
 import com.triplify.ui.shared.component.button.view.AppButtonView;
@@ -44,7 +45,10 @@ public class StartPageController extends SimpleLifecycleAwareController implemen
         Button loginBtn = AppButtonView.builder(fxmlLoader)
                 .variant(ButtonVariant.LOGIN)
                 .labelBinding(Bindings.createStringBinding(() -> I18n.t("start.login"), I18n.bundleProperty()))
-                .onAction(() -> log.debug("Log In clicked"))
+                .onAction(() -> {
+                    log.debug("Log In clicked");
+                    getRouter().moveto(RouteIds.LOGIN);
+                })
                 .build();
 
         Button signUpBtn = AppButtonView.builder(fxmlLoader)
