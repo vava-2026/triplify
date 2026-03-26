@@ -8,9 +8,6 @@ import jakarta.validation.constraints.NotNull;
 public record CreateTagRequest(
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String userId,
-
-        @NotBlank(message = ValidationMessage.Constants.REQUIRED)
         String name,
 
         @NotNull(message = ValidationMessage.Constants.REQUIRED)

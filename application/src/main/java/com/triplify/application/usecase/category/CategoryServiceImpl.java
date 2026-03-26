@@ -4,7 +4,7 @@ import com.google.inject.Inject;
 import com.triplify.application.error.ApplicationError;
 import com.triplify.application.model.ColorTheme;
 import com.triplify.application.usecase.category.dto.CategoryResponse;
-import com.triplify.application.usecase.category.dto.CreateCategoryRequest;
+import com.triplify.application.usecase.category.dto.AddCategoryRequest;
 import com.triplify.application.usecase.category.dto.DeleteCategoryRequest;
 import com.triplify.application.usecase.category.dto.UpdateCategoryRequest;
 import com.triplify.domain.repository.CategoryRepository;
@@ -25,7 +25,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Result<CategoryResponse> createCategory(CreateCategoryRequest request) {
+    public Result<CategoryResponse> addCategory(AddCategoryRequest request) {
         // TODO: implement category creation.
         return Result.fail(new ApplicationError.Unexpected("TODO: CategoryService.createCategory"));
     }

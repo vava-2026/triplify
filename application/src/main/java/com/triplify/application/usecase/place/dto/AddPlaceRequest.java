@@ -8,9 +8,6 @@ import jakarta.validation.constraints.NotBlank;
 public record AddPlaceRequest(
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String userId,
-
-        @NotBlank(message = ValidationMessage.Constants.REQUIRED)
         String countryId,
 
         String coverImageId,

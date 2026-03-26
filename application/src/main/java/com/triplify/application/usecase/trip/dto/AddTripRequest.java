@@ -11,9 +11,6 @@ import java.util.Set;
 public record AddTripRequest(
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String userId,
-
-        @NotBlank(message = ValidationMessage.Constants.REQUIRED)
         String categoryId,
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)

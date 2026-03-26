@@ -6,7 +6,7 @@ import com.triplify.domain.result.Result;
 
 public interface CountryService {
 
-    Result<CountryResponse> createCountry(CreateCountryRequest request);
+    Result<CountryResponse> addCountry(AddCountryRequest request);
 
     Result<CountryResponse> updateCountry(UpdateCountryRequest request);
 

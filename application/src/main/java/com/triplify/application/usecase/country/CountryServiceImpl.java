@@ -8,7 +8,7 @@ import com.triplify.domain.result.Result;
 public class CountryServiceImpl implements CountryService {
 
     @Override
-    public Result<CountryResponse> createCountry(CreateCountryRequest request) {
+    public Result<CountryResponse> addCountry(AddCountryRequest request) {
         // TODO: implement country creation.
         return Result.fail(new ApplicationError.Unexpected("TODO: CountryService.createCountry"));
     }

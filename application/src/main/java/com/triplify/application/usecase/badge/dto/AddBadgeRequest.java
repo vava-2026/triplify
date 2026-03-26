@@ -7,9 +7,6 @@ import jakarta.validation.constraints.NotBlank;
 public record AddBadgeRequest(
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String createdById,
-
-        @NotBlank(message = ValidationMessage.Constants.REQUIRED)
         String groupId,
 
         String imageId,
