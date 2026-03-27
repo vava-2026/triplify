@@ -9,11 +9,15 @@ import com.triplify.domain.model.enums.RoleEnum;
 import com.triplify.domain.result.Result;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
+import com.triplify.ui.shared.component.badge.model.Badge;
+import com.triplify.ui.shared.component.badge.model.BadgeGroup;
+import com.triplify.ui.shared.component.badge.view.BadgeView;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.input_item.PasswordItem;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.toast.ToastService;
 import javafx.fxml.FXML;
+import javafx.scene.layout.GridPane;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
@@ -28,6 +32,7 @@ public class AccountController extends SimpleLifecycleAwareController {
     private static final Logger log = LoggerFactory.getLogger(AccountController.class);
 
     @FXML private VBox editFormContainer;
+    @FXML private GridPane badgesGrid;
 
     @Inject private ToastService toast;
     @Inject private AuthService authService;
@@ -41,8 +46,15 @@ public class AccountController extends SimpleLifecycleAwareController {
     @FXML
     public void initialize() {
         render();
-    }
 
+        BadgeView badgeView = new BadgeView();
+        badgeView.update(new Badge("Super Traveler", "Awarded for completing 10 trips", null, BadgeGroup.RED, 1, 10, 5, false));
+        BadgeView badgeView2 = new BadgeView();
+        badgeView2.update(new Badge("Super Traveler2", "Awarded for completing 10 trips", null, BadgeGroup.RED, 1, 10, 6, true));
+        badgesGrid.add(badgeView, 0, 0);
+        badgesGrid.add(badgeView2, 1, 0);
+    }
+  
     private void render() {
         editFormContainer.getChildren().clear();
         if (userSessionContext.isLoggedIn()) {

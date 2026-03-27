@@ -1,0 +1,207 @@
+.trips-toolbar {
+    -fx-spacing: 12px;
+    -fx-alignment: center-left;
+}
+
+.trips-filters {
+    -fx-spacing: 10px;
+    -fx-alignment: center-left;
+}
+
+.trips-sort {
+    -fx-spacing: 8px;
+    -fx-alignment: center-right;
+}
+
+.trips-sort-label {
+    -fx-text-fill: -color-ink-muted;
+    -fx-font-size: 12px;
+}
+
+.trips-filter {
+    -fx-background-color: -color-surface;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-border-color: -color-border-muted;
+    -fx-padding: 2px 10px 2px 10px;
+    -fx-pref-height: 34px;
+}
+
+.trips-filter > .list-cell {
+    -fx-text-fill: -color-ink;
+}
+
+/* ── Card Grid ── */
+
+.card-grid-root {
+    -fx-padding: 0;
+}
+
+.card-grid-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 2px;
+}
+
+.card-grid-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.card-grid-scroll .scroll-bar:vertical {
+    -fx-pref-width: 12px;
+    -fx-background-color: transparent;
+}
+
+.card-grid-scroll .scroll-bar:vertical .track {
+    -fx-background-color: -color-scrollbar-track;
+    -fx-background-radius: 4px;
+    -fx-padding: 2px;
+}
+
+.card-grid-scroll .scroll-bar:vertical .thumb {
+    -fx-background-color: -color-scrollbar-thumb;
+    -fx-background-radius: 4px;
+}
+
+.card-grid-scroll .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: -color-scrollbar-thumb-hover;
+}
+
+.card-grid-scroll .scroll-bar:vertical .increment-button,
+.card-grid-scroll .scroll-bar:vertical .decrement-button {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+}
+
+.card-grid-empty {
+    -fx-text-fill: -color-ink-muted;
+    -fx-font-size: 14px;
+}
+
+/* ── Trip Card ── */
+
+.trip-card {
+    -fx-background-color: -color-surface;
+    -fx-background-radius: 14px;
+    -fx-effect: -shadow-card;
+    -fx-cursor: hand;
+    -fx-pref-height: 353px;
+    -fx-min-height: 353px;
+    -fx-max-height: 353px;
+}
+
+.trip-card:hover {
+    -fx-translate-y: -1px;
+}
+
+.trip-card-media {
+    -fx-min-height: 184px;
+    -fx-pref-height: 184px;
+    -fx-max-height: 184px;
+    -fx-padding: 10px;
+}
+
+.trip-card-body {
+    -fx-padding: 10px 12px 12px 12px;
+}
+
+.trip-title {
+    -fx-text-fill: -color-ink;
+    -fx-font-size: 19px;
+    -fx-font-weight: bold;
+}
+
+.trip-category {
+    -fx-text-fill: -color-ink-muted;
+    -fx-font-size: 14px;
+    -fx-background-color: -color-surface-tint;
+    -fx-background-radius: 999px;
+    -fx-padding: 2px 8px;
+}
+
+.trip-date-row {
+    -fx-alignment: center-left;
+}
+
+.trip-date-icon {
+    -fx-icon-color: -color-ink-muted;
+}
+
+.trip-date {
+    -fx-text-fill: -color-ink-muted;
+    -fx-font-size: 14px;
+}
+
+/* ── Trip Status Badges ── */
+
+.trip-status {
+    -fx-background-radius: 999px;
+    -fx-padding: 4px 10px;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-font-family: -font-family-base;
+}
+
+.trip-status-visited {
+    -fx-background-color: -color-status-visited-bg;
+    -fx-text-fill: -color-status-visited-fg;
+}
+
+.trip-status-drafted {
+    -fx-background-color: -color-status-drafted-bg;
+    -fx-text-fill: -color-status-drafted-fg;
+}
+
+.trip-status-rejected {
+    -fx-background-color: -color-status-rejected-bg;
+    -fx-text-fill: -color-status-rejected-fg;
+}
+
+.trip-status-planned {
+    -fx-background-color: -color-status-planned-bg;
+    -fx-text-fill: -color-status-planned-fg;
+}
+
+.trip-status-ongoing {
+    -fx-background-color: -color-status-ongoing-bg;
+    -fx-text-fill: -color-status-ongoing-fg;
+}
+
+/* ── Create Trip Card ── */
+
+.trip-create-card {
+    -fx-background-color: -color-surface;
+    -fx-background-radius: 14px;
+    -fx-border-color: -color-create-border;
+    -fx-border-radius: 14px;
+    -fx-border-width: 2px;
+    -fx-border-style: segments(8, 6);
+    -fx-effect: -shadow-card;
+    -fx-cursor: hand;
+    -fx-alignment: center;
+    -fx-padding: 12px;
+    -fx-pref-height: 353px;
+    -fx-min-height: 353px;
+    -fx-max-height: 353px;
+}
+
+.trip-create-icon {
+    -fx-icon-color: -color-primary;
+    -fx-icon-size: 18px;
+}
+
+.trip-create-title {
+    -fx-text-fill: -color-ink;
+    -fx-font-weight: bold;
+}
+
+.trip-create-subtitle {
+    -fx-text-fill: -color-ink-muted;
+    -fx-font-size: 12px;
+}
+
+/* ── Cover Fallback ── */
+
+.trip-cover-default {
+    -fx-background-color: linear-gradient(to bottom right, #b5c7d6, #e6edf3);
+}

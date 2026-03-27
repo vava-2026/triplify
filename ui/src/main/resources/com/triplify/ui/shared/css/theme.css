@@ -1,14 +1,17 @@
 @import url("/com/triplify/ui/shared/component/entry/css/entry.css");
 @import url("/com/triplify/ui/shared/component/select/css/select.css");
 @import url("/com/triplify/ui/shared/component/search/css/search.css");
+@import url("/com/triplify/ui/shared/component/button/css/button.css");
 @import url("/com/triplify/ui/shared/component/input_item/input_item.css");
 @import url("/com/triplify/ui/shared/toast/toast.css");
+@import url("/com/triplify/ui/pages/trips/css/trips.css");
 
 .root {
     -color-bg: #f0f0f0;
     -color-surface: #fafafa;
     -color-surface-tint: #ecf3f9;
     -color-surface-dark: #d5e5ed;
+    -color-surface-muted: #00000026;
     -color-ink: #0a090c;
     -color-ink-muted: #999999;
 
@@ -42,6 +45,35 @@
     -color-theme-blue: #2980b9;
     -color-theme-purple: #8e44ad;
     -color-theme-pink: #e91e8c;
+
+    -color-stats-green-bg: #B2D7BB;
+    -color-stats-green-fg: #3F784C;
+    -color-stats-blue-bg: #C9DEEE;
+    -color-stats-blue-fg: #2F6690;
+    -color-stats-yellow-bg: #F0DCAD;
+    -color-stats-yellow-fg: #FFB100;
+    -color-stats-purple-bg: #C1B2D7;
+    -color-stats-purple-fg: #6A4C93;
+    -color-stats-pink-bg: #FABDCA;
+    -color-stats-pink-fg: #B20D30;
+
+    -color-status-visited-bg: -color-stats-green-bg;
+    -color-status-visited-fg: #025B42;
+    -color-status-drafted-bg: -color-stats-yellow-bg;
+    -color-status-drafted-fg: -color-stats-yellow-fg;
+    -color-status-rejected-bg: -color-stats-pink-bg;
+    -color-status-rejected-fg: -color-stats-pink-fg;
+    -color-status-planned-bg: -color-stats-blue-bg;
+    -color-status-planned-fg: -color-stats-blue-fg;
+    -color-status-ongoing-bg: -color-stats-purple-bg;
+    -color-status-ongoing-fg: -color-stats-purple-fg;
+
+    -color-border-muted: rgba(10, 9, 12, 0.08);
+    -color-scrollbar-track: rgba(47, 102, 144, 0.08);
+    -color-scrollbar-thumb: rgba(47, 102, 144, 0.45);
+    -color-scrollbar-thumb-hover: rgba(47, 102, 144, 0.7);
+    -color-create-border: #8fb0c8;
+
 
     -font-family-base: "Plus Jakarta Sans", "Segoe UI", System;
 
@@ -109,32 +141,7 @@
     -fx-min-height: 340px;
 }
 
-.form-label {
-    -fx-font-size: 13px;
-    -fx-font-weight: bold;
-    -fx-text-fill: -color-ink;
-}
-
-.form-input {
-    -fx-font-family: -font-family-base;
-    -fx-font-size: 14px;
-    -fx-background-color: -color-bg;
-    -fx-border-color: #cccccc;
-    -fx-border-radius: 8;
-    -fx-background-radius: 8;
-    -fx-padding: 8 12 8 12;
-    -fx-pref-height: 40px;
-}
-
-.form-input:focused {
-    -fx-border-color: -color-primary;
-}
-
 .input-error {
-    -fx-border-color: -color-danger;
-}
-
-.input-error:focused {
     -fx-border-color: -color-danger;
 }
 
@@ -147,9 +154,9 @@
     -fx-font-size: 13px;
     -fx-font-weight: bold;
     -fx-text-fill: -color-danger;
-    -fx-background-color: derive(-color-danger, 90%);
+    -fx-background-color: -color-danger, 90%;
     -fx-background-radius: 8;
-    -fx-border-color: derive(-color-danger, 60%);
+    -fx-border-color: -color-danger;
     -fx-border-radius: 8;
     -fx-padding: 10 14 10 14;
 }
@@ -158,9 +165,20 @@
     -fx-font-size: 13px;
     -fx-font-weight: bold;
     -fx-text-fill: -color-theme-green;
-    -fx-background-color: derive(-color-theme-green, 85%);
+    -fx-background-color:-color-theme-green, 85%;
     -fx-background-radius: 8;
-    -fx-border-color: derive(-color-theme-green, 50%);
+    -fx-border-color: -color-theme-green;
     -fx-border-radius: 8;
     -fx-padding: 10 14 10 14;
 }
+
+.page-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.page-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
