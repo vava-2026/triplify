@@ -1,5 +1,12 @@
 package com.triplify.domain.pagination;
 
+/**
+ * Represents a request for one page of results.
+ *
+ * @param page zero-based page index to load
+ * @param size requested page size; this must be greater than zero even if the
+ *             resulting page is empty
+ */
 public record PageRequest(int page, int size) {
 
     public static final int DEFAULT_PAGE = 0;

@@ -3,6 +3,15 @@ package com.triplify.domain.pagination;
 import java.util.List;
 import java.util.function.Function;
 
+/**
+ * Represents one page of paginated results.
+ *
+ * @param items actual items returned for the current page; this may be empty
+ * @param totalElements total number of elements matching the query across all pages
+ * @param page zero-based page index that was requested
+ * @param size requested page size; this is the page capacity, not {@code items.size()}
+ * @param <T> item type
+ */
 public record Page<T>(List<T> items, long totalElements, int page, int size) {
 
     public Page {
@@ -23,6 +32,12 @@ public record Page<T>(List<T> items, long totalElements, int page, int size) {
         return new Page<>(items, totalElements, request.page(), request.size());
     }
 
+    /**
+     * Creates an empty page for the given request.
+     * <p>
+     * The returned page has no items and zero total elements, but it keeps the
+     * requested page index and page size from the request.
+     */
     public static <T> Page<T> empty(PageRequest request) {
         return new Page<>(List.of(), 0L, request.page(), request.size());
     }
