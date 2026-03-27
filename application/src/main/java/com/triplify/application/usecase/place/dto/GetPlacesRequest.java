@@ -15,14 +15,12 @@ public record GetPlacesRequest(
     }
 
     public record Filter(
-            String userId,
             @Size(max = DtoConstraints.NAME_MAX_LENGTH, message = ValidationMessage.Constants.NAME_TOO_LONG)
             String name,
             String countryId
     ) {
 
         public Filter {
-            userId = userId == null ? null : userId.trim();
             name = name == null ? null : name.trim();
             countryId = countryId == null ? null : countryId.trim();
         }

@@ -20,7 +20,6 @@ public record GetTripsRequest(
     }
 
     public record Filter(
-            String userId,
             @Size(max = DtoConstraints.NAME_MAX_LENGTH, message = ValidationMessage.Constants.NAME_TOO_LONG)
             String name,
             String countryId,
@@ -32,7 +31,6 @@ public record GetTripsRequest(
     ) {
 
         public Filter {
-            userId = userId == null ? null : userId.trim();
             name = name == null ? null : name.trim();
             countryId = countryId == null ? null : countryId.trim();
             categoryId = categoryId == null ? null : categoryId.trim();

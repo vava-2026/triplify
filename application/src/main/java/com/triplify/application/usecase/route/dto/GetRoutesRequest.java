@@ -16,13 +16,11 @@ public record GetRoutesRequest(
 
     public record Filter(
             @Size(max = DtoConstraints.NAME_MAX_LENGTH, message = ValidationMessage.Constants.NAME_TOO_LONG)
-            String name,
-            String userId
+            String name
     ) {
 
         public Filter {
             name = name == null ? null : name.trim();
-            userId = userId == null ? null : userId.trim();
         }
     }
 }

@@ -18,7 +18,6 @@ public record GetStoriesRequest(
     }
 
     public record Filter(
-            String userId,
             String tripId,
             String tripRouteId,
             String tripPlaceId,
@@ -29,7 +28,6 @@ public record GetStoriesRequest(
     ) {
 
         public Filter {
-            userId = userId == null ? null : userId.trim();
             tripId = tripId == null ? null : tripId.trim();
             tripRouteId = tripRouteId == null ? null : tripRouteId.trim();
             tripPlaceId = tripPlaceId == null ? null : tripPlaceId.trim();
