@@ -113,6 +113,7 @@
 .add-place-upload-area {
     -fx-min-height: 208px;
     -fx-pref-height: 208px;
+    -fx-max-height: 208px;
     -fx-background-color: #eef5fb;
     -fx-background-radius: 16px;
     -fx-border-color: #93b7d6;
@@ -176,21 +177,36 @@
     -fx-background-radius: 18px;
 }
 
-.add-place-map-image {
-    -fx-smooth: true;
+.add-place-map-container {
+    -fx-background-color: linear-gradient(to bottom, #d9e8f4, #cbdde9);
+    -fx-background-radius: 18px;
 }
 
-.add-place-map-fallback {
-    -fx-font-size: 13px;
-    -fx-text-fill: white;
-    -fx-background-color: rgba(27, 43, 56, 0.6);
-    -fx-background-radius: 12px;
-    -fx-padding: 8 12 8 12;
+.add-place-map-view {
+    -fx-background-radius: 18px;
 }
 
 .add-place-map-pin {
     -fx-icon-color: -color-primary;
     -fx-effect: dropshadow(gaussian, rgba(7, 33, 54, 0.28), 10, 0, 0, 3);
+}
+
+.add-place-country-hover {
+    -fx-fill: rgba(47, 102, 144, 0.18);
+    -fx-stroke: #2f6690;
+    -fx-stroke-width: 2.25px;
+    -fx-stroke-line-cap: round;
+    -fx-stroke-line-join: round;
+    -fx-effect: dropshadow(gaussian, rgba(23, 53, 75, 0.16), 8, 0, 0, 1);
+}
+
+.add-place-country-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-background-color: rgba(17, 38, 52, 0.78);
+    -fx-background-radius: 999px;
+    -fx-padding: 7 12 7 12;
 }
 
 .add-place-map-controls {
@@ -219,4 +235,13 @@
 
 .add-place-map-control:hover {
     -fx-background-color: white;
+}
+
+.add-place-coordinate-label {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-primary-dark;
+    -fx-background-color: #eef5fb;
+    -fx-background-radius: 12px;
+    -fx-padding: 10 12 10 12;
 }

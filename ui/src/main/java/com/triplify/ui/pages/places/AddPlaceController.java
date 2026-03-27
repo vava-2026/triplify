@@ -1,28 +1,34 @@
 package com.triplify.ui.pages.places;
 
+import com.gluonhq.maps.MapLayer;
+import com.gluonhq.maps.MapPoint;
+import com.gluonhq.maps.MapView;
 import com.google.inject.Inject;
 import com.triplify.application.usecase.place.AddPlaceRequest;
 import com.triplify.application.usecase.place.PlaceService;
+import com.triplify.ui.map.CountryBoundary;
+import com.triplify.ui.map.CountryBoundaryLoader;
 import com.triplify.ui.error.ErrorHandler;
-import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.input_item.TextAreaItem;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.toast.ToastService;
-import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.geometry.Point2D;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.input.TransferMode;
+import javafx.scene.Node;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
 import org.kordamp.ikonli.javafx.FontIcon;
@@ -30,20 +36,21 @@ import rahulstech.jfx.routing.element.RouterArgument;
 import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 
 import java.io.File;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Consumer;
 
 public class AddPlaceController extends SimpleLifecycleAwareController {
 
-    private static final String MAP_URL =
-            "https://staticmap.openstreetmap.de/staticmap.php?center=48.1485965,17.1077477&zoom=13&size=900x540&maptype=mapnik";
-
     private static final double DEFAULT_LATITUDE = 48.1485965;
     private static final double DEFAULT_LONGITUDE = 17.1077477;
-    private static final double MAP_TOP_LATITUDE = 48.2085;
-    private static final double MAP_BOTTOM_LATITUDE = 48.0865;
-    private static final double MAP_LEFT_LONGITUDE = 16.9880;
-    private static final double MAP_RIGHT_LONGITUDE = 17.2270;
+    private static final double DEFAULT_ZOOM = 5.5;
+    private static final double FOCUSED_ZOOM = 12.5;
+    private static final double MIN_ZOOM = 2.0;
+    private static final double MAX_ZOOM = 18.0;
+    private static final double ZOOM_STEP = 1.0;
+    private static final double TRACKPAD_ZOOM_STEP = 0.2;
 
     @FXML private VBox contentContainer;
     @FXML private FlowPane contentFlow;
@@ -58,14 +65,15 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     @FXML private Label selectedImageLabel;
 
     @FXML private StackPane mapShell;
-    @FXML private ImageView mapImageView;
-    @FXML private Label mapFallbackLabel;
-    @FXML private Pane mapOverlay;
-    @FXML private FontIcon mapPin;
+    @FXML private StackPane mapContainer;
+    @FXML private Label hoveredCountryLabel;
+    @FXML private Label selectedCoordinatesLabel;
 
     @FXML private Button saveButton;
     @FXML private Button discardButton;
     @FXML private Button recenterButton;
+    @FXML private Button zoomInButton;
+    @FXML private Button zoomOutButton;
 
     @Inject private PlaceService placeService;
     @Inject private ToastService toast;
@@ -79,6 +87,12 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     private InputItem titleInput;
     private InputItem countryInput;
     private TextAreaItem descriptionInput;
+    private MapView mapView;
+    private CountryHoverLayer countryHoverLayer;
+    private PinLayer pinLayer;
+    private List<CountryBoundary> countryBoundaries = List.of();
+    private double mapPressSceneX;
+    private double mapPressSceneY;
 
     @FXML
     public void initialize() {
@@ -91,18 +105,8 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         descriptionInputContainer.getChildren().add(descriptionInput);
 
         contentFlow.prefWrapLengthProperty().bind(contentContainer.widthProperty());
-
-        mapImageView.fitWidthProperty().bind(mapShell.widthProperty());
-        mapImageView.fitHeightProperty().bind(mapShell.heightProperty());
-        mapOverlay.prefWidthProperty().bind(mapShell.widthProperty());
-        mapOverlay.prefHeightProperty().bind(mapShell.heightProperty());
-        mapOverlay.maxWidthProperty().bind(mapShell.widthProperty());
-        mapOverlay.maxHeightProperty().bind(mapShell.heightProperty());
         coverPreview.fitWidthProperty().bind(uploadArea.widthProperty());
         coverPreview.fitHeightProperty().bind(uploadArea.heightProperty());
-
-        mapOverlay.widthProperty().addListener((obs, oldVal, newVal) -> positionPinForCurrentSelection());
-        mapOverlay.heightProperty().addListener((obs, oldVal, newVal) -> positionPinForCurrentSelection());
 
         configureButtonIcon(saveButton, "fth-save");
         configureButtonIcon(discardButton, "fth-trash-2");
@@ -111,8 +115,8 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         installRoundedClip(uploadArea, 16);
         installRoundedClip(mapShell, 18);
 
-        loadMapPreview();
-        Platform.runLater(this::positionPinForCurrentSelection);
+        initializeMap();
+        updateSelectedCoordinatesLabel();
     }
 
     @Override
@@ -218,15 +222,24 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     }
 
     @FXML
-    private void onMapClicked(MouseEvent event) {
-        updateSelectionFromPoint(event.getX(), event.getY());
+    private void onRecenterMap() {
+        focusMapOnSelection(true);
     }
 
     @FXML
-    private void onRecenterMap() {
-        selectedLatitude = DEFAULT_LATITUDE;
-        selectedLongitude = DEFAULT_LONGITUDE;
-        positionPinForCurrentSelection();
+    private void onZoomIn() {
+        if (mapView == null) {
+            return;
+        }
+        mapView.setZoom(clamp(mapView.getZoom() + ZOOM_STEP, MIN_ZOOM, MAX_ZOOM));
+    }
+
+    @FXML
+    private void onZoomOut() {
+        if (mapView == null) {
+            return;
+        }
+        mapView.setZoom(clamp(mapView.getZoom() - ZOOM_STEP, MIN_ZOOM, MAX_ZOOM));
     }
 
     private void clearFieldErrors() {
@@ -269,74 +282,184 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
             if (newVal.doubleValue() >= 1.0 && !image.isError()) {
                 coverPreview.setImage(image);
                 coverPreview.setVisible(true);
-                coverPreview.setManaged(true);
+                coverPreview.setManaged(false);
                 uploadPlaceholder.setVisible(false);
                 uploadPlaceholder.setManaged(false);
             }
         });
     }
 
-    private void loadMapPreview() {
-        mapFallbackLabel.setText("Loading map preview...");
-        mapFallbackLabel.setVisible(true);
-        mapFallbackLabel.setManaged(true);
+    private void initializeMap() {
+        mapView = new MapView();
+        mapView.getStyleClass().add("add-place-map-view");
+        mapView.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        mapView.prefWidthProperty().bind(mapContainer.widthProperty());
+        mapView.prefHeightProperty().bind(mapContainer.heightProperty());
+        mapView.setZoom(DEFAULT_ZOOM);
+        mapView.setCenter(DEFAULT_LATITUDE, DEFAULT_LONGITUDE);
 
-        Image image = new Image(MAP_URL, true);
-        image.errorProperty().addListener((obs, oldVal, isError) -> {
-            if (Boolean.TRUE.equals(isError)) {
-                mapFallbackLabel.setText("Map preview unavailable.");
-                mapFallbackLabel.setVisible(true);
-                mapFallbackLabel.setManaged(true);
+        countryBoundaries = CountryBoundaryLoader.load();
+        countryHoverLayer = new CountryHoverLayer();
+        mapView.addLayer(countryHoverLayer);
+
+        pinLayer = new PinLayer();
+        mapView.addLayer(pinLayer);
+        pinLayer.setPoint(selectedLatitude, selectedLongitude);
+
+        mapShell.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
+            if (isMapControlTarget(event.getTarget())) {
+                return;
+            }
+            mapPressSceneX = event.getSceneX();
+            mapPressSceneY = event.getSceneY();
+        });
+        mapShell.addEventFilter(MouseEvent.MOUSE_RELEASED, event -> {
+            if (isMapControlTarget(event.getTarget())) {
+                return;
+            }
+            double dx = event.getSceneX() - mapPressSceneX;
+            double dy = event.getSceneY() - mapPressSceneY;
+            double dragDistance = Math.hypot(dx, dy);
+            if (dragDistance <= 5) {
+                updateSelectionFromScenePoint(event.getSceneX(), event.getSceneY());
             }
         });
-        image.progressProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal.doubleValue() >= 1.0 && !image.isError()) {
-                mapFallbackLabel.setVisible(false);
-                mapFallbackLabel.setManaged(false);
+        mapShell.addEventFilter(MouseEvent.MOUSE_MOVED, event ->
+                updateHoveredCountryFromScenePoint(event.getSceneX(), event.getSceneY()));
+        mapShell.addEventFilter(MouseEvent.MOUSE_EXITED, event -> clearHoveredCountry());
+        mapShell.addEventFilter(ScrollEvent.SCROLL, event -> {
+            if (isMapControlTarget(event.getTarget()) || mapView == null) {
+                return;
             }
+            if (Math.abs(event.getDeltaY()) < 0.01) {
+                return;
+            }
+
+            Point2D localPoint = mapView.sceneToLocal(event.getSceneX(), event.getSceneY());
+            if (localPoint.getX() < 0 || localPoint.getY() < 0
+                    || localPoint.getX() > mapView.getWidth()
+                    || localPoint.getY() > mapView.getHeight()) {
+                return;
+            }
+
+            double direction = Math.signum(event.getDeltaY());
+            double zoomDelta = direction * TRACKPAD_ZOOM_STEP;
+            mapView.setZoom(clamp(mapView.getZoom() + zoomDelta, MIN_ZOOM, MAX_ZOOM));
+            event.consume();
         });
-        mapImageView.setImage(image);
+
+        mapContainer.getChildren().setAll(mapView);
+    }
+
+    private void updateSelectionFromScenePoint(double sceneX, double sceneY) {
+        Point2D localPoint = mapView.sceneToLocal(sceneX, sceneY);
+        updateSelectionFromPoint(localPoint.getX(), localPoint.getY());
+    }
+
+    private void updateHoveredCountryFromScenePoint(double sceneX, double sceneY) {
+        Point2D localPoint = mapView.sceneToLocal(sceneX, sceneY);
+        updateHoveredCountryFromPoint(localPoint.getX(), localPoint.getY());
+    }
+
+    private boolean isMapControlTarget(Object target) {
+        if (!(target instanceof Node node)) {
+            return false;
+        }
+        return isDescendantOf(node, recenterButton)
+                || isDescendantOf(node, zoomInButton)
+                || isDescendantOf(node, zoomOutButton);
+    }
+
+    private boolean isDescendantOf(Node node, Node ancestor) {
+        Node current = node;
+        while (current != null) {
+            if (current == ancestor) {
+                return true;
+            }
+            current = current.getParent();
+        }
+        return false;
     }
 
     private void updateSelectionFromPoint(double x, double y) {
-        double width = mapOverlay.getWidth() > 0 ? mapOverlay.getWidth() : mapShell.getWidth();
-        double height = mapOverlay.getHeight() > 0 ? mapOverlay.getHeight() : mapShell.getHeight();
-        if (width <= 0 || height <= 0) {
+        if (mapView == null) {
             return;
         }
 
-        double clampedX = clamp(x, 0, width);
-        double clampedY = clamp(y, 0, height);
-
-        selectedLongitude = MAP_LEFT_LONGITUDE + ((MAP_RIGHT_LONGITUDE - MAP_LEFT_LONGITUDE) * (clampedX / width));
-        selectedLatitude = MAP_TOP_LATITUDE - ((MAP_TOP_LATITUDE - MAP_BOTTOM_LATITUDE) * (clampedY / height));
-
-        placePin(clampedX, clampedY);
-    }
-
-    private void positionPinForCurrentSelection() {
-        double width = mapOverlay.getWidth() > 0 ? mapOverlay.getWidth() : mapShell.getWidth();
-        double height = mapOverlay.getHeight() > 0 ? mapOverlay.getHeight() : mapShell.getHeight();
-        if (width <= 0 || height <= 0) {
+        if (x < 0 || y < 0 || x > mapView.getWidth() || y > mapView.getHeight()) {
             return;
         }
 
-        double xRatio = (selectedLongitude - MAP_LEFT_LONGITUDE) / (MAP_RIGHT_LONGITUDE - MAP_LEFT_LONGITUDE);
-        double yRatio = (MAP_TOP_LATITUDE - selectedLatitude) / (MAP_TOP_LATITUDE - MAP_BOTTOM_LATITUDE);
-        placePin(clamp(xRatio * width, 0, width), clamp(yRatio * height, 0, height));
+        MapPoint point = mapView.getMapPosition(x, y);
+        selectedLatitude = point.getLatitude();
+        selectedLongitude = point.getLongitude();
+        pinLayer.setPoint(selectedLatitude, selectedLongitude);
+        updateSelectedCoordinatesLabel();
     }
 
-    private void placePin(double x, double y) {
-        mapPin.applyCss();
-        double pinWidth = Math.max(24, mapPin.getLayoutBounds().getWidth());
-        double pinHeight = Math.max(34, mapPin.getLayoutBounds().getHeight());
-        double maxX = Math.max(0, mapOverlay.getWidth() - pinWidth);
-        double maxY = Math.max(0, mapOverlay.getHeight() - pinHeight);
+    private void updateHoveredCountryFromPoint(double x, double y) {
+        if (mapView == null || countryHoverLayer == null) {
+            return;
+        }
 
-        mapPin.relocate(
-                clamp(x - (pinWidth / 2), 0, maxX),
-                clamp(y - pinHeight, 0, maxY)
-        );
+        if (x < 0 || y < 0 || x > mapView.getWidth() || y > mapView.getHeight()) {
+            clearHoveredCountry();
+            return;
+        }
+
+        MapPoint point = mapView.getMapPosition(x, y);
+        CountryBoundary hoveredCountry = findCountry(point.getLatitude(), point.getLongitude());
+        countryHoverLayer.setHoveredCountry(hoveredCountry);
+        updateHoveredCountryLabel(hoveredCountry);
+    }
+
+    private CountryBoundary findCountry(double latitude, double longitude) {
+        for (CountryBoundary countryBoundary : countryBoundaries) {
+            if (countryBoundary.contains(latitude, longitude)) {
+                return countryBoundary;
+            }
+        }
+        return null;
+    }
+
+    private void clearHoveredCountry() {
+        if (countryHoverLayer != null) {
+            countryHoverLayer.setHoveredCountry(null);
+        }
+        updateHoveredCountryLabel(null);
+    }
+
+    private void updateHoveredCountryLabel(CountryBoundary countryBoundary) {
+        if (countryBoundary == null) {
+            hoveredCountryLabel.setVisible(false);
+            hoveredCountryLabel.setManaged(false);
+            hoveredCountryLabel.setText("");
+            return;
+        }
+
+        hoveredCountryLabel.setText(countryBoundary.name());
+        hoveredCountryLabel.setVisible(true);
+        hoveredCountryLabel.setManaged(true);
+    }
+
+    private void focusMapOnSelection(boolean useFocusedZoom) {
+        if (mapView == null) {
+            return;
+        }
+
+        mapView.setCenter(selectedLatitude, selectedLongitude);
+        if (useFocusedZoom && mapView.getZoom() < FOCUSED_ZOOM) {
+            mapView.setZoom(FOCUSED_ZOOM);
+        }
+    }
+
+    private void updateSelectedCoordinatesLabel() {
+        selectedCoordinatesLabel.setText(String.format(
+                Locale.US,
+                "Lat: %.6f   Lon: %.6f",
+                selectedLatitude,
+                selectedLongitude
+        ));
     }
 
     private void configureButtonIcon(Button button, String iconLiteral) {
@@ -407,5 +530,81 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
 
     private double clamp(double value, double min, double max) {
         return Math.max(min, Math.min(max, value));
+    }
+
+    private static final class PinLayer extends MapLayer {
+
+        private final FontIcon pin = new FontIcon("fth-map-pin");
+        private final MapPoint point = new MapPoint(DEFAULT_LATITUDE, DEFAULT_LONGITUDE);
+
+        @Override
+        protected void initialize() {
+            pin.setIconSize(34);
+            pin.getStyleClass().add("add-place-map-pin");
+            pin.setManaged(false);
+            pin.setMouseTransparent(true);
+            getChildren().setAll(pin);
+            markDirty();
+        }
+
+        @Override
+        protected void layoutLayer() {
+            Point2D pixelPoint = getMapPoint(point.getLatitude(), point.getLongitude());
+            pin.applyCss();
+            pin.autosize();
+
+            double pinWidth = Math.max(24, pin.getLayoutBounds().getWidth());
+            double pinHeight = Math.max(34, pin.getLayoutBounds().getHeight());
+
+            pin.relocate(
+                    pixelPoint.getX() - (pinWidth / 2),
+                    pixelPoint.getY() - pinHeight
+            );
+        }
+
+        private void setPoint(double latitude, double longitude) {
+            point.update(latitude, longitude);
+            markDirty();
+        }
+    }
+
+    private static final class CountryHoverLayer extends MapLayer {
+
+        private CountryBoundary hoveredCountry;
+
+        private void setHoveredCountry(CountryBoundary hoveredCountry) {
+            if (this.hoveredCountry == hoveredCountry) {
+                return;
+            }
+            this.hoveredCountry = hoveredCountry;
+            markDirty();
+        }
+
+        @Override
+        protected void layoutLayer() {
+            getChildren().clear();
+
+            if (hoveredCountry == null) {
+                return;
+            }
+
+            for (List<CountryBoundary.LonLat> ring : hoveredCountry.rings()) {
+                Polygon polygon = new Polygon();
+                polygon.getStyleClass().add("add-place-country-hover");
+                polygon.setMouseTransparent(true);
+
+                for (CountryBoundary.LonLat point : ring) {
+                    Point2D projectedPoint = getMapPoint(point.latitude(), point.longitude());
+                    if (projectedPoint == null) {
+                        continue;
+                    }
+                    polygon.getPoints().addAll(projectedPoint.getX(), projectedPoint.getY());
+                }
+
+                if (polygon.getPoints().size() >= 6) {
+                    getChildren().add(polygon);
+                }
+            }
+        }
     }
 }

@@ -8,7 +8,6 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
@@ -57,28 +56,19 @@
                             </HBox>
 
                             <StackPane fx:id="mapShell"
-                                       onMouseClicked="#onMapClicked"
                                        styleClass="add-place-map-shell">
-                                <ImageView fx:id="mapImageView"
-                                           pickOnBounds="true"
-                                           preserveRatio="false"
-                                           styleClass="add-place-map-image"/>
+                                <StackPane fx:id="mapContainer"
+                                           styleClass="add-place-map-container"/>
 
-                                <Label fx:id="mapFallbackLabel"
+                                <Label fx:id="hoveredCountryLabel"
                                        managed="false"
                                        visible="false"
-                                       styleClass="add-place-map-fallback"/>
-
-                                <Pane fx:id="mapOverlay" pickOnBounds="false">
-                                    <children>
-                                        <FontIcon fx:id="mapPin"
-                                                  managed="false"
-                                                  mouseTransparent="true"
-                                                  iconLiteral="fth-map-pin"
-                                                  iconSize="34"
-                                                  styleClass="add-place-map-pin"/>
-                                    </children>
-                                </Pane>
+                                       styleClass="add-place-country-label"
+                                       StackPane.alignment="TOP_LEFT">
+                                    <StackPane.margin>
+                                        <Insets top="14" left="14"/>
+                                    </StackPane.margin>
+                                </Label>
 
                                 <VBox styleClass="add-place-map-controls"
                                       StackPane.alignment="BOTTOM_RIGHT">
@@ -88,14 +78,25 @@
                                     <Button fx:id="recenterButton"
                                             onAction="#onRecenterMap"
                                             styleClass="app-btn,app-btn-secondary,add-place-map-control"/>
-                                    <Button text="+"
+                                    <Button fx:id="zoomInButton"
+                                            text="+"
+                                            onAction="#onZoomIn"
                                             focusTraversable="false"
                                             styleClass="app-btn,app-btn-secondary,add-place-map-control"/>
-                                    <Button text="-"
+                                    <Button fx:id="zoomOutButton"
+                                            text="-"
+                                            onAction="#onZoomOut"
                                             focusTraversable="false"
                                             styleClass="app-btn,app-btn-secondary,add-place-map-control"/>
                                 </VBox>
                             </StackPane>
+
+                            <Label text="Click on the map to pick coordinates. Drag to move and use the wheel or buttons to zoom."
+                                   wrapText="true"
+                                   styleClass="add-place-helper-text"/>
+
+                            <Label fx:id="selectedCoordinatesLabel"
+                                   styleClass="add-place-coordinate-label"/>
                         </VBox>
                     </VBox>
 
@@ -115,7 +116,7 @@
                                 <ImageView fx:id="coverPreview"
                                            managed="false"
                                            pickOnBounds="true"
-                                           preserveRatio="false"
+                                           preserveRatio="true"
                                            smooth="true"
                                            visible="false"
                                            styleClass="add-place-cover-preview"/>
