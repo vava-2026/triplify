@@ -14,12 +14,12 @@ import java.util.UUID;
 @Getter
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@RequiredArgsConstructor(access = AccessLevel.PUBLIC)
+@AllArgsConstructor
 public class TripRoute {
 
     @EqualsAndHashCode.Include
     @NonNull
-    private final UUID id = UUID.randomUUID();
+    private final UUID id;
 
     @NonNull
     private final UUID tripId;
@@ -41,12 +41,24 @@ public class TripRoute {
     private Instant endedAt;
 
     @NonNull
-    private final Instant createdAt = Instant.now();
+    private final Instant createdAt;
 
     @NonNull
-    private Instant updatedAt = Instant.now();
+    @Setter(AccessLevel.PRIVATE)
+    private Instant updatedAt;
 
-    private final Set<UUID> imageIds = new LinkedHashSet<>();
+    private final Set<UUID> imageIds;
+
+    public TripRoute(@NonNull UUID tripId, @NonNull UUID routeId, int order) {
+        this.id = UUID.randomUUID();
+        this.tripId = tripId;
+        this.routeId = routeId;
+        this.order = order;
+        this.status = StatusEnum.PLANNED;
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
+        this.imageIds = new LinkedHashSet<>();
+    }
 
     public Set<UUID> getImageIds() {
         return Collections.unmodifiableSet(imageIds);

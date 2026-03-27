@@ -1,0 +1,56 @@
+
+.badge-root {
+    -fx-padding: 24px;
+    -fx-background-color: transparent;
+}
+
+.badge-card {
+    -fx-background-color: -color-surface;
+    -fx-background-radius: 12;
+    -fx-border-width: 0;
+    -fx-padding: 16 12 16 12;
+}
+
+.badge-card.badge-locked {
+    -fx-background-color: -color-surface-muted;
+    -fx-opacity: 0.8;
+}
+
+.badge-image {
+    -fx-fit-width: 80px;
+    -fx-fit-height: 80px;
+    -fx-background-color: transparent;
+}
+
+.badge-card.badge-locked badge-image {
+    -fx-opacity: 0.8;
+}
+
+
+.badge-name {
+    -fx-text-fill: -color-ink;
+    -fx-font-family: "Plus Jakarta Sans";
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-line-height: 20px;
+    -fx-text-alignment: center;
+    -fx-alignment: center;
+}
+
+.badge-card.badge-locked badge-name {
+    -fx-opacity: 0.8;
+}
+
+.badge-stat {
+    -fx-text-fill: -color-ink-muted;
+    -fx-font-family: "Plus Jakarta Sans";
+    -fx-font-weight: normal;
+    -fx-font-size: 10px;
+    -fx-line-height: 20px;
+    -fx-text-alignment: center;
+    -fx-alignment: center;
+}
+
+.badge-card.badge-locked badge-stat {
+    -fx-opacity: 0.8;
+}

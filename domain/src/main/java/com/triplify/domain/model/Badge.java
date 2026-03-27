@@ -9,11 +9,11 @@ import java.util.UUID;
 @Getter
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@RequiredArgsConstructor(access = AccessLevel.PUBLIC)
+@AllArgsConstructor
 public class Badge {
     @EqualsAndHashCode.Include
     @NonNull
-    private final UUID id = UUID.randomUUID();
+    private final UUID id;
 
     @NonNull
     private final UUID createdById;
@@ -42,6 +42,19 @@ public class Badge {
 
     @Setter(AccessLevel.PRIVATE)
     private int requiredValue;
+
+    public Badge(@NonNull UUID createdById,
+                 @NonNull UUID groupId,
+                 @NonNull String name,
+                 @NonNull String nameSk,
+                 int level) {
+        this.id = UUID.randomUUID();
+        this.createdById = createdById;
+        this.groupId = groupId;
+        this.name = name;
+        this.nameSk = nameSk;
+        this.level = level;
+    }
 
     public void updateName(@NonNull String name) throws IllegalArgumentException {
         if (name.isBlank()) throw new IllegalArgumentException("Name must not be blank.");

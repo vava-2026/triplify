@@ -9,12 +9,12 @@ import java.util.UUID;
 @Getter
 @ToString(exclude = {"createdById"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@RequiredArgsConstructor(access = AccessLevel.PUBLIC)
+@AllArgsConstructor
 public class Country {
 
     @EqualsAndHashCode.Include
     @NonNull
-    private final UUID id = UUID.randomUUID();
+    private final UUID id;
 
     @NonNull
     private final UUID createdById;
@@ -32,7 +32,16 @@ public class Country {
     private String emojiUnicode;
 
     @Setter(AccessLevel.PRIVATE)
-    private boolean isAvailable = true;
+    private boolean isAvailable;
+
+    public Country(@NonNull UUID createdById, @NonNull String name, @NonNull String nameSk, @NonNull String emojiUnicode) {
+        this.id = UUID.randomUUID();
+        this.createdById = createdById;
+        this.name = name;
+        this.nameSk = nameSk;
+        this.emojiUnicode = emojiUnicode;
+        this.isAvailable = true;
+    }
 
     public void updateName(@NonNull String name) throws IllegalArgumentException{
         if (name.isBlank()) throw new IllegalArgumentException("Name must not be blank.");

@@ -10,12 +10,12 @@ import java.util.UUID;
 @Getter
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@RequiredArgsConstructor(access = AccessLevel.PUBLIC)
+@AllArgsConstructor
 public class Image {
 
     @EqualsAndHashCode.Include
     @NonNull
-    private final UUID id = UUID.randomUUID();
+    private final UUID id;
 
     @NonNull
     private final String url;
@@ -28,6 +28,13 @@ public class Image {
 
     @NonNull
     private final Instant uploadedAt;
+
+    public Image(@NonNull String url, @NonNull String storageKey) {
+        this.id = UUID.randomUUID();
+        this.url = url;
+        this.storageKey = storageKey;
+        this.uploadedAt = Instant.now();
+    }
 
     public void updateDescription(String description) {
         log.debug("Image [{}] description updated.", id);
