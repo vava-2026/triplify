@@ -43,6 +43,18 @@
     -color-theme-purple: #8e44ad;
     -color-theme-pink: #e91e8c;
 
+    -color-stats-green-bg: #B2D7BB;
+    -color-stats-green-fg: #3F784C;
+    -color-stats-blue-bg: #C9DEEE;
+    -color-stats-blue-fg: #2F6690;
+    -color-stats-yellow-bg: #F0DCAD;
+    -color-stats-yellow-fg: #FFB100;
+    -color-stats-purple-bg: #C1B2D7;
+    -color-stats-purple-fg: #6A4C93;
+    -color-stats-pink-bg: #FABDCA;
+    -color-stats-pink-fg: #B20D30;
+
+
     -font-family-base: "Plus Jakarta Sans", "Segoe UI", System;
 
     -height-topbar: 70px;
@@ -126,15 +138,7 @@
     -fx-pref-height: 40px;
 }
 
-.form-input:focused {
-    -fx-border-color: -color-primary;
-}
-
 .input-error {
-    -fx-border-color: -color-danger;
-}
-
-.input-error:focused {
     -fx-border-color: -color-danger;
 }
 
@@ -147,9 +151,9 @@
     -fx-font-size: 13px;
     -fx-font-weight: bold;
     -fx-text-fill: -color-danger;
-    -fx-background-color: derive(-color-danger, 90%);
+    -fx-background-color: -color-danger, 90%;
     -fx-background-radius: 8;
-    -fx-border-color: derive(-color-danger, 60%);
+    -fx-border-color: -color-danger;
     -fx-border-radius: 8;
     -fx-padding: 10 14 10 14;
 }
@@ -158,9 +162,9 @@
     -fx-font-size: 13px;
     -fx-font-weight: bold;
     -fx-text-fill: -color-theme-green;
-    -fx-background-color: derive(-color-theme-green, 85%);
+    -fx-background-color:-color-theme-green, 85%;
     -fx-background-radius: 8;
-    -fx-border-color: derive(-color-theme-green, 50%);
+    -fx-border-color: -color-theme-green;
     -fx-border-radius: 8;
     -fx-padding: 10 14 10 14;
 }
