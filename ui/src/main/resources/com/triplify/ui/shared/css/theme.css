@@ -1,6 +1,7 @@
 @import url("/com/triplify/ui/shared/component/entry/css/entry.css");
 @import url("/com/triplify/ui/shared/component/select/css/select.css");
 @import url("/com/triplify/ui/shared/component/search/css/search.css");
+@import url("/com/triplify/ui/shared/component/button/css/button.css");
 @import url("/com/triplify/ui/shared/component/input_item/input_item.css");
 @import url("/com/triplify/ui/shared/toast/toast.css");
 
@@ -169,3 +170,14 @@
     -fx-border-radius: 8;
     -fx-padding: 10 14 10 14;
 }
+
+.page-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.page-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+

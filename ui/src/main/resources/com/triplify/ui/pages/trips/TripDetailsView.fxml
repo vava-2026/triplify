@@ -12,7 +12,8 @@
            styleClass="page-root">
     <VBox spacing="14" maxWidth="980">
         <HBox spacing="10">
-            <Button text="Back" onAction="#onBack"/>
+            <Button text="Back" onAction="#onBack" styleClass="app-btn,app-btn-ghost"/>
+            <Button text="Add place" onAction="#onAddPlace" styleClass="app-btn,app-btn-primary"/>
             <Label text="Trip Details" styleClass="page-title"/>
         </HBox>
 
