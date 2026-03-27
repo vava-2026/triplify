@@ -1,6 +1,7 @@
 package com.triplify.application.usecase.route.dto;
 
 import com.triplify.application.usecase.image.dto.ImageResponse;
+import com.triplify.application.usecase.place.dto.PlaceResponse;
 
 import java.time.Instant;
 import java.util.Set;
@@ -16,6 +17,6 @@ public record RouteResponse(
         Instant createdAt,
         Instant updatedAt,
         Set<ImageResponse> images,
-        SortedSet<String> placeIds
+        SortedSet<PlaceResponse> places
 ) {
 }

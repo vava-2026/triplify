@@ -1,5 +1,6 @@
 package com.triplify.application.usecase.place.dto;
 
+import com.triplify.application.usecase.country.dto.CountryResponse;
 import com.triplify.application.usecase.image.dto.ImageResponse;
 
 import java.time.Instant;
@@ -7,7 +8,7 @@ import java.time.Instant;
 public record PlaceResponse(
         String id,
         String userId,
-        String countryId,
+        CountryResponse country,
         ImageResponse coverImage,
         String title,
         String description,

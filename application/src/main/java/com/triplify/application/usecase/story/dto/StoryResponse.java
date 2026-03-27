@@ -1,5 +1,6 @@
 package com.triplify.application.usecase.story.dto;
 
+import com.triplify.application.usecase.emotion.dto.EmotionResponse;
 import com.triplify.application.usecase.image.dto.ImageResponse;
 import com.triplify.application.usecase.tag.dto.TagResponse;
 
@@ -12,7 +13,7 @@ public record StoryResponse(
         String tripId,
         String tripRouteId,
         String tripPlaceId,
-        String emotionId,
+        EmotionResponse emotion,
         String title,
         String description,
         Instant storyTime,
