@@ -13,12 +13,6 @@ public record UpdateTripPlaceRequest(
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
         String id,
 
-        @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String placeId,
-
-        @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String tripId,
-
         Instant visitDate
 ) {
 }
