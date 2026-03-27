@@ -6,6 +6,6 @@ import jakarta.validation.constraints.NotBlank;
 public record DeleteBadgeRequest(
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String badgeId
+        String id
 ) {
 }

@@ -5,6 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 
 public record DeleteImageRequest(
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String imageId
+        String id
 ) {
 }

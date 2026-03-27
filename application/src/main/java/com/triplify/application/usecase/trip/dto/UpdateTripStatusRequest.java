@@ -10,7 +10,7 @@ import java.time.Instant;
 public record UpdateTripStatusRequest(
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String tripId,
+        String id,
 
         @NotNull(message = ValidationMessage.Constants.REQUIRED)
         StatusEnum status,

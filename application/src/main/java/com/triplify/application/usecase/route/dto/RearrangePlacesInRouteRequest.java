@@ -8,7 +8,7 @@ import java.util.List;
 public record RearrangePlacesInRouteRequest(
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String routeId,
+        String id,
 
         List<String> placeIdsInOrder
 ) {

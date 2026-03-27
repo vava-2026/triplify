@@ -9,7 +9,7 @@ import java.util.Set;
 public record UpdateTripRouteRequest(
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String tripRouteId,
+        String id,
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
         String tripId,

@@ -6,6 +6,6 @@ import jakarta.validation.constraints.NotBlank;
 public record DeleteTripPlaceRequest(
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String tripPlaceId
+        String id
 ) {
 }

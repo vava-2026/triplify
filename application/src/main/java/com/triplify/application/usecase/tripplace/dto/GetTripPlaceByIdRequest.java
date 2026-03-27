@@ -6,6 +6,6 @@ import jakarta.validation.constraints.NotBlank;
 public record GetTripPlaceByIdRequest(
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String tripPlaceId
+        String id
 ) {
 }

@@ -8,7 +8,7 @@ import java.util.SortedSet;
 public record RearrangeTripRoutesRequest(
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String tripId,
+        String id,
 
         SortedSet<String> routesIdsInOrder
 ) {

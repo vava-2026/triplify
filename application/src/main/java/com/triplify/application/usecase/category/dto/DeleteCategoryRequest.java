@@ -6,6 +6,6 @@ import jakarta.validation.constraints.NotBlank;
 public record DeleteCategoryRequest(
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String categoryId
+        String id
 ) {
 }

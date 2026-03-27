@@ -6,7 +6,6 @@ import jakarta.validation.constraints.NotBlank;
 public record DeleteStoryRequest(
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String storyId
+        String id
 ) {
 }
-

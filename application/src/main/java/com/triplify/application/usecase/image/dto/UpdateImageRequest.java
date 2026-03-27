@@ -9,7 +9,7 @@ import java.nio.file.Path;
 
 public record UpdateImageRequest(
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String imageId,
+        String id,
 
         Path image,
 

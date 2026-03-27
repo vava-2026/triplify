@@ -12,7 +12,7 @@ import java.util.Set;
 public record UpdateStoryRequest(
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String storyId,
+        String id,
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
         @Size(max = DtoConstraints.TITLE_MAX_LENGTH, message = ValidationMessage.Constants.TITLE_TOO_LONG)

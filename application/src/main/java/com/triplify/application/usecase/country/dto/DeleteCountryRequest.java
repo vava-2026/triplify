@@ -6,6 +6,6 @@ import jakarta.validation.constraints.NotBlank;
 public record DeleteCountryRequest(
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String countryId
+        String id
 ) {
 }

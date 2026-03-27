@@ -6,6 +6,6 @@ import jakarta.validation.constraints.NotBlank;
 public record DeleteTagRequest(
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String tagId
+        String id
 ) {
 }

@@ -11,7 +11,7 @@ import java.nio.file.Path;
 public record UpdateRouteRequest(
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String routeId,
+        String id,
 
         Path coverImage,
 

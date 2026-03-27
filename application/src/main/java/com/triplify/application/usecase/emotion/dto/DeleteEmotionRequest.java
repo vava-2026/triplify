@@ -6,6 +6,6 @@ import jakarta.validation.constraints.NotBlank;
 public record DeleteEmotionRequest(
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String emotionId
+        String id
 ) {
 }

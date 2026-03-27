@@ -6,7 +6,6 @@ import jakarta.validation.constraints.NotBlank;
 public record GetRouteByIdRequest(
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String routeId
+        String id
 ) {
 }
-

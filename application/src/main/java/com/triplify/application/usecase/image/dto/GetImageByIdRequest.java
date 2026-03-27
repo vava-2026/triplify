@@ -5,6 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 
 public record GetImageByIdRequest(
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String imageId
+        String id
 ) {
 }

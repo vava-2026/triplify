@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Size;
 public record UpdateEmotionRequest(
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String emotionId,
+        String id,
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
         @Size(max = DtoConstraints.NAME_MAX_LENGTH, message = ValidationMessage.Constants.NAME_TOO_LONG)

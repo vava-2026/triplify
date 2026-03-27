@@ -6,6 +6,6 @@ import jakarta.validation.constraints.NotBlank;
 public record BanCountryRequest(
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String countryId
+        String id
 ) {
 }

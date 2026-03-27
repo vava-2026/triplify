@@ -14,7 +14,7 @@ import java.util.Set;
 public record UpdateTripRequest(
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String tripId,
+        String id,
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
         String categoryId,

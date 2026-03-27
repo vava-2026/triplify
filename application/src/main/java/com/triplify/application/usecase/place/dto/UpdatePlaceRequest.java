@@ -12,7 +12,7 @@ import java.nio.file.Path;
 public record UpdatePlaceRequest(
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String placeId,
+        String id,
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
         String countryId,

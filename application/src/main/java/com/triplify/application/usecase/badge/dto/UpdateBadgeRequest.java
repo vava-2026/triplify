@@ -11,7 +11,7 @@ import java.nio.file.Path;
 public record UpdateBadgeRequest(
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String badgeId,
+        String id,
 
         Path image,
 

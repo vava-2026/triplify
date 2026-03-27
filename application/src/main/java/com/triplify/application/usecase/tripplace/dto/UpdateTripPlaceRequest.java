@@ -11,7 +11,7 @@ import java.util.Set;
 public record UpdateTripPlaceRequest(
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String tripPlaceId,
+        String id,
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
         String placeId,
