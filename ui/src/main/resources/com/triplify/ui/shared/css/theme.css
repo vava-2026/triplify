@@ -4,6 +4,7 @@
 @import url("/com/triplify/ui/shared/component/button/css/button.css");
 @import url("/com/triplify/ui/shared/component/input_item/input_item.css");
 @import url("/com/triplify/ui/shared/toast/toast.css");
+@import url("/com/triplify/ui/pages/trips/css/trips.css");
 
 .root {
     -color-bg: #f0f0f0;
@@ -55,6 +56,23 @@
     -color-stats-purple-fg: #6A4C93;
     -color-stats-pink-bg: #FABDCA;
     -color-stats-pink-fg: #B20D30;
+
+    -color-status-visited-bg: -color-stats-green-bg;
+    -color-status-visited-fg: #025B42;
+    -color-status-drafted-bg: -color-stats-yellow-bg;
+    -color-status-drafted-fg: -color-stats-yellow-fg;
+    -color-status-rejected-bg: -color-stats-pink-bg;
+    -color-status-rejected-fg: -color-stats-pink-fg;
+    -color-status-planned-bg: -color-stats-blue-bg;
+    -color-status-planned-fg: -color-stats-blue-fg;
+    -color-status-ongoing-bg: -color-stats-purple-bg;
+    -color-status-ongoing-fg: -color-stats-purple-fg;
+
+    -color-border-muted: rgba(10, 9, 12, 0.08);
+    -color-scrollbar-track: rgba(47, 102, 144, 0.08);
+    -color-scrollbar-thumb: rgba(47, 102, 144, 0.45);
+    -color-scrollbar-thumb-hover: rgba(47, 102, 144, 0.7);
+    -color-create-border: #8fb0c8;
 
 
     -font-family-base: "Plus Jakarta Sans", "Segoe UI", System;
@@ -121,23 +139,6 @@
 .map-canvas {
     -fx-background-radius: 12px;
     -fx-min-height: 340px;
-}
-
-.form-label {
-    -fx-font-size: 13px;
-    -fx-font-weight: bold;
-    -fx-text-fill: -color-ink;
-}
-
-.form-input {
-    -fx-font-family: -font-family-base;
-    -fx-font-size: 14px;
-    -fx-background-color: -color-bg;
-    -fx-border-color: #cccccc;
-    -fx-border-radius: 8;
-    -fx-background-radius: 8;
-    -fx-padding: 8 12 8 12;
-    -fx-pref-height: 40px;
 }
 
 .input-error {

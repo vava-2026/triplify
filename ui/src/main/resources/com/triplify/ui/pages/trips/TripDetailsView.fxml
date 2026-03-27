@@ -12,18 +12,22 @@
            styleClass="page-root">
     <VBox spacing="14" maxWidth="980">
         <HBox spacing="10">
-            <Button text="Back" onAction="#onBack" styleClass="app-btn,app-btn-ghost"/>
-            <Button text="Add place" onAction="#onAddPlace" styleClass="app-btn,app-btn-primary"/>
-            <Label text="Trip Details" styleClass="page-title"/>
+            <Button text="Back" onAction="#onBack"/>
+            <Label fx:id="tripNameLabel" text="Trip Details" styleClass="page-title"/>
         </HBox>
 
         <Label text="Review the trip details passed via routing arguments." styleClass="page-subtitle"/>
 
+        <HBox spacing="10">
+            <Label fx:id="tripStatusLabel" styleClass="trip-status"/>
+            <Label fx:id="tripCategoryLabel" styleClass="trip-category"/>
+        </HBox>
+
         <VBox styleClass="page-card" spacing="8">
-            <Label text="Trip name:"/>
-            <Label fx:id="tripNameLabel" styleClass="page-title"/>
             <Label text="Trip id:"/>
             <Label fx:id="tripIdLabel"/>
+            <Label text="Dates:"/>
+            <Label fx:id="tripDatesLabel"/>
         </VBox>
     </VBox>
 </StackPane>

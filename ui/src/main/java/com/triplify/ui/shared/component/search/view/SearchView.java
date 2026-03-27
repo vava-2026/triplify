@@ -14,6 +14,9 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.application.Platform;
+import javafx.event.EventHandler;
+import javafx.scene.input.MouseEvent;
 import javafx.stage.Popup;
 import javafx.util.Duration;
 import lombok.Getter;
@@ -40,6 +43,8 @@ public class SearchView<T> extends VBox {
 
     private FieldVariant lastVariant = null;
     private boolean isFocused = false;
+
+    private final EventHandler<MouseEvent> outsideClickFilter = this::handleOutsideClick;
 
     public SearchView(Search<T> model) {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/triplify/ui/shared/component/search/view/AppSearch.fxml"));
@@ -69,19 +74,28 @@ public class SearchView<T> extends VBox {
 
         popup.getContent().add(popupContent);
         popup.setAutoHide(true);
+        popup.setAutoFix(true);
         popup.setConsumeAutoHidingEvents(false);
+        popup.setHideOnEscape(true);
         popup.showingProperty().addListener((obs, wasShowing, isShowing) -> {
             if (!isShowing) {
                 getStyleClass().remove("search-showing");
                 popupContent.getStyleClass().remove("search-showing");
             }
         });
+
+        searchField.setFocusTraversable(false);
+        sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                newScene.addEventFilter(MouseEvent.MOUSE_PRESSED, outsideClickFilter);
+            }
+        });
     }
 
     private void showPopup() {
-        if (getScene() == null || getScene().getWindow() == null) return;
+        if (getScene() == null || getScene().getWindow() == null || !getScene().getWindow().isShowing()) return;
         Bounds fieldBounds = searchBox.localToScreen(searchBox.getBoundsInLocal());
-        if (fieldBounds == null) return;
+        if (fieldBounds == null || fieldBounds.getWidth() <= 0) return;
 
         double x = fieldBounds.getMinX();
         double y = fieldBounds.getMaxY();
@@ -96,6 +110,19 @@ public class SearchView<T> extends VBox {
         } else {
             popup.setX(x);
             popup.setY(y);
+        }
+    }
+
+    private void handleOutsideClick(MouseEvent e) {
+        if (!isFocused) return;
+
+        Bounds searchBounds = searchBox.localToScene(searchBox.getBoundsInLocal());
+        if (searchBounds != null && searchBounds.contains(e.getSceneX(), e.getSceneY())) {
+            return;
+        }
+
+        if (getScene() != null && getScene().getRoot() != null) {
+            getScene().getRoot().requestFocus();
         }
     }
 
