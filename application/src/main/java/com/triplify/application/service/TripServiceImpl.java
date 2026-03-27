@@ -21,6 +21,8 @@ public class TripServiceImpl implements TripService {
     private static final Logger log = LoggerFactory.getLogger(TripServiceImpl.class);
     private static final int DEFAULT_PAGE_SIZE = 6;
 
+    private static final String COVER = "/com/triplify/ui/pages/trips/images/one.png";
+
     private final List<TripResponse> trips = List.of(
             new TripResponse(
                     101,
@@ -31,7 +33,7 @@ public class TripServiceImpl implements TripService {
                     LocalDate.of(2021, 5, 9),
                     LocalDate.of(2021, 5, 11),
                     "uzhorod",
-                    null,
+                    COVER,
                     List.of("City", "Food")
             ),
             new TripResponse(
@@ -43,7 +45,7 @@ public class TripServiceImpl implements TripService {
                     LocalDate.of(2023, 10, 12),
                     LocalDate.of(2023, 10, 24),
                     "kyoto",
-                    null,
+                    COVER,
                     List.of("Leaves", "Temple")
             ),
             new TripResponse(
@@ -55,7 +57,7 @@ public class TripServiceImpl implements TripService {
                     LocalDate.of(2001, 9, 9),
                     LocalDate.of(2001, 9, 11),
                     "cemetery",
-                    null,
+                    COVER,
                     List.of("Family")
             ),
             new TripResponse(
@@ -67,7 +69,7 @@ public class TripServiceImpl implements TripService {
                     LocalDate.of(2026, 12, 16),
                     LocalDate.of(2026, 12, 24),
                     "newyork",
-                    null,
+                    COVER,
                     List.of("City", "Shopping")
             ),
             new TripResponse(
@@ -79,7 +81,7 @@ public class TripServiceImpl implements TripService {
                     LocalDate.of(2024, 1, 30),
                     LocalDate.of(2024, 2, 8),
                     "safari",
-                    null,
+                    COVER,
                     List.of("Wildlife", "Adventure")
             ),
             new TripResponse(
@@ -91,7 +93,7 @@ public class TripServiceImpl implements TripService {
                     LocalDate.of(2022, 4, 1),
                     LocalDate.of(2022, 4, 3),
                     "prague",
-                    null,
+                    COVER,
                     List.of("City", "Walks")
             ),
             new TripResponse(
@@ -103,11 +105,11 @@ public class TripServiceImpl implements TripService {
                     LocalDate.of(2025, 7, 12),
                     LocalDate.of(2025, 7, 19),
                     "lake",
-                    null,
+                    COVER,
                     List.of("Relax", "Nature")
             ),
             new TripResponse(
-                    107,
+                    108,
                     "Lake Retreat",
                     "Canada",
                     "Relax",
@@ -115,22 +117,11 @@ public class TripServiceImpl implements TripService {
                     LocalDate.of(2025, 7, 12),
                     LocalDate.of(2025, 7, 19),
                     "lake",
-                    null,
-                    List.of("Relax", "Nature")
-            ),new TripResponse(
-                    107,
-                    "Lake Retreat",
-                    "Canada",
-                    "Relax",
-                    TripStatus.PLANNED,
-                    LocalDate.of(2025, 7, 12),
-                    LocalDate.of(2025, 7, 19),
-                    "lake",
-                    null,
+                    COVER,
                     List.of("Relax", "Nature")
             ),
             new TripResponse(
-                    107,
+                    109,
                     "Lake Retreat",
                     "Canada",
                     "Relax",
@@ -138,11 +129,11 @@ public class TripServiceImpl implements TripService {
                     LocalDate.of(2025, 7, 12),
                     LocalDate.of(2025, 7, 19),
                     "lake",
-                    null,
+                    COVER,
                     List.of("Relax", "Nature")
             ),
             new TripResponse(
-                    107,
+                    110,
                     "Lake Retreat",
                     "Canada",
                     "Relax",
@@ -150,11 +141,11 @@ public class TripServiceImpl implements TripService {
                     LocalDate.of(2025, 7, 12),
                     LocalDate.of(2025, 7, 19),
                     "lake",
-                    null,
+                    COVER,
                     List.of("Relax", "Nature")
             ),
             new TripResponse(
-                    107,
+                    111,
                     "Lake Retreat",
                     "Canada",
                     "Relax",
@@ -162,11 +153,11 @@ public class TripServiceImpl implements TripService {
                     LocalDate.of(2025, 7, 12),
                     LocalDate.of(2025, 7, 19),
                     "lake",
-                    null,
+                    COVER,
                     List.of("Relax", "Nature")
             ),
             new TripResponse(
-                    107,
+                    112,
                     "Lake Retreat",
                     "Canada",
                     "Relax",
@@ -174,7 +165,19 @@ public class TripServiceImpl implements TripService {
                     LocalDate.of(2025, 7, 12),
                     LocalDate.of(2025, 7, 19),
                     "lake",
-                    null,
+                    COVER,
+                    List.of("Relax", "Nature")
+            ),
+            new TripResponse(
+                    113,
+                    "Lake Retreat",
+                    "Canada",
+                    "Relax",
+                    TripStatus.PLANNED,
+                    LocalDate.of(2025, 7, 12),
+                    LocalDate.of(2025, 7, 19),
+                    "lake",
+                    COVER,
                     List.of("Relax", "Nature")
             )
     );

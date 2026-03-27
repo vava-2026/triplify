@@ -9,19 +9,16 @@ import com.triplify.application.response.TripStatus;
 import com.triplify.application.service.TripService;
 import com.triplify.application.service.TripServiceImpl;
 import com.triplify.ui.routing.RouteIds;
+import com.triplify.ui.shared.component.card_grid.CardGridPane;
 import com.triplify.ui.shared.component.trip.view.TripCardView;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
-import javafx.geometry.Pos;
-import javafx.geometry.Orientation;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +27,6 @@ import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 public class MyTripsController extends SimpleLifecycleAwareController {
 
@@ -43,14 +39,9 @@ public class MyTripsController extends SimpleLifecycleAwareController {
     @FXML private ComboBox<String> statusSelect;
     @FXML private ComboBox<String> startTimeSelect;
     @FXML private ComboBox<TripSort> sortSelect;
-    @FXML private ScrollPane tripsScroll;
-    @FXML private TilePane tripsGrid;
+    @FXML private CardGridPane<TripResponse> cardGrid;
 
     private final TripService tripService = new TripServiceImpl();
-    private int page = 1;
-    private final int pageSize = 6;
-    private boolean loading = false;
-    private boolean hasMore = true;
 
     @FXML
     private void initialize() {
@@ -58,8 +49,7 @@ public class MyTripsController extends SimpleLifecycleAwareController {
         configureSort();
         configureGrid();
         attachListeners();
-        attachScrollListener();
-        refreshTrips(true);
+        cardGrid.refresh();
     }
 
     @FXML
@@ -101,109 +91,53 @@ public class MyTripsController extends SimpleLifecycleAwareController {
         sortSelect.getSelectionModel().select(TripSort.NEWEST_FIRST);
     }
 
-    private void attachListeners() {
-        countrySelect.valueProperty().addListener((obs, oldV, newV) -> refreshTrips(true));
-        categorySelect.valueProperty().addListener((obs, oldV, newV) -> refreshTrips(true));
-        tagSelect.valueProperty().addListener((obs, oldV, newV) -> refreshTrips(true));
-        statusSelect.valueProperty().addListener((obs, oldV, newV) -> refreshTrips(true));
-        startTimeSelect.valueProperty().addListener((obs, oldV, newV) -> refreshTrips(true));
-        sortSelect.valueProperty().addListener((obs, oldV, newV) -> refreshTrips(true));
-    }
-
     private void configureGrid() {
-        tripsGrid.setPrefTileWidth(240);
-        tripsGrid.setPrefTileHeight(240);
-        tripsGrid.setHgap(16);
-        tripsGrid.setVgap(16);
-        tripsGrid.setTileAlignment(Pos.TOP_LEFT);
-        tripsGrid.setOrientation(Orientation.HORIZONTAL);
+        cardGrid.setMinCardWidth(220);
+        cardGrid.setMaxColumns(4);
+        cardGrid.setPageSize(8);
+        cardGrid.setEmptyText("No trips found");
+        cardGrid.addPinnedNode(buildCreateTripCard());
+        cardGrid.setCardFactory(this::buildTripCard);
+        cardGrid.setPageLoader(this::loadTripsPage);
     }
 
-    private void attachScrollListener() {
-        tripsScroll.vvalueProperty().addListener((obs, oldV, newV) -> {
-            if (newV != null && newV.doubleValue() >= 0.9) {
-                refreshTrips(false);
-            }
-        });
+    private void attachListeners() {
+        countrySelect.valueProperty().addListener((obs, oldV, newV) -> cardGrid.refresh());
+        categorySelect.valueProperty().addListener((obs, oldV, newV) -> cardGrid.refresh());
+        tagSelect.valueProperty().addListener((obs, oldV, newV) -> cardGrid.refresh());
+        statusSelect.valueProperty().addListener((obs, oldV, newV) -> cardGrid.refresh());
+        startTimeSelect.valueProperty().addListener((obs, oldV, newV) -> cardGrid.refresh());
+        sortSelect.valueProperty().addListener((obs, oldV, newV) -> cardGrid.refresh());
     }
 
-    private void refreshTrips(boolean resetPage) {
-        if (loading) return;
-        if (resetPage) {
-            page = 1;
-            hasMore = true;
-            tripsGrid.getChildren().clear();
-            tripsGrid.getChildren().add(buildCreateTripCard());
-            if (tripsScroll != null) {
-                tripsScroll.setVvalue(0);
-            }
-        }
-        if (!hasMore) return;
-        loading = true;
-        SearchTripsRequest request = buildRequest();
-        log.info("Trips search requested: {}", request);
-
-        SearchTripsResponse response = tripService.searchTrips(request);
-        renderTrips(response.trips(), resetPage);
-        updatePagination(response.pagination());
-        loading = false;
-        ensureScrollableContent();
-    }
-
-    private SearchTripsRequest buildRequest() {
+    private CardGridPane.PageResult<TripResponse> loadTripsPage(int page, int pageSize) {
         String country = normalizeFilter(countrySelect.getValue());
         String category = normalizeFilter(categorySelect.getValue());
         String tag = normalizeFilter(tagSelect.getValue());
         TripStatus status = TripStatus.fromLabel(statusSelect.getValue());
         String startTime = normalizeStartTime(startTimeSelect.getValue());
 
-        Pagination pagination = Pagination.request(page, pageSize);
-
-        return new SearchTripsRequest(
-                country,
-                category,
-                tag,
-                status,
-                startTime,
+        SearchTripsRequest request = new SearchTripsRequest(
+                country, category, tag, status, startTime,
                 sortSelect.getValue(),
-                pagination
+                Pagination.request(page, pageSize)
         );
+        log.info("Trips search requested: {}", request);
+
+        SearchTripsResponse response = tripService.searchTrips(request);
+        return new CardGridPane.PageResult<>(response.trips(), response.pagination());
     }
 
-    private String normalizeFilter(String value) {
-        if (value == null) return null;
-        String trimmed = value.trim();
-        return trimmed.equalsIgnoreCase("All") ? null : trimmed;
-    }
-
-    private String normalizeStartTime(String value) {
-        if (value == null) return null;
-        String trimmed = value.trim();
-        return trimmed.equalsIgnoreCase("Any time") ? null : trimmed;
-    }
-
-    private void renderTrips(List<TripResponse> trips, boolean resetPage) {
-        if (trips == null || trips.isEmpty()) {
-            if (resetPage) {
-                Label empty = new Label("No trips found");
-                empty.getStyleClass().add("page-subtitle");
-                tripsGrid.getChildren().add(empty);
-            }
-            hasMore = false;
-            return;
-        }
-
-        for (TripResponse trip : trips) {
-            String dateRange = formatDateRange(trip.startDate(), trip.endDate());
-            TripCardView card = TripCardView.create(trip, dateRange, () -> openTrip(trip, dateRange));
-            tripsGrid.getChildren().add(card.getRoot());
-        }
+    private Node buildTripCard(TripResponse trip) {
+        String dateRange = formatDateRange(trip.startDate(), trip.endDate());
+        TripCardView card = TripCardView.create(trip, dateRange, () -> openTrip(trip, dateRange));
+        return card.getRoot();
     }
 
     private Node buildCreateTripCard() {
         StackPane card = new StackPane();
         card.getStyleClass().add("trip-create-card");
-        card.setPrefSize(240, 240);
+        card.setMaxWidth(Double.MAX_VALUE);
         card.setOnMouseClicked(event -> onCreateTrip());
 
         VBox content = new VBox(6);
@@ -231,27 +165,16 @@ public class MyTripsController extends SimpleLifecycleAwareController {
         getRouter().moveto(RouteIds.TRIP_DETAILS, args);
     }
 
-    private void updatePagination(Pagination pagination) {
-        if (pagination == null) {
-            hasMore = false;
-            return;
-        }
-        int totalPages = pagination.totalPages() == null ? 1 : pagination.totalPages();
-        hasMore = pagination.page() < totalPages;
-        page = pagination.page() + 1;
+    private String normalizeFilter(String value) {
+        if (value == null) return null;
+        String trimmed = value.trim();
+        return trimmed.equalsIgnoreCase("All") ? null : trimmed;
     }
 
-    private void ensureScrollableContent() {
-        Platform.runLater(() -> {
-            if (loading || !hasMore) return;
-            if (tripsScroll == null || tripsGrid == null) return;
-            double viewportHeight = tripsScroll.getViewportBounds().getHeight();
-            if (viewportHeight <= 0) return;
-            double contentHeight = tripsGrid.getBoundsInLocal().getHeight();
-            if (contentHeight <= viewportHeight + 1) {
-                refreshTrips(false);
-            }
-        });
+    private String normalizeStartTime(String value) {
+        if (value == null) return null;
+        String trimmed = value.trim();
+        return trimmed.equalsIgnoreCase("Any time") ? null : trimmed;
     }
 
     private String formatDateRange(LocalDate start, LocalDate end) {

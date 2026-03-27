@@ -6,8 +6,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
@@ -15,7 +13,9 @@ import javafx.scene.layout.Region;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class TripCardView implements Initializable {
 
@@ -23,9 +23,10 @@ public class TripCardView implements Initializable {
             "/com/triplify/ui/shared/component/trip/view/TripCard.fxml"
     );
 
+    private static final Map<String, String> URL_CACHE = new ConcurrentHashMap<>();
+
     @FXML private VBox root;
     @FXML private StackPane media;
-    @FXML private ImageView coverImage;
     @FXML private Label statusLabel;
     @FXML private Label titleLabel;
     @FXML private Label categoryLabel;
@@ -35,14 +36,9 @@ public class TripCardView implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        root.setMinWidth(240);
-        root.setPrefWidth(240);
-        root.setMaxWidth(240);
+        root.setMaxWidth(Double.MAX_VALUE);
 
-        media.minWidthProperty().bind(root.widthProperty());
-        media.prefWidthProperty().bind(root.widthProperty());
-        media.maxWidthProperty().bind(root.widthProperty());
-
+        media.setMaxWidth(Double.MAX_VALUE);
         media.minHeightProperty().set(Region.USE_PREF_SIZE);
         media.maxHeightProperty().set(Region.USE_PREF_SIZE);
 
@@ -52,9 +48,6 @@ public class TripCardView implements Initializable {
         clip.setArcWidth(24);
         clip.setArcHeight(24);
         media.setClip(clip);
-
-        coverImage.fitWidthProperty().bind(media.widthProperty());
-        coverImage.fitHeightProperty().bind(media.heightProperty());
 
         root.setOnMouseClicked(event -> {
             if (onOpen != null) {
@@ -77,19 +70,29 @@ public class TripCardView implements Initializable {
         categoryLabel.setText(trip.category());
         dateLabel.setText(dateRange);
 
+        media.getStyleClass().removeIf(style -> style.startsWith("trip-cover-"));
+
+        boolean imageApplied = false;
         if (trip.coverUrl() != null && !trip.coverUrl().isBlank()) {
-            Image image = new Image(trip.coverUrl(), true);
-            image.errorProperty().addListener((obs, oldV, newV) -> {
-                if (newV) {
-                    coverImage.setImage(null);
-                    coverImage.setVisible(false);
-                }
-            });
-            coverImage.setImage(image);
-            coverImage.setVisible(true);
-        } else {
-            coverImage.setImage(null);
-            coverImage.setVisible(false);
+            String imageUrl = resolveImageUrl(trip.coverUrl());
+            if (imageUrl != null) {
+                imageApplied = true;
+                media.setStyle(
+                        "-fx-background-image: url('" + imageUrl + "');" +
+                        "-fx-background-size: cover;" +
+                        "-fx-background-position: center center;" +
+                        "-fx-background-repeat: no-repeat;"
+                );
+            }
+        }
+
+        if (!imageApplied) {
+            media.setStyle(null);
+            if (trip.coverKey() != null && !trip.coverKey().isBlank()) {
+                media.getStyleClass().add("trip-cover-" + trip.coverKey());
+            } else {
+                media.getStyleClass().add("trip-cover-default");
+            }
         }
 
         statusLabel.setText(trip.status() == null ? "Unknown" : trip.status().getLabel());
@@ -97,13 +100,16 @@ public class TripCardView implements Initializable {
         if (trip.status() != null) {
             statusLabel.getStyleClass().add(trip.status().getCssClass());
         }
+    }
 
-        media.getStyleClass().removeIf(style -> style.startsWith("trip-cover-"));
-        if (trip.coverKey() != null && !trip.coverKey().isBlank()) {
-            media.getStyleClass().add("trip-cover-" + trip.coverKey());
-        } else {
-            media.getStyleClass().add("trip-cover-default");
-        }
+    private String resolveImageUrl(String coverUrl) {
+        return URL_CACHE.computeIfAbsent(coverUrl, url -> {
+            if (url.startsWith("/")) {
+                URL resource = getClass().getResource(url);
+                return resource != null ? resource.toExternalForm() : null;
+            }
+            return url;
+        });
     }
 
     public static TripCardView create(TripResponse trip, String dateRange, Runnable onOpen) {

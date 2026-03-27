@@ -2,12 +2,11 @@
 
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.StackPane?>
-<?import javafx.scene.layout.TilePane?>
 <?import javafx.scene.layout.VBox?>
+<?import com.triplify.ui.shared.component.card_grid.CardGridPane?>
 
 <StackPane xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
@@ -32,10 +31,6 @@
             </HBox>
         </HBox>
 
-        <ScrollPane fx:id="tripsScroll" fitToWidth="true" hbarPolicy="NEVER" styleClass="trips-scroll"
-                    VBox.vgrow="ALWAYS">
-            <TilePane fx:id="tripsGrid" styleClass="trips-grid" prefTileWidth="240"
-                      prefTileHeight="240" hgap="16" vgap="16"/>
-        </ScrollPane>
+        <CardGridPane fx:id="cardGrid" VBox.vgrow="ALWAYS"/>
     </VBox>
 </StackPane>
