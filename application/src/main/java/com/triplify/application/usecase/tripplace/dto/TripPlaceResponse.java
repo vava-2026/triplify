@@ -1,5 +1,7 @@
 package com.triplify.application.usecase.tripplace.dto;
 
+import com.triplify.application.usecase.image.dto.ImageResponse;
+
 import java.time.Instant;
 import java.util.Set;
 
@@ -10,6 +12,6 @@ public record TripPlaceResponse(
         Instant visitDate,
         Instant createdAt,
         Instant updatedAt,
-        Set<String> imageIds
+        Set<ImageResponse> images
 ) {
 }

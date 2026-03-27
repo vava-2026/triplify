@@ -1,5 +1,6 @@
 package com.triplify.application.usecase.trip.dto;
 
+import com.triplify.application.usecase.image.dto.ImageResponse;
 import com.triplify.domain.model.enums.StatusEnum;
 
 import java.time.Instant;
@@ -17,7 +18,7 @@ public record TripResponse(
         Instant createdAt,
         Instant updatedAt,
         Set<String> tagIds,
-        Set<String> imageIds,
+        Set<ImageResponse> images,
         Set<String> countryIds
 ) {
 }

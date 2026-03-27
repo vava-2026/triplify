@@ -1,5 +1,7 @@
 package com.triplify.application.usecase.story.dto;
 
+import com.triplify.application.usecase.image.dto.ImageResponse;
+
 import java.time.Instant;
 import java.util.Set;
 
@@ -15,6 +17,6 @@ public record StoryResponse(
         Instant storyTime,
         Instant createdAt,
         Set<String> tagIds,
-        Set<String> imageIds
+        Set<ImageResponse> images
 ) {
 }

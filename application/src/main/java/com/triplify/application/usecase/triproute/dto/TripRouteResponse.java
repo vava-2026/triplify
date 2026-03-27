@@ -1,5 +1,6 @@
 package com.triplify.application.usecase.triproute.dto;
 
+import com.triplify.application.usecase.image.dto.ImageResponse;
 import com.triplify.domain.model.enums.StatusEnum;
 
 import java.time.Instant;
@@ -15,6 +16,6 @@ public record TripRouteResponse(
         Instant endedAt,
         Instant createdAt,
         Instant updatedAt,
-        Set<String> imageIds
+        Set<ImageResponse> images
 ) {
 }
