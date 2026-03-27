@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.VBox?>
+
+
+<fx:root type="VBox"
+         xmlns="http://javafx.com/javafx"
+         xmlns:fx="http://javafx.com/fxml"
+         styleClass="badge-card"
+         stylesheets="@../css/badge.css"
+         alignment="CENTER"
+         spacing="8"
+         prefWidth="160"
+         prefHeight="220">
+
+
+    <ImageView fx:id="badgeImage"
+               fitWidth="80"
+               fitHeight="80"
+               preserveRatio="true"
+               styleClass="badge-image"/>
+
+    <Label fx:id="badgeName"
+           styleClass="badge-name"
+           wrapText="true"
+           alignment="CENTER"
+           text="Badge Name"/>
+
+    <Label fx:id="badgeStat"
+           styleClass="badge-stat"
+           text="Countries visited: 0/0"/>
+
+</fx:root>

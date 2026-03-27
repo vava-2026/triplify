@@ -1,12 +1,10 @@
 plugins {
-    id("application")
+    id("java")
     id("org.openjfx.javafxplugin") version "0.1.0"
 }
 
 dependencies {
     implementation(project(":application"))
-
-    runtimeOnly("ch.qos.logback:logback-classic:1.5.32")
 
     // Icon library – Ikonli with Feather pack
     implementation("org.kordamp.ikonli:ikonli-javafx:12.4.0")
@@ -14,13 +12,6 @@ dependencies {
 
     // Routing
     implementation("com.github.rahulstech:javafx-routing:2.0.0")
-}
-
-application {
-    mainClass.set("com.triplify.ui.MainApp")
-    applicationDefaultJvmArgs = listOf(
-        "--enable-native-access=javafx.graphics"
-    )
 }
 
 javafx {

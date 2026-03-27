@@ -1,16 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.String?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
 
 <StackPane xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
-           fx:controller="com.triplify.ui.pages.SimplePageController"
+           fx:controller="com.triplify.ui.pages.account.AccountController"
            styleClass="page-root">
-    <VBox spacing="14" maxWidth="980">
+    <stylesheets>
+        <String fx:value="/com/triplify/ui/shared/component/input_item/input_item.css"/>
+        <String fx:value="/com/triplify/ui/pages/account/account.css"/>
+    </stylesheets>
+    <VBox spacing="14">
         <Label text="Account" styleClass="page-title"/>
         <Label text="Manage profile and preferences." styleClass="page-subtitle"/>
 
@@ -20,9 +27,27 @@
             <Label text="Email: alex@example.com"/>
         </VBox>
 
-        <HBox styleClass="page-actions">
-            <Button text="Edit profile"/>
-            <Button text="Sign out"/>
-        </HBox>
+        <VBox styleClass="page-card" spacing="12">
+            <Label text="Edit Profile" styleClass="account-section-title"/>
+            <VBox fx:id="editFormContainer" spacing="12"/>
+            <HBox styleClass="account-form-actions">
+                <Button text="Save changes" onAction="#onSave" styleClass="account-save-btn"/>
+            </HBox>
+        </VBox>
+
+        <VBox>
+
+            <GridPane fx:id="badgesGrid" styleClass="badges-grid" hgap="12" vgap="12">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="25"/>
+                    <ColumnConstraints percentWidth="25"/>
+                    <ColumnConstraints percentWidth="25"/>
+                    <ColumnConstraints percentWidth="25"/>
+                    <ColumnConstraints percentWidth="25"/>
+                    <ColumnConstraints percentWidth="25"/>
+                </columnConstraints>
+            </GridPane>
+
+        </VBox>
     </VBox>
 </StackPane>

@@ -1,0 +1,62 @@
+/* Header */
+.section-header { -fx-padding: 1 0 4 0;}
+.section-header .label{ -fx-font: -font-family-base; -fx-font-size: 20px; -fx-font-weight: 700; -fx-text-fill: -color-ink; }
+.header-icon    { -fx-icon-color: -color-primary-dark;}
+
+/* Main cards */
+.stat-card {-fx-background-color: -color-on-surface; -fx-background-radius: 10px; -fx-cursor: hand;}
+.card-label { -fx-font-size: 16px; -fx-font-weight: 500; -fx-text-fill: -color-ink-muted; -fx-padding: 10 0 0 0;}
+.card-value { -fx-font-size: 32px; -fx-font-weight: 700; -fx-text-fill: -color-ink; }
+.card-icon { -fx-border-width: thin;}
+.icon-circle { -fx-background-radius: 30%; }
+
+/* Icon colors */
+.icon-green .card-icon { -fx-icon-color: -color-stats-green-fg; }
+.icon-blue .card-icon { -fx-icon-color: -color-stats-blue-fg; }
+.icon-yellow .card-icon { -fx-icon-color: -color-stats-yellow-fg; }
+.icon-purple .card-icon { -fx-icon-color: -color-stats-purple-fg; }
+.icon-pink .card-icon { -fx-icon-color: -color-stats-pink-fg; }
+
+/* Icon background colors */
+.icon-green  { -fx-background-color: -color-stats-green-bg; }
+.icon-blue   { -fx-background-color: -color-stats-blue-bg; }
+.icon-yellow { -fx-background-color: -color-stats-yellow-bg; }
+.icon-purple { -fx-background-color: -color-stats-purple-bg; }
+.icon-pink   { -fx-background-color: -color-stats-pink-bg; }
+
+.account-section-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-ink;
+}
+
+.account-form-actions {
+    -fx-padding: 4 0 0 0;
+}
+
+.account-save-btn {
+    -fx-background-color: -color-primary;
+    -fx-text-fill: -color-on-primary;
+    -fx-background-radius: 8;
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+    -fx-cursor: hand;
+    -fx-padding: 8 20 8 20;
+}
+
+.account-save-btn:hover {
+    -fx-background-color: -color-primary-hover;
+}
+
+.account-save-btn:pressed {
+    -fx-background-color: -color-primary-pressed;
+    -fx-scale-x: 0.97;
+    -fx-scale-y: 0.97;
+}
+
+.badges-grid {
+    -fx-padding: 10;
+    -fx-hgap: 15;
+    -fx-vgap: 15;
+    -fx-alignment: center;
+}

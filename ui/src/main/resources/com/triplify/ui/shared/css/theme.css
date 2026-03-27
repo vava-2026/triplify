@@ -1,7 +1,15 @@
+@import url("/com/triplify/ui/shared/component/entry/css/entry.css");
+@import url("/com/triplify/ui/shared/component/select/css/select.css");
+@import url("/com/triplify/ui/shared/component/search/css/search.css");
+@import url("/com/triplify/ui/shared/component/input_item/input_item.css");
+@import url("/com/triplify/ui/shared/toast/toast.css");
+
 .root {
     -color-bg: #f0f0f0;
     -color-surface: #fafafa;
     -color-surface-tint: #ecf3f9;
+    -color-surface-dark: #d5e5ed;
+    -color-surface-muted: #00000026;
     -color-ink: #0a090c;
     -color-ink-muted: #999999;
 
@@ -17,6 +25,36 @@
 
     -color-on-primary: #ecf3f9;
     -color-on-surface: white;
+
+    -color-start-bg: #06070e;
+
+    -color-login: #2f658d;
+    -color-login-hover: #245168;
+    -color-on-login: #EBF2F8;
+    -color-sign-up: #d9e0e6;
+    -color-sign-up-hover: #bbbec1;
+    -color-on-sign-up: #000000;
+
+    -color-theme-red: #e74c3c;
+    -color-theme-orange: #e67e22;
+    -color-theme-yellow: #f1c40f;
+    -color-theme-green: #27ae60;
+    -color-theme-teal: #1abc9c;
+    -color-theme-blue: #2980b9;
+    -color-theme-purple: #8e44ad;
+    -color-theme-pink: #e91e8c;
+
+    -color-stats-green-bg: #B2D7BB;
+    -color-stats-green-fg: #3F784C;
+    -color-stats-blue-bg: #C9DEEE;
+    -color-stats-blue-fg: #2F6690;
+    -color-stats-yellow-bg: #F0DCAD;
+    -color-stats-yellow-fg: #FFB100;
+    -color-stats-purple-bg: #C1B2D7;
+    -color-stats-purple-fg: #6A4C93;
+    -color-stats-pink-bg: #FABDCA;
+    -color-stats-pink-fg: #B20D30;
+
 
     -font-family-base: "Plus Jakarta Sans", "Segoe UI", System;
 
@@ -224,100 +262,33 @@
     -fx-font-size: 12px;
 }
 
-.trip-status {
-    -fx-background-radius: 999px;
-    -fx-padding: 4px 10px;
-    -fx-font-size: 11px;
-    -fx-font-weight: bold;
+.input-error {
+    -fx-border-color: -color-danger;
 }
 
-.trip-status-visited {
-    -fx-background-color: #e6f4ed;
-    -fx-text-fill: #2f8f6b;
-}
-
-.trip-status-drafted {
-    -fx-background-color: #f7ead7;
-    -fx-text-fill: #d28b35;
-}
-
-.trip-status-rejected {
-    -fx-background-color: #fbe9e7;
+.field-error-label {
+    -fx-font-size: 12px;
     -fx-text-fill: -color-danger;
 }
 
-.trip-status-planned {
-    -fx-background-color: #e0edf7;
-    -fx-text-fill: -color-primary;
-}
-
-.trip-status-ongoing {
-    -fx-background-color: #e3f4f1;
-    -fx-text-fill: #1b7f7a;
-}
-
-.trip-create-card {
-    -fx-background-color: -color-surface;
-    -fx-background-radius: 14px;
-    -fx-border-color: #8fb0c8;
-    -fx-border-radius: 14px;
-    -fx-border-width: 2px;
-    -fx-border-style: segments(8, 6);
-    -fx-effect: -shadow-card;
-    -fx-cursor: hand;
-    -fx-alignment: center;
-    -fx-padding: 12px;
-    -fx-pref-width: 240px;
-    -fx-min-width: 240px;
-    -fx-max-width: 240px;
-    -fx-pref-height: 240px;
-    -fx-min-height: 240px;
-    -fx-max-height: 240px;
-}
-
-.trip-create-icon {
-    -fx-icon-color: -color-primary;
-    -fx-icon-size: 18px;
-}
-
-.trip-create-title {
-    -fx-text-fill: -color-ink;
+.error-banner {
+    -fx-font-size: 13px;
     -fx-font-weight: bold;
+    -fx-text-fill: -color-danger;
+    -fx-background-color: -color-danger, 90%;
+    -fx-background-radius: 8;
+    -fx-border-color: -color-danger;
+    -fx-border-radius: 8;
+    -fx-padding: 10 14 10 14;
 }
 
-.trip-create-subtitle {
-    -fx-text-fill: -color-ink-muted;
-    -fx-font-size: 12px;
-}
-
-.trip-cover-uzhorod {
-    -fx-background-color: linear-gradient(to bottom right, #a8c8f0, #d6e4f5);
-}
-
-.trip-cover-kyoto {
-    -fx-background-color: linear-gradient(to bottom right, #f0c38a, #f6e0c3);
-}
-
-.trip-cover-cemetery {
-    -fx-background-color: linear-gradient(to bottom right, #a4b29f, #d9e1d4);
-}
-
-.trip-cover-newyork {
-    -fx-background-color: linear-gradient(to bottom right, #8fb6d8, #d6e6f5);
-}
-
-.trip-cover-safari {
-    -fx-background-color: linear-gradient(to bottom right, #d2b16f, #f1d9a7);
-}
-
-.trip-cover-prague {
-    -fx-background-color: linear-gradient(to bottom right, #c7b6e2, #e8def4);
-}
-
-.trip-cover-lake {
-    -fx-background-color: linear-gradient(to bottom right, #9dc9c3, #d4ebe7);
-}
-
-.trip-cover-default {
-    -fx-background-color: linear-gradient(to bottom right, #b5c7d6, #e6edf3);
+.success-banner {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-theme-green;
+    -fx-background-color:-color-theme-green, 85%;
+    -fx-background-radius: 8;
+    -fx-border-color: -color-theme-green;
+    -fx-border-radius: 8;
+    -fx-padding: 10 14 10 14;
 }
