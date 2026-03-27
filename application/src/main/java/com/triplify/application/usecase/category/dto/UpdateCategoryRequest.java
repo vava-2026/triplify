@@ -1,8 +1,10 @@
 package com.triplify.application.usecase.category.dto;
 
 import com.triplify.application.error.ValidationMessage;
+import com.triplify.application.model.ColorTheme;
 import com.triplify.application.usecase.dto.DtoConstraints;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record UpdateCategoryRequest(
@@ -27,7 +29,7 @@ public record UpdateCategoryRequest(
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
         String emojiUnicode,
 
-        @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String color
+        @NotNull(message = ValidationMessage.Constants.REQUIRED)
+        ColorTheme color
 ) {
 }
