@@ -13,6 +13,9 @@ public final class ValidationMessage {
         public static final String EMAIL_INVALID = "validation.email.invalid";
         public static final String PASSWORD_TOO_SHORT = "validation.password.too.short";
         public static final String USERNAME_TOO_SHORT = "validation.username.too.short";
+        public static final String USERNAME_TOO_LONG = "validation.username.too.long";
+        public static final String TITLE_TOO_LONG = "validation.title.too.long";
+        public static final String NAME_TOO_LONG = "validation.name.too.long";
         public static final String DESCRIPTION_TOO_LONG = "validation.description.too.long";
         public static final String SIGN_UP_INVALID_ROLE = "validation.signUp.invalidRole";
 
