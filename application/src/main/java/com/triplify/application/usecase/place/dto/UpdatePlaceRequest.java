@@ -7,6 +7,8 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+import java.nio.file.Path;
+
 public record UpdatePlaceRequest(
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
@@ -15,7 +17,7 @@ public record UpdatePlaceRequest(
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
         String countryId,
 
-        String coverImageId,
+        Path coverImage,
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
         @Size(max = DtoConstraints.TITLE_MAX_LENGTH, message = ValidationMessage.Constants.TITLE_TOO_LONG)

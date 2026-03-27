@@ -6,12 +6,14 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+import java.nio.file.Path;
+
 public record UpdateBadgeRequest(
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
         String badgeId,
 
-        String imageId,
+        Path image,
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
         @Size(max = DtoConstraints.NAME_MAX_LENGTH, message = ValidationMessage.Constants.NAME_TOO_LONG)

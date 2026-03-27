@@ -6,12 +6,14 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+import java.nio.file.Path;
+
 public record UpdateRouteRequest(
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
         String routeId,
 
-        String coverImageId,
+        Path coverImage,
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
         @Size(max = DtoConstraints.TITLE_MAX_LENGTH, message = ValidationMessage.Constants.TITLE_TOO_LONG)

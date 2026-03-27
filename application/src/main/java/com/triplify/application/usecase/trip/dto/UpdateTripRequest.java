@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Set;
 
@@ -29,7 +30,7 @@ public record UpdateTripRequest(
         Instant startedAt,
         Instant endedAt,
         Set<String> tagIds,
-        Set<String> imageIds,
+        Set<Path> images,
         Set<String> countryIds
 ) {
 }

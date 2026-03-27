@@ -3,6 +3,7 @@ package com.triplify.domain.model;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -18,10 +19,7 @@ public class Image {
     private final UUID id;
 
     @NonNull
-    private final String url;
-
-    @NonNull
-    private final String storageKey;
+    private final Path url;
 
     @Setter(AccessLevel.PRIVATE)
     private String description;
@@ -29,10 +27,9 @@ public class Image {
     @NonNull
     private final Instant uploadedAt;
 
-    public Image(@NonNull String url, @NonNull String storageKey) {
+    public Image(@NonNull Path url) {
         this.id = UUID.randomUUID();
         this.url = url;
-        this.storageKey = storageKey;
         this.uploadedAt = Instant.now();
     }
 
