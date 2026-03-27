@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<fx:root type="VBox"
+      xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      styleClass="search-container"
+      maxHeight="-Infinity">
+
+    <HBox fx:id="searchBox" styleClass="search-input-box" alignment="CENTER_LEFT" spacing="6">
+        <TextField fx:id="searchField"
+                   styleClass="search-field"
+                   HBox.hgrow="ALWAYS"
+                   maxHeight="Infinity"/>
+        <FontIcon fx:id="searchIcon" iconLiteral="fth-search" styleClass="search-icon"/>
+    </HBox>
+
+</fx:root>

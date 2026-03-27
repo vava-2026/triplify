@@ -4,6 +4,8 @@ import com.google.inject.Inject;
 import com.triplify.ui.shared.toast.ToastService;
 import com.google.inject.Injector;
 import com.triplify.ui.routing.TriplifyRouterContext;
+import com.triplify.ui.shared.component.input_item.InputItem;
+import com.triplify.ui.shared.component.input_item.PasswordItem;
 import com.triplify.ui.shared.header.view.HeaderView;
 import com.triplify.ui.shared.menu.model.MenuItem;
 import com.triplify.ui.shared.menu.view.MenuView;
@@ -13,6 +15,8 @@ import com.triplify.ui.shared.util.FxmlLoadResult;
 import javafx.application.Application;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
+import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.layout.HBox;
@@ -50,7 +54,6 @@ public class MainApp extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         log.info("App launched");
-
 
         // Sidebar island
         FxmlLoadResult<Node, SidebarIslandView> islandResult = fxml.load("/com/triplify/ui/shared/menu/view/SidebarIsland.fxml");
@@ -132,6 +135,8 @@ public class MainApp extends Application {
 
         HBox topBar = new HBox(islandPane, header);
         topBar.getStyleClass().add("app-top-bar");
+        topBar.visibleProperty().bind(showMenu);
+        topBar.managedProperty().bind(showMenu);
 
         HBox bottomRow = new HBox(menu, contentArea);
         bottomRow.getStyleClass().add("app-bottom-row");

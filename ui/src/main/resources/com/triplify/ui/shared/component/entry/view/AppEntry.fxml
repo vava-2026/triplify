@@ -2,6 +2,7 @@
 
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <fx:root type="HBox"
@@ -11,6 +12,7 @@
          alignment="CENTER_LEFT"
          spacing="6">
 
+    <ImageView fx:id="emoji" fitWidth="16" fitHeight="16" preserveRatio="true" />
     <FontIcon fx:id="icon" styleClass="app-entry-icon" />
     <Label fx:id="label" styleClass="app-entry-label" />
 

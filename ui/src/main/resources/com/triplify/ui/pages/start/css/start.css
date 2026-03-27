@@ -1,0 +1,57 @@
+.start-root {
+    -fx-background-color: -color-start-bg;
+}
+
+.start-bg-image {
+    -fx-background-image: url("../images/background.png");
+    -fx-background-size: contain;
+    -fx-background-position: center center;
+    -fx-background-repeat: no-repeat;
+}
+
+.start-top-bar {
+    -fx-padding: 35 35 0 35;
+    -fx-alignment: top-left;
+}
+
+.start-title {
+    -fx-text-fill: white;
+    -fx-font-size: 48px;
+    -fx-font-weight: bold;
+    -fx-font-family: -font-family-base;
+}
+
+.start-hero {
+    -fx-padding: 125 0 0 0;
+    -fx-alignment: CENTER;
+}
+
+.start-hero-title {
+    -fx-text-fill: white;
+    -fx-font-size: 64px;
+    -fx-font-weight: bold;
+    -fx-font-family: -font-family-base;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 250, 0, 0, 4);
+    -fx-text-alignment: center;
+    -fx-alignment: CENTER;
+}
+
+.start-hero-title-tight {
+    -fx-translate-y: -20px;
+}
+
+.start-hero-subtitle {
+    -fx-text-fill: white;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-font-family: -font-family-base;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 250, 0, 0, 4);
+    -fx-text-alignment: center;
+    -fx-alignment: CENTER;
+}
+
+.start-hero-buttons {
+    -fx-spacing: 24;
+    -fx-padding: 30 0 0 0;
+    -fx-alignment: CENTER;
+}

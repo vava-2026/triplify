@@ -1,13 +1,11 @@
 package com.triplify.ui.pages.account;
 
 import com.google.inject.Inject;
-import com.triplify.application.error.ValidationMapper;
-import com.triplify.application.error.ValidationResult;
-import com.triplify.application.result.Result;
-import com.triplify.application.usecase.auth.AuthResponse;
 import com.triplify.application.usecase.auth.AuthService;
-import com.triplify.application.usecase.auth.LoginRequest;
-import com.triplify.ui.i18n.I18n;
+import com.triplify.application.usecase.auth.dto.LogInRequest;
+import com.triplify.application.usecase.session.UserSessionContext;
+import com.triplify.domain.result.Result;
+import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.shared.toast.ToastService;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -32,48 +30,38 @@ public class LoginController extends SimpleLifecycleAwareController {
 
     @Inject private AuthService authService;
     @Inject private ToastService toast;
+    @Inject private UserSessionContext sessionContext;
+    @Inject private ErrorHandler errorHandler;
 
     @FXML
     public void onLogin() {
         attemptLogin(username.getText().trim(), password.getText());
     }
 
-    private void attemptLogin(String user, String pass) {
+    private void attemptLogin(String username, String pass) {
         clearFieldErrors();
 
-        LoginRequest command = new LoginRequest(user, pass);
+        LogInRequest request = new LogInRequest(username, pass);
 
-        Map<String, TextField> fieldMap = Map.of("username", username, "password", password);
-        Map<String, Label> errorMap = Map.of("username", usernameError, "password", passwordError);
+        Map<String, TextField> fieldMap = Map.of("username", this.username, "password", password);
         clearFieldStyles(fieldMap);
 
-        ValidationResult<LoginRequest> validation = ValidationMapper.validate(command);
-        if (validation.isFailure()) {
-            validation.getViolations().forEach(v -> {
-                TextField field = fieldMap.get(v.getField());
-                if (field != null) {
-                    markFieldError(field);
-                } else {
-                    log.warn("No TextField mapped for violated field '{}'", v.getField());
-                }
-
-                Label label = errorMap.get(v.getField());
-                if (label != null) {
-                    showFieldError(label, v.getMessageKey());
-                }
-            });
-            return;
-        }
-
-        // Step 2 - use-case
-        Result<AuthResponse> result = authService.login(command);
+        Result<Void> result = authService.login(request);
         result.onSuccess(auth -> {
-            log.info("Login successful for user '{}'", auth.username());
-            toast.success("Welcome back, " + auth.username() + "!");
-        }).onFailureResponse(errors -> {
-                  log.info("Login failed: {}", result.getFirstErrorResponse().messageKey());
-                  toast.error(I18n.t((result.getFirstErrorResponse().messageKey())));
-              });
+            var user = sessionContext.getCurrent().orElseThrow(() -> new IllegalStateException("User should be set in session after successful login"));
+            log.info("Login successful for user '{}'", user.username());
+            toast.success("Welcome back, " + user.username() + "!");
+        });
+        result.onFailure(error -> errorHandler.handle(error, Map.of(
+                "username", message -> {
+                    markFieldError(this.username);
+                    showFieldError(usernameError, message);
+                },
+                "password", message -> {
+                    markFieldError(this.password);
+                    showFieldError(passwordError, message);
+                }
+        )));
     }
 
     private void clearFieldErrors() {
@@ -81,8 +69,8 @@ public class LoginController extends SimpleLifecycleAwareController {
         hideFieldError(passwordError);
     }
 
-    private void showFieldError(Label label, String messageKey) {
-        label.setText(I18n.t(messageKey));
+    private void showFieldError(Label label, String message) {
+        label.setText(message);
         label.setVisible(true);
         label.setManaged(true);
     }

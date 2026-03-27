@@ -2,6 +2,7 @@ package com.triplify.ui.theme;
 
 import javafx.scene.paint.Color;
 
+
 public final class AppColors {
 
     private AppColors() {}

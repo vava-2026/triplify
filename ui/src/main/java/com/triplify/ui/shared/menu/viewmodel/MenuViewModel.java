@@ -11,13 +11,13 @@ import javafx.beans.property.SimpleObjectProperty;
 public class MenuViewModel {
 
     private final ObjectProperty<MenuItem> selectedItem =
-            new SimpleObjectProperty<>(MenuItem.MAP);
+            new SimpleObjectProperty<>(null);
     private final BooleanProperty collapsed =
             new SimpleBooleanProperty(false);
 
     private final BooleanBinding hideHeader =
             Bindings.createBooleanBinding(
-                    () -> selectedItem.get().isHideHeader(),
+                    () -> selectedItem.get() != null && selectedItem.get().isHideHeader(),
                     selectedItem);
 
     public ObjectProperty<MenuItem> selectedItemProperty() { return selectedItem; }

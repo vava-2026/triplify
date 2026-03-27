@@ -1,11 +1,14 @@
 @import url("/com/triplify/ui/shared/component/entry/css/entry.css");
 @import url("/com/triplify/ui/shared/component/select/css/select.css");
+@import url("/com/triplify/ui/shared/component/search/css/search.css");
+@import url("/com/triplify/ui/shared/component/input_item/input_item.css");
 @import url("/com/triplify/ui/shared/toast/toast.css");
 
 .root {
     -color-bg: #f0f0f0;
     -color-surface: #fafafa;
     -color-surface-tint: #ecf3f9;
+    -color-surface-dark: #d5e5ed;
     -color-ink: #0a090c;
     -color-ink-muted: #999999;
 
@@ -21,6 +24,15 @@
 
     -color-on-primary: #ecf3f9;
     -color-on-surface: white;
+
+    -color-start-bg: #06070e;
+
+    -color-login: #2f658d;
+    -color-login-hover: #245168;
+    -color-on-login: #EBF2F8;
+    -color-sign-up: #d9e0e6;
+    -color-sign-up-hover: #bbbec1;
+    -color-on-sign-up: #000000;
 
     -color-theme-red: #e74c3c;
     -color-theme-orange: #e67e22;

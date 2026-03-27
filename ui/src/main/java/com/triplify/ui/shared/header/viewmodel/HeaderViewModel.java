@@ -15,7 +15,7 @@ public class HeaderViewModel {
             new SimpleObjectProperty<>(MenuItem.MY_TRIPS);
 
     private final StringBinding pageTitle = Bindings.createStringBinding(
-            () -> activeItem.get().getLabel(),
+            () -> activeItem.get() != null ? activeItem.get().getLabel() : "",
             activeItem, I18n.bundleProperty());
 
     private final StringProperty searchText = new SimpleStringProperty("");

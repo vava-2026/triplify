@@ -1,0 +1,223 @@
+package com.triplify.ui.shared.component.search.view;
+
+import com.triplify.ui.shared.component.select.entry.model.Entry;
+import com.triplify.ui.shared.component.select.entry.view.EntryCell;
+import com.triplify.ui.shared.component.search.model.Search;
+import com.triplify.ui.shared.model.FieldVariant;
+import javafx.animation.PauseTransition;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.geometry.Bounds;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.stage.Popup;
+import javafx.util.Duration;
+import lombok.Getter;
+import org.kordamp.ikonli.javafx.FontIcon;
+
+import java.io.IOException;
+import java.util.List;
+
+public class SearchView<T> extends VBox {
+
+    private static final double ROW_HEIGHT = 32.0;
+
+    @FXML @Getter private TextField searchField;
+    @FXML private HBox searchBox;
+    @FXML private FontIcon searchIcon;
+
+    @Getter private final ListView<Entry<T>> resultsListView = new ListView<>();
+    private final Label noResultsLabel = new Label();
+    private final VBox popupContent = new VBox();
+    private final Popup popup = new Popup();
+
+    private Search<T> model;
+    private PauseTransition debounce;
+
+    private FieldVariant lastVariant = null;
+    private boolean isFocused = false;
+
+    public SearchView(Search<T> model) {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/triplify/ui/shared/component/search/view/AppSearch.fxml"));
+        loader.setRoot(this);
+        loader.setController(this);
+
+        try {
+            loader.load();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load AppSearch.fxml", e);
+        }
+
+        setupPopup();
+        resultsListView.setCellFactory(lv -> new EntryCell<>());
+        update(model);
+    }
+
+    private void setupPopup() {
+        resultsListView.getStyleClass().add("search-results");
+        resultsListView.setFixedCellSize(ROW_HEIGHT);
+        resultsListView.setPrefWidth(Double.MAX_VALUE);
+
+        noResultsLabel.getStyleClass().add("search-no-results");
+
+        popupContent.getStyleClass().add("search-popup-content");
+        popupContent.getChildren().addAll(resultsListView, noResultsLabel);
+
+        popup.getContent().add(popupContent);
+        popup.setAutoHide(true);
+        popup.setConsumeAutoHidingEvents(false);
+        popup.showingProperty().addListener((obs, wasShowing, isShowing) -> {
+            if (!isShowing) {
+                getStyleClass().remove("search-showing");
+                popupContent.getStyleClass().remove("search-showing");
+            }
+        });
+    }
+
+    private void showPopup() {
+        if (getScene() == null || getScene().getWindow() == null) return;
+        Bounds fieldBounds = searchBox.localToScreen(searchBox.getBoundsInLocal());
+        if (fieldBounds == null) return;
+
+        double x = fieldBounds.getMinX();
+        double y = fieldBounds.getMaxY();
+        double width = fieldBounds.getWidth();
+
+        popupContent.setPrefWidth(width);
+        popupContent.setMinWidth(width);
+        popupContent.setMaxWidth(width);
+
+        if (!popup.isShowing()) {
+            popup.show(searchBox, x, y);
+        } else {
+            popup.setX(x);
+            popup.setY(y);
+        }
+    }
+
+    private void update(Search<T> model) {
+        this.model = model;
+
+        searchField.promptTextProperty().bind(model.getPlaceholder());
+        noResultsLabel.textProperty().bind(model.getNoResult());
+
+        debounce = new PauseTransition(Duration.millis(model.getDebounceMs()));
+        debounce.setOnFinished(e -> runSearch(searchField.getText()));
+
+        searchField.focusedProperty().addListener((obs, wasFocused, isFocused) -> {
+            this.isFocused = isFocused;
+            if (!isFocused) {
+                PauseTransition hideDelay = new PauseTransition(Duration.millis(150));
+                hideDelay.setOnFinished(e -> showNothing());
+                hideDelay.play();
+            } else {
+                runSearch(searchField.getText());
+            }
+        });
+
+        resultsListView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                javafx.application.Platform.runLater(() -> {
+                    model.selectResult(newVal);
+                    resultsListView.getSelectionModel().clearSelection();
+                    if (getScene() != null) getScene().getRoot().requestFocus();
+                    showNothing();
+                });
+            }
+        });
+
+        resultsListView.getItems().addListener((javafx.collections.ListChangeListener<Entry<T>>) c ->
+            updateListViewHeight());
+
+        applyVariant(model.getVariant());
+        runSearch(searchField.getText());
+    }
+
+    private void runSearch(String query) {
+        if (query == null) {
+            resultsListView.getSelectionModel().clearSelection();
+            resultsListView.getItems().clear();
+            return;
+        }
+
+        List<Entry<T>> results = model.search(query);
+        resultsListView.getSelectionModel().clearSelection();
+        resultsListView.getItems().setAll(results);
+        updateListViewHeight();
+
+        if (!isFocused) return;
+
+        if (results.isEmpty()) {
+            showNoResults();
+        } else {
+            showResults();
+        }
+    }
+
+    private void updateListViewHeight() {
+        int max = model.getMaxResults() > 0 ? model.getMaxResults() : Integer.MAX_VALUE;
+        int count = Math.min(resultsListView.getItems().size(), max);
+        double height = count * ROW_HEIGHT + 6;
+        resultsListView.setPrefHeight(height);
+        resultsListView.setMinHeight(height);
+        resultsListView.setMaxHeight(height);
+    }
+
+    private void applyVariant(FieldVariant variant) {
+        if (lastVariant == variant) return;
+        if (lastVariant != null) {
+            String cls = toStyleClass(lastVariant);
+            getStyleClass().remove(cls);
+            popupContent.getStyleClass().remove(cls);
+        }
+        if (variant != null) {
+            String cls = toStyleClass(variant);
+            getStyleClass().add(cls);
+            popupContent.getStyleClass().add(cls);
+        }
+        lastVariant = variant;
+    }
+
+    private static String toStyleClass(FieldVariant variant) {
+        return switch (variant) {
+            case OUTLINED -> "app-search-variant-outlined";
+            case FILLED -> "app-search-variant-filled";
+            case GHOST -> "app-search-variant-ghost";
+        };
+    }
+
+    private void showNothing() {
+        getStyleClass().remove("search-showing");
+        popupContent.getStyleClass().remove("search-showing");
+        popup.hide();
+    }
+
+    private void showNoResults() {
+        if (!getStyleClass().contains("search-showing"))
+            getStyleClass().add("search-showing");
+        if (!popupContent.getStyleClass().contains("search-showing"))
+            popupContent.getStyleClass().add("search-showing");
+        noResultsLabel.setVisible(true);
+        noResultsLabel.setManaged(true);
+        noResultsLabel.setPrefWidth(Double.MAX_VALUE);
+        resultsListView.setVisible(false);
+        resultsListView.setManaged(false);
+        showPopup();
+    }
+
+    private void showResults() {
+        if (!getStyleClass().contains("search-showing"))
+            getStyleClass().add("search-showing");
+        if (!popupContent.getStyleClass().contains("search-showing"))
+            popupContent.getStyleClass().add("search-showing");
+        noResultsLabel.setVisible(false);
+        noResultsLabel.setManaged(false);
+        resultsListView.setVisible(true);
+        resultsListView.setManaged(true);
+        showPopup();
+    }
+}
