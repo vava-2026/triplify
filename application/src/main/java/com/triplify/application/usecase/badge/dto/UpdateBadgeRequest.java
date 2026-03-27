@@ -11,9 +11,6 @@ public record UpdateBadgeRequest(
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
         String badgeId,
 
-        @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String groupId,
-
         String imageId,
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
