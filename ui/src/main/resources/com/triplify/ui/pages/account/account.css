@@ -54,3 +54,9 @@
     -fx-scale-y: 0.97;
 }
 
+.badges-grid {
+    -fx-padding: 10;
+    -fx-hgap: 15;
+    -fx-vgap: 15;
+    -fx-alignment: center;
+}
