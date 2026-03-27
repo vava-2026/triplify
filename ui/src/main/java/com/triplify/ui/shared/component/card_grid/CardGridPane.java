@@ -72,6 +72,7 @@ public class CardGridPane<T> extends VBox {
         scrollPane = new ScrollPane(grid);
         scrollPane.setFitToWidth(true);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
         scrollPane.getStyleClass().add("card-grid-scroll");
         VBox.setVgrow(scrollPane, Priority.ALWAYS);
 

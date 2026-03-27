@@ -6,6 +6,12 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundImage;
+import javafx.scene.layout.BackgroundPosition;
+import javafx.scene.layout.BackgroundRepeat;
+import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
@@ -23,7 +29,13 @@ public class TripCardView implements Initializable {
             "/com/triplify/ui/shared/component/trip/view/TripCard.fxml"
     );
 
-    private static final Map<String, String> URL_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, Image> IMAGE_CACHE = new ConcurrentHashMap<>();
+    private static final int MAX_IMAGE_WIDTH = 600;
+    private static final int MAX_IMAGE_HEIGHT = 400;
+
+    private static final BackgroundSize COVER_SIZE = new BackgroundSize(
+            1, 1, true, true, false, true
+    );
 
     @FXML private VBox root;
     @FXML private StackPane media;
@@ -74,19 +86,22 @@ public class TripCardView implements Initializable {
 
         boolean imageApplied = false;
         if (trip.coverUrl() != null && !trip.coverUrl().isBlank()) {
-            String imageUrl = resolveImageUrl(trip.coverUrl());
-            if (imageUrl != null) {
+            Image image = resolveImage(trip.coverUrl());
+            if (image != null && !image.isError()) {
                 imageApplied = true;
-                media.setStyle(
-                        "-fx-background-image: url('" + imageUrl + "');" +
-                        "-fx-background-size: cover;" +
-                        "-fx-background-position: center center;" +
-                        "-fx-background-repeat: no-repeat;"
+                BackgroundImage bg = new BackgroundImage(
+                        image,
+                        BackgroundRepeat.NO_REPEAT,
+                        BackgroundRepeat.NO_REPEAT,
+                        BackgroundPosition.CENTER,
+                        COVER_SIZE
                 );
+                media.setBackground(new Background(bg));
             }
         }
 
         if (!imageApplied) {
+            media.setBackground(null);
             media.setStyle(null);
             if (trip.coverKey() != null && !trip.coverKey().isBlank()) {
                 media.getStyleClass().add("trip-cover-" + trip.coverKey());
@@ -102,13 +117,15 @@ public class TripCardView implements Initializable {
         }
     }
 
-    private String resolveImageUrl(String coverUrl) {
-        return URL_CACHE.computeIfAbsent(coverUrl, url -> {
+    private Image resolveImage(String coverUrl) {
+        return IMAGE_CACHE.computeIfAbsent(coverUrl, url -> {
+            String resolved = url;
             if (url.startsWith("/")) {
                 URL resource = getClass().getResource(url);
-                return resource != null ? resource.toExternalForm() : null;
+                if (resource == null) return null;
+                resolved = resource.toExternalForm();
             }
-            return url;
+            return new Image(resolved, MAX_IMAGE_WIDTH, MAX_IMAGE_HEIGHT, true, true);
         });
     }
 
