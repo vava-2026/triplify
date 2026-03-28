@@ -14,7 +14,6 @@ SELECT InitSpatialMetaData(1);
 CREATE TABLE images (
     id          TEXT NOT NULL PRIMARY KEY,
     url         TEXT NOT NULL UNIQUE,
-    storage_key TEXT NOT NULL UNIQUE,
     description TEXT,
     uploaded_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
         CHECK (datetime(uploaded_at) IS NOT NULL)
