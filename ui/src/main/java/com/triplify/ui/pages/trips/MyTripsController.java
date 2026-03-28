@@ -54,7 +54,11 @@ public class MyTripsController extends SimpleLifecycleAwareController {
 
     @FXML
     public void onCreateTrip() {
-        log.info("Create new trip clicked");
+        RouterArgument args = new RouterArgument();
+        args.addArgument("tripId", 0);
+        args.addArgument("tripName", "Create Trip");
+        args.addArgument("tripStatus", TripStatus.DRAFTED);
+        getRouter().moveto(RouteIds.TRIP_DETAILS, args);
     }
 
     private void configureFilters() {
@@ -159,9 +163,14 @@ public class MyTripsController extends SimpleLifecycleAwareController {
         RouterArgument args = new RouterArgument();
         args.addArgument("tripId", trip.id());
         args.addArgument("tripName", trip.name());
+        args.addArgument("tripCountry", trip.country());
         args.addArgument("tripCategory", trip.category());
         args.addArgument("tripStatus", trip.status());
         args.addArgument("tripDates", dateRange);
+        args.addArgument("tripStartDate", trip.startDate() == null ? null : trip.startDate().toString());
+        args.addArgument("tripEndDate", trip.endDate() == null ? null : trip.endDate().toString());
+        args.addArgument("tripCoverUrl", trip.coverUrl());
+        args.addArgument("tripTags", trip.tags() == null ? "" : String.join(",", trip.tags()));
         getRouter().moveto(RouteIds.TRIP_DETAILS, args);
     }
 

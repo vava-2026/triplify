@@ -205,3 +205,354 @@
 .trip-cover-default {
     -fx-background-color: linear-gradient(to bottom right, #b5c7d6, #e6edf3);
 }
+
+.form-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-ink;
+}
+
+.trip-editor-root {
+    -fx-padding: 28px 28px 36px 28px;
+}
+
+.trip-editor-content {
+    -fx-spacing: 24px;
+    -fx-max-width: 1120px;
+}
+
+.trip-editor-topbar {
+    -fx-spacing: 14px;
+    -fx-alignment: center-left;
+}
+
+.trip-editor-back-button {
+    -fx-padding: 0 16 0 14;
+    -fx-pref-height: 38px;
+}
+
+.trip-editor-flow {
+    -fx-hgap: 24px;
+    -fx-vgap: 24px;
+}
+
+.trip-editor-main-column {
+    -fx-spacing: 24px;
+    -fx-pref-width: 760px;
+    -fx-min-width: 320px;
+}
+
+.trip-editor-side-column {
+    -fx-spacing: 16px;
+    -fx-pref-width: 280px;
+    -fx-min-width: 240px;
+}
+
+.trip-editor-card {
+    -fx-background-color: white;
+    -fx-background-radius: 18px;
+    -fx-padding: 18px;
+    -fx-effect: dropshadow(gaussian, rgba(12, 12, 13, 0.06), 16, 0, 0, 4);
+}
+
+.trip-editor-section-header {
+    -fx-alignment: center-left;
+    -fx-spacing: 8px;
+}
+
+.trip-editor-section-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-ink;
+}
+
+.trip-editor-section-icon {
+    -fx-icon-color: -color-primary;
+}
+
+.trip-editor-form-group {
+    -fx-spacing: 6px;
+}
+
+.trip-editor-field .input-item {
+    -fx-pref-height: 44px;
+}
+
+.trip-editor-field .input-item.input-item--filled {
+    -fx-background-color: #eef5fb;
+    -fx-border-color: transparent;
+}
+
+.trip-editor-field .input-item:focused {
+    -fx-border-color: #5f95c0;
+    -fx-background-color: white;
+}
+
+.trip-editor-textarea-field .textarea-item {
+    -fx-pref-height: 156px;
+    -fx-min-height: 156px;
+    -fx-pref-row-count: 5;
+    -fx-padding: 12 14 12 14;
+}
+
+.trip-editor-inline-row {
+    -fx-spacing: 10px;
+    -fx-alignment: center-left;
+}
+
+.trip-editor-inline-button {
+    -fx-pref-height: 42px;
+    -fx-padding: 0 14 0 14;
+}
+
+.trip-editor-select {
+    -fx-pref-height: 44px;
+    -fx-min-height: 44px;
+    -fx-max-height: 44px;
+    -fx-background-color: #eef5fb;
+    -fx-border-color: transparent;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-padding: 2px 10px 2px 10px;
+    -fx-text-fill: -color-primary-dark;
+}
+
+.trip-editor-select > .list-cell {
+    -fx-text-fill: -color-primary-dark;
+}
+
+.trip-editor-select > .text-field {
+    -fx-text-fill: -color-primary-dark;
+}
+
+.trip-editor-select > .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.trip-editor-select > .arrow-button > .arrow {
+    -fx-background-color: -color-primary-dark;
+}
+
+.trip-editor-select-popup {
+    -fx-background-color: #eef5fb;
+    -fx-border-color: rgba(47, 102, 144, 0.10);
+    -fx-border-radius: 0 0 10 10;
+    -fx-background-radius: 0 0 10 10;
+}
+
+.trip-editor-select-popup .list-cell {
+    -fx-padding: 8 12 8 12;
+    -fx-background-color: #eef5fb;
+    -fx-text-fill: -color-primary-dark;
+}
+
+.trip-editor-select-popup .list-cell:hover {
+    -fx-background-color: #e1edf7;
+    -fx-text-fill: -color-primary-dark;
+}
+
+.trip-editor-select-popup .list-cell:filled:selected,
+.trip-editor-select-popup .list-cell:filled:selected:hover {
+    -fx-background-color: #d7e8f7;
+    -fx-text-fill: -color-primary-dark;
+}
+
+.trip-editor-date-row {
+    -fx-spacing: 16px;
+}
+
+.trip-editor-date-picker {
+    -fx-pref-height: 44px;
+    -fx-background-color: #eef5fb;
+    -fx-background-radius: 10px;
+    -fx-border-color: transparent;
+    -fx-border-radius: 10px;
+}
+
+.trip-editor-date-picker > .text-field {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-primary-dark;
+}
+
+.trip-editor-date-picker > .arrow-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0 10 10 0;
+}
+
+.trip-editor-date-picker > .arrow-button > .arrow {
+    -fx-background-color: -color-primary-dark;
+}
+
+.trip-editor-chip-flow {
+    -fx-hgap: 8px;
+    -fx-vgap: 8px;
+}
+
+.trip-editor-chip {
+    -fx-background-radius: 999px;
+    -fx-border-radius: 999px;
+    -fx-padding: 6 12 6 12;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.trip-editor-chip-soft {
+    -fx-background-color: #eef5fb;
+    -fx-text-fill: #53758f;
+    -fx-border-color: transparent;
+}
+
+.trip-editor-chip-accent {
+    -fx-background-color: #d7e8f7;
+    -fx-text-fill: -color-primary-dark;
+    -fx-border-color: transparent;
+}
+
+.trip-editor-chip-placeholder {
+    -fx-text-fill: #8698a8;
+    -fx-font-size: 12px;
+}
+
+.trip-editor-upload-card {
+    -fx-spacing: 14px;
+}
+
+.trip-editor-upload-area {
+    -fx-min-height: 208px;
+    -fx-pref-height: 208px;
+    -fx-max-height: 208px;
+    -fx-background-color: #eef5fb;
+    -fx-background-radius: 16px;
+    -fx-border-color: #93b7d6;
+    -fx-border-radius: 16px;
+    -fx-border-style: dashed;
+    -fx-cursor: hand;
+}
+
+.trip-editor-upload-area-active {
+    -fx-background-color: #e4f0fa;
+    -fx-border-color: -color-primary;
+}
+
+.trip-editor-upload-placeholder {
+    -fx-alignment: center;
+    -fx-spacing: 8px;
+    -fx-padding: 18px;
+}
+
+.trip-editor-upload-icon {
+    -fx-icon-color: -color-primary-dark;
+}
+
+.trip-editor-upload-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-ink;
+    -fx-text-alignment: center;
+}
+
+.trip-editor-upload-subtitle {
+    -fx-font-size: 12px;
+    -fx-text-fill: #8698a8;
+}
+
+.trip-editor-helper-text {
+    -fx-font-size: 12px;
+    -fx-text-fill: #8698a8;
+}
+
+.trip-editor-action-group {
+    -fx-spacing: 10px;
+}
+
+.trip-editor-action-button {
+    -fx-pref-height: 42px;
+}
+
+.trip-editor-outline-button {
+    -fx-pref-height: 42px;
+    -fx-border-style: segments(8, 5);
+}
+
+.trip-editor-list {
+    -fx-spacing: 12px;
+}
+
+.trip-editor-route-card {
+    -fx-background-color: #f8fbfe;
+    -fx-background-radius: 14px;
+    -fx-padding: 10px;
+    -fx-border-color: rgba(47, 102, 144, 0.08);
+    -fx-border-radius: 14px;
+}
+
+.trip-editor-route-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-ink;
+}
+
+.trip-editor-route-subtitle {
+    -fx-font-size: 12px;
+    -fx-text-fill: #8698a8;
+}
+
+.trip-editor-places-flow {
+    -fx-hgap: 12px;
+    -fx-vgap: 12px;
+}
+
+.trip-editor-place-card {
+    -fx-pref-width: 152px;
+    -fx-background-color: #f8fbfe;
+    -fx-background-radius: 14px;
+    -fx-padding: 10px;
+    -fx-border-color: rgba(47, 102, 144, 0.08);
+    -fx-border-radius: 14px;
+}
+
+.trip-editor-place-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-ink;
+}
+
+.trip-editor-place-subtitle {
+    -fx-font-size: 11px;
+    -fx-text-fill: #8698a8;
+}
+
+.trip-editor-empty-card {
+    -fx-min-height: 72px;
+    -fx-background-color: #f8fbfe;
+    -fx-background-radius: 14px;
+    -fx-border-color: rgba(47, 102, 144, 0.12);
+    -fx-border-radius: 14px;
+    -fx-border-style: segments(8, 5);
+    -fx-padding: 14px;
+}
+
+.trip-editor-empty-state {
+    -fx-text-fill: #8698a8;
+    -fx-font-size: 12px;
+}
+
+.trip-editor-icon-button {
+    -fx-min-width: 30px;
+    -fx-pref-width: 30px;
+    -fx-max-width: 30px;
+    -fx-min-height: 30px;
+    -fx-pref-height: 30px;
+    -fx-max-height: 30px;
+    -fx-background-color: white;
+    -fx-background-radius: 10px;
+    -fx-border-color: rgba(47, 102, 144, 0.08);
+    -fx-border-radius: 10px;
+    -fx-cursor: hand;
+    -fx-padding: 0;
+}
+
+.trip-editor-icon-button-glyph {
+    -fx-icon-color: -color-primary-dark;
+}
