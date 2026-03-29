@@ -5,7 +5,8 @@ public sealed interface CountryError extends DomainError permits
         CountryError.AlreadyExists,
         CountryError.AlreadyBanned,
         CountryError.NotBanned,
-        CountryError.NotOwner {
+        CountryError.NotOwner,
+        CountryError.NotAuthenticated {
 
     record NotFound(String countryId) implements CountryError {
         @Override
@@ -64,6 +65,18 @@ public sealed interface CountryError extends DomainError permits
         @Override
         public String message() {
             return "You are not the owner of country '%s'".formatted(countryId);
+        }
+    }
+
+    record NotAuthenticated() implements CountryError {
+        @Override
+        public String code() {
+            return "error.country.not.authenticated";
+        }
+
+        @Override
+        public String message() {
+            return "You are not Authenticated";
         }
     }
 }
