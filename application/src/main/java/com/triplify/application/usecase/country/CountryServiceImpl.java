@@ -2,22 +2,22 @@ package com.triplify.application.usecase.country;
 
 import com.google.inject.Inject;
 import com.triplify.application.error.ApplicationError;
-import com.triplify.application.usecase.auth.AuthServiceImpl;
+import com.triplify.application.security.Authenticated;
 import com.triplify.application.usecase.country.dto.*;
 import com.triplify.application.usecase.session.SessionUser;
 import com.triplify.application.usecase.session.UserSessionContext;
 import com.triplify.domain.error.CountryError;
 import com.triplify.domain.model.Country;
-import com.triplify.domain.model.User;
+import com.triplify.domain.model.enums.RoleEnum;
 import com.triplify.domain.pagination.Page;
 import com.triplify.domain.repository.CountryRepository;
 import com.triplify.domain.result.Result;
-import org.checkerframework.checker.units.qual.C;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
+@Authenticated
 public class CountryServiceImpl implements CountryService {
     private static final Logger log = LoggerFactory.getLogger(CountryServiceImpl.class);
     private final CountryRepository countryRepository;
@@ -30,16 +30,13 @@ public class CountryServiceImpl implements CountryService {
     }
 
     @Override
+    @Authenticated(roles = {RoleEnum.CONFIGURATION_MANAGER})
     public Result<CountryResponse> addCountry(AddCountryRequest request) {
-        var res = sessionContext.getCurrent();
-        if (res.isEmpty()) {
-            log.warn("Attempted to add country without authentication");
-            return Result.fail(new CountryError.NotAuthenticated());
-        }
+        SessionUser user = sessionContext.getCurrent().orElseThrow();
 
         try {
             if (countryRepository.existsByName(request.name(), request.nameSk())) {
-                log.warn("Attempted to add country with existing name='{}' or nameSk='{}' by userId='{}'", request.name(), request.nameSk(), res.get().userId());
+                log.warn("Attempted to add country with existing name='{}' or nameSk='{}' by userId='{}'", request.name(), request.nameSk(), user.userId());
                 return Result.fail(new CountryError.AlreadyExists(request.name()));
             }
         }
@@ -48,7 +45,6 @@ public class CountryServiceImpl implements CountryService {
             return Result.fail(new ApplicationError.Unexpected("Failed to check existing country: " + e.getMessage()));
         }
 
-        SessionUser user = res.get();
         Country country = new Country(user.userId(), request.name(), request.nameSk(), request.emojiUnicode());
         try {
             countryRepository.create(country);
@@ -62,14 +58,10 @@ public class CountryServiceImpl implements CountryService {
     }
 
     @Override
+    @Authenticated(roles = {RoleEnum.CONFIGURATION_MANAGER})
     public Result<CountryResponse> updateCountry(UpdateCountryRequest request) {
-        var userRes = sessionContext.getCurrent();
-        if (userRes.isEmpty()) {
-            log.warn("Attempt to update country without authentication");
-            return Result.fail(new CountryError.NotAuthenticated());
-        }
+        SessionUser user = sessionContext.getCurrent().orElseThrow();
 
-        SessionUser user = userRes.get();
         try {
             Optional<Country> oldRes = countryRepository.findById(request.id());
             if (oldRes.isEmpty()) {
@@ -95,14 +87,10 @@ public class CountryServiceImpl implements CountryService {
     }
 
     @Override
+    @Authenticated(roles = {RoleEnum.CONFIGURATION_MANAGER})
     public Result<Void> deleteCountry(DeleteCountryRequest request) {
-        var userRes = sessionContext.getCurrent();
-        if (userRes.isEmpty()) {
-            log.warn("Attempt to delete country without authentication");
-            return Result.fail(new CountryError.NotAuthenticated());
-        }
+        SessionUser user = sessionContext.getCurrent().orElseThrow();
 
-        SessionUser user = userRes.get();
         try {
             Optional<Country> oldRes = countryRepository.findById(request.id());
             if (oldRes.isEmpty()) {
@@ -127,12 +115,14 @@ public class CountryServiceImpl implements CountryService {
     }
 
     @Override
+    @Authenticated(roles = {RoleEnum.CONFIGURATION_MANAGER})
     public Result<CountryResponse> banCountry(BanCountryRequest request) {
         // TODO: implement country ban.
         return Result.fail(new ApplicationError.Unexpected("TODO: CountryService.banCountry"));
     }
 
     @Override
+    @Authenticated(roles = {RoleEnum.CONFIGURATION_MANAGER})
     public Result<CountryResponse> unbanCountry(UnbanCountryRequest request) {
         // TODO: implement country unban.
         return Result.fail(new ApplicationError.Unexpected("TODO: CountryService.unbanCountry"));
