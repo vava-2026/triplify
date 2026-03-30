@@ -19,7 +19,7 @@ public class CountryRepositoryImpl implements CountryRepository {
 
     @Override
     public java.util.Optional<com.triplify.domain.model.Country> findById(String id) {
-        String sql = "SELECT id, created_by_id, name, name_sk, emoji_unicode, is_available " +
+        String sql = "SELECT id, created_by, name, name_sk, emoji_unicode, is_available " +
                 "FROM countries WHERE id = ? LIMIT 1";
 
         try (Connection conn = SQLiteConnectionFactory.getConnection();
@@ -74,7 +74,7 @@ public class CountryRepositoryImpl implements CountryRepository {
 
     @Override
     public void create(Country country) {
-        String sql = "INSERT INTO countries (id, created_by_id, name, name_sk, emoji_unicode, is_available)" +
+        String sql = "INSERT INTO countries (id, created_by, name, name_sk, emoji_unicode, is_available)" +
                 "VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = SQLiteConnectionFactory.getConnection();
@@ -99,7 +99,7 @@ public class CountryRepositoryImpl implements CountryRepository {
     @Override
     public void update(Country country) {
         String sql = "UPDATE countries" +
-                "SET created_by_id = ?, name = ?, name_sk = ?, emoji_unicode = ?, is_available = ?" +
+                "SET created_by = ?, name = ?, name_sk = ?, emoji_unicode = ?, is_available = ?" +
                 "WHERE id = ?";
 
         try (Connection conn = SQLiteConnectionFactory.getConnection();
@@ -124,7 +124,7 @@ public class CountryRepositoryImpl implements CountryRepository {
 
     private Country mapRow(ResultSet rs) throws SQLException {
         UUID id = UUID.fromString(rs.getString("id"));
-        UUID createdById = UUID.fromString(rs.getString("created_by_id"));
+        UUID createdById = UUID.fromString(rs.getString("created_by"));
         String name = rs.getString("name");
         String nameSk = rs.getString("name_sk");
         String emojiUnicode = rs.getString("emoji_unicode");
