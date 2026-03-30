@@ -45,7 +45,7 @@ public class ExceptionHandlingProxy implements InvocationHandler {
             if (Result.class.isAssignableFrom(method.getReturnType())) {
                 String operation = target.getClass().getSimpleName() + "." + method.getName();
                 log.error("Unhandled exception in {}", operation, cause);
-                return Result.fail(new ApplicationError.Unexpected(operation, cause));
+                return Result.fail(new ApplicationError.Unexpected(operation));
             }
 
             throw cause;
