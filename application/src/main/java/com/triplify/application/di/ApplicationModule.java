@@ -4,6 +4,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
 import com.google.inject.Provider;
 import com.triplify.application.security.AuthenticatingProxy;
+import com.triplify.application.security.ExceptionHandlingProxy;
 import com.triplify.application.usecase.auth.AuthService;
 import com.triplify.application.usecase.auth.AuthServiceImpl;
 import com.triplify.application.usecase.badge.BadgeService;
@@ -68,7 +69,8 @@ public class ApplicationModule extends AbstractModule {
         Provider<UserSessionContext> sessionProvider = getProvider(UserSessionContext.class);
         bind(iface).toProvider(() -> {
             T instance = implProvider.get();
-            T authenticated = AuthenticatingProxy.wrap(instance, iface, sessionProvider.get());
+            T safe = ExceptionHandlingProxy.wrap(instance, iface);
+            T authenticated = AuthenticatingProxy.wrap(safe, iface, sessionProvider.get());
             return ValidatingProxy.wrap(authenticated, iface);
         }).in(Singleton.class);
     }
