@@ -1,6 +1,9 @@
 package com.triplify.infrastructure.repository;
 
+import com.triplify.domain.filter.CountryFilter;
 import com.triplify.domain.model.Country;
+import com.triplify.domain.pagination.Page;
+import com.triplify.domain.pagination.PageRequest;
 import com.triplify.domain.repository.CountryRepository;
 import com.triplify.infrastructure.repository.persistence.SQLiteConnectionFactory;
 import org.slf4j.Logger;
@@ -10,6 +13,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.Optional;
 
@@ -36,6 +41,53 @@ public class CountryRepositoryImpl implements CountryRepository {
             throw new RuntimeException("Database error while finding country by name", e);
         }
         return Optional.empty();
+    }
+
+    public Page<Country> findAll(PageRequest page, CountryFilter filter) {
+        String sql = "SELECT id, created_by, name, name_sk, emoji_unicode, is_available " +
+                "FROM countries " +
+                "WHERE 1=1 ";
+
+        if  (filter.name() != null) {
+            sql += "AND (name LIKE ? OR name_sk LIKE ?) ";
+        }
+
+        if  (filter.banFilter() != null) {
+            switch (filter.banFilter()) {
+                case ONLY_BANNED -> sql += "AND is_available = 0 ";
+                case ONLY_UNBANNED -> sql += "AND is_available = 1 ";
+                default -> {}
+            }
+        }
+
+        sql += "LIMIT ? OFFSET ?";
+
+        try (Connection conn = SQLiteConnectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            int paramIndex = 1;
+
+            if (filter.name() != null) {
+                // TODO: do we want it here, or should the user specify '%' themselves?
+                ps.setString(paramIndex++, filter.name() + "%");
+                ps.setString(paramIndex++, filter.name() + "%");
+            }
+
+            ps.setInt(paramIndex++, page.size());
+            ps.setInt(paramIndex++, page.offset());
+
+            try (ResultSet rs = ps.executeQuery()) {
+                List<Country> countries = new ArrayList<>();
+                while (rs.next()) {
+                    countries.add(mapRow(rs));
+                }
+                return Page.of(countries, page, countries.size());
+            }
+
+        }
+        catch (Exception e) {
+            log.error("Failed to find countries with filter name='{}'", filter.name(), e);
+            throw new RuntimeException("Database error while finding countries", e);
+        }
     }
 
     public boolean existsByName(String name, String nameSk) {
@@ -98,8 +150,8 @@ public class CountryRepositoryImpl implements CountryRepository {
 
     @Override
     public void update(Country country) {
-        String sql = "UPDATE countries" +
-                "SET created_by = ?, name = ?, name_sk = ?, emoji_unicode = ?, is_available = ?" +
+        String sql = "UPDATE countries " +
+                "SET created_by = ?, name = ?, name_sk = ?, emoji_unicode = ?, is_available = ? " +
                 "WHERE id = ?";
 
         try (Connection conn = SQLiteConnectionFactory.getConnection();
