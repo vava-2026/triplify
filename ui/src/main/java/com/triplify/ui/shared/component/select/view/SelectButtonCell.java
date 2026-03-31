@@ -44,6 +44,7 @@ public class SelectButtonCell<T> extends ListCell<Entry<T>> {
     @Override
     protected void updateItem(Entry<T> entry, boolean empty) {
         super.updateItem(entry, empty);
+        getStyleClass().remove("select-placeholder");
         if (empty || entry == null) {
             if (emojiView != null) {
                 wrapper.getChildren().setAll(emojiView, placeholderLabel);
@@ -53,6 +54,7 @@ public class SelectButtonCell<T> extends ListCell<Entry<T>> {
                 setGraphic(null);
                 setText(placeholder);
             }
+            getStyleClass().add("select-placeholder");
             setContentDisplay(ContentDisplay.TEXT_ONLY);
         } else {
             entryView.update(entry);

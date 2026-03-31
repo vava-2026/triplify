@@ -16,6 +16,7 @@ import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.toast.ToastService;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -105,8 +106,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         descriptionInputContainer.getChildren().add(descriptionInput);
 
         contentFlow.prefWrapLengthProperty().bind(contentContainer.widthProperty());
-        coverPreview.fitWidthProperty().bind(uploadArea.widthProperty());
-        coverPreview.fitHeightProperty().bind(uploadArea.heightProperty());
+        initializeCoverPreview();
 
         configureButtonIcon(saveButton, "fth-save");
         configureButtonIcon(discardButton, "fth-trash-2");
@@ -260,6 +260,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
 
         if (isVectorImage(file)) {
             coverPreview.setImage(null);
+            coverPreview.setViewport(null);
             coverPreview.setVisible(false);
             coverPreview.setManaged(false);
             uploadPlaceholder.setVisible(true);
@@ -271,6 +272,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         image.errorProperty().addListener((obs, oldVal, isError) -> {
             if (Boolean.TRUE.equals(isError)) {
                 coverPreview.setImage(null);
+                coverPreview.setViewport(null);
                 coverPreview.setVisible(false);
                 coverPreview.setManaged(false);
                 uploadPlaceholder.setVisible(true);
@@ -280,13 +282,66 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         });
         image.progressProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal.doubleValue() >= 1.0 && !image.isError()) {
-                coverPreview.setImage(image);
+                setCoverPreviewImage(image);
                 coverPreview.setVisible(true);
                 coverPreview.setManaged(false);
                 uploadPlaceholder.setVisible(false);
                 uploadPlaceholder.setManaged(false);
             }
         });
+    }
+
+    private void initializeCoverPreview() {
+        coverPreview.setPreserveRatio(false);
+        coverPreview.fitWidthProperty().bind(uploadArea.widthProperty());
+        coverPreview.fitHeightProperty().bind(uploadArea.heightProperty());
+        uploadArea.widthProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
+        uploadArea.heightProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
+        coverPreview.imageProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
+    }
+
+    private void setCoverPreviewImage(Image image) {
+        coverPreview.setImage(image);
+        updateCoverPreviewViewport();
+        if (image == null) {
+            coverPreview.setViewport(null);
+            return;
+        }
+
+        image.widthProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
+        image.heightProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
+        image.progressProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
+    }
+
+    private void updateCoverPreviewViewport() {
+        Image image = coverPreview.getImage();
+        if (image == null) {
+            coverPreview.setViewport(null);
+            return;
+        }
+
+        double imageWidth = image.getWidth();
+        double imageHeight = image.getHeight();
+        double viewportWidth = uploadArea.getWidth();
+        double viewportHeight = uploadArea.getHeight();
+
+        if (imageWidth <= 0 || imageHeight <= 0 || viewportWidth <= 0 || viewportHeight <= 0) {
+            return;
+        }
+
+        double imageRatio = imageWidth / imageHeight;
+        double viewportRatio = viewportWidth / viewportHeight;
+
+        if (imageRatio > viewportRatio) {
+            double cropWidth = imageHeight * viewportRatio;
+            double x = (imageWidth - cropWidth) / 2.0;
+            coverPreview.setViewport(new Rectangle2D(x, 0, cropWidth, imageHeight));
+            return;
+        }
+
+        double cropHeight = imageWidth / viewportRatio;
+        double y = (imageHeight - cropHeight) / 2.0;
+        coverPreview.setViewport(new Rectangle2D(0, y, imageWidth, cropHeight));
     }
 
     private void initializeMap() {

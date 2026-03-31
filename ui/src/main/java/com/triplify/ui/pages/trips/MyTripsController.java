@@ -10,7 +10,11 @@ import com.triplify.application.service.TripService;
 import com.triplify.application.service.TripServiceImpl;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.shared.component.card_grid.CardGridPane;
+import com.triplify.ui.shared.component.select.entry.model.Entry;
+import com.triplify.ui.shared.component.select.model.Select;
+import com.triplify.ui.shared.component.select.view.SelectView;
 import com.triplify.ui.shared.component.trip.view.TripCardView;
+import com.triplify.ui.shared.model.FieldVariant;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -27,6 +31,7 @@ import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class MyTripsController extends SimpleLifecycleAwareController {
 
@@ -34,14 +39,16 @@ public class MyTripsController extends SimpleLifecycleAwareController {
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("MMM d, yyyy");
 
     @FXML private ComboBox<String> countrySelect;
-    @FXML private ComboBox<String> categorySelect;
-    @FXML private ComboBox<String> tagSelect;
+    @FXML private VBox categorySelectContainer;
+    @FXML private VBox tagSelectContainer;
     @FXML private ComboBox<String> statusSelect;
     @FXML private ComboBox<String> startTimeSelect;
     @FXML private ComboBox<TripSort> sortSelect;
     @FXML private CardGridPane<TripResponse> cardGrid;
 
     private final TripService tripService = new TripServiceImpl();
+    private Select<String> categorySelectModel;
+    private Select<String> tagSelectModel;
 
     @FXML
     private void initialize() {
@@ -65,12 +72,14 @@ public class MyTripsController extends SimpleLifecycleAwareController {
         countrySelect.setItems(FXCollections.observableArrayList(
                 "All", "Ukraine", "Japan", "United States", "Kenya", "Czech Republic", "Canada"
         ));
-        categorySelect.setItems(FXCollections.observableArrayList(
-                "All", "Culture", "Tourism", "Nature", "Relax", "Memorial"
-        ));
-        tagSelect.setItems(FXCollections.observableArrayList(
-                "All", "City", "Food", "Adventure", "Nature", "Family", "Shopping"
-        ));
+        categorySelectModel = createFilterSelectModel(
+                List.of("All", "Culture", "Tourism", "Nature", "Relax", "Memorial"),
+                "Category"
+        );
+        tagSelectModel = createFilterSelectModel(
+                List.of("All", "City", "Food", "Adventure", "Nature", "Family", "Shopping"),
+                "Tags"
+        );
         statusSelect.setItems(FXCollections.observableArrayList(
                 "All",
                 TripStatus.VISITED.getLabel(),
@@ -84,10 +93,14 @@ public class MyTripsController extends SimpleLifecycleAwareController {
         ));
 
         countrySelect.getSelectionModel().selectFirst();
-        categorySelect.getSelectionModel().selectFirst();
-        tagSelect.getSelectionModel().selectFirst();
         statusSelect.getSelectionModel().selectFirst();
         startTimeSelect.getSelectionModel().selectFirst();
+
+        selectFirst(categorySelectModel);
+        selectFirst(tagSelectModel);
+
+        categorySelectContainer.getChildren().setAll(createFilterSelectView(categorySelectModel, 130));
+        tagSelectContainer.getChildren().setAll(createFilterSelectView(tagSelectModel, 120));
     }
 
     private void configureSort() {
@@ -107,8 +120,8 @@ public class MyTripsController extends SimpleLifecycleAwareController {
 
     private void attachListeners() {
         countrySelect.valueProperty().addListener((obs, oldV, newV) -> cardGrid.refresh());
-        categorySelect.valueProperty().addListener((obs, oldV, newV) -> cardGrid.refresh());
-        tagSelect.valueProperty().addListener((obs, oldV, newV) -> cardGrid.refresh());
+        categorySelectModel.selectedItemProperty().addListener((obs, oldV, newV) -> cardGrid.refresh());
+        tagSelectModel.selectedItemProperty().addListener((obs, oldV, newV) -> cardGrid.refresh());
         statusSelect.valueProperty().addListener((obs, oldV, newV) -> cardGrid.refresh());
         startTimeSelect.valueProperty().addListener((obs, oldV, newV) -> cardGrid.refresh());
         sortSelect.valueProperty().addListener((obs, oldV, newV) -> cardGrid.refresh());
@@ -116,8 +129,8 @@ public class MyTripsController extends SimpleLifecycleAwareController {
 
     private CardGridPane.PageResult<TripResponse> loadTripsPage(int page, int pageSize) {
         String country = normalizeFilter(countrySelect.getValue());
-        String category = normalizeFilter(categorySelect.getValue());
-        String tag = normalizeFilter(tagSelect.getValue());
+        String category = normalizeFilter(selectedValue(categorySelectModel));
+        String tag = normalizeFilter(selectedValue(tagSelectModel));
         TripStatus status = TripStatus.fromLabel(statusSelect.getValue());
         String startTime = normalizeStartTime(startTimeSelect.getValue());
 
@@ -203,5 +216,41 @@ public class MyTripsController extends SimpleLifecycleAwareController {
             return start.format(DATE_FORMAT) + " - " + end.format(DATE_FORMAT);
         }
         return start == null ? end.format(DATE_FORMAT) : start.format(DATE_FORMAT);
+    }
+
+    private Select<String> createFilterSelectModel(List<String> values, String placeholder) {
+        return Select.<String>builder()
+                .placeholder(placeholder)
+                .variant(FieldVariant.FILLED)
+                .items(values.stream().map(this::toEntry).toList())
+                .build();
+    }
+
+    private SelectView<String> createFilterSelectView(Select<String> model, double width) {
+        SelectView<String> view = new SelectView<>();
+        view.update(model);
+        view.setPrefWidth(width);
+        view.setMaxWidth(width);
+        view.getComboBox().setPrefWidth(width);
+        view.getComboBox().setMaxWidth(width);
+        view.getComboBox().getStyleClass().add("trips-filter");
+        return view;
+    }
+
+    private void selectFirst(Select<String> model) {
+        if (model != null && !model.getItems().isEmpty()) {
+            model.setSelectedItem(model.getItems().get(0));
+        }
+    }
+
+    private Entry<String> toEntry(String value) {
+        return Entry.builder(value, value).build();
+    }
+
+    private String selectedValue(Select<String> model) {
+        if (model == null || model.getSelectedItem() == null) {
+            return null;
+        }
+        return model.getSelectedItem().getValue();
     }
 }

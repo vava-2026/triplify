@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.image.ImageView?>
@@ -50,11 +49,11 @@
                             <HBox styleClass="trip-editor-date-row">
                                 <VBox HBox.hgrow="ALWAYS" styleClass="trip-editor-form-group">
                                     <Label text="Start Date" styleClass="form-label"/>
-                                    <DatePicker fx:id="startDatePicker" maxWidth="Infinity" styleClass="trip-editor-date-picker"/>
+                                    <VBox fx:id="startDateContainer"/>
                                 </VBox>
                                 <VBox HBox.hgrow="ALWAYS" styleClass="trip-editor-form-group">
                                     <Label text="End Date" styleClass="form-label"/>
-                                    <DatePicker fx:id="endDatePicker" maxWidth="Infinity" styleClass="trip-editor-date-picker"/>
+                                    <VBox fx:id="endDateContainer"/>
                                 </VBox>
                             </HBox>
 
@@ -144,14 +143,7 @@
 
                             <VBox styleClass="trip-editor-form-group">
                                 <Label text="Tags" styleClass="form-label"/>
-                                <FlowPane fx:id="tagsFlow" styleClass="trip-editor-chip-flow"/>
-                                <HBox styleClass="trip-editor-inline-row">
-                                    <VBox fx:id="tagSelectContainer" HBox.hgrow="ALWAYS"/>
-                                    <Button fx:id="addTagButton"
-                                            onAction="#onAddTag"
-                                            text="Add Tag"
-                                            styleClass="app-btn,app-btn-secondary,trip-editor-inline-button"/>
-                                </HBox>
+                                <VBox fx:id="tagPickerContainer"/>
                             </VBox>
                         </VBox>
 

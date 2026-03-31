@@ -4,7 +4,9 @@ import com.google.inject.Inject;
 import com.triplify.application.response.TripStatus;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.routing.TriplifyRouterContext;
+import com.triplify.ui.shared.component.date_picker.DatePickerItem;
 import com.triplify.ui.shared.component.input_item.InputItem;
+import com.triplify.ui.shared.component.tag_picker.TagPickerItem;
 import com.triplify.ui.shared.component.select.entry.model.Entry;
 import com.triplify.ui.shared.component.select.model.Select;
 import com.triplify.ui.shared.component.select.view.SelectView;
@@ -14,9 +16,9 @@ import com.triplify.ui.shared.toast.ToastService;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -67,8 +69,8 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
     @FXML private VBox titleInputContainer;
     @FXML private FlowPane countriesFlow;
     @FXML private VBox countrySelectContainer;
-    @FXML private DatePicker startDatePicker;
-    @FXML private DatePicker endDatePicker;
+    @FXML private VBox startDateContainer;
+    @FXML private VBox endDateContainer;
     @FXML private VBox descriptionInputContainer;
 
     @FXML private StackPane uploadArea;
@@ -77,13 +79,11 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
     @FXML private Label selectedImageLabel;
 
     @FXML private VBox categorySelectContainer;
-    @FXML private FlowPane tagsFlow;
-    @FXML private VBox tagSelectContainer;
+    @FXML private VBox tagPickerContainer;
     @FXML private VBox routeListContainer;
     @FXML private FlowPane placesFlow;
 
     @FXML private Button addCountryButton;
-    @FXML private Button addTagButton;
     @FXML private Button addRouteButton;
     @FXML private Button addPlaceButton;
     @FXML private Button saveButton;
@@ -103,24 +103,30 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
     private TripStatus tripStatus;
     private String coverImagePath;
     private String currentTripDisplayName = "New Trip";
+    private DatePickerItem startDateInput;
+    private DatePickerItem endDateInput;
+    private TagPickerItem tagPickerInput;
     private Select<String> countrySelectModel;
     private Select<String> categorySelectModel;
-    private Select<String> tagSelectModel;
 
     @FXML
     public void initialize() {
         titleInput = createInput("input.placeholder.tripTitle");
         descriptionInput = createTextArea("input.placeholder.tripDescription");
+        startDateInput = createDatePickerItem("dd/MM/yyyy");
+        endDateInput = createDatePickerItem("dd/MM/yyyy");
+        tagPickerInput = createTagPickerItem();
 
         titleInputContainer.getChildren().add(titleInput);
         descriptionInputContainer.getChildren().add(descriptionInput);
+        startDateContainer.getChildren().add(startDateInput);
+        endDateContainer.getChildren().add(endDateInput);
+        tagPickerContainer.getChildren().add(tagPickerInput);
 
         contentFlow.prefWrapLengthProperty().bind(contentContainer.widthProperty());
-        coverPreview.fitWidthProperty().bind(uploadArea.widthProperty());
-        coverPreview.fitHeightProperty().bind(uploadArea.heightProperty());
+        initializeCoverPreview();
 
         configureButtonIcon(addCountryButton, "fth-plus");
-        configureButtonIcon(addTagButton, "fth-plus");
         configureButtonIcon(addRouteButton, "fth-plus");
         configureButtonIcon(addPlaceButton, "fth-plus");
         configureButtonIcon(saveButton, "fth-save");
@@ -129,7 +135,6 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         installRoundedClip(uploadArea, 16);
         initializeSelects();
         renderCountryChips();
-        renderTagChips();
         renderRoutes();
         renderPlaces();
     }
@@ -190,20 +195,6 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
             renderCountryChips();
         }
         countrySelectModel.setSelectedItem(null);
-    }
-
-    @FXML
-    private void onAddTag() {
-        String tag = selectedValue(tagSelectModel);
-        if (tag == null || tag.isBlank()) {
-            toast.info("Choose a tag first.");
-            return;
-        }
-
-        if (selectedTags.add(tag)) {
-            renderTagChips();
-        }
-        tagSelectModel.setSelectedItem(null);
     }
 
     @FXML
@@ -299,11 +290,9 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
     private void initializeSelects() {
         countrySelectModel = createSelectModel(AVAILABLE_COUNTRIES, "Choose a country");
         categorySelectModel = createSelectModel(AVAILABLE_CATEGORIES, "Choose a category");
-        tagSelectModel = createSelectModel(AVAILABLE_TAGS, "Choose a tag");
 
         countrySelectContainer.getChildren().setAll(createSelectView(countrySelectModel));
         categorySelectContainer.getChildren().setAll(createSelectView(categorySelectModel));
-        tagSelectContainer.getChildren().setAll(createSelectView(tagSelectModel));
     }
 
     private void populateHeader(String tripName, String tripDates) {
@@ -333,12 +322,12 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
 
         selectedTags.clear();
         parseCsv(tripTagsCsv).forEach(selectedTags::add);
-        renderTagChips();
+        syncTagPicker();
 
         categorySelectModel.setSelectedItem(findEntry(categorySelectModel, tripCategory));
 
-        startDatePicker.setValue(parseDate(tripStartDate));
-        endDatePicker.setValue(parseDate(tripEndDate));
+        startDateInput.setValue(parseDate(tripStartDate));
+        endDateInput.setValue(parseDate(tripEndDate));
     }
 
     private void populateDemoLists(String tripName, String tripCountry) {
@@ -379,19 +368,13 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
     }
 
     private void renderCountryChips() {
-        renderChipGroup(countriesFlow, selectedCountries, false, country ->
+        renderChipGroup(countriesFlow, selectedCountries, country ->
                 selectedCountries.remove(country));
-    }
-
-    private void renderTagChips() {
-        renderChipGroup(tagsFlow, selectedTags, true, tag ->
-                selectedTags.remove(tag));
     }
 
     private void renderChipGroup(
             FlowPane container,
             Set<String> values,
-            boolean accent,
             java.util.function.Consumer<String> onRemove
     ) {
         container.getChildren().clear();
@@ -405,14 +388,10 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         for (String value : values) {
             Button chip = new Button(value + "  ×");
             chip.setFocusTraversable(false);
-            chip.getStyleClass().addAll("trip-editor-chip", accent ? "trip-editor-chip-accent" : "trip-editor-chip-soft");
+            chip.getStyleClass().addAll("trip-editor-chip", "trip-editor-chip-soft");
             chip.setOnAction(event -> {
                 onRemove.accept(value);
-                if (accent) {
-                    renderTagChips();
-                } else {
-                    renderCountryChips();
-                }
+                renderCountryChips();
             });
             container.getChildren().add(chip);
         }
@@ -525,7 +504,7 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
     }
 
     private void showCoverImage(String imagePath, String tripName) {
-        if ((imagePath == null || imagePath.isBlank()) && createMode) {
+        if (imagePath == null || imagePath.isBlank()) {
             coverPreview.setImage(null);
             coverPreview.setVisible(false);
             coverPreview.setManaged(false);
@@ -537,19 +516,29 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
             return;
         }
 
+        String fileName = extractImageName(imagePath, tripName);
+        selectedImageLabel.setText(
+                fileName
+        );
+        selectedImageLabel.setVisible(true);
+        selectedImageLabel.setManaged(true);
+
+        if (isVectorImagePath(imagePath)) {
+            coverPreview.setImage(null);
+            coverPreview.setViewport(null);
+            coverPreview.setVisible(false);
+            coverPreview.setManaged(false);
+            uploadPlaceholder.setVisible(true);
+            uploadPlaceholder.setManaged(true);
+            return;
+        }
+
         Image image = loadImage(imagePath);
-        coverPreview.setImage(image);
+        setCoverPreviewImage(image);
         coverPreview.setVisible(true);
         coverPreview.setManaged(false);
         uploadPlaceholder.setVisible(false);
         uploadPlaceholder.setManaged(false);
-        selectedImageLabel.setText(
-                imagePath == null || imagePath.isBlank()
-                        ? (createMode ? "No cover selected yet" : safeText(tripName) + " cover")
-                        : imagePath.substring(imagePath.lastIndexOf('/') + 1)
-        );
-        selectedImageLabel.setVisible(true);
-        selectedImageLabel.setManaged(true);
     }
 
     private void handleCoverImage(File file) {
@@ -565,23 +554,29 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
 
         if (isVectorImage(file)) {
             coverPreview.setImage(null);
+            coverPreview.setViewport(null);
             coverPreview.setVisible(false);
             coverPreview.setManaged(false);
             uploadPlaceholder.setVisible(true);
             uploadPlaceholder.setManaged(true);
-            toast.info("SVG attached", "Preview for SVG is not available in this card.");
             return;
         }
 
         Image image = new Image(file.toURI().toString(), true);
         image.errorProperty().addListener((obs, oldVal, isError) -> {
             if (Boolean.TRUE.equals(isError)) {
+                coverPreview.setImage(null);
+                coverPreview.setViewport(null);
+                coverPreview.setVisible(false);
+                coverPreview.setManaged(false);
+                uploadPlaceholder.setVisible(true);
+                uploadPlaceholder.setManaged(true);
                 toast.warning("Image preview is unavailable, but the file is attached.");
             }
         });
         image.progressProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal.doubleValue() >= 1.0 && !image.isError()) {
-                coverPreview.setImage(image);
+                setCoverPreviewImage(image);
                 coverPreview.setVisible(true);
                 coverPreview.setManaged(false);
                 uploadPlaceholder.setVisible(false);
@@ -635,6 +630,83 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         return input;
     }
 
+    private DatePickerItem createDatePickerItem(String formatPattern) {
+        DatePickerItem input = new DatePickerItem(formatPattern, FieldVariant.FILLED);
+        input.getStyleClass().add("trip-editor-date-input");
+        return input;
+    }
+
+    private TagPickerItem createTagPickerItem() {
+        TagPickerItem input = new TagPickerItem();
+        input.setPlaceholderText("Choose a tag");
+        input.setPopupTitle("All tags");
+        input.setAvailableTags(AVAILABLE_TAGS);
+        input.setOnSelectionChanged(tags -> {
+            selectedTags.clear();
+            selectedTags.addAll(tags);
+        });
+        input.getStyleClass().add("trip-editor-tag-picker");
+        return input;
+    }
+
+    private void syncTagPicker() {
+        tagPickerInput.setAvailableTags(AVAILABLE_TAGS);
+        tagPickerInput.setSelectedTags(selectedTags);
+    }
+
+    private void initializeCoverPreview() {
+        coverPreview.setPreserveRatio(false);
+        coverPreview.fitWidthProperty().bind(uploadArea.widthProperty());
+        coverPreview.fitHeightProperty().bind(uploadArea.heightProperty());
+        uploadArea.widthProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
+        uploadArea.heightProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
+        coverPreview.imageProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
+    }
+
+    private void setCoverPreviewImage(Image image) {
+        coverPreview.setImage(image);
+        updateCoverPreviewViewport();
+        if (image == null) {
+            coverPreview.setViewport(null);
+            return;
+        }
+
+        image.widthProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
+        image.heightProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
+        image.progressProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
+    }
+
+    private void updateCoverPreviewViewport() {
+        Image image = coverPreview.getImage();
+        if (image == null) {
+            coverPreview.setViewport(null);
+            return;
+        }
+
+        double imageWidth = image.getWidth();
+        double imageHeight = image.getHeight();
+        double viewportWidth = uploadArea.getWidth();
+        double viewportHeight = uploadArea.getHeight();
+
+        if (imageWidth <= 0 || imageHeight <= 0 || viewportWidth <= 0 || viewportHeight <= 0) {
+            return;
+        }
+
+        double imageRatio = imageWidth / imageHeight;
+        double viewportRatio = viewportWidth / viewportHeight;
+
+        if (imageRatio > viewportRatio) {
+            double cropWidth = imageHeight * viewportRatio;
+            double x = (imageWidth - cropWidth) / 2.0;
+            coverPreview.setViewport(new Rectangle2D(x, 0, cropWidth, imageHeight));
+            return;
+        }
+
+        double cropHeight = imageWidth / viewportRatio;
+        double y = (imageHeight - cropHeight) / 2.0;
+        coverPreview.setViewport(new Rectangle2D(0, y, imageWidth, cropHeight));
+    }
+
     private Select<String> createSelectModel(List<String> values, String placeholder) {
         return Select.<String>builder()
                 .placeholder(placeholder)
@@ -649,6 +721,9 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         view.setMaxWidth(Double.MAX_VALUE);
         view.getComboBox().setMaxWidth(Double.MAX_VALUE);
         view.getComboBox().getStyleClass().add("trip-editor-select");
+        view.getComboBox().skinProperty().addListener((obs, oldSkin, newSkin) ->
+                Platform.runLater(() -> styleSelectChevron(view)));
+        Platform.runLater(() -> styleSelectChevron(view));
         view.getComboBox().showingProperty().addListener((obs, wasShowing, isShowing) -> {
             if (isShowing) {
                 Platform.runLater(() -> styleSelectPopup(view));
@@ -662,6 +737,24 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         if (listView != null && !listView.getStyleClass().contains("trip-editor-select-popup")) {
             listView.getStyleClass().add("trip-editor-select-popup");
         }
+    }
+
+    private void styleSelectChevron(SelectView<String> view) {
+        Node arrowButton = view.getComboBox().lookup(".arrow-button");
+        if (!(arrowButton instanceof StackPane buttonPane)) {
+            return;
+        }
+
+        boolean alreadyStyled = buttonPane.getChildren().stream()
+                .anyMatch(node -> node.getStyleClass().contains("trip-editor-select-chevron"));
+        if (alreadyStyled) {
+            return;
+        }
+
+        FontIcon chevronIcon = new FontIcon("fth-chevron-down");
+        chevronIcon.setIconSize(14);
+        chevronIcon.getStyleClass().addAll("app-tag-picker-toggle-icon", "trip-editor-select-chevron");
+        buttonPane.getChildren().setAll(chevronIcon);
     }
 
     private Entry<String> toEntry(String value) {
@@ -765,6 +858,23 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
 
     private boolean isVectorImage(File file) {
         return file.getName().toLowerCase(Locale.ROOT).endsWith(".svg");
+    }
+
+    private boolean isVectorImagePath(String imagePath) {
+        return imagePath != null && imagePath.toLowerCase(Locale.ROOT).endsWith(".svg");
+    }
+
+    private String extractImageName(String imagePath, String tripName) {
+        if (imagePath == null || imagePath.isBlank()) {
+            return createMode ? "" : safeText(tripName) + " cover";
+        }
+
+        int slashIndex = Math.max(imagePath.lastIndexOf('/'), imagePath.lastIndexOf('\\'));
+        if (slashIndex >= 0 && slashIndex + 1 < imagePath.length()) {
+            return imagePath.substring(slashIndex + 1);
+        }
+
+        return imagePath;
     }
 
     private record RouteItem(String title, String subtitle, String imagePath) { }
