@@ -2,5 +2,5 @@
 
 Run the app using:
 ```
-./gradlew :ui:run
+./gradlew :bootstrap:run
 ```

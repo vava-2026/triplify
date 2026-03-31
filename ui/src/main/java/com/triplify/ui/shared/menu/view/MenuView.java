@@ -1,6 +1,6 @@
 package com.triplify.ui.shared.menu.view;
 
-import com.triplify.application.usecase.category.CategoryResponse;
+import com.triplify.application.usecase.category.dto.CategoryResponse;
 import com.triplify.application.usecase.category.CategoryService;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
