@@ -16,6 +16,7 @@ import com.triplify.ui.shared.component.button.view.AppButtonView;
 import com.triplify.ui.shared.component.checkbox_item.CheckboxItem;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.input_item.PasswordItem;
+import com.triplify.ui.shared.menu.model.MenuItem;
 import com.triplify.ui.shared.toast.ToastService;
 import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import javafx.beans.binding.Bindings;
@@ -177,6 +178,9 @@ public class SignUpController extends SimpleLifecycleAwareController {
             var user = sessionContext.getCurrent().orElseThrow(() -> new IllegalStateException("User should be set in session after successful sign up"));
             log.info("Sign up successful for user '{}'", user.username());
             toast.success("Welcome, " + user.username() + "!");
+            TriplifyRouterContext context = (TriplifyRouterContext) getRouter().getContext();
+            context.setSelectedMenuItem(MenuItem.MAP);
+            getRouter().moveto(RouteIds.MAP);
         });
         result.onFailure(error -> errorHandler.handle(error, java.util.Map.of(
                 "email", message -> emailInput.showError(message),

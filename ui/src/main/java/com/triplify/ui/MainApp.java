@@ -96,6 +96,12 @@ public class MainApp extends Application {
         contentClip.heightProperty().bind(contentArea.heightProperty());
         contentArea.setClip(contentClip);
 
+        routerContext.selectedMenuItemProperty().addListener((obs, oldItem, newItem) -> {
+            if (newItem != null && newItem != menuView.getViewModel().getSelectedItem()) {
+                menuView.getViewModel().setSelectedItem(newItem);
+            }
+        });
+
         //isMap binding
         BooleanBinding isMap = Bindings.createBooleanBinding(
                 () -> menuView.getViewModel().getSelectedItem() == MenuItem.MAP,
