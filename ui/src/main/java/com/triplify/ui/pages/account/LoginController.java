@@ -8,6 +8,7 @@ import com.triplify.domain.result.Result;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.i18n.Language;
+import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.component.button.model.ButtonVariant;
 import com.triplify.ui.shared.component.button.view.AppButtonView;
@@ -72,6 +73,7 @@ public class LoginController extends SimpleLifecycleAwareController {
         forgotPasswordLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("login.forgotPassword"), I18n.bundleProperty()));
         noAccountLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("login.noAccount"), I18n.bundleProperty()));
         createAccountLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("login.createAccount"), I18n.bundleProperty()));
+        createAccountLabel.setOnMouseClicked(event -> getRouter().moveto(RouteIds.SIGN_UP));
 
         emailInput = new InputItem("login.placeholder.username");
         passwordInput = new PasswordItem("login.placeholder.password");

@@ -4,32 +4,38 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Priority?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
 <HBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      fx:id="loginRoot"
-      fx:controller="com.triplify.ui.pages.account.LoginController"
+      fx:id="signUpRoot"
+      fx:controller="com.triplify.ui.pages.account.SignUpController"
       styleClass="login-root"
-      stylesheets="@css/login.css"
-      spacing="0">
+      stylesheets="@css/login.css">
 
     <fx:include fx:id="authHero"
                 source="/com/triplify/ui/shared/component/auth_hero/view/AuthHeroView.fxml"
                 HBox.hgrow="ALWAYS" />
 
-    <AnchorPane fx:id="loginFormPane" styleClass="login-form-container" HBox.hgrow="ALWAYS">
+    <AnchorPane fx:id="signUpFormPane" styleClass="login-form-container" HBox.hgrow="ALWAYS">
         <StackPane AnchorPane.topAnchor="0.0"
                    AnchorPane.rightAnchor="0.0"
                    AnchorPane.bottomAnchor="0.0"
                    AnchorPane.leftAnchor="0.0">
-            <VBox styleClass="login-content-wrapper" maxWidth="650" alignment="CENTER">
-                <VBox styleClass="login-heading-block" minHeight="100">
+            <VBox styleClass="signup-content-wrapper" maxWidth="650" alignment="CENTER" spacing="20">
+                <VBox styleClass="login-heading-block">
                     <Label fx:id="titleLabel" styleClass="login-title"/>
                     <Label fx:id="subtitleLabel" styleClass="login-subtitle"/>
+                </VBox>
+
+                <VBox styleClass="login-field-block">
+                    <VBox.margin>
+                        <Insets top="-5.0"/>
+                    </VBox.margin>
+                    <Label fx:id="emailLabel" styleClass="login-field-label"/>
+                    <VBox fx:id="emailInputContainer"/>
                 </VBox>
 
                 <VBox styleClass="login-field-block">
@@ -37,30 +43,40 @@
                     <VBox fx:id="usernameInputContainer"/>
                 </VBox>
 
-                <Region styleClass="offset-spacer"/>
-
                 <VBox styleClass="login-field-block" alignment="TOP_CENTER">
                     <HBox styleClass="login-password-row" alignment="CENTER_LEFT">
                         <Label fx:id="passwordLabel" styleClass="login-field-label"/>
                         <Region HBox.hgrow="ALWAYS"/>
-                        <Label fx:id="forgotPasswordLabel" styleClass="login-forgot-password"/>
                     </HBox>
-                    <VBox fx:id="passwordInputContainer" />
+                    <VBox fx:id="passwordInputContainer"/>
                 </VBox>
 
-                <Region styleClass="offset-spacer"/>
+                <VBox styleClass="login-field-block">
+                    <Label fx:id="roleLabel" styleClass="login-field-label"/>
+                    <HBox fx:id="roleButtonsContainer" styleClass="signup-role-buttons"/>
+                </VBox>
+
+                <VBox styleClass="signup-terms-block">
+                    <VBox.margin>
+                        <Insets top="-15.0"/>
+                    </VBox.margin>
+                    <VBox fx:id="termsContainer"/>
+                </VBox>
 
                 <VBox styleClass="login-actions-block">
-                    <VBox fx:id="loginButtonContainer"/>
+                    <VBox.margin>
+                        <Insets top="-20.0"/>
+                    </VBox.margin>
+                    <VBox fx:id="signUpButtonContainer"/>
                     <HBox styleClass="login-sign-up-row" alignment="CENTER">
-                        <Label fx:id="noAccountLabel" styleClass="login-muted-text"/>
-                        <Label fx:id="createAccountLabel" styleClass="login-create-account"/>
+                        <Label fx:id="haveAccountLabel" styleClass="login-muted-text"/>
+                        <Label fx:id="goToLoginLabel" styleClass="login-create-account"/>
                     </HBox>
                 </VBox>
             </VBox>
         </StackPane>
 
-        <fx:include fx:id="loginLanguageIsland"
+        <fx:include fx:id="signUpLanguageIsland"
                     source="/com/triplify/ui/shared/header/view/LanguageIsland.fxml"
                     AnchorPane.topAnchor="20.0"
                     AnchorPane.rightAnchor="25.0"/>

@@ -16,6 +16,10 @@
                  fxml="com/triplify/ui/pages/login/LoginView.fxml"
                  singleTop="true"/>
 
+    <destination id="sign_up"
+                 fxml="com/triplify/ui/pages/login/SignUpView.fxml"
+                 singleTop="true"/>
+
     <destination id="map"
                  fxml="com/triplify/ui/pages/map/MapView.fxml"
                  singleTop="true"/>

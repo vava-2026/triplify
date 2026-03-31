@@ -54,7 +54,10 @@ public class StartPageController extends SimpleLifecycleAwareController implemen
         Button signUpBtn = AppButtonView.builder(fxmlLoader)
                 .variant(ButtonVariant.SIGN_UP)
                 .labelBinding(Bindings.createStringBinding(() -> I18n.t("start.signUp"), I18n.bundleProperty()))
-                .onAction(() -> log.debug("Sign Up clicked"))
+                .onAction(() -> {
+                    log.debug("Sign Up clicked");
+                    getRouter().moveto(RouteIds.SIGN_UP);
+                })
                 .build();
 
         heroButtons.getChildren().addAll(loginBtn, signUpBtn);
