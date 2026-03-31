@@ -18,7 +18,10 @@ public record SignUpRequest(
     String password,
 
     @NotNull(message = ValidationMessage.Constants.REQUIRED)
-    RoleEnum role
+    RoleEnum role,
+
+    @AssertTrue(message = ValidationMessage.Constants.SIGN_UP_TERMS_REQUIRED)
+    boolean termsAccepted
 ) {
     @AssertTrue(message = ValidationMessage.Constants.SIGN_UP_INVALID_ROLE)
     public boolean isValidRole() {

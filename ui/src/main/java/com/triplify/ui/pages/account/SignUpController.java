@@ -158,30 +158,13 @@ public class SignUpController extends SimpleLifecycleAwareController {
     }
 
     private void onSignUp() {
-        clearFieldErrors();
-        if (!validateBeforeSubmit()) {
-            return;
-        }
         attemptSignUp(usernameInput.getText().trim(), emailInput.getText().trim(), passwordInput.getText(), selectedRole);
-    }
-
-    private boolean validateBeforeSubmit() {
-        boolean fieldsValid = usernameInput.validateRequired()
-                & emailInput.validateRequired()
-                & passwordInput.validateRequired();
-
-        boolean termsValid = termsCheckbox.isSelected();
-        if (!termsValid) {
-            showTermsError();
-        }
-
-        return fieldsValid && termsValid;
     }
 
     private void attemptSignUp(String username, String email, String pass, RoleEnum role) {
         clearFieldErrors();
 
-        SignUpRequest request = new SignUpRequest(username, email, pass, role);
+        SignUpRequest request = new SignUpRequest(username, email, pass, role, termsCheckbox.isSelected());
         Result<Void> result;
         try {
             result = authService.signUp(request);
@@ -198,7 +181,8 @@ public class SignUpController extends SimpleLifecycleAwareController {
         result.onFailure(error -> errorHandler.handle(error, java.util.Map.of(
                 "email", message -> emailInput.showError(message),
                 "username", message -> usernameInput.showError(message),
-                "password", message -> passwordInput.showError(message)
+                "password", message -> passwordInput.showError(message),
+                "termsAccepted", message -> showTermsError()
         )));
     }
 
