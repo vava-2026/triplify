@@ -9,6 +9,7 @@ public final class RouteIds {
     public static final String ACCOUNT = "account";
     public static final String TRIP_DETAILS = "trip_details";
     public static final String ADD_PLACE = "add_place";
+    public static final String ADD_ROUTE = "add_route";
     public static final String LOGIN = "login";
 
     private RouteIds() {}

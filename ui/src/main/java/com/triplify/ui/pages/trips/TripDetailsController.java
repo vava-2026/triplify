@@ -199,13 +199,15 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
 
     @FXML
     private void onAddRoute() {
-        int routeNumber = routeItems.size() + 1;
-        routeItems.add(new RouteItem(
-                "Route " + routeNumber,
-                String.format(Locale.US, "%.1f km", 2.5 + (routeNumber * 1.1)),
-                DEFAULT_IMAGE
-        ));
-        renderRoutes();
+        RouterArgument args = new RouterArgument();
+        int targetTripId = tripId == null ? 0 : tripId.intValue();
+        String targetTripName = titleInput.getText() == null || titleInput.getText().isBlank()
+                ? currentTripDisplayName
+                : titleInput.getText().trim();
+
+        args.addArgument("tripId", targetTripId);
+        args.addArgument("tripName", targetTripName == null || targetTripName.isBlank() ? "New Trip" : targetTripName);
+        getRouter().moveto(RouteIds.ADD_ROUTE, args);
     }
 
     @FXML
