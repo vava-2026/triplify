@@ -2,9 +2,10 @@ package com.triplify.ui.pages.account;
 
 import com.google.inject.Inject;
 import com.triplify.application.usecase.auth.AuthService;
-import com.triplify.application.usecase.auth.dto.LogInRequest;
+import com.triplify.application.usecase.auth.dto.SignUpRequest;
 import com.triplify.application.usecase.session.UserSessionContext;
 import com.triplify.domain.result.Result;
+import com.triplify.domain.model.enums.RoleEnum;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.i18n.Language;
@@ -66,6 +67,7 @@ public class SignUpController extends SimpleLifecycleAwareController {
     private CheckboxItem termsCheckbox;
     private Button regularUserButton;
     private Button configManagerButton;
+    private RoleEnum selectedRole = RoleEnum.USER;
 
     @FXML
     private void initialize() {
@@ -87,7 +89,7 @@ public class SignUpController extends SimpleLifecycleAwareController {
         roleLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("signup.field.role"), I18n.bundleProperty()));
         haveAccountLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("signup.haveAccount"), I18n.bundleProperty()));
         goToLoginLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("signup.goToLogin"), I18n.bundleProperty()));
-        goToLoginLabel.setOnMouseClicked(event -> getRouter().moveto(RouteIds.LOGIN));
+        goToLoginLabel.setOnMouseClicked(ignored -> getRouter().moveto(RouteIds.LOGIN));
 
         usernameInput = new InputItem("signup.placeholder.username");
         emailInput = new InputItem("signup.placeholder.email");
@@ -120,7 +122,7 @@ public class SignUpController extends SimpleLifecycleAwareController {
         termsCheckbox = new CheckboxItem("");
         termsCheckbox.getStyleClass().add("signup-terms-checkbox");
         termsCheckbox.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("signup.terms"), I18n.bundleProperty()));
-        termsCheckbox.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
+        termsCheckbox.selectedProperty().addListener((ignoredObs, ignoredWasSelected, isSelected) -> {
             if (isSelected) {
                 clearTermsError();
             }
@@ -160,7 +162,7 @@ public class SignUpController extends SimpleLifecycleAwareController {
         if (!validateBeforeSubmit()) {
             return;
         }
-        attemptSignUp(emailInput.getText().trim(), passwordInput.getText());
+        attemptSignUp(usernameInput.getText().trim(), emailInput.getText().trim(), passwordInput.getText(), selectedRole);
     }
 
     private boolean validateBeforeSubmit() {
@@ -176,11 +178,18 @@ public class SignUpController extends SimpleLifecycleAwareController {
         return fieldsValid && termsValid;
     }
 
-    private void attemptSignUp(String email, String pass) {
+    private void attemptSignUp(String username, String email, String pass, RoleEnum role) {
         clearFieldErrors();
 
-        LogInRequest request = new LogInRequest(email, pass);
-        Result<Void> result = authService.login(request);
+        SignUpRequest request = new SignUpRequest(username, email, pass, role);
+        Result<Void> result;
+        try {
+            result = authService.signUp(request);
+        } catch (RuntimeException e) {
+            log.error("Sign up failed due to unexpected runtime error", e);
+            toast.error(I18n.t("error.infrastructure.database"));
+            return;
+        }
         result.onSuccess(ignored -> {
             var user = sessionContext.getCurrent().orElseThrow(() -> new IllegalStateException("User should be set in session after successful sign up"));
             log.info("Sign up successful for user '{}'", user.username());
@@ -201,11 +210,13 @@ public class SignUpController extends SimpleLifecycleAwareController {
     }
 
     private void selectRegularUserRole() {
+        selectedRole = RoleEnum.USER;
         setActiveRoleButton(regularUserButton);
         log.debug("Sign up role selected: regular user");
     }
 
     private void selectConfigurationManagerRole() {
+        selectedRole = RoleEnum.CONFIGURATION_MANAGER;
         setActiveRoleButton(configManagerButton);
         log.debug("Sign up role selected: configuration manager");
     }

@@ -33,8 +33,8 @@
                 </VBox>
 
                 <VBox styleClass="login-field-block">
-                    <Label fx:id="usernameLabel" styleClass="login-field-label"/>
-                    <VBox fx:id="usernameInputContainer"/>
+                    <Label fx:id="emailLabel" styleClass="login-field-label"/>
+                    <VBox fx:id="emailInputContainer"/>
                 </VBox>
 
                 <Region styleClass="offset-spacer"/>

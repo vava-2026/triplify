@@ -33,12 +33,12 @@ public class LoginController extends SimpleLifecycleAwareController {
     @FXML private HBox loginRoot;
     @FXML private Region authHero;
     @FXML private Region loginFormPane;
-    @FXML private VBox usernameInputContainer;
+    @FXML private VBox emailInputContainer;
     @FXML private VBox passwordInputContainer;
     @FXML private VBox loginButtonContainer;
     @FXML private Label titleLabel;
     @FXML private Label subtitleLabel;
-    @FXML private Label usernameLabel;
+    @FXML private Label emailLabel;
     @FXML private Label passwordLabel;
     @FXML private Label forgotPasswordLabel;
     @FXML private Label noAccountLabel;
@@ -68,16 +68,16 @@ public class LoginController extends SimpleLifecycleAwareController {
 
         titleLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("login.title"), I18n.bundleProperty()));
         subtitleLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("login.subtitle"), I18n.bundleProperty()));
-        usernameLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("login.field.username"), I18n.bundleProperty()));
+        emailLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("login.field.email"), I18n.bundleProperty()));
         passwordLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("login.field.password"), I18n.bundleProperty()));
         forgotPasswordLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("login.forgotPassword"), I18n.bundleProperty()));
         noAccountLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("login.noAccount"), I18n.bundleProperty()));
         createAccountLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("login.createAccount"), I18n.bundleProperty()));
         createAccountLabel.setOnMouseClicked(event -> getRouter().moveto(RouteIds.SIGN_UP));
 
-        emailInput = new InputItem("login.placeholder.username");
+        emailInput = new InputItem("login.placeholder.email");
         passwordInput = new PasswordItem("login.placeholder.password");
-        usernameInputContainer.getChildren().setAll(emailInput);
+        emailInputContainer.getChildren().setAll(emailInput);
         passwordInputContainer.getChildren().setAll(passwordInput);
 
         var loginButton = AppButtonView.builder(fxmlLoader)
@@ -124,7 +124,6 @@ public class LoginController extends SimpleLifecycleAwareController {
         });
         result.onFailure(error -> errorHandler.handle(error, java.util.Map.of(
                 "email", message -> emailInput.showError(message),
-                "username", message -> emailInput.showError(message),
                 "password", message -> passwordInput.showError(message)
         )));
     }
