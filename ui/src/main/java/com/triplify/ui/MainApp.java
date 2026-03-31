@@ -118,6 +118,11 @@ public class MainApp extends Application {
         menu.managedProperty().bind(showMenu);
         islandPane.visibleProperty().bind(showMenu);
         islandPane.managedProperty().bind(showMenu);
+        showMenu.addListener((obs, wasVisible, isVisible) -> {
+            if (isVisible) {
+                menuView.refreshAccountSection();
+            }
+        });
 
         BooleanBinding showHeader = menuView.getViewModel()
                 .hideHeaderProperty()
