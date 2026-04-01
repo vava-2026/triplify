@@ -1,4 +1,30 @@
 package com.triplify.domain.repository;
 
+import com.triplify.domain.model.Image;
+import com.triplify.domain.pagination.Page;
+import com.triplify.domain.pagination.PageRequest;
+
+import java.time.Instant;
+import java.util.Optional;
+import java.util.UUID;
+
 public interface ImageRepository {
+
+    void save(Image image);
+
+    Optional<Image> findById(UUID id);
+
+    /**
+     * Returns a paged list of all images, optionally filtered by upload time and sorted.
+     *
+     * @param pageRequest pagination parameters
+     * @param uploadedFrom inclusive lower bound; null means no lower bound
+     * @param uploadedTo   inclusive upper bound; null means no upper bound
+     * @param uploadTimeAsc true for oldest-first, false for newest-first
+     */
+    Page<Image> findAll(PageRequest pageRequest, Instant uploadedFrom, Instant uploadedTo, boolean uploadTimeAsc);
+
+    void update(Image image);
+
+    void delete(UUID id);
 }
