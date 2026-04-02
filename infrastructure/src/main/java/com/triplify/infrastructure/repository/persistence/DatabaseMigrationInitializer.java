@@ -3,33 +3,50 @@ package com.triplify.infrastructure.repository.persistence;
 import com.google.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sqlite.SQLiteConnection;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 
 @Singleton
 public class DatabaseMigrationInitializer {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseMigrationInitializer.class);
-    private static final int BASELINE_SCHEMA_VERSION = 1;
+    private static final int CURRENT_SCHEMA_VERSION = 3;
+    private static final List<MigrationStep> MIGRATIONS = List.of(
+            new MigrationStep(1, "migrations/initial.sql"),
+            new MigrationStep(2, "migrations/V2__countries_created_by_nullable.sql"),
+            new MigrationStep(3, "seeders/country_seeder.sql")
+    );
 
     public void initialize() {
         Connection connection = SQLiteConnectionFactory.getConnection();
 
         try {
             int userVersion = readUserVersion(connection);
-            if (userVersion >= BASELINE_SCHEMA_VERSION) {
-                logger.info("SQLite schema already initialized; skipping baseline migration");
+            if (userVersion >= CURRENT_SCHEMA_VERSION) {
+                logger.info("SQLite schema already initialized; skipping migrations");
                 return;
             }
 
-            logger.info("Running baseline SQLite migration");
-            runBaselineMigration(connection);
-            setUserVersion(connection, BASELINE_SCHEMA_VERSION);
-            logger.info("Baseline SQLite migration finished");
+            for (MigrationStep migration : MIGRATIONS) {
+                if (migration.version() <= userVersion || migration.version() > CURRENT_SCHEMA_VERSION) {
+                    continue;
+                }
+
+                logger.info("Applying SQLite migration v{} from {}", migration.version(), migration.fileName());
+                runSqlFile(connection, migration.fileName());
+
+                setUserVersion(connection, migration.version());
+                userVersion = migration.version();
+                logger.info("SQLite migration v{} applied", migration.version());
+            }
+
+            if (userVersion < CURRENT_SCHEMA_VERSION) {
+                throw new IllegalStateException("Missing migration definition for schema version " + (userVersion + 1));
+            }
         } catch (Exception e) {
             logger.error("Failed to initialize SQLite schema", e);
             throw new RuntimeException("Failed to initialize SQLite schema", e);
@@ -49,28 +66,26 @@ public class DatabaseMigrationInitializer {
         }
     }
 
-    private void runBaselineMigration(Connection connection) throws IOException, SQLException {
-        String sqlScript = readMigrationSql();
+    private void runSqlFile(Connection connection, String fileName) throws IOException {
+        String sqlScript = readSql(fileName);
 
         try (Statement stmt = connection.createStatement()) {
-            stmt.executeUpdate(sqlScript);
+            stmt.execute(sqlScript);
         } catch (SQLException e) {
-            logger.error("Migration failed. Please check the SQL script syntax", e);
-            throw new RuntimeException("Could not execute migration SQL", e);
+            logger.error("SQL execution failed for file: {}", fileName, e);
+            throw new RuntimeException("Could not execute SQL file: " + fileName, e);
         }
     }
 
-    private void executeStatement(Statement stmt, String sql) throws SQLException {
-        logger.info("Executing migration SQL: {}", sql);
-        stmt.execute(sql);
-    }
-
-    private String readMigrationSql() throws IOException {
-        try (var stream = getClass().getClassLoader().getResourceAsStream("sqlite_migrations.sql")) {
+    private String readSql(String fileName) throws IOException {
+        try (var stream = getClass().getClassLoader().getResourceAsStream(fileName)) {
             if (stream == null) {
-                throw new IOException("Migration resource not found: sqlite_migrations.sql");
+                throw new IOException("SQL resource not found: " + fileName);
             }
             return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
         }
+    }
+
+    private record MigrationStep(int version, String fileName) {
     }
 }

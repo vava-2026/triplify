@@ -1,0 +1,39 @@
+.auth-hero-root {
+    -fx-background-color: -color-start-bg;
+}
+
+.auth-hero-bg-image {
+    -fx-background-image: url("/com/triplify/ui/shared/component/auth_hero/images/background.png");
+    -fx-background-size: cover;
+    -fx-background-position: center center;
+    -fx-background-repeat: no-repeat;
+}
+
+.auth-hero-brand {
+    -fx-text-fill: white;
+    -fx-font-size: 48px;
+    -fx-font-weight: bold;
+    -fx-font-family: -font-family-base;
+}
+
+.auth-hero-headline-block {
+    -fx-spacing: -15;
+}
+
+.auth-hero-headline {
+    -fx-text-fill: -color-bg;
+    -fx-font-size: 48px;
+    -fx-font-weight: bold;
+    -fx-font-family: -font-family-base;
+}
+
+.auth-hero-description-block {
+    -fx-spacing: 2;
+}
+
+.auth-hero-description {
+    -fx-text-fill: white;
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-font-family: -font-family-base;
+}

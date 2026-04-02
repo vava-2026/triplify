@@ -53,7 +53,12 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(user);
 
         log.info("User '{}' registered successfully", user.getUsername());
-        sessionContext.set(new SessionUser(user.getId(), user.getUsername(), user.getEmail(), user.getRole()));
+        sessionContext.set(new SessionUser(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole(),
+                user.getAvatarImageId()));
         return Result.ok();
     }
 
@@ -69,7 +74,12 @@ public class AuthServiceImpl implements AuthService {
         }
 
         log.info("User '{}' authenticated successfully", user.getUsername());
-        sessionContext.set(new SessionUser(user.getId(), user.getUsername(), user.getEmail(), user.getRole()));
+        sessionContext.set(new SessionUser(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole(),
+                user.getAvatarImageId()));
         return Result.ok();
     }
 }

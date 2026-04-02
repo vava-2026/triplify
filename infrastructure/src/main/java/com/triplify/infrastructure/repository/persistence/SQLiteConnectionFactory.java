@@ -217,6 +217,7 @@ public class SQLiteConnectionFactory {
 
     private static String buildJdbcUrl() {
         Path dbPath = resolveDbPath().toAbsolutePath().normalize();
+        logger.info("Using database path: {}", dbPath);
         try {
             // Ensure all missing parent directories for the database path exist, creating them if needed
             Path parent = dbPath.getParent();

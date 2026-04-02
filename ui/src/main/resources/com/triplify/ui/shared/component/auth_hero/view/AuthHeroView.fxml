@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.triplify.ui.shared.component.auth_hero.view.AuthHeroView"
+            styleClass="auth-hero-root"
+            stylesheets="/com/triplify/ui/shared/component/auth_hero/css/auth-hero.css">
+    <Region styleClass="auth-hero-bg-image"
+            AnchorPane.topAnchor="0.0"
+            AnchorPane.rightAnchor="0.0"
+            AnchorPane.bottomAnchor="0.0"
+            AnchorPane.leftAnchor="0.0"/>
+
+    <Label fx:id="brandTitle" styleClass="auth-hero-brand" layoutX="39.0" layoutY="65.0"/>
+
+    <VBox styleClass="auth-hero-headline-block" layoutX="39.0" layoutY="365.0">
+        <Label fx:id="heroTitleLine1" styleClass="auth-hero-headline"/>
+        <Label fx:id="heroTitleLine2" styleClass="auth-hero-headline"/>
+    </VBox>
+
+    <VBox styleClass="auth-hero-description-block" layoutX="39.0" layoutY="512.0">
+        <Label fx:id="descriptionLine1" styleClass="auth-hero-description"/>
+        <Label fx:id="descriptionLine2" styleClass="auth-hero-description"/>
+    </VBox>
+</AnchorPane>

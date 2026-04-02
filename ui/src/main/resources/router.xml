@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <router xmlns="https://github.com/rahulstech/javafx-routing"
-        home="map">
+        home="start">
 
     <arguments id="tripDetailsArgs">
         <argument name="tripId" type="int" required="true"/>
@@ -12,6 +12,14 @@
                  fxml="com/triplify/ui/pages/start/StartPageView.fxml"
                  singleTop="true"/>
 
+    <destination id="login"
+                 fxml="com/triplify/ui/pages/login/LoginView.fxml"
+                 singleTop="true"/>
+
+    <destination id="sign_up"
+                 fxml="com/triplify/ui/pages/login/SignUpView.fxml"
+                 singleTop="true"/>
+
     <destination id="map"
                  fxml="com/triplify/ui/pages/map/MapView.fxml"
                  singleTop="true"/>
@@ -20,14 +28,14 @@
                  fxml="com/triplify/ui/pages/trips/MyTripsView.fxml"
                  singleTop="true"/>
 
-    <destination id="trip_details"
-                 fxml="com/triplify/ui/pages/trips/TripDetailsView.fxml"
-                 arguments="tripDetailsArgs"
+    <destination id="add_trip"
+                 fxml="com/triplify/ui/pages/trips/AddTripView.fxml"
+                 arguments="addTripArgs"
                  singleTop="true"/>
 
     <destination id="add_place"
                  fxml="com/triplify/ui/pages/places/AddPlaceView.fxml"
-                 arguments="tripDetailsArgs"
+                 arguments="addPlaceArgs"
                  singleTop="true"/>
 
     <destination id="calendar"
@@ -40,9 +48,5 @@
 
     <destination id="account"
                  fxml="com/triplify/ui/pages/account/AccountView.fxml"
-                 singleTop="true"/>
-
-    <destination id="login"
-                 fxml="com/triplify/ui/pages/account/LoginView.fxml"
                  singleTop="true"/>
 </router>

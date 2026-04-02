@@ -4,7 +4,7 @@ import com.gluonhq.maps.MapLayer;
 import com.gluonhq.maps.MapPoint;
 import com.gluonhq.maps.MapView;
 import com.google.inject.Inject;
-import com.triplify.application.usecase.place.AddPlaceRequest;
+import com.triplify.application.usecase.place.dto.AddPlaceRequest;
 import com.triplify.application.usecase.place.PlaceService;
 import com.triplify.ui.map.CountryBoundary;
 import com.triplify.ui.map.CountryBoundaryLoader;
@@ -155,18 +155,17 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         clearFieldErrors();
 
         AddPlaceRequest request = new AddPlaceRequest(
-                tripId,
-                normalize(titleInput.getText()),
                 normalize(countryInput.getText()),
+                coverImagePath == null ? null : java.nio.file.Path.of(coverImagePath),
+                normalize(titleInput.getText()),
                 normalizeNullable(descriptionInput.getText()),
                 selectedLatitude,
-                selectedLongitude,
-                coverImagePath
+                selectedLongitude
         );
 
         Map<String, Consumer<String>> fieldHandlers = Map.of(
                 "title", message -> titleInput.showError(message),
-                "country", message -> countryInput.showError(message)
+                "countryId", message -> countryInput.showError(message)
         );
 
         var result = placeService.addPlace(request);

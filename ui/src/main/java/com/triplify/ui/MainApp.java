@@ -1,6 +1,12 @@
 package com.triplify.ui;
 
 import com.google.inject.Inject;
+import com.triplify.application.usecase.auth.AuthService;
+import com.triplify.application.usecase.auth.dto.LogInRequest;
+import com.triplify.application.usecase.country.CountryService;
+import com.triplify.application.usecase.country.dto.*;
+import com.triplify.domain.filter.CountryFilter;
+import com.triplify.domain.pagination.PageRequest;
 import com.triplify.ui.shared.toast.ToastService;
 import com.google.inject.Injector;
 import com.triplify.ui.routing.TriplifyRouterContext;
@@ -31,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import rahulstech.jfx.routing.Router;
 import rahulstech.jfx.routing.layout.RouterStackPane;
 import java.net.URL;
+import java.util.List;
 
 public class MainApp extends Application {
 
@@ -96,6 +103,12 @@ public class MainApp extends Application {
         contentClip.heightProperty().bind(contentArea.heightProperty());
         contentArea.setClip(contentClip);
 
+        routerContext.selectedMenuItemProperty().addListener((obs, oldItem, newItem) -> {
+            if (newItem != null && newItem != menuView.getViewModel().getSelectedItem()) {
+                menuView.getViewModel().setSelectedItem(newItem);
+            }
+        });
+
         //isMap binding
         BooleanBinding isMap = Bindings.createBooleanBinding(
                 () -> menuView.getViewModel().getSelectedItem() == MenuItem.MAP,
@@ -112,6 +125,11 @@ public class MainApp extends Application {
         menu.managedProperty().bind(showMenu);
         islandPane.visibleProperty().bind(showMenu);
         islandPane.managedProperty().bind(showMenu);
+        showMenu.addListener((obs, wasVisible, isVisible) -> {
+            if (isVisible) {
+                menuView.refreshAccountSection();
+            }
+        });
 
         BooleanBinding showHeader = menuView.getViewModel()
                 .hideHeaderProperty()
