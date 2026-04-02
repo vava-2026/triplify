@@ -4,4 +4,10 @@ import com.triplify.domain.model.enums.RoleEnum;
 
 import java.util.UUID;
 
-public record SessionUser(UUID userId, String username, String email, RoleEnum role) {}
+public record SessionUser(
+        UUID userId,
+        String username,
+        String email,
+        RoleEnum role,
+        UUID avatarImageId
+) {}

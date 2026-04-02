@@ -70,7 +70,7 @@ public class ValidatingProxy implements InvocationHandler {
                         v.getPropertyPath().toString(),
                         v.getInvalidValue(),
                         v.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName(),
-                        stripBraces(v.getMessageTemplate())
+                        v.getMessageTemplate()
                 ))
                 .sorted(VIOLATION_ORDER)
                 .toList();
@@ -87,10 +87,4 @@ public class ValidatingProxy implements InvocationHandler {
         };
     }
 
-    private String stripBraces(String template) {
-        if (template.startsWith("{") && template.endsWith("}")) {
-            return template.substring(1, template.length() - 1);
-        }
-        return template;
-    }
 }

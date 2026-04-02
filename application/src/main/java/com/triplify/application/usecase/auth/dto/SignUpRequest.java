@@ -1,12 +1,14 @@
 package com.triplify.application.usecase.auth.dto;
 
 import com.triplify.application.error.ValidationMessage;
+import com.triplify.application.usecase.dto.DtoConstraints;
 import com.triplify.domain.model.enums.RoleEnum;
 import jakarta.validation.constraints.*;
 
 public record SignUpRequest(
     @NotBlank(message = ValidationMessage.Constants.REQUIRED)
     @Size(min = 3, message = ValidationMessage.Constants.USERNAME_TOO_SHORT)
+    @Size(max = DtoConstraints.USERNAME_MAX_LENGTH, message = ValidationMessage.Constants.USERNAME_TOO_LONG)
     String username,
 
     @NotBlank(message = ValidationMessage.Constants.REQUIRED)
@@ -18,7 +20,10 @@ public record SignUpRequest(
     String password,
 
     @NotNull(message = ValidationMessage.Constants.REQUIRED)
-    RoleEnum role
+    RoleEnum role,
+
+    @AssertTrue(message = ValidationMessage.Constants.SIGN_UP_TERMS_REQUIRED)
+    boolean termsAccepted
 ) {
     @AssertTrue(message = ValidationMessage.Constants.SIGN_UP_INVALID_ROLE)
     public boolean isValidRole() {

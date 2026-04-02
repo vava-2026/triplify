@@ -179,3 +179,47 @@
     -fx-background-color: -color-sign-up-hover;
 }
 
+.app-btn-user {
+    -fx-background-color: transparent;
+    -fx-border-color: -color-primary;
+    -fx-border-width: 2;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-text-fill: -color-ink;
+    -fx-min-width: 200;
+    -fx-pref-width: 200;
+    -fx-min-height: 45;
+    -fx-pref-height: 45;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.app-btn-user:hover {
+    -fx-background-color: -color-primary;
+    -fx-border-color: -color-primary;
+    -fx-text-fill: -color-on-primary;
+}
+
+.app-btn-user:pressed {
+    -fx-background-color: -color-primary-hover;
+    -fx-border-color: -color-primary-hover;
+    -fx-text-fill: -color-on-primary;
+}
+
+.app-btn-user .app-btn-icon {
+    -fx-icon-color: -color-ink;
+}
+
+.app-btn-user:hover .app-btn-icon,
+.app-btn-user:pressed .app-btn-icon {
+    -fx-icon-color: -color-on-primary;
+}
+
+.app-btn-user .app-btn-spinner {
+    -fx-progress-color: -color-primary;
+}
+
+.app-btn-user:hover .app-btn-spinner,
+.app-btn-user:pressed .app-btn-spinner {
+    -fx-progress-color: -color-on-primary;
+}

@@ -1,6 +1,12 @@
 package com.triplify.ui;
 
 import com.google.inject.Inject;
+import com.triplify.application.usecase.auth.AuthService;
+import com.triplify.application.usecase.auth.dto.LogInRequest;
+import com.triplify.application.usecase.country.CountryService;
+import com.triplify.application.usecase.country.dto.*;
+import com.triplify.domain.filter.CountryFilter;
+import com.triplify.domain.pagination.PageRequest;
 import com.triplify.ui.shared.toast.ToastService;
 import com.google.inject.Injector;
 import com.triplify.ui.routing.TriplifyRouterContext;
@@ -31,11 +37,16 @@ import org.slf4j.LoggerFactory;
 import rahulstech.jfx.routing.Router;
 import rahulstech.jfx.routing.layout.RouterStackPane;
 import java.net.URL;
+import java.util.List;
 
 public class MainApp extends Application {
 
     private static final Logger log = LoggerFactory.getLogger(MainApp.class);
     private static Injector injectorRef;
+
+    // TODO: remove only for testing
+    @Inject private AuthService authService;
+    @Inject private CountryService countryService;
 
     @Inject private FxmlLoaderHelper fxml;
     @Inject private ToastService toastService;
@@ -96,6 +107,12 @@ public class MainApp extends Application {
         contentClip.heightProperty().bind(contentArea.heightProperty());
         contentArea.setClip(contentClip);
 
+        routerContext.selectedMenuItemProperty().addListener((obs, oldItem, newItem) -> {
+            if (newItem != null && newItem != menuView.getViewModel().getSelectedItem()) {
+                menuView.getViewModel().setSelectedItem(newItem);
+            }
+        });
+
         //isMap binding
         BooleanBinding isMap = Bindings.createBooleanBinding(
                 () -> menuView.getViewModel().getSelectedItem() == MenuItem.MAP,
@@ -112,6 +129,11 @@ public class MainApp extends Application {
         menu.managedProperty().bind(showMenu);
         islandPane.visibleProperty().bind(showMenu);
         islandPane.managedProperty().bind(showMenu);
+        showMenu.addListener((obs, wasVisible, isVisible) -> {
+            if (isVisible) {
+                menuView.refreshAccountSection();
+            }
+        });
 
         BooleanBinding showHeader = menuView.getViewModel()
                 .hideHeaderProperty()
@@ -157,6 +179,41 @@ public class MainApp extends Application {
         URL themeUrl = getClass().getResource("/com/triplify/ui/shared/css/theme.css");
         if (themeUrl == null) throw new IllegalStateException("theme.css not found");
         scene.getStylesheets().add(themeUrl.toExternalForm());
+
+        // TODO: remove this, only for testing purposes
+        var authenticated = authService.login(new LogInRequest("admin@triplify.com", "password"));
+        if (!authenticated.isSuccess()) {
+            log.error("Failed to authenticate test user: {}", authenticated.getError().message());
+            return;
+        }
+
+        var pageRequest = PageRequest.defaultRequest();
+        var filter = new CountryFilter("MyCountry", null, false);
+        var myCountryPage = countryService.getCountries(new GetCountriesRequest(pageRequest, filter)).getValue();
+        CountryResponse myCountry = null;
+        if (!myCountryPage.items().isEmpty()) {
+            myCountry = myCountryPage.items().getFirst();
+        }
+        else
+        {
+            myCountry = countryService.addCountry(new AddCountryRequest("MyCountry", "MyCountrySk", "myc")).getValue();
+        }
+
+        var updated = countryService.updateCountry(new UpdateCountryRequest(myCountry.id(), "MyCountry2", "MyCountrySk2", "myc2")).getValue();
+        assert (updated.id().equals(myCountry.id()));
+        countryService.banCountry(new BanCountryRequest(myCountry.id())).getValue();
+        countryService.unbanCountry(new UnbanCountryRequest(myCountry.id())).getValue();
+
+        log.info("Selecting countries starting with 'Au'");
+        var pageRequest2 = PageRequest.defaultRequest();
+        var filter2 = new CountryFilter("Au", null, false);
+        var countries = countryService.getCountries(new GetCountriesRequest(pageRequest2, filter2)).getValue();
+        for (CountryResponse c : countries.items()) {
+            log.info("Country: id='{}', name='{}', nameSk='{}', emojiUnicode='{}', isAvailable='{}'",
+                    c.id(), c.name(), c.nameSk(), c.emojiUnicode(), c.isAvailable());
+        }
+
+        var deleted = countryService.deleteCountry(new DeleteCountryRequest(myCountry.id())).getValue();
 
         stage.setTitle("Triplify");
         stage.setScene(scene);

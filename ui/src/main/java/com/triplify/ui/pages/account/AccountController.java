@@ -85,7 +85,8 @@ public class AccountController extends SimpleLifecycleAwareController {
                 usernameInput.getText().trim(),
                 emailInput.getText().trim(),
                 rawPassword,
-                RoleEnum.USER
+                RoleEnum.USER,
+                true
         );
 
         Result<Void> result = authService.signUp(request);

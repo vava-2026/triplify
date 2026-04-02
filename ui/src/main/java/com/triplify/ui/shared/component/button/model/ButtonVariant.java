@@ -12,7 +12,9 @@ public enum ButtonVariant {
 
     LOGIN("app-btn-login"),
 
-    SIGN_UP("app-btn-sign-up");
+    SIGN_UP("app-btn-sign-up"),
+
+    USER("app-btn-user");
 
 
     private final String styleClass;
@@ -21,4 +23,3 @@ public enum ButtonVariant {
 
     public String getStyleClass() { return styleClass; }
 }
-
