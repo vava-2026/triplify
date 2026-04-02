@@ -38,6 +38,9 @@ public class User {
     @Setter(AccessLevel.PRIVATE)
     private UUID avatarImageId;
 
+    @Setter(AccessLevel.PRIVATE)
+    private Image avatarImage;
+
     @NonNull
     private final Instant createdAt;
 
@@ -82,12 +85,21 @@ public class User {
     public void updateAvatar(@NonNull UUID avatarImageId) {
         log.debug("User [{}] avatar updated: {}", id, avatarImageId);
         setAvatarImageId(avatarImageId);
+        setAvatarImage(null);
+        setUpdatedAt(Instant.now());
+    }
+
+    public void updateAvatar(@NonNull Image avatarImage) {
+        log.debug("User [{}] avatar linked: {}", id, avatarImage.getId());
+        setAvatarImageId(avatarImage.getId());
+        setAvatarImage(avatarImage);
         setUpdatedAt(Instant.now());
     }
 
     public void removeAvatar() {
         log.debug("User [{}] avatar removed.", id);
         setAvatarImageId(null);
+        setAvatarImage(null);
         setUpdatedAt(Instant.now());
     }
 
