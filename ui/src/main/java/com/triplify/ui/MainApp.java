@@ -107,6 +107,12 @@ public class MainApp extends Application {
         contentClip.heightProperty().bind(contentArea.heightProperty());
         contentArea.setClip(contentClip);
 
+        routerContext.selectedMenuItemProperty().addListener((obs, oldItem, newItem) -> {
+            if (newItem != null && newItem != menuView.getViewModel().getSelectedItem()) {
+                menuView.getViewModel().setSelectedItem(newItem);
+            }
+        });
+
         //isMap binding
         BooleanBinding isMap = Bindings.createBooleanBinding(
                 () -> menuView.getViewModel().getSelectedItem() == MenuItem.MAP,
@@ -123,6 +129,11 @@ public class MainApp extends Application {
         menu.managedProperty().bind(showMenu);
         islandPane.visibleProperty().bind(showMenu);
         islandPane.managedProperty().bind(showMenu);
+        showMenu.addListener((obs, wasVisible, isVisible) -> {
+            if (isVisible) {
+                menuView.refreshAccountSection();
+            }
+        });
 
         BooleanBinding showHeader = menuView.getViewModel()
                 .hideHeaderProperty()

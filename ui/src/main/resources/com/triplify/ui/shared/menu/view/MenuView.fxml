@@ -3,6 +3,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.image.ImageView?>
 
 <StackPane xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
@@ -33,12 +34,13 @@
                 <Insets right="20" left="20" />
             </VBox.margin>
 
-            <StackPane styleClass="avatar-circle">
-                <Label text="N" styleClass="avatar-label" />
+            <StackPane fx:id="avatarCircle" styleClass="avatar-circle">
+                <ImageView fx:id="avatarImageView" styleClass="avatar-image" />
+                <Label fx:id="avatarLabel" text="N" styleClass="avatar-label" />
             </StackPane>
 
             <VBox HBox.hgrow="ALWAYS">
-                <Label styleClass="account-name" text="Name Surname" />
+                <Label fx:id="accountNameLabel" styleClass="account-name" text="Name Surname" />
                 <Label fx:id="accountRole" styleClass="account-role" />
             </VBox>
         </HBox>

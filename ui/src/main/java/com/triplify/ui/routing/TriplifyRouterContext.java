@@ -1,8 +1,11 @@
 package com.triplify.ui.routing;
 
 import com.google.inject.Injector;
+import com.triplify.ui.shared.menu.model.MenuItem;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXMLLoader;
 import rahulstech.jfx.routing.BaseRouterContext;
 
@@ -14,6 +17,7 @@ import java.util.ResourceBundle;
 public class TriplifyRouterContext extends BaseRouterContext {
 
     private final BooleanProperty fullScreenContent = new SimpleBooleanProperty(false);
+    private final ObjectProperty<MenuItem> selectedMenuItem = new SimpleObjectProperty<>();
     private final Injector injector;
 
     public TriplifyRouterContext(Injector injector) {
@@ -63,5 +67,17 @@ public class TriplifyRouterContext extends BaseRouterContext {
 
     public void setFullScreenContent(boolean value) {
         fullScreenContent.set(value);
+    }
+
+    public ObjectProperty<MenuItem> selectedMenuItemProperty() {
+        return selectedMenuItem;
+    }
+
+    public MenuItem getSelectedMenuItem() {
+        return selectedMenuItem.get();
+    }
+
+    public void setSelectedMenuItem(MenuItem value) {
+        selectedMenuItem.set(value);
     }
 }
