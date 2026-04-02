@@ -41,7 +41,6 @@ public class LoginController extends SimpleLifecycleAwareController {
     @FXML private Label subtitleLabel;
     @FXML private Label emailLabel;
     @FXML private Label passwordLabel;
-    @FXML private Label forgotPasswordLabel;
     @FXML private Label noAccountLabel;
     @FXML private Label createAccountLabel;
     @FXML private Region loginLanguageIsland;
@@ -71,7 +70,6 @@ public class LoginController extends SimpleLifecycleAwareController {
         subtitleLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("login.subtitle"), I18n.bundleProperty()));
         emailLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("login.field.email"), I18n.bundleProperty()));
         passwordLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("login.field.password"), I18n.bundleProperty()));
-        forgotPasswordLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("login.forgotPassword"), I18n.bundleProperty()));
         noAccountLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("login.noAccount"), I18n.bundleProperty()));
         createAccountLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("login.createAccount"), I18n.bundleProperty()));
         createAccountLabel.setOnMouseClicked(event -> getRouter().moveto(RouteIds.SIGN_UP));
