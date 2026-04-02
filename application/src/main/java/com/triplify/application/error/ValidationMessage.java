@@ -18,6 +18,7 @@ public final class ValidationMessage {
         public static final String NAME_TOO_LONG = "validation.name.too.long";
         public static final String DESCRIPTION_TOO_LONG = "validation.description.too.long";
         public static final String SIGN_UP_INVALID_ROLE = "validation.signUp.invalidRole";
+        public static final String SIGN_UP_TERMS_REQUIRED = "validation.signUp.terms.required";
 
         private Constants() {
         }
