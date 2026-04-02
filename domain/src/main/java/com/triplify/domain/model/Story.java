@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -31,6 +32,9 @@ public class Story {
     @Setter(AccessLevel.PRIVATE)
     private UUID emotionId;
 
+    @Setter(AccessLevel.PRIVATE)
+    private Emotion emotion;
+
     @NonNull
     @Setter(AccessLevel.PRIVATE)
     private String title;
@@ -46,7 +50,7 @@ public class Story {
     private final Instant createdAt;
 
     private final Set<UUID> tagIds;
-    private final Set<UUID> imageIds;
+    private final Set<Tag> tags;
 
     public Story(@NonNull UUID userId,
                   UUID tripId,
@@ -71,9 +75,8 @@ public class Story {
         this.storyTime = storyTime;
         this.createdAt = Instant.now();
         this.tagIds = new LinkedHashSet<>();
-        this.imageIds = new LinkedHashSet<>();
-        log.debug("Story created: id={}, userId={}, tripId={}, tripRouteId={}, tripPlaceId={}",
-                id, userId, tripId, tripRouteId, tripPlaceId);
+        this.tags = new LinkedHashSet<>();
+        log.debug("Story created: id={}, userId={}, tripId={}, tripRouteId={}, tripPlaceId={}", id, userId, tripId, tripRouteId, tripPlaceId);
     }
 
     public static Story forTrip(@NonNull UUID userId, @NonNull UUID tripId,
@@ -97,9 +100,8 @@ public class Story {
     public Set<UUID> getTagIds() {
         return Collections.unmodifiableSet(tagIds);
     }
-
-    public Set<UUID> getImageIds() {
-        return Collections.unmodifiableSet(imageIds);
+    public Set<Tag> getTags() {
+        return Collections.unmodifiableSet(tags);
     }
 
     public void updateTitle(@NonNull String title) throws IllegalArgumentException {
@@ -121,30 +123,36 @@ public class Story {
     public void updateEmotion(UUID emotionId) {
         log.debug("Story [{}] emotionId: {} to {}", id, this.emotionId, emotionId);
         setEmotionId(emotionId);
+        setEmotion(null);
+    }
+
+    public void updateEmotion(@NonNull Emotion emotion) {
+        log.debug("Story [{}] emotion linked: {}", id, emotion.getId());
+        setEmotionId(emotion.getId());
+        setEmotion(emotion);
     }
 
     public void clearEmotion() {
         log.debug("Story [{}] emotionId cleared.", id);
         setEmotionId(null);
+        setEmotion(null);
     }
 
     public void addTag(@NonNull UUID tagId) {
-        log.debug("Story [{}] tagId added: {}", id, tagId);
+        log.debug("Trip [{}] tag added: {}", id, tagId);
         tagIds.add(tagId);
     }
 
+    public void addTag(@NonNull Tag tag) {
+        log.debug("Trip [{}] tag linked: {}", id, tag.getId());
+        tagIds.add(tag.getId());
+        tags.removeIf(existing -> existing.getId().equals(tag.getId()));
+        tags.add(tag);
+    }
+
     public void removeTag(@NonNull UUID tagId) {
-        log.debug("Story [{}] tagId removed: {}", id, tagId);
+        log.debug("Trip [{}] tag removed: {}", id, tagId);
         tagIds.remove(tagId);
-    }
-
-    public void addImage(@NonNull UUID imageId) {
-        log.debug("Story [{}] imageId added: {}", id, imageId);
-        imageIds.add(imageId);
-    }
-
-    public void removeImage(@NonNull UUID imageId) {
-        log.debug("Story [{}] imageId removed: {}", id, imageId);
-        imageIds.remove(imageId);
+        tags.removeIf(tag -> tag.getId().equals(tagId));
     }
 }

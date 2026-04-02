@@ -23,6 +23,9 @@ public class RoutePlace {
     private final UUID placeId;
 
     @Setter(AccessLevel.PRIVATE)
+    private Place place;
+
+    @Setter(AccessLevel.PRIVATE)
     private int order;
 
     @NonNull
@@ -46,5 +49,12 @@ public class RoutePlace {
         log.debug("RoutePlace [{}] order: {} to {}", id, this.order, order);
         setOrder(order);
         this.updatedAt = Instant.now();
+    }
+
+    public void linkPlace(@NonNull Place place) {
+        if (!place.getId().equals(placeId)) {
+            throw new IllegalArgumentException("place id mismatch. Expected: " + placeId + ", got: " + place.getId());
+        }
+        setPlace(place);
     }
 }

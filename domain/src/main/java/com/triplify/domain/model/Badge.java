@@ -24,6 +24,9 @@ public class Badge {
     @Setter(AccessLevel.PRIVATE)
     private UUID imageId;
 
+    @Setter(AccessLevel.PRIVATE)
+    private Image image;
+
     @NonNull
     @Setter(AccessLevel.PRIVATE)
     private String name;
@@ -87,6 +90,13 @@ public class Badge {
     public void updateImage(@NonNull UUID imageId) {
         log.debug("Badge [{}] image updated: {}", id, imageId);
         setImageId(imageId);
+        setImage(null);
+    }
+
+    public void updateImage(@NonNull Image image) {
+        log.debug("Badge [{}] image linked: {}", id, image.getId());
+        setImageId(image.getId());
+        setImage(image);
     }
 
     public void removeImage() {

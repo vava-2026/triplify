@@ -21,9 +21,12 @@ public class Route {
     
     @NonNull
     private final UUID userID;
-    
+
     @Setter(AccessLevel.PRIVATE)
-    private UUID coverImageID;
+    private UUID coverImageId;
+
+    @Setter(AccessLevel.PRIVATE)
+    private Image coverImage;
     
     @NonNull
     @Setter(AccessLevel.PRIVATE)
@@ -40,8 +43,6 @@ public class Route {
     
     @Setter(AccessLevel.PRIVATE)
     private Instant updatedAt;
-    
-    private final Set<UUID> imagesID;
 
     public Route(@NonNull UUID userID, @NonNull String title, @NonNull String description, @NonNull Double length) throws IllegalArgumentException{
         if (title.isBlank()) throw new IllegalArgumentException("Title must not be blank.");
@@ -53,11 +54,6 @@ public class Route {
         this.length = length;
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
-        this.imagesID = new LinkedHashSet<>();
-    }
-
-    public Set<UUID> getImages() {
-        return Collections.unmodifiableSet(imagesID);
     }
 
     public void updateTitle(@NonNull String title) {
@@ -76,23 +72,21 @@ public class Route {
         this.updatedAt = Instant.now();
     }
 
-    public void updateCoverImage(@NonNull UUID coverImageID) {
-        this.coverImageID = coverImageID;
+    public void updateCoverImage(@NonNull UUID coverImageId) {
+        this.coverImageId = coverImageId;
+        this.coverImage = null;
+        this.updatedAt = Instant.now();
+    }
+
+    public void updateCoverImage(@NonNull Image coverImage) {
+        this.coverImageId = coverImage.getId();
+        this.coverImage = coverImage;
         this.updatedAt = Instant.now();
     }
 
     public void removeCoverImage() {
-        this.coverImageID = null;
-        this.updatedAt = Instant.now();
-    }
-
-    public void addImage(@NonNull UUID imageID) {
-        this.imagesID.add(imageID);
-        this.updatedAt = Instant.now();
-    }
-
-    public void removeImage(@NonNull UUID imageID) {
-        this.imagesID.remove(imageID);
+        this.coverImageId = null;
+        this.coverImage = null;
         this.updatedAt = Instant.now();
     }
 }
