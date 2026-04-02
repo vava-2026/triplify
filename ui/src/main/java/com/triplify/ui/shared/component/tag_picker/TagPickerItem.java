@@ -1,8 +1,11 @@
 package com.triplify.ui.shared.component.tag_picker;
 
+import javafx.beans.InvalidationListener;
+import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -12,8 +15,10 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Popup;
+import javafx.stage.PopupWindow;
 import javafx.stage.Window;
 import org.kordamp.ikonli.javafx.FontIcon;
 
@@ -34,9 +39,9 @@ public class TagPickerItem extends VBox {
     );
     private static final String THEME_STYLESHEET = "/com/triplify/ui/shared/css/theme.css";
     private static final String COMPONENT_STYLESHEET = "/com/triplify/ui/shared/component/tag_picker/css/tag_picker.css";
-    private static final double POPUP_OFFSET_Y = 6.0;
-    private static final double MIN_POPUP_WIDTH = 316.0;
+    private static final double POPUP_OFFSET_Y = 25.0;
     private static final int COLOR_VARIANTS = 5;
+    private static final String DEFAULT_POPUP_TITLE = "All tags";
 
     @FXML private HBox shell;
     @FXML private TextField inputField;
@@ -45,13 +50,20 @@ public class TagPickerItem extends VBox {
     @FXML private FlowPane selectedFlow;
 
     private final Popup popup = new Popup();
-    private final VBox popupRoot = new VBox(8);
-    private final VBox popupList = new VBox(4);
+    private final StackPane popupContainer = new StackPane();
+    private final VBox popupRoot = new VBox(10);
+    private final Label popupTitleLabel = new Label(DEFAULT_POPUP_TITLE);
+    private final VBox popupContent = new VBox(10);
+    private final FlowPane popupChipFlow = new FlowPane();
     private final ScrollPane popupScroll = new ScrollPane();
+    private final InvalidationListener popupAnchorListener = observable -> updatePopupPosition();
+    private final ChangeListener<Window> sceneWindowListener = (obs, oldWindow, newWindow) -> trackWindow(newWindow);
 
     private final List<String> availableTags = new ArrayList<>();
     private final LinkedHashSet<String> selectedTags = new LinkedHashSet<>();
     private Consumer<Set<String>> onSelectionChanged;
+    private String popupTitle = DEFAULT_POPUP_TITLE;
+    private Window trackedWindow;
 
     public TagPickerItem() {
         FXMLLoader loader = new FXMLLoader(FXML_URL);
@@ -73,6 +85,7 @@ public class TagPickerItem extends VBox {
         configureShellButtons();
         configureFieldBehavior();
         configurePopup();
+        configurePopupAnchorTracking();
         updateSelectedView();
     }
 
@@ -118,30 +131,77 @@ public class TagPickerItem extends VBox {
 
     private void configurePopup() {
         popup.setAutoHide(true);
-        popup.setAutoFix(true);
+        popup.setAutoFix(false);
         popup.setHideOnEscape(true);
         popup.setConsumeAutoHidingEvents(false);
+        popup.setAnchorLocation(PopupWindow.AnchorLocation.CONTENT_TOP_LEFT);
         popup.setOnShown(event -> updateOpenState(true));
         popup.setOnHidden(event -> updateOpenState(false));
 
+        popupContainer.setPadding(Insets.EMPTY);
+        popupContainer.getChildren().setAll(popupRoot);
+
         popupRoot.getStyleClass().add("app-tag-picker-popup");
-        popupList.getStyleClass().add("app-tag-picker-popup-list");
+
+        popupTitleLabel.getStyleClass().add("app-tag-picker-popup-title");
+
+        popupContent.getStyleClass().add("app-tag-picker-popup-content");
+        popupChipFlow.getStyleClass().add("app-tag-picker-popup-chip-flow");
+        popupChipFlow.setHgap(10);
+        popupChipFlow.setVgap(12);
 
         popupScroll.getStyleClass().add("app-tag-picker-popup-scroll");
         popupScroll.setFitToWidth(true);
-        popupScroll.setPrefViewportHeight(148);
+        popupScroll.setPrefViewportHeight(190);
         popupScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         popupScroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        popupScroll.setContent(popupList);
+        popupScroll.setContent(popupContent);
 
-        popupRoot.getChildren().add(popupScroll);
-        popup.getContent().setAll(popupRoot);
+        popupRoot.getChildren().addAll(popupTitleLabel, popupScroll);
+        popup.getContent().setAll(popupContainer);
 
         popupRoot.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene != null) {
                 installPopupStylesheets(newScene);
             }
         });
+    }
+
+    private void configurePopupAnchorTracking() {
+        shell.localToSceneTransformProperty().addListener(popupAnchorListener);
+        shell.boundsInLocalProperty().addListener(popupAnchorListener);
+        widthProperty().addListener(popupAnchorListener);
+
+        sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (oldScene != null) {
+                oldScene.windowProperty().removeListener(sceneWindowListener);
+            }
+            trackWindow(newScene == null ? null : newScene.getWindow());
+            if (newScene != null) {
+                newScene.windowProperty().addListener(sceneWindowListener);
+            }
+            updatePopupPosition();
+        });
+    }
+
+    private void trackWindow(Window window) {
+        if (trackedWindow == window) {
+            return;
+        }
+        if (trackedWindow != null) {
+            trackedWindow.xProperty().removeListener(popupAnchorListener);
+            trackedWindow.yProperty().removeListener(popupAnchorListener);
+            trackedWindow.widthProperty().removeListener(popupAnchorListener);
+            trackedWindow.heightProperty().removeListener(popupAnchorListener);
+        }
+
+        trackedWindow = window;
+        if (trackedWindow != null) {
+            trackedWindow.xProperty().addListener(popupAnchorListener);
+            trackedWindow.yProperty().addListener(popupAnchorListener);
+            trackedWindow.widthProperty().addListener(popupAnchorListener);
+            trackedWindow.heightProperty().addListener(popupAnchorListener);
+        }
     }
 
     private void installPopupStylesheets(Scene scene) {
@@ -170,24 +230,59 @@ public class TagPickerItem extends VBox {
     }
 
     private void showPopup() {
-        Bounds bounds = shell.localToScreen(shell.getBoundsInLocal());
         Window window = getScene() == null ? null : getScene().getWindow();
-        if (bounds == null || window == null) {
+        if (window == null) {
             return;
         }
 
+        Bounds bounds = shell.localToScreen(shell.getBoundsInLocal());
+        if (bounds == null) {
+            return;
+        }
+
+        double popupWidth = bounds.getWidth();
+        updatePopupWidth(popupWidth);
         renderPopupList();
-        double popupWidth = Math.max(bounds.getWidth() + 28.0, MIN_POPUP_WIDTH);
-        double popupX = bounds.getMinX() - ((popupWidth - bounds.getWidth()) / 2.0);
+
+        if (!popup.isShowing()) {
+            popup.show(window, calculatePopupX(bounds, popupWidth), calculatePopupY(bounds));
+        } else {
+            updatePopupPosition();
+        }
+    }
+
+    private void updatePopupPosition() {
+        if (!popup.isShowing()) {
+            return;
+        }
+
+        Bounds bounds = shell.localToScreen(shell.getBoundsInLocal());
+        if (bounds == null) {
+            return;
+        }
+
+        double popupWidth = bounds.getWidth();
+        updatePopupWidth(popupWidth);
+        popup.setAnchorX(calculatePopupX(bounds, popupWidth));
+        popup.setAnchorY(calculatePopupY(bounds));
+    }
+
+    private double calculatePopupX(Bounds shellBounds, double popupWidth) {
+        return shellBounds.getMinX();
+    }
+
+    private double calculatePopupY(Bounds shellBounds) {
+        return shellBounds.getMaxY() + POPUP_OFFSET_Y;
+    }
+
+    private void updatePopupWidth(double popupWidth) {
+        popupContainer.setPrefWidth(popupWidth);
+        popupContainer.setMinWidth(popupWidth);
+        popupContainer.setMaxWidth(popupWidth);
         popupRoot.setPrefWidth(popupWidth);
         popupRoot.setMinWidth(popupWidth);
         popupRoot.setMaxWidth(popupWidth);
-        if (!popup.isShowing()) {
-            popup.show(window, popupX, bounds.getMaxY() + POPUP_OFFSET_Y);
-        } else {
-            popup.setX(popupX);
-            popup.setY(bounds.getMaxY() + POPUP_OFFSET_Y);
-        }
+        popupChipFlow.setPrefWrapLength(Math.max(popupWidth - 28.0, 120.0));
     }
 
     private void updateOpenState(boolean open) {
@@ -195,37 +290,39 @@ public class TagPickerItem extends VBox {
             if (!shell.getStyleClass().contains("app-tag-picker-shell-open")) {
                 shell.getStyleClass().add("app-tag-picker-shell-open");
             }
+            if (!toggleButton.getStyleClass().contains("app-tag-picker-toggle-open")) {
+                toggleButton.getStyleClass().add("app-tag-picker-toggle-open");
+            }
             return;
         }
 
         shell.getStyleClass().remove("app-tag-picker-shell-open");
+        toggleButton.getStyleClass().remove("app-tag-picker-toggle-open");
     }
 
     private void renderPopupList() {
-        popupList.getChildren().clear();
+        popupTitleLabel.setText(popupTitle);
+        popupChipFlow.getChildren().clear();
+        popupContent.getChildren().clear();
+
         String filter = normalizedTag(inputField.getText());
-
-        if (filter != null && !filter.isBlank() && findMatchingTag(filter) == null) {
-            popupList.getChildren().add(createSuggestionRow(filter, true));
+        String matchingTag = findMatchingTag(filter);
+        if (filter != null && !filter.isBlank() && matchingTag == null) {
+            popupChipFlow.getChildren().add(createSuggestionChip(filter, true));
         }
 
-        List<String> matchingTags = availableTags.stream()
+        availableTags.stream()
                 .filter(tag -> matchesFilter(tag, filter))
-                .toList();
+                .forEach(tag -> popupChipFlow.getChildren().add(createSuggestionChip(tag, false)));
 
-        if (matchingTags.isEmpty() && (filter == null || filter.isBlank())) {
-            popupList.getChildren().add(createEmptyRow("No tags yet"));
+        if (popupChipFlow.getChildren().isEmpty()) {
+            popupContent.getChildren().add(createEmptyRow(
+                    filter == null || filter.isBlank() ? "No tags yet" : "No matching tags"
+            ));
             return;
         }
 
-        if (matchingTags.isEmpty()) {
-            popupList.getChildren().add(createEmptyRow("No matching tags"));
-            return;
-        }
-
-        for (String tag : matchingTags) {
-            popupList.getChildren().add(createSuggestionRow(tag, false));
-        }
+        popupContent.getChildren().add(popupChipFlow);
     }
 
     private Region createEmptyRow(String text) {
@@ -233,48 +330,30 @@ public class TagPickerItem extends VBox {
         label.getStyleClass().add("app-tag-picker-empty");
 
         HBox row = new HBox(label);
-        row.getStyleClass().add("app-tag-picker-row-empty");
+        row.getStyleClass().add("app-tag-picker-empty-row");
         return row;
     }
 
-    private Button createSuggestionRow(String tag, boolean isNewTag) {
-        Button row = new Button();
-        row.setFocusTraversable(false);
-        row.setMaxWidth(Double.MAX_VALUE);
-        row.getStyleClass().add("app-tag-picker-row");
-        if (selectedTags.contains(tag) && !isNewTag) {
-            row.getStyleClass().add("app-tag-picker-row-selected");
+    private Button createSuggestionChip(String tag, boolean isNewTag) {
+        Button chip = new Button(isNewTag ? tag + " +" : tag);
+        chip.setFocusTraversable(false);
+        chip.getStyleClass().addAll("app-tag-picker-option", colorClass(tag));
+
+        if (isNewTag) {
+            chip.getStyleClass().add("app-tag-picker-option-new");
         }
-
-        Label title = new Label(isNewTag ? tag + " (New Tag)" : tag);
-        title.getStyleClass().addAll(
-                "app-tag-picker-row-chip",
-                colorClass(tag),
-                isNewTag ? "app-tag-picker-row-chip-new" : "app-tag-picker-row-chip-existing"
-        );
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        HBox content = new HBox(8, title, spacer);
-        content.setFillHeight(true);
-
         if (!isNewTag && selectedTags.contains(tag)) {
-            FontIcon check = new FontIcon("fth-check");
-            check.getStyleClass().add("app-tag-picker-row-check");
-            check.setIconSize(12);
-            content.getChildren().add(check);
+            chip.getStyleClass().add("app-tag-picker-option-selected");
         }
 
-        row.setGraphic(content);
-        row.setContentDisplay(javafx.scene.control.ContentDisplay.GRAPHIC_ONLY);
-        row.setOnAction(event -> {
+        chip.setOnAction(event -> {
             if (isNewTag) {
                 addTag(tag);
-            } else {
-                toggleSelectedTag(tag);
+                return;
             }
+            toggleSelectedTag(tag);
         });
-        return row;
+        return chip;
     }
 
     private boolean matchesFilter(String tag, String filter) {
@@ -328,7 +407,7 @@ public class TagPickerItem extends VBox {
     }
 
     private Button createSelectedChip(String tag) {
-        Button chip = new Button(tag + " ×");
+        Button chip = new Button(tag + "  x");
         chip.setFocusTraversable(false);
         chip.getStyleClass().addAll("app-tag-picker-chip", colorClass(tag), "app-tag-picker-chip-selected");
         chip.setOnAction(event -> {
@@ -348,6 +427,10 @@ public class TagPickerItem extends VBox {
     }
 
     private String findMatchingTag(String candidate) {
+        if (candidate == null || candidate.isBlank()) {
+            return null;
+        }
+
         for (String tag : availableTags) {
             if (tag.equalsIgnoreCase(candidate)) {
                 return tag;
@@ -378,13 +461,16 @@ public class TagPickerItem extends VBox {
     }
 
     public void setPopupTitle(String text) {
-        // Compatibility no-op: popup is row-based now.
+        popupTitle = text == null || text.isBlank() ? DEFAULT_POPUP_TITLE : text;
+        popupTitleLabel.setText(popupTitle);
     }
 
     public void setAvailableTags(Collection<String> tags) {
         availableTags.clear();
         if (tags != null) {
-            availableTags.addAll(tags);
+            tags.stream()
+                    .filter(tag -> tag != null && !tag.isBlank())
+                    .forEach(availableTags::add);
         }
         if (popup.isShowing()) {
             renderPopupList();
@@ -394,8 +480,11 @@ public class TagPickerItem extends VBox {
     public void setSelectedTags(Collection<String> tags) {
         selectedTags.clear();
         if (tags != null) {
-            selectedTags.addAll(tags);
             for (String tag : tags) {
+                if (tag == null || tag.isBlank()) {
+                    continue;
+                }
+                selectedTags.add(tag);
                 if (findMatchingTag(tag) == null) {
                     availableTags.add(tag);
                 }

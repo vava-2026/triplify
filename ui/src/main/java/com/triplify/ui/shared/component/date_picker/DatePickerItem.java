@@ -33,7 +33,7 @@ public class DatePickerItem extends VBox {
     );
     private static final String THEME_STYLESHEET = "/com/triplify/ui/shared/css/theme.css";
     private static final String COMPONENT_STYLESHEET = "/com/triplify/ui/shared/component/date_picker/css/date_picker.css";
-    private static final double POPUP_OFFSET_Y = 6.0;
+    private static final double POPUP_OFFSET_Y = 50.0;
 
     @FXML private HBox shell;
     @FXML private TextField textField;

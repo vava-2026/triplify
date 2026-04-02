@@ -91,7 +91,7 @@
                                 </VBox>
                             </StackPane>
 
-                            <Label text="Click on the map to pick coordinates. Drag to move and use the wheel or buttons to zoom."
+                            <Label text="Click on the map to pick coordinates. Hold the right mouse button to move, use the wheel, pinch, or buttons to zoom, and pan with two-finger touchpad scrolling."
                                    wrapText="true"
                                    styleClass="add-place-helper-text"/>
 

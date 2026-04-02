@@ -17,14 +17,19 @@ import com.triplify.ui.shared.toast.ToastService;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
+import javafx.application.Platform;
+import javafx.scene.Cursor;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.DragEvent;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.input.TransferMode;
+import javafx.scene.input.ZoomEvent;
 import javafx.scene.Node;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.StackPane;
@@ -51,7 +56,8 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     private static final double MIN_ZOOM = 2.0;
     private static final double MAX_ZOOM = 18.0;
     private static final double ZOOM_STEP = 1.0;
-    private static final double TRACKPAD_ZOOM_STEP = 0.2;
+    private static final double MOUSE_WHEEL_DELTA_THRESHOLD = 12.0;
+    private static final double TRACKPAD_PAN_FACTOR = 1.15;
 
     @FXML private VBox contentContainer;
     @FXML private FlowPane contentFlow;
@@ -94,6 +100,9 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     private List<CountryBoundary> countryBoundaries = List.of();
     private double mapPressSceneX;
     private double mapPressSceneY;
+    private double mapDragSceneX;
+    private double mapDragSceneY;
+    private boolean rightMouseDragging;
 
     @FXML
     public void initialize() {
@@ -232,6 +241,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
             return;
         }
         mapView.setZoom(clamp(mapView.getZoom() + ZOOM_STEP, MIN_ZOOM, MAX_ZOOM));
+        refreshInteractiveLayersLater();
     }
 
     @FXML
@@ -240,6 +250,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
             return;
         }
         mapView.setZoom(clamp(mapView.getZoom() - ZOOM_STEP, MIN_ZOOM, MAX_ZOOM));
+        refreshInteractiveLayersLater();
     }
 
     private void clearFieldErrors() {
@@ -352,6 +363,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         mapView.prefHeightProperty().bind(mapContainer.heightProperty());
         mapView.setZoom(DEFAULT_ZOOM);
         mapView.setCenter(DEFAULT_LATITUDE, DEFAULT_LONGITUDE);
+        mapView.setCursor(Cursor.OPEN_HAND);
 
         countryBoundaries = CountryBoundaryLoader.load();
         countryHoverLayer = new CountryHoverLayer();
@@ -362,48 +374,121 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         pinLayer.setPoint(selectedLatitude, selectedLongitude);
 
         mapShell.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
-            if (isMapControlTarget(event.getTarget())) {
+            if (isMapControlTarget(event.getTarget()) || !isScenePointInsideMap(event.getSceneX(), event.getSceneY())) {
                 return;
             }
-            mapPressSceneX = event.getSceneX();
-            mapPressSceneY = event.getSceneY();
+            if (event.getButton() == MouseButton.SECONDARY) {
+                rightMouseDragging = true;
+                mapDragSceneX = event.getSceneX();
+                mapDragSceneY = event.getSceneY();
+                mapView.setCursor(Cursor.CLOSED_HAND);
+                event.consume();
+                return;
+            }
+            if (event.getButton() == MouseButton.PRIMARY) {
+                mapPressSceneX = event.getSceneX();
+                mapPressSceneY = event.getSceneY();
+                event.consume();
+            }
+        });
+        mapShell.addEventFilter(MouseEvent.MOUSE_DRAGGED, event -> {
+            if (!rightMouseDragging || !event.isSecondaryButtonDown()) {
+                if (event.isPrimaryButtonDown()) {
+                    event.consume();
+                }
+                return;
+            }
+            panMapBy(event.getSceneX() - mapDragSceneX, event.getSceneY() - mapDragSceneY);
+            mapDragSceneX = event.getSceneX();
+            mapDragSceneY = event.getSceneY();
+            clearHoveredCountry();
+            event.consume();
         });
         mapShell.addEventFilter(MouseEvent.MOUSE_RELEASED, event -> {
             if (isMapControlTarget(event.getTarget())) {
                 return;
             }
+            if (event.getButton() == MouseButton.SECONDARY) {
+                rightMouseDragging = false;
+                mapView.setCursor(Cursor.OPEN_HAND);
+                event.consume();
+                return;
+            }
+            if (event.getButton() != MouseButton.PRIMARY) {
+                return;
+            }
+            mapView.setCursor(Cursor.OPEN_HAND);
             double dx = event.getSceneX() - mapPressSceneX;
             double dy = event.getSceneY() - mapPressSceneY;
             double dragDistance = Math.hypot(dx, dy);
             if (dragDistance <= 5) {
                 updateSelectionFromScenePoint(event.getSceneX(), event.getSceneY());
             }
+            event.consume();
         });
         mapShell.addEventFilter(MouseEvent.MOUSE_MOVED, event ->
                 updateHoveredCountryFromScenePoint(event.getSceneX(), event.getSceneY()));
-        mapShell.addEventFilter(MouseEvent.MOUSE_EXITED, event -> clearHoveredCountry());
-        mapShell.addEventFilter(ScrollEvent.SCROLL, event -> {
-            if (isMapControlTarget(event.getTarget()) || mapView == null) {
-                return;
+        mapShell.addEventFilter(MouseEvent.MOUSE_EXITED, event -> {
+            if (!rightMouseDragging) {
+                mapView.setCursor(Cursor.OPEN_HAND);
             }
-            if (Math.abs(event.getDeltaY()) < 0.01) {
-                return;
-            }
-
-            Point2D localPoint = mapView.sceneToLocal(event.getSceneX(), event.getSceneY());
-            if (localPoint.getX() < 0 || localPoint.getY() < 0
-                    || localPoint.getX() > mapView.getWidth()
-                    || localPoint.getY() > mapView.getHeight()) {
-                return;
-            }
-
-            double direction = Math.signum(event.getDeltaY());
-            double zoomDelta = direction * TRACKPAD_ZOOM_STEP;
-            mapView.setZoom(clamp(mapView.getZoom() + zoomDelta, MIN_ZOOM, MAX_ZOOM));
-            event.consume();
+            clearHoveredCountry();
         });
+        mapShell.addEventFilter(ContextMenuEvent.CONTEXT_MENU_REQUESTED, event -> {
+            if (rightMouseDragging || isScenePointInsideMap(event.getSceneX(), event.getSceneY())) {
+                event.consume();
+            }
+        });
+        mapView.addEventFilter(ScrollEvent.SCROLL, this::handleMapScroll);
+        mapView.addEventHandler(ScrollEvent.SCROLL, event -> refreshInteractiveLayersLater());
+        mapView.addEventHandler(ZoomEvent.ZOOM, event -> refreshInteractiveLayersLater());
 
         mapContainer.getChildren().setAll(mapView);
+    }
+
+    private void handleMapScroll(ScrollEvent event) {
+        if (mapView == null || isMapControlTarget(event.getTarget()) || !isTrackpadScroll(event)) {
+            return;
+        }
+
+        Point2D localPoint = mapView.sceneToLocal(event.getSceneX(), event.getSceneY());
+        if (!isPointInsideMap(localPoint.getX(), localPoint.getY())) {
+            return;
+        }
+
+        panMapBy(event.getDeltaX(), event.getDeltaY());
+        updateHoveredCountryFromScenePoint(event.getSceneX(), event.getSceneY());
+        event.consume();
+    }
+
+    private boolean isTrackpadScroll(ScrollEvent event) {
+        if (event.isControlDown() || event.isShortcutDown()) {
+            return false;
+        }
+
+        double absDeltaX = Math.abs(event.getDeltaX());
+        double absDeltaY = Math.abs(event.getDeltaY());
+        if (absDeltaX > 0.01) {
+            return true;
+        }
+
+        return absDeltaY > 0.01 && absDeltaY < MOUSE_WHEEL_DELTA_THRESHOLD;
+    }
+
+    private void panMapBy(double deltaX, double deltaY) {
+        double targetX = clamp(
+                (mapView.getWidth() / 2.0) - (deltaX * TRACKPAD_PAN_FACTOR),
+                0,
+                mapView.getWidth()
+        );
+        double targetY = clamp(
+                (mapView.getHeight() / 2.0) - (deltaY * TRACKPAD_PAN_FACTOR),
+                0,
+                mapView.getHeight()
+        );
+
+        MapPoint targetCenter = mapView.getMapPosition(targetX, targetY);
+        mapView.setCenter(targetCenter.getLatitude(), targetCenter.getLongitude());
     }
 
     private void updateSelectionFromScenePoint(double sceneX, double sceneY) {
@@ -436,12 +521,21 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         return false;
     }
 
-    private void updateSelectionFromPoint(double x, double y) {
-        if (mapView == null) {
-            return;
-        }
+    private boolean isScenePointInsideMap(double sceneX, double sceneY) {
+        Point2D localPoint = mapView.sceneToLocal(sceneX, sceneY);
+        return isPointInsideMap(localPoint.getX(), localPoint.getY());
+    }
 
-        if (x < 0 || y < 0 || x > mapView.getWidth() || y > mapView.getHeight()) {
+    private boolean isPointInsideMap(double x, double y) {
+        return mapView != null
+                && x >= 0
+                && y >= 0
+                && x <= mapView.getWidth()
+                && y <= mapView.getHeight();
+    }
+
+    private void updateSelectionFromPoint(double x, double y) {
+        if (!isPointInsideMap(x, y)) {
             return;
         }
 
@@ -457,7 +551,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
             return;
         }
 
-        if (x < 0 || y < 0 || x > mapView.getWidth() || y > mapView.getHeight()) {
+        if (!isPointInsideMap(x, y)) {
             clearHoveredCountry();
             return;
         }
@@ -505,6 +599,20 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         mapView.setCenter(selectedLatitude, selectedLongitude);
         if (useFocusedZoom && mapView.getZoom() < FOCUSED_ZOOM) {
             mapView.setZoom(FOCUSED_ZOOM);
+        }
+        refreshInteractiveLayersLater();
+    }
+
+    private void refreshInteractiveLayersLater() {
+        Platform.runLater(this::refreshInteractiveLayers);
+    }
+
+    private void refreshInteractiveLayers() {
+        if (pinLayer != null) {
+            pinLayer.refresh();
+        }
+        if (countryHoverLayer != null) {
+            countryHoverLayer.refresh();
         }
     }
 
@@ -621,6 +729,10 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
             point.update(latitude, longitude);
             markDirty();
         }
+
+        private void refresh() {
+            markDirty();
+        }
     }
 
     private static final class CountryHoverLayer extends MapLayer {
@@ -632,6 +744,10 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
                 return;
             }
             this.hoveredCountry = hoveredCountry;
+            markDirty();
+        }
+
+        private void refresh() {
             markDirty();
         }
 
