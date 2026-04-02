@@ -20,14 +20,14 @@
                  fxml="com/triplify/ui/pages/trips/MyTripsView.fxml"
                  singleTop="true"/>
 
-    <destination id="trip_details"
-                 fxml="com/triplify/ui/pages/trips/TripDetailsView.fxml"
-                 arguments="tripDetailsArgs"
+    <destination id="add_trip"
+                 fxml="com/triplify/ui/pages/trips/AddTripView.fxml"
+                 arguments="addTripArgs"
                  singleTop="true"/>
 
     <destination id="add_place"
                  fxml="com/triplify/ui/pages/places/AddPlaceView.fxml"
-                 arguments="tripDetailsArgs"
+                 arguments="addPlaceArgs"
                  singleTop="true"/>
 
     <destination id="calendar"

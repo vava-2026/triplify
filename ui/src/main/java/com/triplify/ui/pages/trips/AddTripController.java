@@ -48,9 +48,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-public class TripDetailsController extends SimpleLifecycleAwareController {
+public class AddTripController extends SimpleLifecycleAwareController {
 
-    private static final Logger log = LoggerFactory.getLogger(TripDetailsController.class);
+    private static final Logger log = LoggerFactory.getLogger(AddTripController.class);
 
     private static final List<String> AVAILABLE_COUNTRIES = List.of(
             "Ukraine", "Greece", "Italy", "France", "Japan", "United States", "Kenya", "Canada"

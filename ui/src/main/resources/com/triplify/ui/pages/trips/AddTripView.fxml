@@ -13,7 +13,7 @@
 
 <ScrollPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="com.triplify.ui.pages.trips.TripDetailsController"
+            fx:controller="com.triplify.ui.pages.trips.AddTripController"
             fitToWidth="true"
             hbarPolicy="NEVER"
             vbarPolicy="AS_NEEDED"

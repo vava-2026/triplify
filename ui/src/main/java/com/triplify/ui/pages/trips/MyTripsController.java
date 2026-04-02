@@ -65,7 +65,7 @@ public class MyTripsController extends SimpleLifecycleAwareController {
         args.addArgument("tripId", 0);
         args.addArgument("tripName", "Create Trip");
         args.addArgument("tripStatus", TripStatus.DRAFTED);
-        getRouter().moveto(RouteIds.TRIP_DETAILS, args);
+        getRouter().moveto(RouteIds.ADD_TRIP, args);
     }
 
     private void configureFilters() {
@@ -184,7 +184,7 @@ public class MyTripsController extends SimpleLifecycleAwareController {
         args.addArgument("tripEndDate", trip.endDate() == null ? null : trip.endDate().toString());
         args.addArgument("tripCoverUrl", trip.coverUrl());
         args.addArgument("tripTags", trip.tags() == null ? "" : String.join(",", trip.tags()));
-        getRouter().moveto(RouteIds.TRIP_DETAILS, args);
+        getRouter().moveto(RouteIds.ADD_TRIP, args);
     }
 
     private String normalizeFilter(String value) {
