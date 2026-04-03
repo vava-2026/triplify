@@ -2,6 +2,12 @@ package com.triplify.ui.pages.trips;
 
 import com.google.inject.Inject;
 import com.triplify.application.response.TripStatus;
+import com.triplify.application.usecase.place.PlaceService;
+import com.triplify.application.usecase.place.dto.GetPlacesRequest;
+import com.triplify.application.usecase.place.dto.PlaceResponse;
+import com.triplify.application.usecase.route.RouteService;
+import com.triplify.application.usecase.route.dto.GetRoutesRequest;
+import com.triplify.application.usecase.route.dto.RouteResponse;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.map.CountryBoundary;
 import com.triplify.ui.map.CountryBoundaryLoader;
@@ -26,6 +32,7 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.DragEvent;
@@ -45,6 +52,7 @@ import rahulstech.jfx.routing.element.RouterArgument;
 import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -96,6 +104,18 @@ public class AddTripController extends SimpleLifecycleAwareController {
     @FXML private VBox tagPickerContainer;
     @FXML private VBox routeListContainer;
     @FXML private FlowPane placesFlow;
+    @FXML private VBox routePickerContainer;
+    @FXML private VBox routePickerPanel;
+    @FXML private TextField routeSearchField;
+    @FXML private VBox routePickerResultsContainer;
+    @FXML private Button routeCreateButton;
+    @FXML private Button routePickerCloseButton;
+    @FXML private VBox placePickerContainer;
+    @FXML private VBox placePickerPanel;
+    @FXML private TextField placeSearchField;
+    @FXML private VBox placePickerResultsContainer;
+    @FXML private Button placeCreateButton;
+    @FXML private Button placePickerCloseButton;
 
     @FXML private Button addCountryButton;
     @FXML private Button addRouteButton;
@@ -104,6 +124,8 @@ public class AddTripController extends SimpleLifecycleAwareController {
     @FXML private Button discardButton;
 
     @Inject private ToastService toast;
+    @Inject private RouteService routeService;
+    @Inject private PlaceService placeService;
 
     private final Set<String> selectedCountries = new LinkedHashSet<>();
     private final Set<String> selectedTags = new LinkedHashSet<>();
@@ -126,6 +148,8 @@ public class AddTripController extends SimpleLifecycleAwareController {
     private ImageView coverPreview;
     private VBox uploadPlaceholder;
     private Label selectedImageLabel;
+    private List<RouteItem> availableRouteCandidates = List.of();
+    private List<PlaceItem> availablePlaceCandidates = List.of();
 
     @FXML
     public void initialize() {
@@ -158,6 +182,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
         installRoundedClip(uploadArea, 16);
         bindLocalizedText();
         refreshLocalizedUi();
+        initializeActionPickers();
         I18n.bundleProperty().addListener((obs, oldBundle, newBundle) -> refreshLocalizedUi());
         renderCountryChips();
         renderRoutes();
@@ -224,31 +249,42 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
     @FXML
     private void onAddRoute() {
-        RouterArgument args = new RouterArgument();
-        int targetTripId = tripId == null ? 0 : tripId.intValue();
-        String targetTripName = titleInput.getText() == null || titleInput.getText().isBlank()
-                ? currentTripDisplayName
-                : titleInput.getText().trim();
-
-        args.addArgument("tripId", targetTripId);
-        args.addArgument("tripName", targetTripName == null || targetTripName.isBlank() ? "New Trip" : targetTripName);
-        getRouter().moveto(RouteIds.ADD_ROUTE, args);
+        boolean nextState = !routePickerContainer.isVisible();
+        setRoutePickerVisible(nextState);
+        if (nextState) {
+            setPlacePickerVisible(false);
+        }
     }
 
     @FXML
     private void onAddPlace() {
-        RouterArgument args = new RouterArgument();
-        int targetTripId = tripId == null ? 0 : tripId.intValue();
-        String targetTripName = titleInput.getText() == null || titleInput.getText().isBlank()
-                ? currentTripDisplayName
-                : titleInput.getText().trim();
+        boolean nextState = !placePickerContainer.isVisible();
+        setPlacePickerVisible(nextState);
+        if (nextState) {
+            setRoutePickerVisible(false);
+        }
+    }
 
-        args.addArgument("tripId", targetTripId);
-        args.addArgument(
-                "tripName",
-                targetTripName == null || targetTripName.isBlank() ? I18n.t("trip.add.default.name") : targetTripName
-        );
-        getRouter().moveto(RouteIds.ADD_PLACE, args);
+    @FXML
+    private void onCloseRoutePicker() {
+        setRoutePickerVisible(false);
+    }
+
+    @FXML
+    private void onClosePlacePicker() {
+        setPlacePickerVisible(false);
+    }
+
+    @FXML
+    private void onCreateRoute() {
+        setRoutePickerVisible(false);
+        openCreateRoute();
+    }
+
+    @FXML
+    private void onCreatePlace() {
+        setPlacePickerVisible(false);
+        openCreatePlace();
     }
 
     @FXML
@@ -336,8 +372,12 @@ public class AddTripController extends SimpleLifecycleAwareController {
         Localization.bindText(addCountryButton.textProperty(), "trip.add.action.addCountry");
         Localization.bindText(addRouteButton.textProperty(), "trip.add.action.addRoute");
         Localization.bindText(addPlaceButton.textProperty(), "trip.add.action.addPlace");
+        Localization.bindText(routeCreateButton.textProperty(), "trip.add.action.createRoute");
+        Localization.bindText(placeCreateButton.textProperty(), "trip.add.action.createPlace");
         Localization.bindText(saveButton.textProperty(), "trip.add.action.save");
         Localization.bindText(discardButton.textProperty(), "trip.add.action.discard");
+        Localization.bindText(routeSearchField.promptTextProperty(), "trip.add.picker.route.search");
+        Localization.bindText(placeSearchField.promptTextProperty(), "trip.add.picker.place.search");
     }
 
     private void refreshLocalizedUi() {
@@ -358,6 +398,12 @@ public class AddTripController extends SimpleLifecycleAwareController {
         tagPickerInput.setAvailableTags(AVAILABLE_TAGS);
         tagPickerInput.setSelectedTags(selectedTags);
 
+        if (routePickerContainer.isVisible()) {
+            refreshRoutePicker();
+        }
+        if (placePickerContainer.isVisible()) {
+            refreshPlacePicker();
+        }
         renderCountryChips();
         renderRoutes();
         renderPlaces();
@@ -410,22 +456,26 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
         String fallbackCountry = safeText(tripCountry).isBlank() ? "Trip route" : tripCountry;
         routeItems.add(new RouteItem(
+                "demo-route-1",
                 safeText(tripName).isBlank() ? fallbackCountry + " Centre" : tripName + " Centre",
                 "Scenic transfer",
                 DEFAULT_IMAGE
         ));
         routeItems.add(new RouteItem(
+                "demo-route-2",
                 fallbackCountry + " Highlights",
                 "City walk",
                 DEFAULT_IMAGE
         ));
 
         placeItems.add(new PlaceItem(
+                "demo-place-1",
                 fallbackCountry + " Cathedral",
                 safeText(tripCountry).isBlank() ? "Old Town" : tripCountry,
                 DEFAULT_IMAGE
         ));
         placeItems.add(new PlaceItem(
+                "demo-place-2",
                 safeText(tripName).isBlank() ? "Central Park" : tripName + " Viewpoint",
                 "Popular stop",
                 DEFAULT_IMAGE
@@ -659,6 +709,305 @@ public class AddTripController extends SimpleLifecycleAwareController {
         icon.setIconSize(14);
         icon.getStyleClass().add("app-btn-icon");
         button.setGraphic(icon);
+    }
+
+    private void initializeActionPickers() {
+        configurePickerButtonIcons();
+        routeSearchField.textProperty().addListener((obs, oldValue, newValue) -> renderRoutePickerResults());
+        placeSearchField.textProperty().addListener((obs, oldValue, newValue) -> renderPlacePickerResults());
+        setRoutePickerVisible(false);
+        setPlacePickerVisible(false);
+    }
+
+    private void setRoutePickerVisible(boolean visible) {
+        routePickerContainer.setVisible(visible);
+        routePickerContainer.setManaged(visible);
+        addRouteButton.getStyleClass().remove("trip-editor-outline-button-expanded");
+        if (visible) {
+            addRouteButton.getStyleClass().add("trip-editor-outline-button-expanded");
+            refreshRoutePicker();
+            Platform.runLater(routeSearchField::requestFocus);
+        } else {
+            routeSearchField.clear();
+        }
+    }
+
+    private void setPlacePickerVisible(boolean visible) {
+        placePickerContainer.setVisible(visible);
+        placePickerContainer.setManaged(visible);
+        addPlaceButton.getStyleClass().remove("trip-editor-outline-button-expanded");
+        if (visible) {
+            addPlaceButton.getStyleClass().add("trip-editor-outline-button-expanded");
+            refreshPlacePicker();
+            Platform.runLater(placeSearchField::requestFocus);
+        } else {
+            placeSearchField.clear();
+        }
+    }
+
+    private void configurePickerButtonIcons() {
+        routePickerCloseButton.setText("");
+        placePickerCloseButton.setText("");
+        routePickerCloseButton.setGraphic(createPickerIcon("fth-x", "trip-editor-picker-close-icon", 18));
+        placePickerCloseButton.setGraphic(createPickerIcon("fth-x", "trip-editor-picker-close-icon", 18));
+        routeCreateButton.setGraphic(createPickerIcon("fth-edit-2", "trip-editor-picker-create-icon", 18));
+        placeCreateButton.setGraphic(createPickerIcon("fth-edit-2", "trip-editor-picker-create-icon", 18));
+    }
+
+    private FontIcon createPickerIcon(String literal, String styleClass, int size) {
+        FontIcon icon = new FontIcon(literal);
+        icon.setIconSize(size);
+        icon.getStyleClass().add(styleClass);
+        return icon;
+    }
+
+    private void refreshRoutePicker() {
+        availableRouteCandidates = loadRouteCandidates();
+        renderRoutePickerResults();
+    }
+
+    private void refreshPlacePicker() {
+        availablePlaceCandidates = loadPlaceCandidates();
+        renderPlacePickerResults();
+    }
+
+    private void renderRoutePickerResults() {
+        renderPickerResults(
+                routePickerResultsContainer,
+                filterRoutes(routeSearchField.getText()),
+                route -> addExistingRoute((RouteItem) route),
+                "trip.add.menu.route.empty"
+        );
+    }
+
+    private void renderPlacePickerResults() {
+        renderPickerResults(
+                placePickerResultsContainer,
+                filterPlaces(placeSearchField.getText()),
+                place -> addExistingPlace((PlaceItem) place),
+                "trip.add.menu.place.empty"
+        );
+    }
+
+    private List<RouteItem> filterRoutes(String query) {
+        String normalized = normalizeNullable(query);
+        if (normalized == null) {
+            return availableRouteCandidates;
+        }
+
+        String lowerQuery = normalized.toLowerCase(Locale.ROOT);
+        return availableRouteCandidates.stream()
+                .filter(route -> matchesQuery(route.title(), route.subtitle(), lowerQuery))
+                .toList();
+    }
+
+    private List<PlaceItem> filterPlaces(String query) {
+        String normalized = normalizeNullable(query);
+        if (normalized == null) {
+            return availablePlaceCandidates;
+        }
+
+        String lowerQuery = normalized.toLowerCase(Locale.ROOT);
+        return availablePlaceCandidates.stream()
+                .filter(place -> matchesQuery(place.title(), place.subtitle(), lowerQuery))
+                .toList();
+    }
+
+    private boolean matchesQuery(String title, String subtitle, String query) {
+        return (title != null && title.toLowerCase(Locale.ROOT).contains(query))
+                || (subtitle != null && subtitle.toLowerCase(Locale.ROOT).contains(query));
+    }
+
+    private void renderPickerResults(
+            VBox container,
+            List<?> items,
+            java.util.function.Consumer<Object> onSelect,
+            String emptyKey
+    ) {
+        container.getChildren().clear();
+        if (items.isEmpty()) {
+            container.setMinHeight(70);
+            container.setPrefHeight(70);
+            Label emptyLabel = new Label(I18n.t(emptyKey));
+            emptyLabel.getStyleClass().add("trip-editor-picker-empty");
+            container.getChildren().add(emptyLabel);
+            return;
+        }
+
+        container.setMinHeight(0);
+        container.setPrefHeight(356);
+        for (Object item : items) {
+            Button button = new Button();
+            button.setMaxWidth(Double.MAX_VALUE);
+            button.setAlignment(Pos.CENTER_LEFT);
+            button.getStyleClass().add("trip-editor-picker-item");
+            button.setGraphic(buildPickerItemGraphic(item));
+            button.setOnAction(event -> onSelect.accept(item));
+            container.getChildren().add(button);
+        }
+    }
+
+    private HBox buildPickerItemGraphic(Object item) {
+        HBox row = new HBox(12);
+        row.setAlignment(Pos.CENTER_LEFT);
+
+        FontIcon icon = new FontIcon(item instanceof RouteItem ? "fth-map" : "fth-map-pin");
+        icon.setIconSize(14);
+        icon.getStyleClass().add("trip-editor-picker-item-icon");
+
+        VBox textBox = new VBox(2);
+        Label title = new Label(item instanceof RouteItem route ? route.title() : ((PlaceItem) item).title());
+        title.getStyleClass().add("trip-editor-picker-item-title");
+
+        String subtitleText = item instanceof RouteItem route ? route.subtitle() : ((PlaceItem) item).subtitle();
+        Label subtitle = new Label(subtitleText == null ? "" : subtitleText);
+        subtitle.getStyleClass().add("trip-editor-picker-item-subtitle");
+        subtitle.setManaged(subtitleText != null && !subtitleText.isBlank());
+        subtitle.setVisible(subtitleText != null && !subtitleText.isBlank());
+
+        textBox.getChildren().addAll(title, subtitle);
+        row.getChildren().addAll(icon, textBox);
+        return row;
+    }
+
+    private void openCreateRoute() {
+        RouterArgument args = new RouterArgument();
+        int targetTripId = tripId == null ? 0 : tripId.intValue();
+        String targetTripName = titleInput.getText() == null || titleInput.getText().isBlank()
+                ? currentTripDisplayName
+                : titleInput.getText().trim();
+
+        args.addArgument("tripId", targetTripId);
+        args.addArgument("tripName", targetTripName == null || targetTripName.isBlank() ? "New Trip" : targetTripName);
+        getRouter().moveto(RouteIds.ADD_ROUTE, args);
+    }
+
+    private void openCreatePlace() {
+        RouterArgument args = new RouterArgument();
+        int targetTripId = tripId == null ? 0 : tripId.intValue();
+        String targetTripName = titleInput.getText() == null || titleInput.getText().isBlank()
+                ? currentTripDisplayName
+                : titleInput.getText().trim();
+
+        args.addArgument("tripId", targetTripId);
+        args.addArgument(
+                "tripName",
+                targetTripName == null || targetTripName.isBlank() ? I18n.t("trip.add.default.name") : targetTripName
+        );
+        getRouter().moveto(RouteIds.ADD_PLACE, args);
+    }
+
+    private List<RouteItem> loadRouteCandidates() {
+        if (routeService == null) {
+            return List.of();
+        }
+        var result = routeService.getRoutes(new GetRoutesRequest(null, null));
+        if (result.isFailure()) {
+            log.warn("Failed to load routes for trip picker", result.getError());
+            toast.warning(I18n.t("trip.add.toast.routes.loadFailed"));
+            return List.of();
+        }
+
+        return result.getValue().items().stream()
+                .map(this::toRouteItem)
+                .filter(route -> route.id() != null && !containsRoute(route.id()))
+                .toList();
+    }
+
+    private List<PlaceItem> loadPlaceCandidates() {
+        if (placeService == null) {
+            return List.of();
+        }
+        var result = placeService.getPlaces(new GetPlacesRequest(null, null));
+        if (result.isFailure()) {
+            log.warn("Failed to load places for trip picker", result.getError());
+            toast.warning(I18n.t("trip.add.toast.places.loadFailed"));
+            return List.of();
+        }
+
+        return result.getValue().items().stream()
+                .map(this::toPlaceItem)
+                .filter(place -> place.id() != null && !containsPlace(place.id()))
+                .toList();
+    }
+
+    private void addExistingRoute(RouteItem route) {
+        if (containsRoute(route.id())) {
+            toast.info(I18n.t("trip.add.toast.route.duplicate"));
+            return;
+        }
+
+        routeItems.add(route);
+        renderRoutes();
+        refreshRoutePicker();
+        setRoutePickerVisible(false);
+        toast.success(I18n.t("trip.add.toast.route.added.title"), route.title());
+    }
+
+    private void addExistingPlace(PlaceItem place) {
+        if (containsPlace(place.id())) {
+            toast.info(I18n.t("trip.add.toast.place.duplicate"));
+            return;
+        }
+
+        placeItems.add(place);
+        renderPlaces();
+        refreshPlacePicker();
+        setPlacePickerVisible(false);
+        toast.success(I18n.t("trip.add.toast.place.added.title"), place.title());
+    }
+
+    private boolean containsRoute(String routeId) {
+        return routeId != null && routeItems.stream().anyMatch(item -> routeId.equals(item.id()));
+    }
+
+    private boolean containsPlace(String placeId) {
+        return placeId != null && placeItems.stream().anyMatch(item -> placeId.equals(item.id()));
+    }
+
+    private String formatCandidateLabel(Object candidate) {
+        if (candidate instanceof RouteItem route) {
+            return formatMenuLabel(route.title(), route.subtitle());
+        }
+        if (candidate instanceof PlaceItem place) {
+            return formatMenuLabel(place.title(), place.subtitle());
+        }
+        return String.valueOf(candidate);
+    }
+
+    private String formatMenuLabel(String title, String subtitle) {
+        if (subtitle == null || subtitle.isBlank()) {
+            return title;
+        }
+        return title + " - " + subtitle;
+    }
+
+    private RouteItem toRouteItem(RouteResponse response) {
+        String subtitle = response.description() == null || response.description().isBlank()
+                ? formatMessage("trip.add.route.length", String.format(Locale.US, "%.1f", response.length()))
+                : response.description();
+        return new RouteItem(
+                response.id(),
+                safeText(response.title()).isBlank() ? I18n.t("trip.add.fallback.route") : response.title(),
+                subtitle,
+                imagePath(response.coverImage() == null ? null : response.coverImage().url())
+        );
+    }
+
+    private PlaceItem toPlaceItem(PlaceResponse response) {
+        String subtitle = response.country() != null && response.country().name() != null && !response.country().name().isBlank()
+                ? response.country().name()
+                : safeText(response.description());
+        return new PlaceItem(
+                response.id(),
+                safeText(response.title()).isBlank() ? I18n.t("trip.add.fallback.place") : response.title(),
+                subtitle,
+                imagePath(response.coverImage() == null ? null : response.coverImage().url())
+        );
+    }
+
+    private String imagePath(Path path) {
+        return path == null ? DEFAULT_IMAGE : path.toString();
     }
 
     private void bindUploadPanelHandlers() {
@@ -906,6 +1255,15 @@ public class AddTripController extends SimpleLifecycleAwareController {
         return value == null ? "" : value;
     }
 
+    private String normalizeNullable(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String normalized = value.trim();
+        return normalized.isBlank() ? null : normalized;
+    }
+
     private String formatMessage(String key, Object... args) {
         return MessageFormat.format(I18n.t(key), args);
     }
@@ -966,7 +1324,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
                 .toList();
     }
 
-    private record RouteItem(String title, String subtitle, String imagePath) { }
+    private record RouteItem(String id, String title, String subtitle, String imagePath) { }
 
-    private record PlaceItem(String title, String subtitle, String imagePath) { }
+    private record PlaceItem(String id, String title, String subtitle, String imagePath) { }
 }
