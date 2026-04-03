@@ -5,7 +5,13 @@ import com.triplify.application.usecase.auth.AuthService;
 import com.triplify.application.usecase.auth.dto.LogInRequest;
 import com.triplify.application.usecase.country.CountryService;
 import com.triplify.application.usecase.country.dto.*;
+import com.triplify.application.usecase.place.PlaceService;
+import com.triplify.application.usecase.place.dto.AddPlaceRequest;
+import com.triplify.application.usecase.place.dto.DeletePlaceRequest;
+import com.triplify.application.usecase.place.dto.GetPlacesRequest;
+import com.triplify.application.usecase.place.dto.UpdatePlaceRequest;
 import com.triplify.domain.filter.CountryFilter;
+import com.triplify.domain.filter.PlaceFilter;
 import com.triplify.domain.pagination.PageRequest;
 import com.triplify.ui.shared.toast.ToastService;
 import com.google.inject.Injector;
@@ -47,6 +53,7 @@ public class MainApp extends Application {
     // TODO: remove only for testing
     @Inject private AuthService authService;
     @Inject private CountryService countryService;
+    @Inject private PlaceService placeService;
 
     @Inject private FxmlLoaderHelper fxml;
     @Inject private ToastService toastService;
@@ -180,40 +187,41 @@ public class MainApp extends Application {
         if (themeUrl == null) throw new IllegalStateException("theme.css not found");
         scene.getStylesheets().add(themeUrl.toExternalForm());
 
-        // TODO: remove this, only for testing purposes
-        var authenticated = authService.login(new LogInRequest("admin@triplify.com", "password"));
-        if (!authenticated.isSuccess()) {
-            log.error("Failed to authenticate test user: {}", authenticated.getError().message());
+        // TODO: remove only for testing
+
+        var authRes = authService.login(new LogInRequest("admin@triplify.com", "password"));
+        if (authRes.isFailure()) {
+            log.error("Auth Error");
             return;
         }
 
-        var pageRequest = PageRequest.defaultRequest();
-        var filter = new CountryFilter("MyCountry", null, false);
-        var myCountryPage = countryService.getCountries(new GetCountriesRequest(pageRequest, filter)).getValue();
-        CountryResponse myCountry = null;
-        if (!myCountryPage.items().isEmpty()) {
-            myCountry = myCountryPage.items().getFirst();
-        }
-        else
-        {
-            myCountry = countryService.addCountry(new AddCountryRequest("MyCountry", "MyCountrySk", "myc")).getValue();
-        }
+        // fetch countries
+        PageRequest austriaPageRequest = new PageRequest(0, 10);
+        CountryFilter austriaCountryFilter = new CountryFilter("Austria", null, false);
+        var austria = countryService.getCountries(new GetCountriesRequest(austriaPageRequest, austriaCountryFilter)).getValue().items().get(0);
 
-        var updated = countryService.updateCountry(new UpdateCountryRequest(myCountry.id(), "MyCountry2", "MyCountrySk2", "myc2")).getValue();
-        assert (updated.id().equals(myCountry.id()));
-        countryService.banCountry(new BanCountryRequest(myCountry.id())).getValue();
-        countryService.unbanCountry(new UnbanCountryRequest(myCountry.id())).getValue();
+        PageRequest argentinaPageRequest = new PageRequest(0, 10);
+        CountryFilter argentinaCountryFilter = new CountryFilter("Argentina", null, false);
+        var argentina = countryService.getCountries(new GetCountriesRequest(argentinaPageRequest, argentinaCountryFilter)).getValue().items().get(0);
 
-        log.info("Selecting countries starting with 'Au'");
-        var pageRequest2 = PageRequest.defaultRequest();
-        var filter2 = new CountryFilter("Au", null, false);
-        var countries = countryService.getCountries(new GetCountriesRequest(pageRequest2, filter2)).getValue();
-        for (CountryResponse c : countries.items()) {
-            log.info("Country: id='{}', name='{}', nameSk='{}', emojiUnicode='{}', isAvailable='{}'",
-                    c.id(), c.name(), c.nameSk(), c.emojiUnicode(), c.isAvailable());
-        }
+        PageRequest columbiaPageRequest = new PageRequest(0, 10);
+        CountryFilter columbiaCountryFilter = new CountryFilter("Colombia", null, false);
+        var Columbia = countryService.getCountries(new GetCountriesRequest(columbiaPageRequest, columbiaCountryFilter)).getValue().items().get(0);
 
-        var deleted = countryService.deleteCountry(new DeleteCountryRequest(myCountry.id())).getValue();
+        // add places
+        var wien = placeService.addPlace(new AddPlaceRequest(austria.id(), null, "Wien", "Wien description", 48.2082, 16.3738)).getValue();
+        var linz = placeService.addPlace(new AddPlaceRequest(austria.id(), null, "Linz", "Linz description", 48.2082, 16.3738)).getValue();
+        var bueno = placeService.addPlace(new AddPlaceRequest(austria.id(), null, "Bueno", "Bueno description", 7.8, 56.93)).getValue();
+        var alex = placeService.addPlace(new AddPlaceRequest(austria.id(), null, "Alex", "Alex description", 88.20, 36.903)).getValue();
+        var wienUpdated = placeService.updatePlace(new UpdatePlaceRequest(wien.id(), austria.id(), null, "Wien Updated", "Wien description updated", 48.2082, 16.3738)).getValue();
+        assert(wienUpdated.equals(wien.id()));
+        placeService.deletePlace(new DeletePlaceRequest(wien.id()));
+
+        // find places
+        PageRequest placePageRequest = new PageRequest(0, 10);
+        PlaceFilter placeFilter = new PlaceFilter("linz", null);
+        var placeResult = placeService.getPlaces(new GetPlacesRequest(placePageRequest, placeFilter)).getValue();
+        assert(!placeResult.items().isEmpty());
 
         stage.setTitle("Triplify");
         stage.setScene(scene);

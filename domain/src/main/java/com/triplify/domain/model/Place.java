@@ -56,6 +56,30 @@ public class Place {
         this.updatedAt = Instant.now();
     }
 
+    public Place(@NonNull UUID userId, @NonNull UUID countryId, UUID coverImageId, @NonNull String title, String description, double latitude, double longitude) {
+        this(userId, countryId, title);
+        this.coverImageId = coverImageId;
+        this.description = description;
+        validateLocation(latitude, longitude);
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
+
+    public Place(@NonNull UUID id, @NonNull UUID userId, @NonNull UUID countryId, UUID coverImageId, @NonNull String title, String description, double latitude, double longitude)
+    {
+        this.id = id;
+        this.userId = userId;
+        this.countryId = countryId;
+        this.coverImageId = coverImageId;
+        this.title = title;
+        this.description = description;
+        validateLocation(latitude, longitude);
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
+    }
+
     public void updateTitle(@NonNull String title) throws IllegalArgumentException {
         if (title.isBlank()) throw new IllegalArgumentException("Title must not be blank.");
         log.debug("Place [{}] title: {} to {}", id, this.title, title);
