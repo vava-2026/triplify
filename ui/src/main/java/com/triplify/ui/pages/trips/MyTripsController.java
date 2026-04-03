@@ -157,7 +157,7 @@ public class MyTripsController extends SimpleLifecycleAwareController {
 
     private void openTrip(TripResponse trip, String dateRange) {
         RouterArgument args = new RouterArgument();
-        args.addArgument("tripId", trip.id());
+        args.addArgument("tripId", Integer.valueOf(String.valueOf(trip.id())));
         args.addArgument("tripName", trip.name());
         args.addArgument("tripCategory", trip.category());
         args.addArgument("tripStatus", trip.status());

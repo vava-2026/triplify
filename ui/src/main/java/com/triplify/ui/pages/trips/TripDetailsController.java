@@ -41,25 +41,23 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
             tripStatusLabel.setText(status.getLabel());
             tripStatusLabel.getStyleClass().add(status.getCssClass());
         }
+
         log.info("Trip details opened: id={}, name={}", id, name);
     }
 
     @Override
     public void onLifecycleShow() {
-        TriplifyRouterContext context = (TriplifyRouterContext) getRouter().getContext();
-        context.setFullScreenContent(false);
+        setFullScreen(false);
     }
 
     @Override
     public void onLifecycleHide() {
-        TriplifyRouterContext context = (TriplifyRouterContext) getRouter().getContext();
-        context.setFullScreenContent(false);
+        setFullScreen(false);
     }
 
     @Override
     public void onLifecycleDestroy() {
-        TriplifyRouterContext context = (TriplifyRouterContext) getRouter().getContext();
-        context.setFullScreenContent(false);
+        setFullScreen(false);
     }
 
     @FXML
@@ -72,13 +70,36 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         RouterArgument currentData = getRouter().getCurrentData();
         Integer id = currentData == null ? null : currentData.getValue("tripId");
         String name = currentData == null ? null : currentData.getValue("tripName");
-        if (id == null) {
-            return;
-        }
+
+        if (id == null) return;
 
         RouterArgument args = new RouterArgument();
         args.addArgument("tripId", id);
         args.addArgument("tripName", name == null ? tripNameLabel.getText() : name);
         getRouter().moveto(RouteIds.ADD_PLACE, args);
+    }
+
+    @FXML
+    private void onViewPlaces() {
+        RouterArgument current = getRouter().getCurrentData();
+        Integer id = current == null ? null : current.getValue("tripId");
+        String name = current == null ? null : current.getValue("tripName");
+
+        if (id == null) {
+            log.warn("Cannot open places — tripId is null");
+            return;
+        }
+
+        RouterArgument args = new RouterArgument();
+        args.addArgument("tripId", id);
+        args.addArgument("tripName", name != null ? name : tripNameLabel.getText());
+
+        log.info("Navigating to places for trip id={}", id);
+        getRouter().moveto(RouteIds.TRIP_PLACES, args);
+    }
+
+    private void setFullScreen(boolean value) {
+        TriplifyRouterContext ctx = (TriplifyRouterContext) getRouter().getContext();
+        ctx.setFullScreenContent(value);
     }
 }

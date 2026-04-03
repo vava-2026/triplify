@@ -3,6 +3,7 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
@@ -11,23 +12,30 @@
            fx:controller="com.triplify.ui.pages.trips.TripDetailsController"
            styleClass="page-root">
     <VBox spacing="14" maxWidth="980">
-        <HBox spacing="10">
-            <Button text="Back" onAction="#onBack"/>
+
+        <!-- header row -->
+        <HBox spacing="10" styleClass="trips-toolbar">
+            <Button text="← Back" onAction="#onBack" styleClass="trips-filter"/>
             <Label fx:id="tripNameLabel" text="Trip Details" styleClass="page-title"/>
+            <Pane HBox.hgrow="ALWAYS"/>
+            <Button text="View Places" onAction="#onViewPlaces" styleClass="trips-filter"/>
         </HBox>
 
-        <Label text="Review the trip details passed via routing arguments." styleClass="page-subtitle"/>
+        <Label text="Review the trip details." styleClass="page-subtitle"/>
 
+        <!-- status + category badges -->
         <HBox spacing="10">
-            <Label fx:id="tripStatusLabel" styleClass="trip-status"/>
+            <Label fx:id="tripStatusLabel"   styleClass="trip-status"/>
             <Label fx:id="tripCategoryLabel" styleClass="trip-category"/>
         </HBox>
 
+        <!-- detail card -->
         <VBox styleClass="page-card" spacing="8">
-            <Label text="Trip id:"/>
+            <Label text="Trip ID:"/>
             <Label fx:id="tripIdLabel"/>
             <Label text="Dates:"/>
             <Label fx:id="tripDatesLabel"/>
         </VBox>
+
     </VBox>
 </StackPane>

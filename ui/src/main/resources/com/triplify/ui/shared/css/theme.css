@@ -6,6 +6,7 @@
 @import url("/com/triplify/ui/shared/component/checkbox_item/checkbox_item.css");
 @import url("/com/triplify/ui/shared/toast/toast.css");
 @import url("/com/triplify/ui/pages/trips/css/trips.css");
+@import url("/com/triplify/ui/pages/places/css/places.css");
 
 .root {
     -color-bg: #f0f0f0;

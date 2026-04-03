@@ -1,0 +1,52 @@
+.place-create-card {
+    -fx-background-color: -color-surface;
+    -fx-background-radius: 14px;
+    -fx-border-color: -color-create-border;
+    -fx-border-style: segments(8, 6);
+    -fx-border-radius: 14px;
+    -fx-border-width: 2px;
+    -fx-effect: -shadow-card;
+    -fx-cursor: hand;
+    -fx-alignment: center;
+    -fx-padding: 12px;
+    -fx-pref-height: 300px;
+    -fx-min-height: 300px;
+    -fx-max-height: 300px;
+}
+
+.place-card {
+    -fx-pref-height: 300px;
+    -fx-min-height: 300px;
+    -fx-max-height: 300px;
+}
+
+.place-country {
+    -fx-font-size: 14px;
+}
+
+/* ── Place Status Badges ── */
+
+.place-status-visited {
+    -fx-background-color: -color-status-visited-bg;
+    -fx-text-fill: -color-status-visited-fg;
+}
+
+.place-status-planned {
+    -fx-background-color: -color-status-planned-bg;
+    -fx-text-fill: -color-status-planned-fg;
+}
+
+.place-status-skipped {
+    -fx-background-color: -color-status-drafted-bg;
+    -fx-text-fill: -color-status-drafted-fg;
+}
+
+.place-status-wishlist {
+    -fx-background-color: -color-status-ongoing-bg;
+    -fx-text-fill: -color-status-ongoing-fg;
+}
+
+.place-status-not-visited {
+    -fx-background-color: -color-status-rejected-bg;
+    -fx-text-fill: -color-status-rejected-fg;
+}

@@ -49,4 +49,10 @@
     <destination id="account"
                  fxml="com/triplify/ui/pages/account/AccountView.fxml"
                  singleTop="true"/>
+
+    <destination id="trip_places"
+                 fxml="com/triplify/ui/pages/places/TripPlacesView.fxml"
+                 arguments="tripDetailsArgs"
+                 singleTop="true"/>
+
 </router>

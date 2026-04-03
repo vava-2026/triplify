@@ -20,7 +20,7 @@
            vbarPolicy="AS_NEEDED"
            styleClass="page-scroll">
     <stylesheets>
-        <String fx:value="/com/triplify/ui/pages/places/add_place.css"/>
+        <String fx:value="/com/triplify/ui/pages/places/css/add_place.css"/>
     </stylesheets>
     <content>
         <StackPane styleClass="page-root,add-place-root">

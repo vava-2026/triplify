@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import com.triplify.ui.shared.component.card_grid.CardGridPane?>
+
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.triplify.ui.pages.places.TripPlacesController"
+           styleClass="page-root">
+    <VBox spacing="14" maxWidth="980">
+
+        <HBox spacing="12" styleClass="places-header-row">
+            <Button text="← Back" onAction="#onBack" styleClass="trips-filter"/>
+            <Label fx:id="tripNameLabel" text="Places" styleClass="page-title"/>
+            <Pane HBox.hgrow="ALWAYS"/>
+            <HBox styleClass="trips-sort">
+                <Label text="Sort by:" styleClass="trips-sort-label"/>
+                <ComboBox fx:id="sortSelect" styleClass="trips-filter" prefWidth="150"/>
+            </HBox>
+        </HBox>
+
+        <CardGridPane fx:id="cardGrid" VBox.vgrow="ALWAYS"/>
+    </VBox>
+</StackPane>
