@@ -50,11 +50,6 @@ public class MainApp extends Application {
     private static final Logger log = LoggerFactory.getLogger(MainApp.class);
     private static Injector injectorRef;
 
-    // TODO: remove only for testing
-    @Inject private AuthService authService;
-    @Inject private CountryService countryService;
-    @Inject private PlaceService placeService;
-
     @Inject private FxmlLoaderHelper fxml;
     @Inject private ToastService toastService;
     private Router router;
@@ -186,42 +181,6 @@ public class MainApp extends Application {
         URL themeUrl = getClass().getResource("/com/triplify/ui/shared/css/theme.css");
         if (themeUrl == null) throw new IllegalStateException("theme.css not found");
         scene.getStylesheets().add(themeUrl.toExternalForm());
-
-        // TODO: remove only for testing
-
-        var authRes = authService.login(new LogInRequest("admin@triplify.com", "password"));
-        if (authRes.isFailure()) {
-            log.error("Auth Error");
-            return;
-        }
-
-        // fetch countries
-        PageRequest austriaPageRequest = new PageRequest(0, 10);
-        CountryFilter austriaCountryFilter = new CountryFilter("Austria", null, false);
-        var austria = countryService.getCountries(new GetCountriesRequest(austriaPageRequest, austriaCountryFilter)).getValue().items().get(0);
-
-        PageRequest argentinaPageRequest = new PageRequest(0, 10);
-        CountryFilter argentinaCountryFilter = new CountryFilter("Argentina", null, false);
-        var argentina = countryService.getCountries(new GetCountriesRequest(argentinaPageRequest, argentinaCountryFilter)).getValue().items().get(0);
-
-        PageRequest columbiaPageRequest = new PageRequest(0, 10);
-        CountryFilter columbiaCountryFilter = new CountryFilter("Colombia", null, false);
-        var Columbia = countryService.getCountries(new GetCountriesRequest(columbiaPageRequest, columbiaCountryFilter)).getValue().items().get(0);
-
-        // add places
-        var wien = placeService.addPlace(new AddPlaceRequest(austria.id(), null, "Wien", "Wien description", 48.2082, 16.3738)).getValue();
-        var linz = placeService.addPlace(new AddPlaceRequest(austria.id(), null, "Linz", "Linz description", 48.2082, 16.3738)).getValue();
-        var bueno = placeService.addPlace(new AddPlaceRequest(austria.id(), null, "Bueno", "Bueno description", 7.8, 56.93)).getValue();
-        var alex = placeService.addPlace(new AddPlaceRequest(austria.id(), null, "Alex", "Alex description", 88.20, 36.903)).getValue();
-        var wienUpdated = placeService.updatePlace(new UpdatePlaceRequest(wien.id(), austria.id(), null, "Wien Updated", "Wien description updated", 48.2082, 16.3738)).getValue();
-        assert(wienUpdated.equals(wien.id()));
-        placeService.deletePlace(new DeletePlaceRequest(wien.id()));
-
-        // find places
-        PageRequest placePageRequest = new PageRequest(0, 10);
-        PlaceFilter placeFilter = new PlaceFilter("linz", null);
-        var placeResult = placeService.getPlaces(new GetPlacesRequest(placePageRequest, placeFilter)).getValue();
-        assert(!placeResult.items().isEmpty());
 
         stage.setTitle("Triplify");
         stage.setScene(scene);

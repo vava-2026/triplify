@@ -4,14 +4,10 @@ import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
 @Getter
-@ToString(exclude = {"imageIds"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @AllArgsConstructor
 public class TripPlace {
@@ -24,9 +20,12 @@ public class TripPlace {
     @NonNull
     private final UUID tripId;
 
-    /** Reference to the Place aggregate by ID only. */
+    /** Related Place reference by stable ID, with optional linked object. */
     @NonNull
     private final UUID placeId;
+
+    @Setter(AccessLevel.PRIVATE)
+    private Place place;
 
     @Setter(AccessLevel.PRIVATE)
     private Instant visitDate;
@@ -38,19 +37,12 @@ public class TripPlace {
     @Setter(AccessLevel.PRIVATE)
     private Instant updatedAt;
 
-    private final Set<UUID> imageIds;
-
     public TripPlace(@NonNull UUID tripId, @NonNull UUID placeId) {
         this.id = UUID.randomUUID();
         this.tripId = tripId;
         this.placeId = placeId;
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
-        this.imageIds = new LinkedHashSet<>();
-    }
-
-    public Set<UUID> getImageIds() {
-        return Collections.unmodifiableSet(imageIds);
     }
 
     public void scheduleVisit(Instant visitDate) {
@@ -65,15 +57,10 @@ public class TripPlace {
         this.updatedAt = Instant.now();
     }
 
-    public void addImage(@NonNull UUID imageId) {
-        log.debug("TripPlace [{}] imageId added: {}", id, imageId);
-        imageIds.add(imageId);
-        this.updatedAt = Instant.now();
-    }
-
-    public void removeImage(@NonNull UUID imageId) {
-        log.debug("TripPlace [{}] imageId removed: {}", id, imageId);
-        imageIds.remove(imageId);
-        this.updatedAt = Instant.now();
+    public void linkPlace(@NonNull Place place) {
+        if (!place.getId().equals(placeId)) {
+            throw new IllegalArgumentException("place id mismatch. Expected: " + placeId + ", got: " + place.getId());
+        }
+        setPlace(place);
     }
 }

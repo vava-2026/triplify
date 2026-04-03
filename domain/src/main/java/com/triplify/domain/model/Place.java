@@ -25,7 +25,13 @@ public class Place {
     private UUID countryId;
 
     @Setter(AccessLevel.PRIVATE)
+    private Country country;
+
+    @Setter(AccessLevel.PRIVATE)
     private UUID coverImageId;
+
+    @Setter(AccessLevel.PRIVATE)
+    private Image coverImage;
 
     @NonNull
     @Setter(AccessLevel.PRIVATE)
@@ -104,18 +110,37 @@ public class Place {
     public void updateCountry(@NonNull UUID countryId) {
         log.debug("Place [{}] country: {} to {}", id, this.countryId, countryId);
         setCountryId(countryId);
+        setCountry(null);
+        setUpdatedAt(Instant.now());
+    }
+
+    public void updateCountry(@NonNull Country country) {
+        if (!country.getId().equals(countryId)) {
+            log.debug("Place [{}] country changed via object: {} to {}", id, this.countryId, country.getId());
+            setCountryId(country.getId());
+        }
+        setCountry(country);
         setUpdatedAt(Instant.now());
     }
 
     public void updateCoverImage(@NonNull UUID coverImageId) {
         log.debug("Place [{}] coverImage updated: {}", id, coverImageId);
         setCoverImageId(coverImageId);
+        setCoverImage(null);
+        setUpdatedAt(Instant.now());
+    }
+
+    public void updateCoverImage(@NonNull Image coverImage) {
+        log.debug("Place [{}] coverImage linked: {}", id, coverImage.getId());
+        setCoverImageId(coverImage.getId());
+        setCoverImage(coverImage);
         setUpdatedAt(Instant.now());
     }
 
     public void removeCoverImage() {
         log.debug("Place [{}] coverImage removed.", id);
         setCoverImageId(null);
+        setCoverImage(null);
         setUpdatedAt(Instant.now());
     }
 
