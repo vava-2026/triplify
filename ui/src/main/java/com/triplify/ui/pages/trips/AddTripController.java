@@ -2,6 +2,9 @@ package com.triplify.ui.pages.trips;
 
 import com.google.inject.Inject;
 import com.triplify.application.response.TripStatus;
+import com.triplify.ui.i18n.I18n;
+import com.triplify.ui.map.CountryBoundary;
+import com.triplify.ui.map.CountryBoundaryLoader;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.component.date_picker.DatePickerItem;
@@ -13,6 +16,7 @@ import com.triplify.ui.shared.component.select.view.SelectView;
 import com.triplify.ui.shared.component.input_item.TextAreaItem;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.toast.ToastService;
+import com.triplify.ui.shared.util.Localization;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -39,6 +43,7 @@ import rahulstech.jfx.routing.element.RouterArgument;
 import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 
 import java.io.File;
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -52,9 +57,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
     private static final Logger log = LoggerFactory.getLogger(AddTripController.class);
 
-    private static final List<String> AVAILABLE_COUNTRIES = List.of(
-            "Ukraine", "Greece", "Italy", "France", "Japan", "United States", "Kenya", "Canada"
-    );
+    private static final List<String> AVAILABLE_COUNTRIES = loadAvailableCountries();
     private static final List<String> AVAILABLE_CATEGORIES = List.of(
             "Culture", "Tourism", "Nature", "Relax", "Memorial", "Food"
     );
@@ -65,6 +68,21 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
     @FXML private VBox contentContainer;
     @FXML private FlowPane contentFlow;
+
+    @FXML private Label generalSectionTitleLabel;
+    @FXML private Label tripTitleLabel;
+    @FXML private Label countriesLabel;
+    @FXML private Label startDateLabel;
+    @FXML private Label endDateLabel;
+    @FXML private Label descriptionLabel;
+    @FXML private Label routesSectionTitleLabel;
+    @FXML private Label placesSectionTitleLabel;
+    @FXML private Label coverSectionTitleLabel;
+    @FXML private Label uploadTitleLabel;
+    @FXML private Label uploadSubtitleLabel;
+    @FXML private Label metaSectionTitleLabel;
+    @FXML private Label categoryLabel;
+    @FXML private Label tagsLabel;
 
     @FXML private VBox titleInputContainer;
     @FXML private FlowPane countriesFlow;
@@ -133,7 +151,9 @@ public class AddTripController extends SimpleLifecycleAwareController {
         configureButtonIcon(discardButton, "fth-trash-2");
 
         installRoundedClip(uploadArea, 16);
-        initializeSelects();
+        bindLocalizedText();
+        refreshLocalizedUi();
+        I18n.bundleProperty().addListener((obs, oldBundle, newBundle) -> refreshLocalizedUi());
         renderCountryChips();
         renderRoutes();
         renderPlaces();
@@ -187,7 +207,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
     private void onAddCountry() {
         String country = selectedValue(countrySelectModel);
         if (country == null || country.isBlank()) {
-            toast.info("Choose a country first.");
+            toast.info(I18n.t("trip.add.toast.country.required"));
             return;
         }
 
@@ -217,7 +237,10 @@ public class AddTripController extends SimpleLifecycleAwareController {
                 : titleInput.getText().trim();
 
         args.addArgument("tripId", targetTripId);
-        args.addArgument("tripName", targetTripName == null || targetTripName.isBlank() ? "New Trip" : targetTripName);
+        args.addArgument(
+                "tripName",
+                targetTripName == null || targetTripName.isBlank() ? I18n.t("trip.add.default.name") : targetTripName
+        );
         getRouter().moveto(RouteIds.ADD_PLACE, args);
     }
 
@@ -227,27 +250,27 @@ public class AddTripController extends SimpleLifecycleAwareController {
             return;
         }
         if (selectedCountries.isEmpty()) {
-            toast.warning("Add at least one country.");
+            toast.warning(I18n.t("trip.add.toast.countries.required"));
             return;
         }
         if (selectedValue(categorySelectModel) == null || selectedValue(categorySelectModel).isBlank()) {
-            toast.warning("Choose a category.");
+            toast.warning(I18n.t("trip.add.toast.category.required"));
             return;
         }
 
         String tripTitle = titleInput.getText().trim();
         String message = createMode
-                ? "Trip draft \"" + tripTitle + "\" is ready."
-                : "Trip \"" + tripTitle + "\" was updated.";
-        toast.success("Trip saved", message);
+                ? formatMessage("trip.add.toast.trip.ready", tripTitle)
+                : formatMessage("trip.add.toast.trip.updated", tripTitle);
+        toast.success(I18n.t("trip.add.toast.title.saved"), message);
     }
 
     @FXML
     private void onChooseCoverImage() {
         FileChooser chooser = new FileChooser();
-        chooser.setTitle("Choose trip cover");
+        chooser.setTitle(I18n.t("trip.add.dialog.cover.title"));
         chooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("Image files", "*.png", "*.jpg", "*.jpeg", "*.svg")
+                new FileChooser.ExtensionFilter(I18n.t("trip.add.dialog.cover.filter"), "*.png", "*.jpg", "*.jpeg", "*.svg")
         );
 
         File file = chooser.showOpenDialog(uploadArea.getScene() == null ? null : uploadArea.getScene().getWindow());
@@ -287,20 +310,58 @@ public class AddTripController extends SimpleLifecycleAwareController {
         event.consume();
     }
 
-    private void initializeSelects() {
-        countrySelectModel = createSelectModel(AVAILABLE_COUNTRIES, "Choose a country");
-        categorySelectModel = createSelectModel(AVAILABLE_CATEGORIES, "Choose a category");
+    private void bindLocalizedText() {
+        Localization.bindText(generalSectionTitleLabel.textProperty(), "trip.add.section.general");
+        Localization.bindText(tripTitleLabel.textProperty(), "trip.add.field.title");
+        Localization.bindText(countriesLabel.textProperty(), "trip.add.field.countries");
+        Localization.bindText(startDateLabel.textProperty(), "trip.add.field.startDate");
+        Localization.bindText(endDateLabel.textProperty(), "trip.add.field.endDate");
+        Localization.bindText(descriptionLabel.textProperty(), "trip.add.field.description");
+        Localization.bindText(routesSectionTitleLabel.textProperty(), "trip.add.section.routes");
+        Localization.bindText(placesSectionTitleLabel.textProperty(), "trip.add.section.places");
+        Localization.bindText(coverSectionTitleLabel.textProperty(), "trip.add.section.cover");
+        Localization.bindText(uploadTitleLabel.textProperty(), "trip.add.upload.title");
+        Localization.bindText(uploadSubtitleLabel.textProperty(), "trip.add.upload.subtitle");
+        Localization.bindText(metaSectionTitleLabel.textProperty(), "trip.add.section.meta");
+        Localization.bindText(categoryLabel.textProperty(), "trip.add.field.category");
+        Localization.bindText(tagsLabel.textProperty(), "trip.add.field.tags");
+
+        Localization.bindText(addCountryButton.textProperty(), "trip.add.action.addCountry");
+        Localization.bindText(addRouteButton.textProperty(), "trip.add.action.addRoute");
+        Localization.bindText(addPlaceButton.textProperty(), "trip.add.action.addPlace");
+        Localization.bindText(saveButton.textProperty(), "trip.add.action.save");
+        Localization.bindText(discardButton.textProperty(), "trip.add.action.discard");
+    }
+
+    private void refreshLocalizedUi() {
+        String selectedCountry = selectedValue(countrySelectModel);
+        String selectedCategory = selectedValue(categorySelectModel);
+
+        countrySelectModel = createSelectModel(AVAILABLE_COUNTRIES, "trip.add.select.country");
+        categorySelectModel = createSelectModel(AVAILABLE_CATEGORIES, "trip.add.select.category");
+
+        countrySelectModel.setSelectedItem(findEntry(countrySelectModel, selectedCountry));
+        categorySelectModel.setSelectedItem(findEntry(categorySelectModel, selectedCategory));
 
         countrySelectContainer.getChildren().setAll(createSelectView(countrySelectModel));
         categorySelectContainer.getChildren().setAll(createSelectView(categorySelectModel));
+
+        tagPickerInput.setPlaceholderText(I18n.t("trip.add.select.tag"));
+        tagPickerInput.setPopupTitle(I18n.t("trip.add.tag.popupTitle"));
+        tagPickerInput.setAvailableTags(AVAILABLE_TAGS);
+        tagPickerInput.setSelectedTags(selectedTags);
+
+        renderCountryChips();
+        renderRoutes();
+        renderPlaces();
     }
 
     private void populateHeader(String tripName, String tripDates) {
         if (createMode) {
-            currentTripDisplayName = "New Trip";
+            currentTripDisplayName = I18n.t("trip.add.default.name");
             return;
         }
-        currentTripDisplayName = tripName == null || tripName.isBlank() ? "Trip Details" : tripName;
+        currentTripDisplayName = tripName == null || tripName.isBlank() ? I18n.t("trip.add.default.name") : tripName;
     }
 
     private void populateForm(
@@ -379,7 +440,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
     ) {
         container.getChildren().clear();
         if (values.isEmpty()) {
-            Label placeholder = new Label("Nothing selected yet");
+            Label placeholder = new Label(I18n.t("trip.add.empty.countries"));
             placeholder.getStyleClass().add("trip-editor-chip-placeholder");
             container.getChildren().add(placeholder);
             return;
@@ -387,6 +448,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
         for (String value : values) {
             Button chip = new Button(value + "  ×");
+            chip.setText(value + "  x");
             chip.setFocusTraversable(false);
             chip.getStyleClass().addAll("trip-editor-chip", "trip-editor-chip-soft");
             chip.setOnAction(event -> {
@@ -400,7 +462,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
     private void renderRoutes() {
         routeListContainer.getChildren().clear();
         if (routeItems.isEmpty()) {
-            routeListContainer.getChildren().add(createEmptyState("No routes yet. Start by adding your first segment."));
+            routeListContainer.getChildren().add(createEmptyState(I18n.t("trip.add.empty.routes")));
             return;
         }
 
@@ -412,7 +474,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
     private void renderPlaces() {
         placesFlow.getChildren().clear();
         if (placeItems.isEmpty()) {
-            placesFlow.getChildren().add(createEmptyState("No places linked yet."));
+            placesFlow.getChildren().add(createEmptyState(I18n.t("trip.add.empty.places")));
             return;
         }
 
@@ -440,7 +502,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
         HBox actions = new HBox(6);
         actions.setAlignment(Pos.CENTER_RIGHT);
         Button editButton = createInlineIconButton("fth-edit-2", () ->
-                toast.info("Route edit", item.title() + " can be adjusted here next."));
+                toast.info(I18n.t("trip.add.toast.route.edit.title"), formatMessage("trip.add.toast.route.edit.body", item.title())));
         Button removeButton = createInlineIconButton("fth-trash-2", () -> {
             routeItems.remove(item);
             renderRoutes();
@@ -543,7 +605,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
     private void handleCoverImage(File file) {
         if (!isSupportedImageFile(file)) {
-            toast.warning("Unsupported image format.");
+            toast.warning(I18n.t("trip.add.toast.image.unsupported"));
             return;
         }
 
@@ -571,7 +633,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
                 coverPreview.setManaged(false);
                 uploadPlaceholder.setVisible(true);
                 uploadPlaceholder.setManaged(true);
-                toast.warning("Image preview is unavailable, but the file is attached.");
+                toast.warning(I18n.t("trip.add.toast.image.previewUnavailable"));
             }
         });
         image.progressProperty().addListener((obs, oldVal, newVal) -> {
@@ -638,8 +700,8 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
     private TagPickerItem createTagPickerItem() {
         TagPickerItem input = new TagPickerItem();
-        input.setPlaceholderText("Choose a tag");
-        input.setPopupTitle("All tags");
+        input.setPlaceholderText(I18n.t("trip.add.select.tag"));
+        input.setPopupTitle(I18n.t("trip.add.tag.popupTitle"));
         input.setAvailableTags(AVAILABLE_TAGS);
         input.setOnSelectionChanged(tags -> {
             selectedTags.clear();
@@ -707,9 +769,9 @@ public class AddTripController extends SimpleLifecycleAwareController {
         coverPreview.setViewport(new Rectangle2D(0, y, imageWidth, cropHeight));
     }
 
-    private Select<String> createSelectModel(List<String> values, String placeholder) {
+    private Select<String> createSelectModel(List<String> values, String placeholderKey) {
         return Select.<String>builder()
-                .placeholder(placeholder)
+                .placeholder(I18n.t(placeholderKey))
                 .variant(FieldVariant.FILLED)
                 .items(values.stream().map(this::toEntry).toList())
                 .build();
@@ -830,6 +892,10 @@ public class AddTripController extends SimpleLifecycleAwareController {
         return value == null ? "" : value;
     }
 
+    private String formatMessage(String key, Object... args) {
+        return MessageFormat.format(I18n.t(key), args);
+    }
+
     private Image loadImage(String imagePath) {
         String resolvedPath = imagePath == null || imagePath.isBlank() ? DEFAULT_IMAGE : imagePath;
         if (resolvedPath.startsWith("/")) {
@@ -875,6 +941,15 @@ public class AddTripController extends SimpleLifecycleAwareController {
         }
 
         return imagePath;
+    }
+
+    private static List<String> loadAvailableCountries() {
+        return CountryBoundaryLoader.load().stream()
+                .map(CountryBoundary::name)
+                .filter(name -> name != null && !name.isBlank())
+                .distinct()
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .toList();
     }
 
     private record RouteItem(String title, String subtitle, String imagePath) { }

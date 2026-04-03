@@ -3,7 +3,12 @@
 <router xmlns="https://github.com/rahulstech/javafx-routing"
         home="start">
 
-    <arguments id="tripDetailsArgs">
+    <arguments id="addTripArgs">
+        <argument name="tripId" type="int" required="true"/>
+        <argument name="tripName" type="string" required="true"/>
+    </arguments>
+
+    <arguments id="addPlaceArgs">
         <argument name="tripId" type="int" required="true"/>
         <argument name="tripName" type="string" required="true"/>
     </arguments>

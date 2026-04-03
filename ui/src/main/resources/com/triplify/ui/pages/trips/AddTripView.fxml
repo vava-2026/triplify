@@ -26,16 +26,16 @@
                         <VBox styleClass="page-card,trip-editor-card" spacing="18">
                             <HBox styleClass="trip-editor-section-header">
                                 <FontIcon iconLiteral="fth-info" iconSize="14" styleClass="trip-editor-section-icon"/>
-                                <Label text="General Information" styleClass="trip-editor-section-title"/>
+                                <Label fx:id="generalSectionTitleLabel" text="General Information" styleClass="trip-editor-section-title"/>
                             </HBox>
 
                             <VBox styleClass="trip-editor-form-group">
-                                <Label text="Trip Title *" styleClass="form-label"/>
+                                <Label fx:id="tripTitleLabel" text="Trip Title *" styleClass="form-label"/>
                                 <VBox fx:id="titleInputContainer"/>
                             </VBox>
 
                             <VBox styleClass="trip-editor-form-group">
-                                <Label text="Countries *" styleClass="form-label"/>
+                                <Label fx:id="countriesLabel" text="Countries *" styleClass="form-label"/>
                                 <FlowPane fx:id="countriesFlow" styleClass="trip-editor-chip-flow"/>
                                 <HBox styleClass="trip-editor-inline-row">
                                     <VBox fx:id="countrySelectContainer" HBox.hgrow="ALWAYS"/>
@@ -48,17 +48,17 @@
 
                             <HBox styleClass="trip-editor-date-row">
                                 <VBox HBox.hgrow="ALWAYS" styleClass="trip-editor-form-group">
-                                    <Label text="Start Date" styleClass="form-label"/>
+                                    <Label fx:id="startDateLabel" text="Start Date" styleClass="form-label"/>
                                     <VBox fx:id="startDateContainer"/>
                                 </VBox>
                                 <VBox HBox.hgrow="ALWAYS" styleClass="trip-editor-form-group">
-                                    <Label text="End Date" styleClass="form-label"/>
+                                    <Label fx:id="endDateLabel" text="End Date" styleClass="form-label"/>
                                     <VBox fx:id="endDateContainer"/>
                                 </VBox>
                             </HBox>
 
                             <VBox styleClass="trip-editor-form-group">
-                                <Label text="Description" styleClass="form-label"/>
+                                <Label fx:id="descriptionLabel" text="Description" styleClass="form-label"/>
                                 <VBox fx:id="descriptionInputContainer"/>
                             </VBox>
                         </VBox>
@@ -66,7 +66,7 @@
                         <VBox styleClass="page-card,trip-editor-card" spacing="16">
                             <HBox styleClass="trip-editor-section-header">
                                 <FontIcon iconLiteral="fth-map" iconSize="14" styleClass="trip-editor-section-icon"/>
-                                <Label text="Planned Routes" styleClass="trip-editor-section-title"/>
+                                <Label fx:id="routesSectionTitleLabel" text="Planned Routes" styleClass="trip-editor-section-title"/>
                             </HBox>
 
                             <VBox fx:id="routeListContainer" styleClass="trip-editor-list"/>
@@ -81,7 +81,7 @@
                         <VBox styleClass="page-card,trip-editor-card" spacing="16">
                             <HBox styleClass="trip-editor-section-header">
                                 <FontIcon iconLiteral="fth-map-pin" iconSize="14" styleClass="trip-editor-section-icon"/>
-                                <Label text="Places to Visit" styleClass="trip-editor-section-title"/>
+                                <Label fx:id="placesSectionTitleLabel" text="Places to Visit" styleClass="trip-editor-section-title"/>
                             </HBox>
 
                             <FlowPane fx:id="placesFlow" styleClass="trip-editor-places-flow"/>
@@ -98,7 +98,7 @@
                         <VBox styleClass="page-card,trip-editor-card,trip-editor-upload-card" spacing="14">
                             <HBox styleClass="trip-editor-section-header">
                                 <FontIcon iconLiteral="fth-image" iconSize="14" styleClass="trip-editor-section-icon"/>
-                                <Label text="Cover Image" styleClass="trip-editor-section-title"/>
+                                <Label fx:id="coverSectionTitleLabel" text="Cover Image" styleClass="trip-editor-section-title"/>
                             </HBox>
 
                             <StackPane fx:id="uploadArea"
@@ -117,10 +117,11 @@
 
                                 <VBox fx:id="uploadPlaceholder" styleClass="trip-editor-upload-placeholder">
                                     <FontIcon iconLiteral="fth-image" iconSize="30" styleClass="trip-editor-upload-icon"/>
-                                    <Label text="Click to upload&#10;or drag and drop"
+                                    <Label fx:id="uploadTitleLabel"
+                                           text="Click to upload&#10;or drag and drop"
                                            wrapText="true"
                                            styleClass="trip-editor-upload-title"/>
-                                    <Label text="SVG, PNG, JPEG" styleClass="trip-editor-upload-subtitle"/>
+                                    <Label fx:id="uploadSubtitleLabel" text="SVG, PNG, JPEG" styleClass="trip-editor-upload-subtitle"/>
                                 </VBox>
                             </StackPane>
 
@@ -133,16 +134,16 @@
                         <VBox styleClass="page-card,trip-editor-card" spacing="18">
                             <HBox styleClass="trip-editor-section-header">
                                 <FontIcon iconLiteral="fth-tag" iconSize="14" styleClass="trip-editor-section-icon"/>
-                                <Label text="Categories &amp; Tags" styleClass="trip-editor-section-title"/>
+                                <Label fx:id="metaSectionTitleLabel" text="Categories &amp; Tags" styleClass="trip-editor-section-title"/>
                             </HBox>
 
                             <VBox styleClass="trip-editor-form-group">
-                                <Label text="Category" styleClass="form-label"/>
+                                <Label fx:id="categoryLabel" text="Category" styleClass="form-label"/>
                                 <VBox fx:id="categorySelectContainer"/>
                             </VBox>
 
                             <VBox styleClass="trip-editor-form-group">
-                                <Label text="Tags" styleClass="form-label"/>
+                                <Label fx:id="tagsLabel" text="Tags" styleClass="form-label"/>
                                 <VBox fx:id="tagPickerContainer"/>
                             </VBox>
                         </VBox>
