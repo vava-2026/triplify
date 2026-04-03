@@ -43,6 +43,11 @@
                  arguments="addPlaceArgs"
                  singleTop="true"/>
 
+    <destination id="add_route"
+                 fxml="com/triplify/ui/pages/routes/AddRouteView.fxml"
+                 arguments="tripDetailsArgs"
+                 singleTop="true"/>
+
     <destination id="calendar"
                  fxml="com/triplify/ui/pages/calendar/CalendarView.fxml"
                  singleTop="true"/>
