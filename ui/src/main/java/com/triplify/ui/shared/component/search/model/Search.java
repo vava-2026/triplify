@@ -13,20 +13,28 @@ import java.util.function.Function;
 public class Search<T> {
 
     private final Function<String, List<Entry<T>>> searchFunction;
+    private final Function<String, List<Entry<T>>> loadMoreFunction;
 
     @Getter private final StringProperty placeholder = new SimpleStringProperty();
     @Getter private final StringProperty noResult = new SimpleStringProperty();
     @Getter private final int debounceMs;
     @Getter private final int maxResults;
-    @Getter private final boolean caseSensitive;
+    @Getter private final int maxVisibleResults;
+    @Getter private final boolean searchOnTyping;
+    @Getter private final boolean showOnEmptyQuery;
+    @Getter private final double loadMoreThreshold;
     @Getter private final Consumer<Entry<T>> onResultSelected;
     @Getter private final FieldVariant variant;
 
     private Search(Builder<T> builder) {
         this.searchFunction = builder.searchFunction;
+        this.loadMoreFunction = builder.loadMoreFunction;
         this.debounceMs = builder.debounceMs;
         this.maxResults = builder.maxResults;
-        this.caseSensitive = builder.caseSensitive;
+        this.maxVisibleResults = builder.maxVisibleResults;
+        this.searchOnTyping = builder.searchOnTyping;
+        this.showOnEmptyQuery = builder.showOnEmptyQuery;
+        this.loadMoreThreshold = builder.loadMoreThreshold;
         this.onResultSelected = builder.onResultSelected;
         this.variant = builder.variant;
 
@@ -35,11 +43,14 @@ public class Search<T> {
     }
 
     public List<Entry<T>> search(String query) {
-        if (query == null) {
+        return getEntries(query, query == null, searchFunction);
+    }
+
+    private List<Entry<T>> getEntries(String query, boolean b, Function<String, List<Entry<T>>> searchFunction) {
+        if (b) {
             return List.of();
         }
-        String effectiveQuery = caseSensitive ? query : query.toLowerCase();
-        List<Entry<T>> results = searchFunction.apply(effectiveQuery);
+        List<Entry<T>> results = searchFunction.apply(query);
         return maxResults > 0 && results.size() > maxResults
                 ? results.subList(0, maxResults)
                 : results;
@@ -49,6 +60,14 @@ public class Search<T> {
         if (onResultSelected != null) {
             onResultSelected.accept(result);
         }
+    }
+
+    public boolean canLoadMore() {
+        return loadMoreFunction != null;
+    }
+
+    public List<Entry<T>> loadMore(String query) {
+        return getEntries(query, loadMoreFunction == null, loadMoreFunction);
     }
 
     public static <T> Builder<T> builder(Function<String, List<Entry<T>>> searchFunction) {
@@ -61,6 +80,8 @@ public class Search<T> {
         static private final String DEFAULT_NO_RESULT_KEY = "search.noResult";
         static private final int DEFAULT_DEBOUNCE_MS = 300;
         static private final int DEFAULT_MAX_RESULTS = 0;
+        static private final int DEFAULT_MAX_VISIBLE_RESULTS = 0;
+        static private final double DEFAULT_LOAD_MORE_THRESHOLD = 0.82;
         static private final FieldVariant DEFAULT_VARIANT = FieldVariant.FILLED;
 
         private final Function<String, List<Entry<T>>> searchFunction;
@@ -69,8 +90,12 @@ public class Search<T> {
         private String noResultKey = DEFAULT_NO_RESULT_KEY;
         private int debounceMs = DEFAULT_DEBOUNCE_MS;
         private int maxResults = DEFAULT_MAX_RESULTS;
+        private int maxVisibleResults = DEFAULT_MAX_VISIBLE_RESULTS;
         private FieldVariant variant = DEFAULT_VARIANT;
-        private boolean caseSensitive = false;
+        private boolean searchOnTyping = true;
+        private boolean showOnEmptyQuery = false;
+        private double loadMoreThreshold = DEFAULT_LOAD_MORE_THRESHOLD;
+        private Function<String, List<Entry<T>>> loadMoreFunction;
 
         private Builder(Function<String, List<Entry<T>>> searchFunction) {
             if (searchFunction == null) {
@@ -94,8 +119,31 @@ public class Search<T> {
             return this;
         }
 
-        public Builder<T> caseSensitive(boolean caseSensitive) {
-            this.caseSensitive = caseSensitive;
+        public Builder<T> maxVisibleResults(int maxVisibleResults) {
+            this.maxVisibleResults = maxVisibleResults;
+            return this;
+        }
+
+        public Builder<T> searchOnTyping(boolean searchOnTyping) {
+            this.searchOnTyping = searchOnTyping;
+            return this;
+        }
+
+        public Builder<T> showOnEmptyQuery(boolean showOnEmptyQuery) {
+            this.showOnEmptyQuery = showOnEmptyQuery;
+            return this;
+        }
+
+        public Builder<T> loadMoreThreshold(double loadMoreThreshold) {
+            if (loadMoreThreshold < 0 || loadMoreThreshold > 1) {
+                throw new IllegalArgumentException("loadMoreThreshold must be between 0 and 1");
+            }
+            this.loadMoreThreshold = loadMoreThreshold;
+            return this;
+        }
+
+        public Builder<T> onLoadMore(Function<String, List<Entry<T>>> loadMoreFunction) {
+            this.loadMoreFunction = loadMoreFunction;
             return this;
         }
 

@@ -55,6 +55,35 @@
     -fx-pref-height: 44px;
 }
 
+.add-place-country-field .search-input-box {
+    -fx-min-height: 44px;
+    -fx-pref-height: 44px;
+    -fx-max-height: 44px;
+    -fx-background-color: #eef5fb;
+    -fx-border-color: transparent;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+}
+
+.add-place-country-field.search-showing .search-input-box {
+    -fx-background-radius: 10px 10px 0 0;
+    -fx-border-radius: 10px 10px 0 0;
+}
+
+.add-place-country-field .search-field {
+    -fx-font-size: 15px;
+}
+
+.add-place-country-field .search-results,
+.add-place-country-field .search-no-results {
+    -fx-background-color: #eef5fb;
+}
+
+.add-place-country-field.countries-has-error .search-input-box {
+    -fx-border-color: -color-danger;
+    -fx-border-width: 1.5;
+}
+
 .add-place-field .input-item.input-item--filled {
     -fx-background-color: #eef5fb;
     -fx-border-color: transparent;

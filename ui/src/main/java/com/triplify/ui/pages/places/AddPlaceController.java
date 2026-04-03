@@ -2,11 +2,14 @@ package com.triplify.ui.pages.places;
 
 import com.gluonhq.maps.MapPoint;
 import com.google.inject.Inject;
+import com.triplify.application.usecase.country.CountryService;
 import com.triplify.application.usecase.place.dto.AddPlaceRequest;
 import com.triplify.application.usecase.place.PlaceService;
 import com.triplify.ui.map.InteractiveMap;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.routing.TriplifyRouterContext;
+import com.triplify.ui.shared.component.countries.model.Countries;
+import com.triplify.ui.shared.component.countries.view.CountriesView;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.input_item.TextAreaItem;
 import com.triplify.ui.shared.component.upload_panel.view.ImageUploadPanelView;
@@ -49,13 +52,6 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
 
     private static final double DEFAULT_LATITUDE = 48.1485965;
     private static final double DEFAULT_LONGITUDE = 17.1077477;
-    private static final double DEFAULT_ZOOM = 5.5;
-    private static final double FOCUSED_ZOOM = 12.5;
-    private static final double MIN_ZOOM = 2.0;
-    private static final double MAX_ZOOM = 18.0;
-    private static final double ZOOM_STEP = 1.0;
-    private static final double MOUSE_WHEEL_DELTA_THRESHOLD = 12.0;
-    private static final double TRACKPAD_PAN_FACTOR = 1.15;
 
     @FXML private VBox contentContainer;
     @FXML private FlowPane contentFlow;
@@ -73,6 +69,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     @FXML private Button discardButton;
 
     @Inject private PlaceService placeService;
+    @Inject private CountryService countryService;
     @Inject private ToastService toast;
     @Inject private ErrorHandler errorHandler;
 
@@ -82,7 +79,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     private Double selectedLongitude = DEFAULT_LONGITUDE;
     private String coverImagePath;
     private InputItem titleInput;
-    private InputItem countryInput;
+    private CountriesView countriesView;
     private TextAreaItem descriptionInput;
     private StackPane uploadArea;
     private ImageView coverPreview;
@@ -92,11 +89,18 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     @FXML
     public void initialize() {
         titleInput = createInput("input.placeholder.placeTitle");
-        countryInput = createInput("input.placeholder.country");
+        countriesView = new CountriesView(
+                Countries.builder(countryService)
+                        .variant(FieldVariant.FILLED)
+                        .searchOnTyping(true)
+                        .onLoadFailed(errorHandler::handle)
+                        .build()
+        );
+        countriesView.getStyleClass().add("add-place-country-field");
         descriptionInput = createTextArea("input.placeholder.placeDescription");
 
         titleInputContainer.getChildren().add(titleInput);
-        countryInputContainer.getChildren().add(countryInput);
+        countryInputContainer.getChildren().add(countriesView);
         descriptionInputContainer.getChildren().add(descriptionInput);
         uploadArea = imageUploadPanel.getUploadArea();
         coverPreview = imageUploadPanel.getCoverPreview();
@@ -144,7 +148,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         clearFieldErrors();
 
         AddPlaceRequest request = new AddPlaceRequest(
-                normalize(countryInput.getText()),
+                normalize(countriesView.getSelectedCountryId()),
                 coverImagePath == null ? null : java.nio.file.Path.of(coverImagePath),
                 normalize(titleInput.getText()),
                 normalizeNullable(descriptionInput.getText()),
@@ -154,7 +158,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
 
         Map<String, Consumer<String>> fieldHandlers = Map.of(
                 "title", message -> titleInput.showError(message),
-                "countryId", message -> countryInput.showError(message)
+                "countryId", message -> countriesView.showError(message)
         );
 
         var result = placeService.addPlace(request);
@@ -220,7 +224,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
 
     private void clearFieldErrors() {
         titleInput.clearError();
-        countryInput.clearError();
+        countriesView.clearError();
     }
 
     private void handleCoverImage(File file) {

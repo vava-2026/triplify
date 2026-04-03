@@ -13,7 +13,7 @@ public record CountryResponse(
     public static CountryResponse from(Country country) {
         return new CountryResponse(
                 country.getId().toString(),
-                country.getCreatedById().toString(),
+                country.getCreatedById() == null ? null : country.getCreatedById().toString(),
                 country.getName(),
                 country.getNameSk(),
                 country.getEmojiUnicode(),

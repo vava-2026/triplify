@@ -89,32 +89,28 @@ public class ImageRepositoryImpl implements ImageRepository {
             args.add(uploadedTo.toString());
         }
 
-        String countSql = "SELECT COUNT(*) FROM images" + where;
         String dataSql  = "SELECT id, url, description, uploaded_at FROM images"
                 + where
                 + " ORDER BY uploaded_at " + order
                 + " LIMIT ? OFFSET ?";
 
         try (Connection conn = SQLiteConnectionFactory.getConnection()) {
-            long total;
-            try (PreparedStatement ps = conn.prepareStatement(countSql)) {
-                bindArgs(ps, args, 1);
-                try (ResultSet rs = ps.executeQuery()) {
-                    total = rs.next() ? rs.getLong(1) : 0;
-                }
-            }
-
             List<Image> items = new ArrayList<>();
             try (PreparedStatement ps = conn.prepareStatement(dataSql)) {
                 int idx = bindArgs(ps, args, 1);
-                ps.setInt(idx++, pageRequest.size());
+                int fetchLimit = pageRequest.size() + 1;
+                ps.setInt(idx++, fetchLimit);
                 ps.setInt(idx, pageRequest.offset());
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) items.add(toDomainImage(rs));
                 }
             }
 
-            return Page.of(items, pageRequest, total);
+            boolean hasNext = items.size() > pageRequest.size();
+            if (hasNext) {
+                items.remove(items.size() - 1);
+            }
+            return Page.of(items, pageRequest, hasNext);
         } catch (SQLException e) {
             log.error("Failed to query images", e);
             throw new RuntimeException("Database error while querying images", e);

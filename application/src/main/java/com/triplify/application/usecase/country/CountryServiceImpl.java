@@ -57,7 +57,7 @@ public class CountryServiceImpl implements CountryService {
         }
 
         Country old = oldRes.get();
-        if (!old.getCreatedById().equals(user.userId())) {
+        if (old.getCreatedById() != null && !old.getCreatedById().equals(user.userId())) {
             log.warn("Attempted to update country not created by userId='{}' by userId='{}', countryName='{}'", old.getCreatedById(), user.userId(), old.getName());
             return Result.fail(new CountryError.NotFound(request.id()));
         }
@@ -80,7 +80,7 @@ public class CountryServiceImpl implements CountryService {
         }
 
         Country old = oldRes.get();
-        if (!old.getCreatedById().equals(user.userId())) {
+        if (old.getCreatedById() != null && !old.getCreatedById().equals(user.userId())) {
             log.warn("Attempted to delete country not created by userId='{}' by userId='{}', countryName='{}'", old.getCreatedById(), user.userId(), old.getName());
             return Result.fail(new CountryError.NotFound(request.id()));
         }
@@ -108,8 +108,8 @@ public class CountryServiceImpl implements CountryService {
         return Result.ok(countryPage.map(CountryResponse::from));
     }
 
-    private Result<CountryResponse> changeAvailable(@NonNull String countryId, boolean availabe) {
-        String logAction = availabe ? "unban" : "ban";
+    private Result<CountryResponse> changeAvailable(@NonNull String countryId, boolean available) {
+        String logAction = available ? "unban" : "ban";
         SessionUser user = sessionContext.getCurrent().orElseThrow();
 
         Optional<Country> oldRes = countryRepository.findById(countryId);
@@ -119,12 +119,14 @@ public class CountryServiceImpl implements CountryService {
         }
 
         Country old = oldRes.get();
-        if (!old.getCreatedById().equals(user.userId())) {
+        if (old.getCreatedById() != null && !old.getCreatedById().equals(user.userId())) {
             log.warn("Attempted to {} country not created by userId='{}' by userId='{}', countryName='{}'", logAction, old.getCreatedById(), user.userId(), old.getName());
             return Result.fail(new CountryError.NotFound(countryId));
         }
 
-        Country changed = new Country(old.getId(), old.getCreatedById(), old.getName(), old.getNameSk(), old.getEmojiUnicode(), availabe);
+        // Legacy rows can have null owner; normalize ownership after first management action.
+        var ownerId = old.getCreatedById() == null ? user.userId() : old.getCreatedById();
+        Country changed = new Country(old.getId(), ownerId, old.getName(), old.getNameSk(), old.getEmojiUnicode(), available);
         countryRepository.update(changed);
         log.info("{} country with id='{}', name='{}' by userId='{}'", logAction, old.getId(), old.getName(), user.userId());
         return Result.ok(CountryResponse.from(changed));

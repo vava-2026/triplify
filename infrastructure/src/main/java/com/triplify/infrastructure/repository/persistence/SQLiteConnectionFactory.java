@@ -22,6 +22,7 @@ public class SQLiteConnectionFactory {
     private static final String DB_PATH_ENV = "TRIPLIFY_DB_PATH"; // Env var key for db path override
 
     private static Connection instance;
+    private static boolean spatialiteLoaded = false;
 
     // Cached path to the extracted SpatiaLite library (survives reconnect to avoid
     // duplicate System.load() calls which throw UnsatisfiedLinkError on a different path)
@@ -40,8 +41,9 @@ public class SQLiteConnectionFactory {
             if (instance == null || instance.isClosed() || !instance.isValid(1)) {
                 String jdbcUrl = buildJdbcUrl();
                 instance = DriverManager.getConnection(jdbcUrl);
+                spatialiteLoaded = false;
                 enableSpatiaLite(instance);
-                logger.info("SQLite connection established");
+                logger.debug("SQLite connection established");
             }
             return instance;
         } catch (SQLException e) {
@@ -54,7 +56,7 @@ public class SQLiteConnectionFactory {
         if (instance != null) {
             try {
                 instance.close();
-                logger.info("SQLite connection closed");
+                logger.debug("SQLite connection closed");
             } catch (SQLException e) {
                 logger.warn("Failed to close SQLite connection", e);
             } finally {
@@ -64,6 +66,10 @@ public class SQLiteConnectionFactory {
     }
 
     private static void enableSpatiaLite(Connection connection) {
+        if (spatialiteLoaded) {
+            return;
+        }
+
         try (Statement stmt = connection.createStatement()) {
             SQLiteConnection sqliteConn = connection.unwrap(SQLiteConnection.class);
             sqliteConn.getDatabase().enable_load_extension(true);
@@ -79,7 +85,8 @@ public class SQLiteConnectionFactory {
             // Disable extension loading now that SpatiaLite is loaded
             sqliteConn.getDatabase().enable_load_extension(false);
 
-            logger.info("SpatiaLite loaded successfully");
+            spatialiteLoaded = true;
+            logger.debug("SpatiaLite loaded successfully");
         } catch (Exception e) {
             logger.error("Failed to load SpatiaLite", e);
             throw new RuntimeException("SpatiaLite could not be loaded", e);
@@ -217,7 +224,7 @@ public class SQLiteConnectionFactory {
 
     private static String buildJdbcUrl() {
         Path dbPath = resolveDbPath().toAbsolutePath().normalize();
-        logger.info("Using database path: {}", dbPath);
+        logger.debug("Using database path: {}", dbPath);
         try {
             // Ensure all missing parent directories for the database path exist, creating them if needed
             Path parent = dbPath.getParent();

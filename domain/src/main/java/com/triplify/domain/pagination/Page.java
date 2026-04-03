@@ -7,29 +7,29 @@ import java.util.function.Function;
  * Represents one page of paginated results.
  *
  * @param items actual items returned for the current page; this may be empty
- * @param totalElements total number of elements matching the query across all pages
  * @param page zero-based page index that was requested
  * @param size requested page size; this is the page capacity, not {@code items.size()}
+ * @param hasNext whether a next page exists
  * @param <T> item type
  */
-public record Page<T>(List<T> items, long totalElements, int page, int size) {
+public record Page<T>(List<T> items, int page, int size, boolean hasNext) {
 
     public Page {
         items = List.copyOf(items);
 
-        if (totalElements < 0) {
-            throw new IllegalArgumentException("Total elements must be zero or greater.");
-        }
         if (page < 0) {
             throw new IllegalArgumentException("Page index must be zero or greater.");
         }
         if (size <= 0) {
             throw new IllegalArgumentException("Page size must be greater than zero.");
         }
+        if (items.size() > size) {
+            throw new IllegalArgumentException("Items size cannot be greater than requested page size.");
+        }
     }
 
-    public static <T> Page<T> of(List<T> items, PageRequest request, long totalElements) {
-        return new Page<>(items, totalElements, request.page(), request.size());
+    public static <T> Page<T> of(List<T> items, PageRequest request, boolean hasNext) {
+        return new Page<>(items, request.page(), request.size(), hasNext);
     }
 
     /**
@@ -39,15 +39,7 @@ public record Page<T>(List<T> items, long totalElements, int page, int size) {
      * requested page index and page size from the request.
      */
     public static <T> Page<T> empty(PageRequest request) {
-        return new Page<>(List.of(), 0L, request.page(), request.size());
-    }
-
-    public int totalPages() {
-        return (int) Math.ceil((double) totalElements / size);
-    }
-
-    public boolean hasNext() {
-        return page < totalPages() - 1;
+        return new Page<>(List.of(), request.page(), request.size(), false);
     }
 
     public boolean hasPrevious() {
@@ -67,6 +59,6 @@ public record Page<T>(List<T> items, long totalElements, int page, int size) {
     }
 
     public <U> Page<U> map(Function<T, U> mapper) {
-        return new Page<>(items.stream().map(mapper).toList(), totalElements, page, size);
+        return new Page<>(items.stream().map(mapper).toList(), page, size, hasNext);
     }
 }
