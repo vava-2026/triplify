@@ -27,7 +27,6 @@ public class InputItem extends VBox {
     }
 
     public InputItem(String placeholderKey, FieldVariant variant) {
-
         textField = new TextField();
         textField.promptTextProperty().bind(
                 Bindings.createStringBinding(() -> I18n.t(placeholderKey), I18n.bundleProperty()));

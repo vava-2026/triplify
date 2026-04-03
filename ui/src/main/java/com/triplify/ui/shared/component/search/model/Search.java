@@ -23,6 +23,7 @@ public class Search<T> {
     @Getter private final boolean searchOnTyping;
     @Getter private final boolean showOnEmptyQuery;
     @Getter private final double loadMoreThreshold;
+    @Getter private final SearchSize size;
     @Getter private final Consumer<Entry<T>> onResultSelected;
     @Getter private final FieldVariant variant;
 
@@ -35,6 +36,7 @@ public class Search<T> {
         this.searchOnTyping = builder.searchOnTyping;
         this.showOnEmptyQuery = builder.showOnEmptyQuery;
         this.loadMoreThreshold = builder.loadMoreThreshold;
+        this.size = builder.size;
         this.onResultSelected = builder.onResultSelected;
         this.variant = builder.variant;
 
@@ -82,6 +84,7 @@ public class Search<T> {
         static private final int DEFAULT_MAX_RESULTS = 0;
         static private final int DEFAULT_MAX_VISIBLE_RESULTS = 0;
         static private final double DEFAULT_LOAD_MORE_THRESHOLD = 0.82;
+        static private final SearchSize DEFAULT_SIZE = SearchSize.SMALL;
         static private final FieldVariant DEFAULT_VARIANT = FieldVariant.FILLED;
 
         private final Function<String, List<Entry<T>>> searchFunction;
@@ -95,6 +98,7 @@ public class Search<T> {
         private boolean searchOnTyping = true;
         private boolean showOnEmptyQuery = false;
         private double loadMoreThreshold = DEFAULT_LOAD_MORE_THRESHOLD;
+        private SearchSize size = DEFAULT_SIZE;
         private Function<String, List<Entry<T>>> loadMoreFunction;
 
         private Builder(Function<String, List<Entry<T>>> searchFunction) {
@@ -139,6 +143,11 @@ public class Search<T> {
                 throw new IllegalArgumentException("loadMoreThreshold must be between 0 and 1");
             }
             this.loadMoreThreshold = loadMoreThreshold;
+            return this;
+        }
+
+        public Builder<T> size(SearchSize size) {
+            this.size = size == null ? DEFAULT_SIZE : size;
             return this;
         }
 

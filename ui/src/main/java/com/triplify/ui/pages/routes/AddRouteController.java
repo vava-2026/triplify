@@ -4,6 +4,9 @@ import com.google.inject.Inject;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.component.input_item.InputItem;
+import com.triplify.ui.shared.component.search.model.Search;
+import com.triplify.ui.shared.component.search.view.SearchView;
+import com.triplify.ui.shared.component.select.entry.model.Entry;
 import com.triplify.ui.shared.component.input_item.TextAreaItem;
 import com.triplify.ui.shared.component.upload_panel.view.ImageUploadPanelView;
 import com.triplify.ui.shared.model.FieldVariant;
@@ -55,6 +58,7 @@ public class AddRouteController extends SimpleLifecycleAwareController {
     @FXML private ImageUploadPanelView imageUploadPanel;
 
     @FXML private VBox placesListContainer;
+    @FXML private VBox placeSearchContainer;
     @FXML private Label routeLengthLabel;
 
     @FXML private Button addPlaceButton;
@@ -79,6 +83,8 @@ public class AddRouteController extends SimpleLifecycleAwareController {
     private ImageView coverPreview;
     private VBox uploadPlaceholder;
     private Label selectedImageLabel;
+    private SearchView<RoutePlaceItem> placeSearchView;
+    private String placeSearchQuery = "";
 
     @FXML
     public void initialize() {
@@ -98,6 +104,7 @@ public class AddRouteController extends SimpleLifecycleAwareController {
         initializeCoverPreview();
         initializeDragPreview();
         bindUploadPanelHandlers();
+        initializePlaceSearch();
 
         configureButtonIcon(addPlaceButton, "fth-plus");
         configureButtonIcon(saveButton, "fth-save");
@@ -107,6 +114,29 @@ public class AddRouteController extends SimpleLifecycleAwareController {
 
         populateDemoPlaces();
         renderPlaces();
+    }
+
+    private void initializePlaceSearch() {
+        Search<RoutePlaceItem> searchModel = Search.<RoutePlaceItem>builder(this::searchPlaces)
+                .placeholderKey("trip.add.picker.place.search")
+                .noResultKey("trip.add.menu.place.empty")
+                .variant(FieldVariant.FILLED)
+                .maxVisibleResults(8)
+                .showOnEmptyQuery(true)
+                .build();
+
+        placeSearchView = new SearchView<>(searchModel);
+        placeSearchView.getStyleClass().add("add-route-place-search");
+        placeSearchContainer.getChildren().setAll(placeSearchView);
+    }
+
+    private List<Entry<RoutePlaceItem>> searchPlaces(String query) {
+        placeSearchQuery = query == null ? "" : query.trim();
+        renderPlaces();
+
+        return filteredPlaces().stream()
+                .map(place -> Entry.builder(place, place.title()).icon("fth-map-pin").build())
+                .toList();
     }
 
     @Override
@@ -211,17 +241,33 @@ public class AddRouteController extends SimpleLifecycleAwareController {
 
     private void renderPlaces() {
         placesListContainer.getChildren().clear();
-        if (placeItems.isEmpty()) {
-            placesListContainer.getChildren().add(createEmptyState("No places in this route yet."));
-            routeLengthLabel.setText("Length: 0.0km");
+        List<RoutePlaceItem> filtered = filteredPlaces();
+        if (filtered.isEmpty()) {
+            String emptyText = placeItems.isEmpty()
+                    ? "No places in this route yet."
+                    : "No places match your search.";
+            placesListContainer.getChildren().add(createEmptyState(emptyText));
+            routeLengthLabel.setText(String.format(Locale.US, "Length: %.1fkm", placeItems.size() * 1.25));
             return;
         }
 
         int index = 1;
-        for (RoutePlaceItem item : placeItems) {
+        for (RoutePlaceItem item : filtered) {
             placesListContainer.getChildren().add(buildPlaceRow(item, index++));
         }
         routeLengthLabel.setText(String.format(Locale.US, "Length: %.1fkm", placeItems.size() * 1.25));
+    }
+
+    private List<RoutePlaceItem> filteredPlaces() {
+        if (placeSearchQuery == null || placeSearchQuery.isBlank()) {
+            return placeItems;
+        }
+
+        String normalized = placeSearchQuery.toLowerCase(Locale.ROOT);
+        return placeItems.stream()
+                .filter(item -> item.title() != null && item.title().toLowerCase(Locale.ROOT).contains(normalized)
+                        || item.subtitle() != null && item.subtitle().toLowerCase(Locale.ROOT).contains(normalized))
+                .toList();
     }
 
     private HBox buildPlaceRow(RoutePlaceItem item, int index) {

@@ -2,6 +2,7 @@ package com.triplify.ui.shared.component.countries.view;
 
 import com.triplify.ui.shared.component.countries.model.Countries;
 import com.triplify.ui.shared.component.search.model.Search;
+import com.triplify.ui.shared.component.search.model.SearchSize;
 import com.triplify.ui.shared.component.search.view.SearchView;
 import com.triplify.ui.shared.component.select.entry.model.Entry;
 import javafx.scene.control.Label;
@@ -30,6 +31,7 @@ public class CountriesView extends VBox {
                 .onLoadMore(model::loadMore)
                 .loadMoreThreshold(0.82)
                 .variant(model.getVariant())
+                .size(SearchSize.MIDDLE)
                 .onResultSelected(this::handleCountrySelected)
                 .build();
 
@@ -46,6 +48,11 @@ public class CountriesView extends VBox {
 
     public String getSelectedCountryId() {
         return selectedEntry == null ? null : selectedEntry.getValue();
+    }
+
+    public void clearSearch() {
+        selectedEntry = null;
+        searchView.getSearchField().clear();
     }
 
     public void clearError() {

@@ -48,6 +48,8 @@
                                 <Label fx:id="routeLengthLabel" text="Length: 0.0km" styleClass="add-route-length-label"/>
                             </HBox>
 
+                            <VBox fx:id="placeSearchContainer"/>
+
                             <VBox fx:id="placesListContainer" styleClass="add-route-places-list"/>
 
                             <Button fx:id="addPlaceButton"

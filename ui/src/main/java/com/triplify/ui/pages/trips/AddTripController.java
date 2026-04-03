@@ -16,6 +16,8 @@ import com.triplify.ui.shared.component.countries.model.Countries;
 import com.triplify.ui.shared.component.countries.view.CountriesView;
 import com.triplify.ui.shared.component.date_picker.DatePickerItem;
 import com.triplify.ui.shared.component.input_item.InputItem;
+import com.triplify.ui.shared.component.search.model.Search;
+import com.triplify.ui.shared.component.search.view.SearchView;
 import com.triplify.ui.shared.component.tag_picker.TagPickerItem;
 import com.triplify.ui.shared.component.section_header.view.SectionHeaderView;
 import com.triplify.ui.shared.component.select.entry.model.Entry;
@@ -33,7 +35,6 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.DragEvent;
@@ -106,17 +107,11 @@ public class AddTripController extends SimpleLifecycleAwareController {
     @FXML private VBox routeListContainer;
     @FXML private FlowPane placesFlow;
     @FXML private VBox routePickerContainer;
-    @FXML private VBox routePickerPanel;
-    @FXML private TextField routeSearchField;
-    @FXML private VBox routePickerResultsContainer;
+    @FXML private VBox routeSearchContainer;
     @FXML private Button routeCreateButton;
-    @FXML private Button routePickerCloseButton;
     @FXML private VBox placePickerContainer;
-    @FXML private VBox placePickerPanel;
-    @FXML private TextField placeSearchField;
-    @FXML private VBox placePickerResultsContainer;
+    @FXML private VBox placeSearchContainer;
     @FXML private Button placeCreateButton;
-    @FXML private Button placePickerCloseButton;
 
     @FXML private Button addCountryButton;
     @FXML private Button addRouteButton;
@@ -152,15 +147,17 @@ public class AddTripController extends SimpleLifecycleAwareController {
     private ImageView coverPreview;
     private VBox uploadPlaceholder;
     private Label selectedImageLabel;
+    private SearchView<RouteItem> routeSearchView;
+    private SearchView<PlaceItem> placeSearchView;
     private List<RouteItem> availableRouteCandidates = List.of();
     private List<PlaceItem> availablePlaceCandidates = List.of();
 
     @FXML
     public void initialize() {
-        titleInput = createInput("input.placeholder.tripTitle");
-        descriptionInput = createTextArea("input.placeholder.tripDescription");
-        startDateInput = createDatePickerItem("dd/MM/yyyy");
-        endDateInput = createDatePickerItem("dd/MM/yyyy");
+        titleInput = new InputItem("input.placeholder.tripTitle", FieldVariant.GHOST);
+        descriptionInput = new TextAreaItem("input.placeholder.tripDescription", FieldVariant.GHOST);
+        startDateInput = new DatePickerItem("dd/MM/yyyy");
+        endDateInput = new DatePickerItem("dd/MM/yyyy");
         tagPickerInput = createTagPickerItem();
 
         titleInputContainer.getChildren().add(titleInput);
@@ -251,6 +248,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
             selectedCountryIds.add(countryId);
             selectedCountryLabelsById.putIfAbsent(countryId, countryLabel);
             renderCountryChips();
+            countrySelectView.clearSearch();
         }
         pendingCountryEntry = null;
     }
@@ -384,8 +382,6 @@ public class AddTripController extends SimpleLifecycleAwareController {
         Localization.bindText(placeCreateButton.textProperty(), "trip.add.action.createPlace");
         Localization.bindText(saveButton.textProperty(), "trip.add.action.save");
         Localization.bindText(discardButton.textProperty(), "trip.add.action.discard");
-        Localization.bindText(routeSearchField.promptTextProperty(), "trip.add.picker.route.search");
-        Localization.bindText(placeSearchField.promptTextProperty(), "trip.add.picker.place.search");
     }
 
     private void refreshLocalizedUi() {
@@ -520,14 +516,13 @@ public class AddTripController extends SimpleLifecycleAwareController {
         Countries countriesModel = Countries.builder(countryService)
                 .placeholderKey("trip.add.select.country")
                 .noResultKey("search.noResult")
-                .variant(FieldVariant.FILLED)
+                .variant(FieldVariant.GHOST)
                 .searchOnTyping(true)
                 .onResultSelected(entry -> pendingCountryEntry = entry)
                 .onLoadFailed(error -> toast.error(I18n.t(error.code())))
                 .build();
 
         countrySelectView = new CountriesView(countriesModel);
-        countrySelectView.getStyleClass().add("trip-editor-country-picker");
         countrySelectContainer.getChildren().setAll(countrySelectView);
     }
 
@@ -728,10 +723,37 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
     private void initializeActionPickers() {
         configurePickerButtonIcons();
-        routeSearchField.textProperty().addListener((obs, oldValue, newValue) -> renderRoutePickerResults());
-        placeSearchField.textProperty().addListener((obs, oldValue, newValue) -> renderPlacePickerResults());
+        initializePickerSearches();
         setRoutePickerVisible(false);
         setPlacePickerVisible(false);
+    }
+
+    private void initializePickerSearches() {
+        Search<RouteItem> routeSearchModel = Search.<RouteItem>builder(this::searchRouteEntries)
+                .placeholderKey("trip.add.picker.route.search")
+                .noResultKey("trip.add.menu.route.empty")
+                .variant(FieldVariant.GHOST)
+                .maxVisibleResults(8)
+                .showOnEmptyQuery(true)
+                .onResultSelected(entry -> addExistingRoute(entry.getValue()))
+                .build();
+
+        routeSearchView = new SearchView<>(routeSearchModel);
+        routeSearchView.getStyleClass().add("trip-editor-picker-search");
+        routeSearchContainer.getChildren().setAll(routeSearchView);
+
+        Search<PlaceItem> placeSearchModel = Search.<PlaceItem>builder(this::searchPlaceEntries)
+                .placeholderKey("trip.add.picker.place.search")
+                .noResultKey("trip.add.menu.place.empty")
+                .variant(FieldVariant.GHOST)
+                .maxVisibleResults(8)
+                .showOnEmptyQuery(true)
+                .onResultSelected(entry -> addExistingPlace(entry.getValue()))
+                .build();
+
+        placeSearchView = new SearchView<>(placeSearchModel);
+        placeSearchView.getStyleClass().add("trip-editor-picker-search");
+        placeSearchContainer.getChildren().setAll(placeSearchView);
     }
 
     private void setRoutePickerVisible(boolean visible) {
@@ -741,9 +763,9 @@ public class AddTripController extends SimpleLifecycleAwareController {
         if (visible) {
             addRouteButton.getStyleClass().add("trip-editor-outline-button-expanded");
             refreshRoutePicker();
-            Platform.runLater(routeSearchField::requestFocus);
+            Platform.runLater(() -> routeSearchView.getSearchField().requestFocus());
         } else {
-            routeSearchField.clear();
+            routeSearchView.getSearchField().clear();
         }
     }
 
@@ -754,19 +776,15 @@ public class AddTripController extends SimpleLifecycleAwareController {
         if (visible) {
             addPlaceButton.getStyleClass().add("trip-editor-outline-button-expanded");
             refreshPlacePicker();
-            Platform.runLater(placeSearchField::requestFocus);
+            Platform.runLater(() -> placeSearchView.getSearchField().requestFocus());
         } else {
-            placeSearchField.clear();
+            placeSearchView.getSearchField().clear();
         }
     }
 
     private void configurePickerButtonIcons() {
-        routePickerCloseButton.setText("");
-        placePickerCloseButton.setText("");
-        routePickerCloseButton.setGraphic(createPickerIcon("fth-x", "trip-editor-picker-close-icon", 18));
-        placePickerCloseButton.setGraphic(createPickerIcon("fth-x", "trip-editor-picker-close-icon", 18));
-        routeCreateButton.setGraphic(createPickerIcon("fth-edit-2", "trip-editor-picker-create-icon", 18));
-        placeCreateButton.setGraphic(createPickerIcon("fth-edit-2", "trip-editor-picker-create-icon", 18));
+        routeCreateButton.setGraphic(createPickerIcon("fth-plus", "trip-editor-picker-create-icon", 14));
+        placeCreateButton.setGraphic(createPickerIcon("fth-plus", "trip-editor-picker-create-icon", 14));
     }
 
     private FontIcon createPickerIcon(String literal, String styleClass, int size) {
@@ -778,30 +796,28 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
     private void refreshRoutePicker() {
         availableRouteCandidates = loadRouteCandidates();
-        renderRoutePickerResults();
+        if (routeSearchView != null) {
+            routeSearchView.getSearchField().setText(routeSearchView.getSearchField().getText());
+        }
     }
 
     private void refreshPlacePicker() {
         availablePlaceCandidates = loadPlaceCandidates();
-        renderPlacePickerResults();
+        if (placeSearchView != null) {
+            placeSearchView.getSearchField().setText(placeSearchView.getSearchField().getText());
+        }
     }
 
-    private void renderRoutePickerResults() {
-        renderPickerResults(
-                routePickerResultsContainer,
-                filterRoutes(routeSearchField.getText()),
-                route -> addExistingRoute((RouteItem) route),
-                "trip.add.menu.route.empty"
-        );
+    private List<Entry<RouteItem>> searchRouteEntries(String query) {
+        return filterRoutes(query).stream()
+                .map(route -> Entry.builder(route, route.title()).icon("fth-map").build())
+                .toList();
     }
 
-    private void renderPlacePickerResults() {
-        renderPickerResults(
-                placePickerResultsContainer,
-                filterPlaces(placeSearchField.getText()),
-                place -> addExistingPlace((PlaceItem) place),
-                "trip.add.menu.place.empty"
-        );
+    private List<Entry<PlaceItem>> searchPlaceEntries(String query) {
+        return filterPlaces(query).stream()
+                .map(place -> Entry.builder(place, place.title()).icon("fth-map-pin").build())
+                .toList();
     }
 
     private List<RouteItem> filterRoutes(String query) {
@@ -833,57 +849,6 @@ public class AddTripController extends SimpleLifecycleAwareController {
                 || (subtitle != null && subtitle.toLowerCase(Locale.ROOT).contains(query));
     }
 
-    private void renderPickerResults(
-            VBox container,
-            List<?> items,
-            java.util.function.Consumer<Object> onSelect,
-            String emptyKey
-    ) {
-        container.getChildren().clear();
-        if (items.isEmpty()) {
-            container.setMinHeight(70);
-            container.setPrefHeight(70);
-            Label emptyLabel = new Label(I18n.t(emptyKey));
-            emptyLabel.getStyleClass().add("trip-editor-picker-empty");
-            container.getChildren().add(emptyLabel);
-            return;
-        }
-
-        container.setMinHeight(0);
-        container.setPrefHeight(356);
-        for (Object item : items) {
-            Button button = new Button();
-            button.setMaxWidth(Double.MAX_VALUE);
-            button.setAlignment(Pos.CENTER_LEFT);
-            button.getStyleClass().add("trip-editor-picker-item");
-            button.setGraphic(buildPickerItemGraphic(item));
-            button.setOnAction(event -> onSelect.accept(item));
-            container.getChildren().add(button);
-        }
-    }
-
-    private HBox buildPickerItemGraphic(Object item) {
-        HBox row = new HBox(12);
-        row.setAlignment(Pos.CENTER_LEFT);
-
-        FontIcon icon = new FontIcon(item instanceof RouteItem ? "fth-map" : "fth-map-pin");
-        icon.setIconSize(14);
-        icon.getStyleClass().add("trip-editor-picker-item-icon");
-
-        VBox textBox = new VBox(2);
-        Label title = new Label(item instanceof RouteItem route ? route.title() : ((PlaceItem) item).title());
-        title.getStyleClass().add("trip-editor-picker-item-title");
-
-        String subtitleText = item instanceof RouteItem route ? route.subtitle() : ((PlaceItem) item).subtitle();
-        Label subtitle = new Label(subtitleText == null ? "" : subtitleText);
-        subtitle.getStyleClass().add("trip-editor-picker-item-subtitle");
-        subtitle.setManaged(subtitleText != null && !subtitleText.isBlank());
-        subtitle.setVisible(subtitleText != null && !subtitleText.isBlank());
-
-        textBox.getChildren().addAll(title, subtitle);
-        row.getChildren().addAll(icon, textBox);
-        return row;
-    }
 
     private void openCreateRoute() {
         RouterArgument args = new RouterArgument();
@@ -980,22 +945,6 @@ public class AddTripController extends SimpleLifecycleAwareController {
         return placeId != null && placeItems.stream().anyMatch(item -> placeId.equals(item.id()));
     }
 
-    private String formatCandidateLabel(Object candidate) {
-        if (candidate instanceof RouteItem route) {
-            return formatMenuLabel(route.title(), route.subtitle());
-        }
-        if (candidate instanceof PlaceItem place) {
-            return formatMenuLabel(place.title(), place.subtitle());
-        }
-        return String.valueOf(candidate);
-    }
-
-    private String formatMenuLabel(String title, String subtitle) {
-        if (subtitle == null || subtitle.isBlank()) {
-            return title;
-        }
-        return title + " - " + subtitle;
-    }
 
     private RouteItem toRouteItem(RouteResponse response) {
         String subtitle = response.description() == null || response.description().isBlank()
@@ -1055,25 +1004,6 @@ public class AddTripController extends SimpleLifecycleAwareController {
     private void updateFullScreenMode(boolean fullScreen) {
         TriplifyRouterContext context = (TriplifyRouterContext) getRouter().getContext();
         context.setFullScreenContent(fullScreen);
-    }
-
-    private InputItem createInput(String placeholderKey) {
-        InputItem input = new InputItem(placeholderKey, FieldVariant.FILLED);
-        input.getStyleClass().add("trip-editor-field");
-        return input;
-    }
-
-    private TextAreaItem createTextArea(String placeholderKey) {
-        TextAreaItem input = new TextAreaItem(placeholderKey, FieldVariant.FILLED);
-        input.getStyleClass().addAll("trip-editor-field", "trip-editor-textarea-field");
-        input.setRows(6);
-        return input;
-    }
-
-    private DatePickerItem createDatePickerItem(String formatPattern) {
-        DatePickerItem input = new DatePickerItem(formatPattern, FieldVariant.FILLED);
-        input.getStyleClass().add("trip-editor-date-input");
-        return input;
     }
 
     private TagPickerItem createTagPickerItem() {

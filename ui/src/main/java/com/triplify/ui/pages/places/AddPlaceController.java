@@ -88,17 +88,15 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
 
     @FXML
     public void initialize() {
-        titleInput = createInput("input.placeholder.placeTitle");
+        titleInput = new InputItem("input.placeholder.placeTitle", FieldVariant.GHOST);
         countriesView = new CountriesView(
                 Countries.builder(countryService)
-                        .variant(FieldVariant.FILLED)
+                        .variant(FieldVariant.GHOST)
                         .searchOnTyping(true)
                         .onLoadFailed(errorHandler::handle)
                         .build()
         );
-        countriesView.getStyleClass().add("add-place-country-field");
-        descriptionInput = createTextArea("input.placeholder.placeDescription");
-
+        descriptionInput = new TextAreaItem("input.placeholder.placeDescription", FieldVariant.GHOST);
         titleInputContainer.getChildren().add(titleInput);
         countryInputContainer.getChildren().add(countriesView);
         descriptionInputContainer.getChildren().add(descriptionInput);
@@ -395,19 +393,6 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
 
     private boolean isVectorImage(File file) {
         return file.getName().toLowerCase().endsWith(".svg");
-    }
-
-    private InputItem createInput(String placeholderKey) {
-        InputItem input = new InputItem(placeholderKey, FieldVariant.FILLED);
-        input.getStyleClass().add("add-place-field");
-        return input;
-    }
-
-    private TextAreaItem createTextArea(String placeholderKey) {
-        TextAreaItem input = new TextAreaItem(placeholderKey, FieldVariant.FILLED);
-        input.getStyleClass().addAll("add-place-field", "add-place-textarea-field");
-        input.setRows(6);
-        return input;
     }
 
     private String normalize(String value) {
