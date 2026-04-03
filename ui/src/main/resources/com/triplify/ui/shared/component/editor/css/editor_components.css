@@ -1,0 +1,63 @@
+.editor-section-header {
+    -fx-alignment: center-left;
+    -fx-spacing: 8px;
+}
+
+.editor-section-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-ink;
+}
+
+.editor-section-icon {
+    -fx-icon-color: -color-primary;
+    -fx-opacity: 0.9;
+}
+
+.editor-upload-area {
+    -fx-min-height: 208px;
+    -fx-pref-height: 208px;
+    -fx-max-height: 208px;
+    -fx-background-color: #eef5fb;
+    -fx-background-radius: 16px;
+    -fx-border-color: #93b7d6;
+    -fx-border-radius: 16px;
+    -fx-border-style: dashed;
+    -fx-cursor: hand;
+}
+
+.editor-upload-area-active {
+    -fx-background-color: #e4f0fa;
+    -fx-border-color: -color-primary;
+}
+
+.editor-upload-placeholder {
+    -fx-alignment: center;
+    -fx-spacing: 8px;
+    -fx-padding: 18px;
+}
+
+.editor-upload-icon {
+    -fx-icon-color: -color-primary-dark;
+}
+
+.editor-upload-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-ink;
+    -fx-text-alignment: center;
+}
+
+.editor-upload-subtitle {
+    -fx-font-size: 12px;
+    -fx-text-fill: #8698a8;
+}
+
+.editor-helper-text {
+    -fx-font-size: 12px;
+    -fx-text-fill: #8698a8;
+}
+
+.editor-cover-preview {
+    -fx-smooth: true;
+}

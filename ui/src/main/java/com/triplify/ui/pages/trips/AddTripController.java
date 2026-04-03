@@ -10,10 +10,12 @@ import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.component.date_picker.DatePickerItem;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.tag_picker.TagPickerItem;
+import com.triplify.ui.shared.component.section_header.view.SectionHeaderView;
 import com.triplify.ui.shared.component.select.entry.model.Entry;
 import com.triplify.ui.shared.component.select.model.Select;
 import com.triplify.ui.shared.component.select.view.SelectView;
 import com.triplify.ui.shared.component.input_item.TextAreaItem;
+import com.triplify.ui.shared.component.upload_panel.view.ImageUploadPanelView;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.toast.ToastService;
 import com.triplify.ui.shared.util.Localization;
@@ -69,18 +71,15 @@ public class AddTripController extends SimpleLifecycleAwareController {
     @FXML private VBox contentContainer;
     @FXML private FlowPane contentFlow;
 
-    @FXML private Label generalSectionTitleLabel;
+    @FXML private SectionHeaderView generalSectionHeader;
     @FXML private Label tripTitleLabel;
     @FXML private Label countriesLabel;
     @FXML private Label startDateLabel;
     @FXML private Label endDateLabel;
     @FXML private Label descriptionLabel;
-    @FXML private Label routesSectionTitleLabel;
-    @FXML private Label placesSectionTitleLabel;
-    @FXML private Label coverSectionTitleLabel;
-    @FXML private Label uploadTitleLabel;
-    @FXML private Label uploadSubtitleLabel;
-    @FXML private Label metaSectionTitleLabel;
+    @FXML private SectionHeaderView routesSectionHeader;
+    @FXML private SectionHeaderView placesSectionHeader;
+    @FXML private SectionHeaderView metaSectionHeader;
     @FXML private Label categoryLabel;
     @FXML private Label tagsLabel;
 
@@ -91,10 +90,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
     @FXML private VBox endDateContainer;
     @FXML private VBox descriptionInputContainer;
 
-    @FXML private StackPane uploadArea;
-    @FXML private ImageView coverPreview;
-    @FXML private VBox uploadPlaceholder;
-    @FXML private Label selectedImageLabel;
+    @FXML private ImageUploadPanelView imageUploadPanel;
 
     @FXML private VBox categorySelectContainer;
     @FXML private VBox tagPickerContainer;
@@ -126,6 +122,10 @@ public class AddTripController extends SimpleLifecycleAwareController {
     private TagPickerItem tagPickerInput;
     private Select<String> countrySelectModel;
     private Select<String> categorySelectModel;
+    private StackPane uploadArea;
+    private ImageView coverPreview;
+    private VBox uploadPlaceholder;
+    private Label selectedImageLabel;
 
     @FXML
     public void initialize() {
@@ -140,9 +140,14 @@ public class AddTripController extends SimpleLifecycleAwareController {
         startDateContainer.getChildren().add(startDateInput);
         endDateContainer.getChildren().add(endDateInput);
         tagPickerContainer.getChildren().add(tagPickerInput);
+        uploadArea = imageUploadPanel.getUploadArea();
+        coverPreview = imageUploadPanel.getCoverPreview();
+        uploadPlaceholder = imageUploadPanel.getUploadPlaceholder();
+        selectedImageLabel = imageUploadPanel.getSelectedImageLabel();
 
         contentFlow.prefWrapLengthProperty().bind(contentContainer.widthProperty());
         initializeCoverPreview();
+        bindUploadPanelHandlers();
 
         configureButtonIcon(addCountryButton, "fth-plus");
         configureButtonIcon(addRouteButton, "fth-plus");
@@ -313,18 +318,18 @@ public class AddTripController extends SimpleLifecycleAwareController {
     }
 
     private void bindLocalizedText() {
-        Localization.bindText(generalSectionTitleLabel.textProperty(), "trip.add.section.general");
+        Localization.bindText(generalSectionHeader.titleProperty(), "trip.add.section.general");
         Localization.bindText(tripTitleLabel.textProperty(), "trip.add.field.title");
         Localization.bindText(countriesLabel.textProperty(), "trip.add.field.countries");
         Localization.bindText(startDateLabel.textProperty(), "trip.add.field.startDate");
         Localization.bindText(endDateLabel.textProperty(), "trip.add.field.endDate");
         Localization.bindText(descriptionLabel.textProperty(), "trip.add.field.description");
-        Localization.bindText(routesSectionTitleLabel.textProperty(), "trip.add.section.routes");
-        Localization.bindText(placesSectionTitleLabel.textProperty(), "trip.add.section.places");
-        Localization.bindText(coverSectionTitleLabel.textProperty(), "trip.add.section.cover");
-        Localization.bindText(uploadTitleLabel.textProperty(), "trip.add.upload.title");
-        Localization.bindText(uploadSubtitleLabel.textProperty(), "trip.add.upload.subtitle");
-        Localization.bindText(metaSectionTitleLabel.textProperty(), "trip.add.section.meta");
+        Localization.bindText(routesSectionHeader.titleProperty(), "trip.add.section.routes");
+        Localization.bindText(placesSectionHeader.titleProperty(), "trip.add.section.places");
+        Localization.bindText(imageUploadPanel.sectionTitleProperty(), "trip.add.section.cover");
+        Localization.bindText(imageUploadPanel.uploadTitleProperty(), "trip.add.upload.title");
+        Localization.bindText(imageUploadPanel.uploadSubtitleProperty(), "trip.add.upload.subtitle");
+        Localization.bindText(metaSectionHeader.titleProperty(), "trip.add.section.meta");
         Localization.bindText(categoryLabel.textProperty(), "trip.add.field.category");
         Localization.bindText(tagsLabel.textProperty(), "trip.add.field.tags");
 
@@ -656,15 +661,22 @@ public class AddTripController extends SimpleLifecycleAwareController {
         button.setGraphic(icon);
     }
 
+    private void bindUploadPanelHandlers() {
+        uploadArea.setOnMouseClicked(event -> onChooseCoverImage());
+        uploadArea.setOnDragOver(this::onUploadDragOver);
+        uploadArea.setOnDragExited(this::onUploadDragExited);
+        uploadArea.setOnDragDropped(this::onUploadDragDropped);
+    }
+
     private void addUploadActiveState(boolean active) {
         if (active) {
-            if (!uploadArea.getStyleClass().contains("trip-editor-upload-area-active")) {
-                uploadArea.getStyleClass().add("trip-editor-upload-area-active");
+            if (!uploadArea.getStyleClass().contains("editor-upload-area-active")) {
+                uploadArea.getStyleClass().add("editor-upload-area-active");
             }
             return;
         }
 
-        uploadArea.getStyleClass().remove("trip-editor-upload-area-active");
+        uploadArea.getStyleClass().remove("editor-upload-area-active");
     }
 
     private void installRoundedClip(StackPane target, double radius) {

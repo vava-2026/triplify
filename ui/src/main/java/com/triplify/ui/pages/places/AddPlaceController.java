@@ -9,6 +9,7 @@ import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.input_item.TextAreaItem;
+import com.triplify.ui.shared.component.upload_panel.view.ImageUploadPanelView;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.toast.ToastService;
 import javafx.fxml.FXML;
@@ -63,10 +64,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     @FXML private VBox countryInputContainer;
     @FXML private VBox descriptionInputContainer;
 
-    @FXML private StackPane uploadArea;
-    @FXML private ImageView coverPreview;
-    @FXML private VBox uploadPlaceholder;
-    @FXML private Label selectedImageLabel;
+    @FXML private ImageUploadPanelView imageUploadPanel;
 
     @FXML private InteractiveMap interactiveMap;
     @FXML private Label selectedCoordinatesLabel;
@@ -86,6 +84,10 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     private InputItem titleInput;
     private InputItem countryInput;
     private TextAreaItem descriptionInput;
+    private StackPane uploadArea;
+    private ImageView coverPreview;
+    private VBox uploadPlaceholder;
+    private Label selectedImageLabel;
 
     @FXML
     public void initialize() {
@@ -96,9 +98,14 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         titleInputContainer.getChildren().add(titleInput);
         countryInputContainer.getChildren().add(countryInput);
         descriptionInputContainer.getChildren().add(descriptionInput);
+        uploadArea = imageUploadPanel.getUploadArea();
+        coverPreview = imageUploadPanel.getCoverPreview();
+        uploadPlaceholder = imageUploadPanel.getUploadPlaceholder();
+        selectedImageLabel = imageUploadPanel.getSelectedImageLabel();
 
         contentFlow.prefWrapLengthProperty().bind(contentContainer.widthProperty());
         initializeCoverPreview();
+        bindUploadPanelHandlers();
 
         configureButtonIcon(saveButton, "fth-save");
         configureButtonIcon(discardButton, "fth-trash-2");
@@ -342,15 +349,22 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         button.setGraphic(icon);
     }
 
+    private void bindUploadPanelHandlers() {
+        uploadArea.setOnMouseClicked(event -> onChooseCoverImage());
+        uploadArea.setOnDragOver(this::onUploadDragOver);
+        uploadArea.setOnDragExited(this::onUploadDragExited);
+        uploadArea.setOnDragDropped(this::onUploadDragDropped);
+    }
+
     private void addUploadActiveState(boolean active) {
         if (active) {
-            if (!uploadArea.getStyleClass().contains("add-place-upload-area-active")) {
-                uploadArea.getStyleClass().add("add-place-upload-area-active");
+            if (!uploadArea.getStyleClass().contains("editor-upload-area-active")) {
+                uploadArea.getStyleClass().add("editor-upload-area-active");
             }
             return;
         }
 
-        uploadArea.getStyleClass().remove("add-place-upload-area-active");
+        uploadArea.getStyleClass().remove("editor-upload-area-active");
     }
 
     private void installRoundedClip(StackPane target, double radius) {

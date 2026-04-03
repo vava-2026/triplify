@@ -5,6 +5,7 @@ import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.input_item.TextAreaItem;
+import com.triplify.ui.shared.component.upload_panel.view.ImageUploadPanelView;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.toast.ToastService;
 import javafx.fxml.FXML;
@@ -51,10 +52,7 @@ public class AddRouteController extends SimpleLifecycleAwareController {
     @FXML private VBox titleInputContainer;
     @FXML private VBox descriptionInputContainer;
 
-    @FXML private StackPane uploadArea;
-    @FXML private ImageView coverPreview;
-    @FXML private VBox uploadPlaceholder;
-    @FXML private Label selectedImageLabel;
+    @FXML private ImageUploadPanelView imageUploadPanel;
 
     @FXML private VBox placesListContainer;
     @FXML private Label routeLengthLabel;
@@ -77,6 +75,10 @@ public class AddRouteController extends SimpleLifecycleAwareController {
     private HBox draggedRow;
     private Popup dragPreviewPopup;
     private ImageView dragPreviewImageView;
+    private StackPane uploadArea;
+    private ImageView coverPreview;
+    private VBox uploadPlaceholder;
+    private Label selectedImageLabel;
 
     @FXML
     public void initialize() {
@@ -85,12 +87,17 @@ public class AddRouteController extends SimpleLifecycleAwareController {
 
         titleInputContainer.getChildren().add(titleInput);
         descriptionInputContainer.getChildren().add(descriptionInput);
+        uploadArea = imageUploadPanel.getUploadArea();
+        coverPreview = imageUploadPanel.getCoverPreview();
+        uploadPlaceholder = imageUploadPanel.getUploadPlaceholder();
+        selectedImageLabel = imageUploadPanel.getSelectedImageLabel();
 
         contentFlow.prefWrapLengthProperty().bind(contentContainer.widthProperty());
         contentContainer.addEventFilter(MouseEvent.MOUSE_RELEASED, event -> finishDragging());
         contentContainer.addEventFilter(MouseEvent.MOUSE_DRAGGED, this::updateDragPreview);
         initializeCoverPreview();
         initializeDragPreview();
+        bindUploadPanelHandlers();
 
         configureButtonIcon(addPlaceButton, "fth-plus");
         configureButtonIcon(saveButton, "fth-save");
@@ -529,15 +536,22 @@ public class AddRouteController extends SimpleLifecycleAwareController {
         button.setGraphic(icon);
     }
 
+    private void bindUploadPanelHandlers() {
+        uploadArea.setOnMouseClicked(event -> onChooseCoverImage());
+        uploadArea.setOnDragOver(this::onUploadDragOver);
+        uploadArea.setOnDragExited(this::onUploadDragExited);
+        uploadArea.setOnDragDropped(this::onUploadDragDropped);
+    }
+
     private void addUploadActiveState(boolean active) {
         if (active) {
-            if (!uploadArea.getStyleClass().contains("add-route-upload-area-active")) {
-                uploadArea.getStyleClass().add("add-route-upload-area-active");
+            if (!uploadArea.getStyleClass().contains("editor-upload-area-active")) {
+                uploadArea.getStyleClass().add("editor-upload-area-active");
             }
             return;
         }
 
-        uploadArea.getStyleClass().remove("add-route-upload-area-active");
+        uploadArea.getStyleClass().remove("editor-upload-area-active");
     }
 
     private void installRoundedClip(StackPane target, double radius) {

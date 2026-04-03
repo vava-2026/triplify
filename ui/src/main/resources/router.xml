@@ -45,7 +45,7 @@
 
     <destination id="add_route"
                  fxml="com/triplify/ui/pages/routes/AddRouteView.fxml"
-                 arguments="tripDetailsArgs"
+                 arguments="addTripArgs"
                  singleTop="true"/>
 
     <destination id="calendar"
