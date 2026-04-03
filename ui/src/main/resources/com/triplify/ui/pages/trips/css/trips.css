@@ -31,6 +31,16 @@
     -fx-text-fill: -color-ink;
 }
 
+.trips-country-filter .search-input-box {
+    -fx-pref-height: 34px;
+    -fx-min-height: 34px;
+    -fx-max-height: 34px;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-border-color: -color-border-muted;
+    -fx-background-color: -color-surface;
+}
+
 /* ── Card Grid ── */
 
 .card-grid-root {
@@ -298,6 +308,16 @@
 .trip-editor-inline-row {
     -fx-spacing: 10px;
     -fx-alignment: center-left;
+}
+
+.trip-editor-country-picker .search-input-box {
+    -fx-pref-height: 38px;
+    -fx-min-height: 38px;
+    -fx-max-height: 38px;
+    -fx-background-color: #ECF3F9;
+    -fx-border-color: transparent;
+    -fx-background-radius: 7px;
+    -fx-border-radius: 7px;
 }
 
 .trip-editor-inline-button {

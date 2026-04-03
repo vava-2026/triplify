@@ -18,7 +18,7 @@
 
         <HBox styleClass="trips-toolbar">
             <HBox styleClass="trips-filters">
-                <ComboBox fx:id="countrySelect" promptText="Country" styleClass="trips-filter" prefWidth="130"/>
+                <VBox fx:id="countryFilterContainer" prefWidth="170"/>
                 <VBox fx:id="categorySelectContainer" prefWidth="130"/>
                 <VBox fx:id="tagSelectContainer" prefWidth="120"/>
                 <ComboBox fx:id="statusSelect" promptText="Status" styleClass="trips-filter" prefWidth="120"/>
