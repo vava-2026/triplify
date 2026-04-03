@@ -11,6 +11,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import org.kordamp.ikonli.javafx.FontIcon?>
+<?import com.triplify.ui.map.InteractiveMap?>
 
 <ScrollPane xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
@@ -55,41 +56,7 @@
                                 <Label text="Location" styleClass="add-place-section-title"/>
                             </HBox>
 
-                            <StackPane fx:id="mapShell"
-                                       styleClass="add-place-map-shell">
-                                <StackPane fx:id="mapContainer"
-                                           styleClass="add-place-map-container"/>
-
-                                <Label fx:id="hoveredCountryLabel"
-                                       managed="false"
-                                       visible="false"
-                                       styleClass="add-place-country-label"
-                                       StackPane.alignment="TOP_LEFT">
-                                    <StackPane.margin>
-                                        <Insets top="14" left="14"/>
-                                    </StackPane.margin>
-                                </Label>
-
-                                <VBox styleClass="add-place-map-controls"
-                                      StackPane.alignment="BOTTOM_RIGHT">
-                                    <StackPane.margin>
-                                        <Insets bottom="14" right="14"/>
-                                    </StackPane.margin>
-                                    <Button fx:id="recenterButton"
-                                            onAction="#onRecenterMap"
-                                            styleClass="app-btn,app-btn-secondary,add-place-map-control"/>
-                                    <Button fx:id="zoomInButton"
-                                            text="+"
-                                            onAction="#onZoomIn"
-                                            focusTraversable="false"
-                                            styleClass="app-btn,app-btn-secondary,add-place-map-control"/>
-                                    <Button fx:id="zoomOutButton"
-                                            text="-"
-                                            onAction="#onZoomOut"
-                                            focusTraversable="false"
-                                            styleClass="app-btn,app-btn-secondary,add-place-map-control"/>
-                                </VBox>
-                            </StackPane>
+                            <InteractiveMap fx:id="interactiveMap" />
 
                             <Label text="Click on the map to pick coordinates. Hold the right mouse button to move, use the wheel, pinch, or buttons to zoom, and pan with two-finger touchpad scrolling."
                                    wrapText="true"
