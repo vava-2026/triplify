@@ -11,6 +11,7 @@ import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Cursor;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -24,9 +25,12 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.image.WritableImage;
 import javafx.stage.FileChooser;
+import javafx.stage.Popup;
 import org.kordamp.ikonli.javafx.FontIcon;
 import rahulstech.jfx.routing.element.RouterArgument;
 import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
@@ -69,6 +73,10 @@ public class AddRouteController extends SimpleLifecycleAwareController {
     private InputItem titleInput;
     private TextAreaItem descriptionInput;
     private RoutePlaceItem draggedPlaceItem;
+    private VBox draggedHandle;
+    private HBox draggedRow;
+    private Popup dragPreviewPopup;
+    private ImageView dragPreviewImageView;
 
     @FXML
     public void initialize() {
@@ -80,7 +88,9 @@ public class AddRouteController extends SimpleLifecycleAwareController {
 
         contentFlow.prefWrapLengthProperty().bind(contentContainer.widthProperty());
         contentContainer.addEventFilter(MouseEvent.MOUSE_RELEASED, event -> finishDragging());
+        contentContainer.addEventFilter(MouseEvent.MOUSE_DRAGGED, this::updateDragPreview);
         initializeCoverPreview();
+        initializeDragPreview();
 
         configureButtonIcon(addPlaceButton, "fth-plus");
         configureButtonIcon(saveButton, "fth-save");
@@ -236,7 +246,7 @@ public class AddRouteController extends SimpleLifecycleAwareController {
             placeItems.remove(item);
             renderPlaces();
         });
-        Region handle = createHandle(item);
+        Region handle = createHandle(item, row);
         actions.getChildren().addAll(editButton, removeButton, handle);
 
         row.setOnMouseDragEntered(event -> reorderPlaces(item));
@@ -246,7 +256,7 @@ public class AddRouteController extends SimpleLifecycleAwareController {
         return row;
     }
 
-    private Region createHandle(RoutePlaceItem item) {
+    private Region createHandle(RoutePlaceItem item, HBox row) {
         VBox handle = new VBox(3);
         handle.setAlignment(Pos.CENTER);
         handle.getStyleClass().add("add-route-handle");
@@ -258,14 +268,26 @@ public class AddRouteController extends SimpleLifecycleAwareController {
             handle.getChildren().add(dot);
         }
 
-        handle.setOnDragDetected(event -> beginDragging(item, handle, event));
-        handle.setOnMouseReleased(event -> finishDragging());
+        handle.setOnMousePressed(event -> handle.setCursor(Cursor.CLOSED_HAND));
+        handle.setOnDragDetected(event -> beginDragging(item, handle, row, event));
+        handle.setOnMouseReleased(event -> {
+            handle.setCursor(Cursor.OPEN_HAND);
+            handle.getStyleClass().remove("add-route-handle-dragging");
+            finishDragging();
+        });
         return handle;
     }
 
-    private void beginDragging(RoutePlaceItem item, VBox handle, MouseEvent event) {
+    private void beginDragging(RoutePlaceItem item, VBox handle, HBox row, MouseEvent event) {
         draggedPlaceItem = item;
+        draggedHandle = handle;
+        draggedRow = row;
         handle.setCursor(Cursor.CLOSED_HAND);
+        handle.getStyleClass().add("add-route-handle-dragging");
+        if (!row.getStyleClass().contains("add-route-place-row-dragging")) {
+            row.getStyleClass().add("add-route-place-row-dragging");
+        }
+        showDragPreview(row, event);
         handle.startFullDrag();
         event.consume();
     }
@@ -290,8 +312,80 @@ public class AddRouteController extends SimpleLifecycleAwareController {
             return;
         }
 
+        if (draggedHandle != null) {
+            draggedHandle.setCursor(Cursor.OPEN_HAND);
+            draggedHandle.getStyleClass().remove("add-route-handle-dragging");
+            draggedHandle = null;
+        }
+        if (draggedRow != null) {
+            draggedRow.getStyleClass().remove("add-route-place-row-dragging");
+            draggedRow = null;
+        }
+        hideDragPreview();
         draggedPlaceItem = null;
         renderPlaces();
+    }
+
+    private void initializeDragPreview() {
+        dragPreviewImageView = new ImageView();
+        dragPreviewImageView.setMouseTransparent(true);
+        dragPreviewImageView.getStyleClass().add("add-route-drag-preview");
+
+        StackPane previewRoot = new StackPane(dragPreviewImageView);
+        previewRoot.setMouseTransparent(true);
+        previewRoot.getStyleClass().add("add-route-drag-preview-shell");
+
+        dragPreviewPopup = new Popup();
+        dragPreviewPopup.setAutoHide(false);
+        dragPreviewPopup.setAutoFix(false);
+        dragPreviewPopup.setHideOnEscape(false);
+        dragPreviewPopup.getContent().add(previewRoot);
+    }
+
+    private void showDragPreview(HBox row, MouseEvent event) {
+        if (contentContainer.getScene() == null || contentContainer.getScene().getWindow() == null) {
+            return;
+        }
+
+        SnapshotParameters parameters = new SnapshotParameters();
+        parameters.setFill(Color.TRANSPARENT);
+        WritableImage snapshot = row.snapshot(parameters, null);
+        dragPreviewImageView.setImage(snapshot);
+
+        if (!dragPreviewPopup.isShowing()) {
+            dragPreviewPopup.show(
+                    contentContainer.getScene().getWindow(),
+                    event.getScreenX() - snapshot.getWidth() - 18,
+                    event.getScreenY() - 12
+            );
+        }
+        updateDragPreviewPosition(event);
+    }
+
+    private void updateDragPreview(MouseEvent event) {
+        if (draggedPlaceItem == null) {
+            return;
+        }
+        updateDragPreviewPosition(event);
+    }
+
+    private void updateDragPreviewPosition(MouseEvent event) {
+        if (dragPreviewPopup == null || !dragPreviewPopup.isShowing()) {
+            return;
+        }
+
+        double previewWidth = dragPreviewImageView.getImage() == null ? 0 : dragPreviewImageView.getImage().getWidth();
+        dragPreviewPopup.setX(event.getScreenX() - previewWidth - 18);
+        dragPreviewPopup.setY(event.getScreenY() - 12);
+    }
+
+    private void hideDragPreview() {
+        if (dragPreviewPopup != null) {
+            dragPreviewPopup.hide();
+        }
+        if (dragPreviewImageView != null) {
+            dragPreviewImageView.setImage(null);
+        }
     }
 
     private Region createEmptyState(String text) {
