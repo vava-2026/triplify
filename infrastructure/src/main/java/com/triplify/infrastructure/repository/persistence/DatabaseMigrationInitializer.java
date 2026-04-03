@@ -70,7 +70,7 @@ public class DatabaseMigrationInitializer {
         String sqlScript = readSql(fileName);
 
         try (Statement stmt = connection.createStatement()) {
-            stmt.execute(sqlScript);
+            stmt.executeUpdate(sqlScript);
         } catch (SQLException e) {
             logger.error("SQL execution failed for file: {}", fileName, e);
             throw new RuntimeException("Could not execute SQL file: " + fileName, e);
