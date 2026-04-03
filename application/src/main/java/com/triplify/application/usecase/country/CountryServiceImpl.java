@@ -103,6 +103,17 @@ public class CountryServiceImpl implements CountryService {
     }
 
     @Override
+    public Result<CountryResponse> getCountryById(GetCountryByIdRequest request) {
+        Optional<Country> countryRes = countryRepository.findById(request.id());
+        if (countryRes.isEmpty()) {
+            log.warn("Attempt to get non-existing country with id='{}'", request.id());
+            return Result.fail(new CountryError.NotFound(request.id()));
+        }
+
+        return Result.ok(CountryResponse.from(countryRes.get()));
+    }
+
+    @Override
     public Result<Page<CountryResponse>> getCountries(GetCountriesRequest request) {
         var countryPage = countryRepository.findAll(request.pageRequest(), request.filter());
         return Result.ok(countryPage.map(CountryResponse::from));
