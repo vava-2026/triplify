@@ -45,7 +45,7 @@ public class CountryRepositoryImpl implements CountryRepository {
     }
 
     @Override
-    public Page<Country> findAll(PageRequest page, CountryFilter filter) {
+    public Page<Country> findList(PageRequest page, CountryFilter filter) {
         String nameFilter = filter.name() == null ? null : filter.name().trim();
         boolean hasNameFilter = nameFilter != null && !nameFilter.isBlank();
 
