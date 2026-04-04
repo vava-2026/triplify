@@ -15,6 +15,7 @@ public class CountriesView extends VBox {
     private final Label errorLabel = new Label();
 
     private Entry<String> selectedEntry;
+    private boolean updatingSelection;
 
     public CountriesView(Countries model) {
         this.model = model;
@@ -55,6 +56,15 @@ public class CountriesView extends VBox {
         searchView.getSearchField().clear();
     }
 
+    public boolean selectCountryByName(String countryName) {
+        Entry<String> entry = model.findBestMatch(countryName);
+        if (entry == null) {
+            return false;
+        }
+        applySelectedEntry(entry);
+        return true;
+    }
+
     public void clearError() {
         getStyleClass().remove("countries-has-error");
         errorLabel.setManaged(false);
@@ -72,18 +82,30 @@ public class CountriesView extends VBox {
     }
 
     private void handleCountrySelected(Entry<String> countryEntry) {
-        selectedEntry = countryEntry;
-        searchView.getSearchField().setText(countryEntry.getLabel());
+        applySelectedEntry(countryEntry);
         model.selectResult(countryEntry);
-        clearError();
     }
 
     private void bindSelectionResetOnTyping() {
         searchView.getSearchField().textProperty().addListener((obs, oldValue, newValue) -> {
+            if (updatingSelection) {
+                return;
+            }
             if (selectedEntry != null && (newValue == null || !newValue.equals(selectedEntry.getLabel()))) {
                 selectedEntry = null;
             }
         });
+    }
+
+    private void applySelectedEntry(Entry<String> countryEntry) {
+        updatingSelection = true;
+        try {
+            selectedEntry = countryEntry;
+            searchView.getSearchField().setText(countryEntry.getLabel());
+            clearError();
+        } finally {
+            updatingSelection = false;
+        }
     }
 }
 

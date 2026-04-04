@@ -53,6 +53,7 @@ public class InteractiveMap extends StackPane {
     private boolean rightMouseDragging;
 
     private final ObjectProperty<MapPoint> selectedPoint = new SimpleObjectProperty<>();
+    private final ObjectProperty<String> selectedCountryName = new SimpleObjectProperty<>();
 
     public InteractiveMap() {
         this.getStyleClass().add("add-place-map-shell");
@@ -204,6 +205,10 @@ public class InteractiveMap extends StackPane {
         return selectedPoint;
     }
 
+    public ObjectProperty<String> selectedCountryNameProperty() {
+        return selectedCountryName;
+    }
+
     public void setMapCenter(double latitude, double longitude) {
         mapView.setCenter(latitude, longitude);
     }
@@ -211,6 +216,8 @@ public class InteractiveMap extends StackPane {
     public void setPinPosition(double latitude, double longitude) {
         pinLayer.setPoint(latitude, longitude);
         selectedPoint.set(new MapPoint(latitude, longitude));
+        CountryBoundary countryBoundary = findCountry(latitude, longitude);
+        selectedCountryName.set(countryBoundary == null ? null : countryBoundary.name());
     }
 
     private void handleZoom(double zoomDelta) {
@@ -283,6 +290,8 @@ public class InteractiveMap extends StackPane {
         MapPoint point = mapView.getMapPosition(localPoint.getX(), localPoint.getY());
         pinLayer.setPoint(point.getLatitude(), point.getLongitude());
         selectedPoint.set(point);
+        CountryBoundary countryBoundary = findCountry(point.getLatitude(), point.getLongitude());
+        selectedCountryName.set(countryBoundary == null ? null : countryBoundary.name());
     }
 
     private void updateHoveredCountryFromScenePoint(double sceneX, double sceneY) {

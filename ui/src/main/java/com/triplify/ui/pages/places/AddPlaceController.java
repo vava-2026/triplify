@@ -345,6 +345,11 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
                 updateSelectedCoordinatesLabel();
             }
         });
+        interactiveMap.selectedCountryNameProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null && !newVal.isBlank()) {
+                countriesView.selectCountryByName(newVal);
+            }
+        });
         
         interactiveMap.setMapCenter(DEFAULT_LATITUDE, DEFAULT_LONGITUDE);
         interactiveMap.setPinPosition(DEFAULT_LATITUDE, DEFAULT_LONGITUDE);
