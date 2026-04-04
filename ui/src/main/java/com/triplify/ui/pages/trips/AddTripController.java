@@ -587,12 +587,20 @@ public class AddTripController extends SimpleLifecycleAwareController {
         card.getStyleClass().add("trip-editor-place-card");
 
         ImageView preview = createImageView(item.imagePath(), 152, 96);
+        Button removeButton = createInlineIconButton("fth-trash-2", () -> {
+            placeItems.remove(item);
+            renderPlaces();
+        });
+        removeButton.getStyleClass().add("trip-editor-place-remove-button");
+        StackPane previewShell = new StackPane(preview, removeButton);
+        StackPane.setAlignment(removeButton, Pos.TOP_RIGHT);
+        previewShell.getStyleClass().add("trip-editor-place-preview-shell");
         Label title = new Label(item.title());
         title.getStyleClass().add("trip-editor-place-title");
         Label subtitle = new Label(item.subtitle());
         subtitle.getStyleClass().add("trip-editor-place-subtitle");
 
-        card.getChildren().addAll(preview, title, subtitle);
+        card.getChildren().addAll(previewShell, title, subtitle);
         return card;
     }
 

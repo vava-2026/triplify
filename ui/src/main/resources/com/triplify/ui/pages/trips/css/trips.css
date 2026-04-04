@@ -483,6 +483,10 @@
     -fx-border-radius: 14px;
 }
 
+.trip-editor-place-preview-shell {
+    -fx-padding: 0;
+}
+
 .trip-editor-place-title {
     -fx-font-size: 13px;
     -fx-font-weight: bold;
@@ -526,6 +530,18 @@
 
 .trip-editor-icon-button-glyph {
     -fx-icon-color: -color-primary-dark;
+}
+
+.trip-editor-place-remove-button {
+    -fx-min-width: 26px;
+    -fx-pref-width: 26px;
+    -fx-max-width: 26px;
+    -fx-min-height: 26px;
+    -fx-pref-height: 26px;
+    -fx-max-height: 26px;
+    -fx-translate-x: -6px;
+    -fx-translate-y: 6px;
+    -fx-effect: dropshadow(gaussian, rgba(12, 25, 38, 0.10), 10, 0, 0, 2);
 }
 
 .trip-editor-picker-panel {
