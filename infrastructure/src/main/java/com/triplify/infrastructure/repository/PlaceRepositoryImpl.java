@@ -2,6 +2,7 @@ package com.triplify.infrastructure.repository;
 
 import com.triplify.domain.filter.PlaceFilter;
 import com.triplify.domain.model.Country;
+import com.triplify.domain.model.Image;
 import com.triplify.domain.model.Place;
 import com.triplify.domain.pagination.Page;
 import com.triplify.domain.pagination.PageRequest;
@@ -10,6 +11,7 @@ import com.triplify.infrastructure.repository.persistence.SQLiteConnectionFactor
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Path;
 import java.sql.Timestamp;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -25,17 +27,31 @@ public class PlaceRepositoryImpl implements PlaceRepository {
 
     private static final Logger log = LoggerFactory.getLogger(CountryRepositoryImpl.class);
 
+    private static final String PLACE_WITH_COUNTRY_AND_IMAGE_SELECT = """
+        SELECT 
+            p.id AS p_id, p.user_id AS p_user_id, p.country_id AS p_country_id, 
+            p.cover_image_id AS p_cover_image_id, p.title AS p_title, 
+            p.description AS p_description, p.latitude AS p_latitude, 
+            p.longitude AS p_longitude, p.created_at AS p_created_at, p.updated_at AS p_updated_at,
+                
+            c.id AS c_id, c.created_by AS c_created_by, c.name AS c_name, 
+            c.name_sk AS c_name_sk, c.emoji_unicode AS c_emoji_unicode, c.is_available AS c_is_available,
+                
+            i.id AS i_id, i.url AS i_url, i.description AS i_description, i.uploaded_at AS i_uploaded_at
+        FROM places p
+        INNER JOIN countries c ON p.country_id = c.id
+        LEFT JOIN images i ON p.cover_image_id = i.id """;
+
     @Override
     public Optional<Place> findById(String id) {
-        String sql = "SELECT id, user_id, country_id, cover_image_id, title, description, latitude, longitude, created_at, updated_at " +
-        "FROM places WHERE id = ?";
+        String sql = PLACE_WITH_COUNTRY_AND_IMAGE_SELECT + " WHERE p.id = ? LIMIT 1";
 
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return Optional.of(mapRow(rs));
+                    return Optional.of(mapPlaceWithRelations(rs));
                 }
             }
         }
@@ -46,37 +62,35 @@ public class PlaceRepositoryImpl implements PlaceRepository {
         return Optional.empty();
     }
 
-    public Page<Place> findAll(PageRequest page, PlaceFilter filter) {
-        String sql = "SELECT id, user_id, country_id, cover_image_id, title, description, latitude, longitude, created_at, updated_at " +
-                "FROM places " +
-                "WHERE 1=1 ";
+    public Page<Place> findList(PageRequest page, PlaceFilter filter) {
+        String sql = PLACE_WITH_COUNTRY_AND_IMAGE_SELECT + " WHERE 1=1 ";
+
+        List<Object> params = new ArrayList<>();
 
         if (filter.countryId() != null) {
-            sql += "AND country_id = ? ";
+            sql += "AND p.country_id = ? ";
+            params.add(filter.countryId());
         }
-        if (filter.name() != null) {
-            sql += "AND title LIKE ? ";
+        if (filter.name() != null && !filter.name().isBlank()) {
+            sql += "AND p.title LIKE ? ";
+            params.add(filter.name() + "%");
         }
+
         sql += "LIMIT ? OFFSET ?";
+        params.add(page.size());
+        params.add(page.offset());
 
         try (Connection conn = SQLiteConnectionFactory.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql)) {
+            PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
-            int currentIndex = 1;
-            if (filter.countryId() != null) {
-                ps.setString(currentIndex++, filter.countryId());
-            }
-            if (filter.name() != null) {
-                // TODO: do we want it here, or should the user specify '%' themselves?
-                ps.setString(currentIndex++, filter.name() + "%");
+            for (int j = 0; j < params.size(); j++) {
+                ps.setObject(j + 1, params.get(j));
             }
 
-            ps.setInt(currentIndex++, page.size());
-            ps.setInt(currentIndex++, page.offset());
             try (ResultSet rs = ps.executeQuery()) {
                 List<Place> places = new ArrayList<>();
                 while (rs.next()) {
-                    places.add(mapRow(rs));
+                    places.add(mapPlaceWithRelations(rs));
                 }
                 return Page.of(places, page, places.size());
             }
@@ -156,20 +170,42 @@ public class PlaceRepositoryImpl implements PlaceRepository {
         }
     }
 
-    private Place mapRow(ResultSet rs) throws SQLException {
-        UUID id = UUID.fromString(rs.getString("id"));
-        UUID userId = UUID.fromString(rs.getString("user_id"));
-        UUID countryId = UUID.fromString(rs.getString("country_id"));
-        String coverImageIdStr = rs.getString("cover_image_id");
-        UUID coverImageId = coverImageIdStr != null ? UUID.fromString(coverImageIdStr) : null;
-        String title = rs.getString("title");
-        String description = rs.getString("description");
-        double latitude = rs.getDouble("latitude");
-        double longitude = rs.getDouble("longitude");
-        Instant created_at = Instant.parse(rs.getString("created_at"));
-        Instant updated_at = Instant.parse(rs.getString("updated_at"));
+    private Place mapPlaceWithRelations(ResultSet rs) throws SQLException {
 
-        return new Place(id, userId, countryId, coverImageId, title, description, latitude, longitude, created_at, updated_at);
+        Country country = new Country(
+                UUID.fromString(rs.getString("c_id")),
+                UUID.fromString(rs.getString("c_created_by")),
+                rs.getString("c_name"),
+                rs.getString("c_name_sk"),
+                rs.getString("c_emoji_unicode"),
+                rs.getBoolean("c_is_available")
+        );
+
+        Image coverImage = null;
+        String imageIdStr = rs.getString("i_id");
+        if (imageIdStr != null) {
+            coverImage = new Image(
+                    UUID.fromString(imageIdStr),
+                    Path.of(rs.getString("i_url")),
+                    rs.getString("i_description"),
+                    Instant.parse(rs.getString("i_uploaded_at"))
+            );
+        }
+
+        return new Place(
+                UUID.fromString(rs.getString("p_id")),
+                UUID.fromString(rs.getString("p_user_id")),
+                UUID.fromString(rs.getString("p_country_id")),
+                country,
+                rs.getString("p_cover_image_id") != null ? UUID.fromString(rs.getString("p_cover_image_id")) : null,
+                coverImage,
+                rs.getString("p_title"),
+                rs.getString("p_description"),
+                rs.getDouble("p_latitude"),
+                rs.getDouble("p_longitude"),
+                Instant.parse(rs.getString("p_created_at")),
+                Instant.parse(rs.getString("p_updated_at"))
+        );
     }
 
     private void setNullableUUID(PreparedStatement ps, int index, UUID value) throws SQLException {

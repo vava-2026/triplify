@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public interface PlaceRepository {
     Optional<Place> findById(String id);
-    Page<Place> findAll(PageRequest page, PlaceFilter filter);
+    Page<Place> findList(PageRequest page, PlaceFilter filter);
     void create(Place place);
     void update(Place place);
     void delete(Place place);

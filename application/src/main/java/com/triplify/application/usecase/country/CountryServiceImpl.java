@@ -115,7 +115,7 @@ public class CountryServiceImpl implements CountryService {
 
     @Override
     public Result<Page<CountryResponse>> getCountries(GetCountriesRequest request) {
-        var countryPage = countryRepository.findAll(request.pageRequest(), request.filter());
+        var countryPage = countryRepository.findList(request.pageRequest(), request.filter());
         return Result.ok(countryPage.map(CountryResponse::from));
     }
 

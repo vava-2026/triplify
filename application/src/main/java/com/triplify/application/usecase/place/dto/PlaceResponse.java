@@ -18,12 +18,12 @@ public record PlaceResponse(
         Instant createdAt,
         Instant updatedAt
 ) {
-    public static PlaceResponse from(Place place, CountryResponse country, ImageResponse image) {
+    public static PlaceResponse from(Place place) {
         return new PlaceResponse(
                 place.getId().toString(),
                 place.getUserId().toString(),
-                country,
-                image,
+                place.getCountry() != null ? CountryResponse.from(place.getCountry()) : null,
+                place.getCoverImage() != null ? ImageResponse.from(place.getCoverImage()) : null,
                 place.getTitle(),
                 place.getDescription(),
                 place.getLatitude(),
