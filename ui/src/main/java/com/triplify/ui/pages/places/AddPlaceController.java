@@ -5,6 +5,7 @@ import com.google.inject.Inject;
 import com.triplify.application.usecase.country.CountryService;
 import com.triplify.application.usecase.place.dto.AddPlaceRequest;
 import com.triplify.application.usecase.place.PlaceService;
+import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.map.InteractiveMap;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.routing.TriplifyRouterContext;
@@ -12,10 +13,12 @@ import com.triplify.ui.shared.component.countries.model.Countries;
 import com.triplify.ui.shared.component.countries.view.CountriesView;
 import com.triplify.ui.shared.component.action_buttons.view.EditorActionButtonsView;
 import com.triplify.ui.shared.component.input_item.InputItem;
+import com.triplify.ui.shared.component.section_header.view.SectionHeaderView;
 import com.triplify.ui.shared.component.input_item.TextAreaItem;
 import com.triplify.ui.shared.component.upload_panel.view.ImageUploadPanelView;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.toast.ToastService;
+import com.triplify.ui.shared.util.Localization;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
@@ -44,6 +47,7 @@ import rahulstech.jfx.routing.element.RouterArgument;
 import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 
 import java.io.File;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -56,6 +60,13 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
 
     @FXML private VBox contentContainer;
     @FXML private FlowPane contentFlow;
+
+    @FXML private SectionHeaderView generalSectionHeader;
+    @FXML private SectionHeaderView locationSectionHeader;
+    @FXML private Label placeTitleLabel;
+    @FXML private Label countryLabel;
+    @FXML private Label descriptionLabel;
+    @FXML private Label mapHelperLabel;
 
     @FXML private VBox titleInputContainer;
     @FXML private VBox countryInputContainer;
@@ -117,8 +128,10 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         installRoundedClip(uploadArea, 16);
         installRoundedClip(interactiveMap, 18);
 
+        bindLocalizedText();
         initializeMap();
         updateSelectedCoordinatesLabel();
+        I18n.bundleProperty().addListener((obs, oldBundle, newBundle) -> updateSelectedCoordinatesLabel());
     }
 
     @Override
@@ -164,9 +177,9 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         var result = placeService.addPlace(request);
         result.onSuccess(ignored -> {
             String message = tripName == null || tripName.isBlank()
-                    ? "Place saved successfully."
-                    : "Place added to " + tripName + ".";
-            toast.success("Place saved", message);
+                    ? I18n.t("place.add.toast.saved.body")
+                    : formatMessage("place.add.toast.saved.body.trip", tripName);
+            toast.success(I18n.t("place.add.toast.saved.title"), message);
             getRouter().popBackStack();
         });
         result.onFailure(error -> errorHandler.handle(error, fieldHandlers));
@@ -180,9 +193,9 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     @FXML
     private void onChooseCoverImage() {
         FileChooser chooser = new FileChooser();
-        chooser.setTitle("Choose cover image");
+        chooser.setTitle(I18n.t("place.add.dialog.cover.title"));
         chooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("Image files", "*.png", "*.jpg", "*.jpeg", "*.svg")
+                new FileChooser.ExtensionFilter(I18n.t("place.add.dialog.cover.filter"), "*.png", "*.jpg", "*.jpeg", "*.svg")
         );
 
         File file = chooser.showOpenDialog(uploadArea.getScene() == null ? null : uploadArea.getScene().getWindow());
@@ -229,7 +242,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
 
     private void handleCoverImage(File file) {
         if (!isSupportedImageFile(file)) {
-            toast.warning("Unsupported image format.");
+            toast.warning(I18n.t("place.add.toast.image.unsupported"));
             return;
         }
 
@@ -257,7 +270,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
                 coverPreview.setManaged(false);
                 uploadPlaceholder.setVisible(true);
                 uploadPlaceholder.setManaged(true);
-                toast.warning("Image preview is unavailable, but the file is attached.");
+                toast.warning(I18n.t("place.add.toast.image.previewUnavailable"));
             }
         });
         image.progressProperty().addListener((obs, oldVal, newVal) -> {
@@ -338,12 +351,27 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     }
 
     private void updateSelectedCoordinatesLabel() {
-        selectedCoordinatesLabel.setText(String.format(
-                Locale.US,
-                "Lat: %.6f   Lon: %.6f",
-                selectedLatitude,
-                selectedLongitude
-        ));
+        selectedCoordinatesLabel.setText(
+                String.format(Locale.US, I18n.t("place.add.coordinates.format"), selectedLatitude, selectedLongitude)
+        );
+    }
+
+    private void bindLocalizedText() {
+        Localization.bindText(generalSectionHeader.titleProperty(), "place.add.section.general");
+        Localization.bindText(placeTitleLabel.textProperty(), "place.add.field.title");
+        Localization.bindText(countryLabel.textProperty(), "place.add.field.country");
+        Localization.bindText(descriptionLabel.textProperty(), "place.add.field.description");
+        Localization.bindText(locationSectionHeader.titleProperty(), "place.add.section.location");
+        Localization.bindText(mapHelperLabel.textProperty(), "place.add.map.helper");
+        Localization.bindText(imageUploadPanel.sectionTitleProperty(), "place.add.section.cover");
+        Localization.bindText(imageUploadPanel.uploadTitleProperty(), "place.add.upload.title");
+        Localization.bindText(imageUploadPanel.uploadSubtitleProperty(), "place.add.upload.subtitle");
+        Localization.bindText(actionButtonsView.primaryTextProperty(), "place.add.action.save");
+        Localization.bindText(actionButtonsView.secondaryTextProperty(), "place.add.action.discard");
+    }
+
+    private String formatMessage(String key, Object... args) {
+        return MessageFormat.format(I18n.t(key), args);
     }
 
     private void configureButtonIcon(Button button, String iconLiteral) {

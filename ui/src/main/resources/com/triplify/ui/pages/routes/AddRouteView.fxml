@@ -25,31 +25,29 @@
     <content>
         <StackPane styleClass="page-root,add-route-root">
             <VBox fx:id="contentContainer" styleClass="add-route-content">
-                <Label text="Route" styleClass="add-route-page-title"/>
+                <Label fx:id="routePageTitleLabel" text="Route" styleClass="add-route-page-title"/>
 
                 <FlowPane fx:id="contentFlow" styleClass="add-route-flow">
                     <VBox styleClass="add-route-main-column">
                         <VBox styleClass="page-card,add-route-card" spacing="18">
-                            <SectionHeaderView iconLiteral="fth-info" title="General Information"/>
+                            <SectionHeaderView fx:id="generalSectionHeader" iconLiteral="fth-info" title="General Information"/>
 
                             <VBox styleClass="add-route-form-group">
-                                <Label text="Route Title *" styleClass="form-label"/>
+                                <Label fx:id="routeTitleLabel" text="Route Title *" styleClass="form-label"/>
                                 <VBox fx:id="titleInputContainer"/>
                             </VBox>
 
                             <VBox styleClass="add-route-form-group">
-                                <Label text="Description" styleClass="form-label"/>
+                                <Label fx:id="descriptionLabel" text="Description" styleClass="form-label"/>
                                 <VBox fx:id="descriptionInputContainer"/>
                             </VBox>
                         </VBox>
 
                         <VBox styleClass="page-card,add-route-card" spacing="16">
                             <HBox styleClass="add-route-section-header">
-                                <SectionHeaderView iconLiteral="fth-map-pin" title="Places to Visit" HBox.hgrow="ALWAYS"/>
+                                <SectionHeaderView fx:id="placesSectionHeader" iconLiteral="fth-map-pin" title="Places to Visit" HBox.hgrow="ALWAYS"/>
                                 <Label fx:id="routeLengthLabel" text="Length: 0.0km" styleClass="add-route-length-label"/>
                             </HBox>
-
-                            <VBox fx:id="placeSearchContainer"/>
 
                             <VBox fx:id="placesListContainer" styleClass="add-route-places-list"/>
 
@@ -58,6 +56,18 @@
                                     onAction="#onAddPlace"
                                     text="Add Place"
                                     styleClass="app-btn,app-btn-dashed-tint,add-route-add-place-button"/>
+
+                            <VBox fx:id="placePickerContainer"
+                                  managed="false"
+                                  visible="false"
+                                  spacing="12">
+                                <VBox fx:id="placeSearchContainer"/>
+                                <Button fx:id="placeCreateButton"
+                                        maxWidth="Infinity"
+                                        onAction="#onCreatePlace"
+                                        text="Create Place"
+                                        styleClass="app-btn,app-btn-tint"/>
+                            </VBox>
                         </VBox>
                     </VBox>
 
@@ -71,8 +81,8 @@
                         </VBox>
 
                         <EditorActionButtonsView fx:id="actionButtonsView"
-                                                 primaryText="Save Route"
-                                                 secondaryText="Discard Changes"/>
+                                                 primaryTextKey="route.add.action.save"
+                                                 secondaryTextKey="route.add.action.discard"/>
                     </VBox>
                 </FlowPane>
             </VBox>

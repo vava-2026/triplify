@@ -29,30 +29,31 @@
                 <FlowPane fx:id="contentFlow" styleClass="add-place-flow">
                     <VBox styleClass="add-place-main-column">
                         <VBox styleClass="page-card,add-place-card" spacing="18">
-                            <SectionHeaderView iconLiteral="fth-info" title="General Information"/>
+                            <SectionHeaderView fx:id="generalSectionHeader" iconLiteral="fth-info" title="General Information"/>
 
                             <VBox styleClass="add-place-form-group">
-                                <Label text="Place Title *" styleClass="form-label"/>
+                                <Label fx:id="placeTitleLabel" text="Place Title *" styleClass="form-label"/>
                                 <VBox fx:id="titleInputContainer"/>
                             </VBox>
 
                             <VBox styleClass="add-place-form-group">
-                                <Label text="Country *" styleClass="form-label"/>
+                                <Label fx:id="countryLabel" text="Country *" styleClass="form-label"/>
                                 <VBox fx:id="countryInputContainer"/>
                             </VBox>
 
                             <VBox styleClass="add-place-form-group">
-                                <Label text="Description" styleClass="form-label"/>
+                                <Label fx:id="descriptionLabel" text="Description" styleClass="form-label"/>
                                 <VBox fx:id="descriptionInputContainer"/>
                             </VBox>
                         </VBox>
 
                         <VBox styleClass="page-card,add-place-card,add-place-map-card" spacing="16">
-                            <SectionHeaderView iconLiteral="fth-map-pin" title="Location"/>
+                            <SectionHeaderView fx:id="locationSectionHeader" iconLiteral="fth-map-pin" title="Location"/>
 
                             <InteractiveMap fx:id="interactiveMap" />
 
-                            <Label text="Click on the map to pick coordinates. Hold the right mouse button to move, use the wheel, pinch, or buttons to zoom, and pan with two-finger touchpad scrolling."
+                            <Label fx:id="mapHelperLabel"
+                                   text="Click on the map to pick coordinates. Hold the right mouse button to move, use the wheel, pinch, or buttons to zoom, and pan with two-finger touchpad scrolling."
                                    wrapText="true"
                                    styleClass="add-place-helper-text"/>
 

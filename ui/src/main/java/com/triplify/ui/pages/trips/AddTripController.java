@@ -19,6 +19,7 @@ import com.triplify.ui.shared.component.date_picker.DatePickerItem;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.search.model.Search;
 import com.triplify.ui.shared.component.search.model.SearchDisplayMode;
+import com.triplify.ui.shared.component.search.model.SearchSize;
 import com.triplify.ui.shared.component.search.view.SearchView;
 import com.triplify.ui.shared.component.tag_picker.TagPickerItem;
 import com.triplify.ui.shared.component.section_header.view.SectionHeaderView;
@@ -539,7 +540,9 @@ public class AddTripController extends SimpleLifecycleAwareController {
     private void renderPlaces() {
         placesFlow.getChildren().clear();
         if (placeItems.isEmpty()) {
-            placesFlow.getChildren().add(createEmptyState(I18n.t("trip.add.empty.places")));
+            Region emptyState = createEmptyState(I18n.t("trip.add.empty.places"));
+            emptyState.prefWidthProperty().bind(placesFlow.widthProperty());
+            placesFlow.getChildren().add(emptyState);
             return;
         }
 
@@ -732,13 +735,13 @@ public class AddTripController extends SimpleLifecycleAwareController {
                 .noResultKey("trip.add.menu.route.empty")
                 .variant(FieldVariant.GHOST)
                 .displayMode(SearchDisplayMode.INLINE)
+                .size(SearchSize.MIDDLE)
                 .maxVisibleResults(8)
                 .showOnEmptyQuery(true)
                 .onResultSelected(entry -> addExistingRoute(entry.getValue()))
                 .build();
 
         routeSearchView = new SearchView<>(routeSearchModel);
-        routeSearchView.getStyleClass().add("trip-editor-picker-search");
         routeSearchContainer.getChildren().setAll(routeSearchView);
 
         Search<PlaceItem> placeSearchModel = Search.<PlaceItem>builder(this::searchPlaceEntries)
@@ -746,13 +749,13 @@ public class AddTripController extends SimpleLifecycleAwareController {
                 .noResultKey("trip.add.menu.place.empty")
                 .variant(FieldVariant.GHOST)
                 .displayMode(SearchDisplayMode.INLINE)
+                .size(SearchSize.MIDDLE)
                 .maxVisibleResults(8)
                 .showOnEmptyQuery(true)
                 .onResultSelected(entry -> addExistingPlace(entry.getValue()))
                 .build();
 
         placeSearchView = new SearchView<>(placeSearchModel);
-        placeSearchView.getStyleClass().add("trip-editor-picker-search");
         placeSearchContainer.getChildren().setAll(placeSearchView);
     }
 
