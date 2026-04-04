@@ -763,7 +763,6 @@ public class AddTripController extends SimpleLifecycleAwareController {
         if (visible) {
             addRouteButton.getStyleClass().add("trip-editor-add-action-button-expanded");
             refreshRoutePicker();
-            Platform.runLater(() -> routeSearchView.getSearchField().requestFocus());
         } else {
             routeSearchView.getSearchField().clear();
         }
@@ -776,7 +775,6 @@ public class AddTripController extends SimpleLifecycleAwareController {
         if (visible) {
             addPlaceButton.getStyleClass().add("trip-editor-add-action-button-expanded");
             refreshPlacePicker();
-            Platform.runLater(() -> placeSearchView.getSearchField().requestFocus());
         } else {
             placeSearchView.getSearchField().clear();
         }
