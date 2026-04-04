@@ -25,6 +25,9 @@ public class Trip {
     @Setter(AccessLevel.PRIVATE)
     private UUID categoryId;
 
+    @Setter(AccessLevel.PRIVATE)
+    private Category category;
+
     @NonNull
     @Setter(AccessLevel.PRIVATE)
     private String title;
@@ -50,8 +53,9 @@ public class Trip {
     private Instant updatedAt;
 
     private final Set<UUID> tagIds;
-    private final Set<UUID> imageIds;
     private final Set<UUID> countryIds;
+    private final Set<Tag> tags;
+    private final Set<Country> countries;
 
     public Trip(@NonNull UUID userId, @NonNull UUID categoryId, @NonNull String title, @NonNull StatusEnum status) {
         this.id = UUID.randomUUID();
@@ -62,20 +66,24 @@ public class Trip {
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
         this.tagIds = new HashSet<>();
-        this.imageIds = new LinkedHashSet<>();
         this.countryIds = new HashSet<>();
+        this.tags = new LinkedHashSet<>();
+        this.countries = new LinkedHashSet<>();
     }
 
     public Set<UUID> getTagIds() {
         return Collections.unmodifiableSet(tagIds);
     }
-
-    public Set<UUID> getImageIds() {
-        return Collections.unmodifiableSet(imageIds);
-    }
-
     public Set<UUID> getCountryIds() {
         return Collections.unmodifiableSet(countryIds);
+    }
+
+    public Set<Tag> getTags() {
+        return Collections.unmodifiableSet(tags);
+    }
+
+    public Set<Country> getCountries() {
+        return Collections.unmodifiableSet(countries);
     }
 
     public void updateTitle(@NonNull String title) {
@@ -94,6 +102,14 @@ public class Trip {
     public void updateCategory(@NonNull UUID categoryId) {
         log.debug("Trip [{}] category: {} to {}", id, this.categoryId, categoryId);
         setCategoryId(categoryId);
+        setCategory(null);
+        setUpdatedAt(Instant.now());
+    }
+
+    public void updateCategory(@NonNull Category category) {
+        log.debug("Trip [{}] category linked: {}", id, category.getId());
+        setCategoryId(category.getId());
+        setCategory(category);
         setUpdatedAt(Instant.now());
     }
 
@@ -135,21 +151,18 @@ public class Trip {
         setUpdatedAt(Instant.now());
     }
 
+    public void addTag(@NonNull Tag tag) {
+        log.debug("Trip [{}] tag linked: {}", id, tag.getId());
+        tagIds.add(tag.getId());
+        tags.removeIf(existing -> existing.getId().equals(tag.getId()));
+        tags.add(tag);
+        setUpdatedAt(Instant.now());
+    }
+
     public void removeTag(@NonNull UUID tagId) {
         log.debug("Trip [{}] tag removed: {}", id, tagId);
         tagIds.remove(tagId);
-        setUpdatedAt(Instant.now());
-    }
-
-    public void addImage(@NonNull UUID imageId) {
-        log.debug("Trip [{}] image added: {}", id, imageId);
-        imageIds.add(imageId);
-        setUpdatedAt(Instant.now());
-    }
-
-    public void removeImage(@NonNull UUID imageId) {
-        log.debug("Trip [{}] image removed: {}", id, imageId);
-        imageIds.remove(imageId);
+        tags.removeIf(tag -> tag.getId().equals(tagId));
         setUpdatedAt(Instant.now());
     }
 
@@ -159,9 +172,18 @@ public class Trip {
         setUpdatedAt(Instant.now());
     }
 
+    public void addCountry(@NonNull Country country) {
+        log.debug("Trip [{}] country linked: {}", id, country.getId());
+        countryIds.add(country.getId());
+        countries.removeIf(existing -> existing.getId().equals(country.getId()));
+        countries.add(country);
+        setUpdatedAt(Instant.now());
+    }
+
     public void removeCountry(@NonNull UUID countryId) {
         log.debug("Trip [{}] country removed: {}", id, countryId);
         countryIds.remove(countryId);
+        countries.removeIf(country -> country.getId().equals(countryId));
         setUpdatedAt(Instant.now());
     }
 }

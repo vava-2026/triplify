@@ -1,5 +1,6 @@
 package com.triplify.infrastructure.repository;
 
+import com.triplify.domain.model.Image;
 import com.triplify.domain.model.User;
 import com.triplify.domain.model.enums.RoleEnum;
 import com.triplify.domain.repository.UserRepository;
@@ -7,6 +8,7 @@ import com.triplify.infrastructure.repository.persistence.SQLiteConnectionFactor
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Path;
 import java.sql.*;
 import java.time.Instant;
 import java.util.Optional;
@@ -16,10 +18,17 @@ public class UserRepositoryImpl implements UserRepository {
 
     private static final Logger log = LoggerFactory.getLogger(UserRepositoryImpl.class);
 
+    private static final String USER_WITH_AVATAR_SELECT = """
+                SELECT u.id AS user_id, u.username, u.email, u.password_hash, u.role, u.avatar_image_id,
+                        u.created_at AS user_created_at, u.updated_at AS user_updated_at,
+                        i.id AS image_id, i.url AS image_url, i.description AS image_description, i.uploaded_at AS image_uploaded_at
+                FROM users u
+                LEFT JOIN images i ON i.id = u.avatar_image_id 
+                """;
+
     @Override
     public Optional<User> findByEmail(String email) {
-        String sql = "SELECT id, username, email, password_hash, role, avatar_image_id, created_at, updated_at " +
-                "FROM users WHERE email = ? LIMIT 1";
+        String sql = USER_WITH_AVATAR_SELECT + "WHERE u.email = ? LIMIT 1";
         
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -94,16 +103,30 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     private User mapRow(ResultSet rs) throws SQLException {
-        UUID id = UUID.fromString(rs.getString("id"));
+        UUID id = UUID.fromString(rs.getString("user_id"));
         String username = rs.getString("username");
         String email = rs.getString("email");
         String passwordHash = rs.getString("password_hash");
         RoleEnum role = RoleEnum.fromValue(rs.getString("role"));
         String avatarRaw = rs.getString("avatar_image_id");
         UUID avatarImageId = avatarRaw != null ? UUID.fromString(avatarRaw) : null;
-        Instant createdAt = Instant.parse(rs.getString("created_at"));
-        Instant updatedAt = Instant.parse(rs.getString("updated_at"));
-        
-        return new User(id, username, email, passwordHash, role, avatarImageId, createdAt, updatedAt);
+        Image avatarImage = mapAvatarImage(rs);
+        Instant createdAt = Instant.parse(rs.getString("user_created_at"));
+        Instant updatedAt = Instant.parse(rs.getString("user_updated_at"));
+
+        return new User(id, username, email, passwordHash, role, avatarImageId, avatarImage, createdAt, updatedAt);
+    }
+
+    private Image mapAvatarImage(ResultSet rs) throws SQLException {
+        String imageIdRaw = rs.getString("image_id");
+        if (imageIdRaw == null) {
+            return null;
+        }
+
+        UUID imageId = UUID.fromString(imageIdRaw);
+        Path imageUrl = Path.of(rs.getString("image_url"));
+        String imageDescription = rs.getString("image_description");
+        Instant imageUploadedAt = Instant.parse(rs.getString("image_uploaded_at"));
+        return new Image(imageId, imageUrl, imageDescription, imageUploadedAt);
     }
 }
