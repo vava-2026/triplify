@@ -56,7 +56,7 @@
                                     maxWidth="Infinity"
                                     onAction="#onAddPlace"
                                     text="Add Place"
-                                    styleClass="app-btn,app-btn-secondary,add-route-add-place-button"/>
+                                    styleClass="app-btn,app-btn-dashed-tint,add-route-add-place-button"/>
                         </VBox>
                     </VBox>
 

@@ -3,6 +3,7 @@ package com.triplify.ui.shared.component.search.view;
 import com.triplify.ui.shared.component.select.entry.model.Entry;
 import com.triplify.ui.shared.component.select.entry.view.EntryCell;
 import com.triplify.ui.shared.component.search.model.Search;
+import com.triplify.ui.shared.component.search.model.SearchDisplayMode;
 import com.triplify.ui.shared.component.search.model.SearchSize;
 import com.triplify.ui.shared.model.FieldVariant;
 import javafx.animation.PauseTransition;
@@ -17,6 +18,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.event.EventHandler;
 import javafx.scene.input.MouseEvent;
@@ -38,6 +40,7 @@ public class SearchView<T> extends VBox {
 
     @Getter private final ListView<Entry<T>> resultsListView = new ListView<>();
     private final Label noResultsLabel = new Label();
+    private final VBox inlineContent = new VBox();
     private final VBox popupContent = new VBox();
     private final Popup popup = new Popup();
 
@@ -72,6 +75,7 @@ public class SearchView<T> extends VBox {
 
         setupPopup();
         resultsListView.setCellFactory(lv -> new EntryCell<>());
+        setupInlineContent();
         update(model);
     }
 
@@ -105,7 +109,33 @@ public class SearchView<T> extends VBox {
         });
     }
 
+    private void setupInlineContent() {
+        inlineContent.getStyleClass().add("search-inline-content");
+        inlineContent.setVisible(false);
+        inlineContent.setManaged(false);
+        inlineContent.setMaxWidth(Double.MAX_VALUE);
+        VBox.setVgrow(inlineContent, Priority.NEVER);
+        getChildren().add(inlineContent);
+    }
+
+    private boolean isInlineMode() {
+        return model != null && model.getDisplayMode() == SearchDisplayMode.INLINE;
+    }
+
+    private void attachResultsHost() {
+        VBox target = isInlineMode() ? inlineContent : popupContent;
+        if (resultsListView.getParent() != target || noResultsLabel.getParent() != target) {
+            target.getChildren().setAll(resultsListView, noResultsLabel);
+        }
+    }
+
     private void showPopup() {
+        if (isInlineMode()) {
+            inlineContent.setVisible(true);
+            inlineContent.setManaged(true);
+            return;
+        }
+
         if (getScene() == null || getScene().getWindow() == null || !getScene().getWindow().isShowing()) return;
         Bounds fieldBounds = searchBox.localToScreen(searchBox.getBoundsInLocal());
         if (fieldBounds == null || fieldBounds.getWidth() <= 0) return;
@@ -185,6 +215,7 @@ public class SearchView<T> extends VBox {
 
         applyVariant(model.getVariant());
         applySize(model.getSize());
+        attachResultsHost();
         runSearch(searchField.getText());
     }
 
@@ -317,10 +348,13 @@ public class SearchView<T> extends VBox {
     private void showNothing() {
         getStyleClass().remove("search-showing");
         popupContent.getStyleClass().remove("search-showing");
+        inlineContent.setVisible(false);
+        inlineContent.setManaged(false);
         popup.hide();
     }
 
     private void showNoResults() {
+        attachResultsHost();
         if (!getStyleClass().contains("search-showing"))
             getStyleClass().add("search-showing");
         if (!popupContent.getStyleClass().contains("search-showing"))
@@ -334,6 +368,7 @@ public class SearchView<T> extends VBox {
     }
 
     private void showResults() {
+        attachResultsHost();
         if (!getStyleClass().contains("search-showing"))
             getStyleClass().add("search-showing");
         if (!popupContent.getStyleClass().contains("search-showing"))

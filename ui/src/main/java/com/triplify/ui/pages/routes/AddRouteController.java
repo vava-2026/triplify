@@ -120,7 +120,7 @@ public class AddRouteController extends SimpleLifecycleAwareController {
         Search<RoutePlaceItem> searchModel = Search.<RoutePlaceItem>builder(this::searchPlaces)
                 .placeholderKey("trip.add.picker.place.search")
                 .noResultKey("trip.add.menu.place.empty")
-                .variant(FieldVariant.FILLED)
+                .variant(FieldVariant.GHOST)
                 .maxVisibleResults(8)
                 .showOnEmptyQuery(true)
                 .build();
@@ -627,13 +627,13 @@ public class AddRouteController extends SimpleLifecycleAwareController {
     }
 
     private InputItem createInput(String placeholderKey) {
-        InputItem input = new InputItem(placeholderKey, FieldVariant.FILLED);
+        InputItem input = new InputItem(placeholderKey, FieldVariant.GHOST);
         input.getStyleClass().add("add-route-field");
         return input;
     }
 
     private TextAreaItem createTextArea(String placeholderKey) {
-        TextAreaItem input = new TextAreaItem(placeholderKey, FieldVariant.FILLED);
+        TextAreaItem input = new TextAreaItem(placeholderKey, FieldVariant.GHOST);
         input.getStyleClass().addAll("add-route-field", "add-route-textarea-field");
         input.setRows(6);
         return input;

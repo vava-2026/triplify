@@ -76,6 +76,12 @@
     -fx-padding: 0;
 }
 
+.search-inline-content {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-spacing: 0;
+}
+
 .app-search-size-small .search-input-box {
     -fx-min-height: 36;
     -fx-pref-height: 36;

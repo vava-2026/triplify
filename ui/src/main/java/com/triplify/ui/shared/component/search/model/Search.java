@@ -1,6 +1,7 @@
 package com.triplify.ui.shared.component.search.model;
 
 import com.triplify.ui.shared.component.select.entry.model.Entry;
+import com.triplify.ui.shared.component.search.model.SearchDisplayMode;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.util.Localization;
 import javafx.beans.property.SimpleStringProperty;
@@ -24,6 +25,7 @@ public class Search<T> {
     @Getter private final boolean showOnEmptyQuery;
     @Getter private final double loadMoreThreshold;
     @Getter private final SearchSize size;
+    @Getter private final SearchDisplayMode displayMode;
     @Getter private final Consumer<Entry<T>> onResultSelected;
     @Getter private final FieldVariant variant;
 
@@ -37,6 +39,7 @@ public class Search<T> {
         this.showOnEmptyQuery = builder.showOnEmptyQuery;
         this.loadMoreThreshold = builder.loadMoreThreshold;
         this.size = builder.size;
+        this.displayMode = builder.displayMode;
         this.onResultSelected = builder.onResultSelected;
         this.variant = builder.variant;
 
@@ -85,6 +88,7 @@ public class Search<T> {
         static private final int DEFAULT_MAX_VISIBLE_RESULTS = 0;
         static private final double DEFAULT_LOAD_MORE_THRESHOLD = 0.82;
         static private final SearchSize DEFAULT_SIZE = SearchSize.SMALL;
+        static private final SearchDisplayMode DEFAULT_DISPLAY_MODE = SearchDisplayMode.POPUP;
         static private final FieldVariant DEFAULT_VARIANT = FieldVariant.FILLED;
 
         private final Function<String, List<Entry<T>>> searchFunction;
@@ -95,6 +99,7 @@ public class Search<T> {
         private int maxResults = DEFAULT_MAX_RESULTS;
         private int maxVisibleResults = DEFAULT_MAX_VISIBLE_RESULTS;
         private FieldVariant variant = DEFAULT_VARIANT;
+        private SearchDisplayMode displayMode = DEFAULT_DISPLAY_MODE;
         private boolean searchOnTyping = true;
         private boolean showOnEmptyQuery = false;
         private double loadMoreThreshold = DEFAULT_LOAD_MORE_THRESHOLD;
@@ -148,6 +153,11 @@ public class Search<T> {
 
         public Builder<T> size(SearchSize size) {
             this.size = size == null ? DEFAULT_SIZE : size;
+            return this;
+        }
+
+        public Builder<T> displayMode(SearchDisplayMode displayMode) {
+            this.displayMode = displayMode == null ? DEFAULT_DISPLAY_MODE : displayMode;
             return this;
         }
 

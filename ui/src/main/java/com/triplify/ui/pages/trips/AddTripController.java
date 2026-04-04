@@ -17,6 +17,7 @@ import com.triplify.ui.shared.component.countries.view.CountriesView;
 import com.triplify.ui.shared.component.date_picker.DatePickerItem;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.search.model.Search;
+import com.triplify.ui.shared.component.search.model.SearchDisplayMode;
 import com.triplify.ui.shared.component.search.view.SearchView;
 import com.triplify.ui.shared.component.tag_picker.TagPickerItem;
 import com.triplify.ui.shared.component.section_header.view.SectionHeaderView;
@@ -103,7 +104,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
     @FXML private ImageUploadPanelView imageUploadPanel;
 
     @FXML private VBox categorySelectContainer;
-    @FXML private VBox tagPickerContainer;
+    @FXML private TagPickerItem tagPickerInput;
     @FXML private VBox routeListContainer;
     @FXML private FlowPane placesFlow;
     @FXML private VBox routePickerContainer;
@@ -139,7 +140,6 @@ public class AddTripController extends SimpleLifecycleAwareController {
     private String currentTripDisplayName = "New Trip";
     private DatePickerItem startDateInput;
     private DatePickerItem endDateInput;
-    private TagPickerItem tagPickerInput;
     private CountriesView countrySelectView;
     private Entry<String> pendingCountryEntry;
     private Select<String> categorySelectModel;
@@ -156,15 +156,12 @@ public class AddTripController extends SimpleLifecycleAwareController {
     public void initialize() {
         titleInput = new InputItem("input.placeholder.tripTitle", FieldVariant.GHOST);
         descriptionInput = new TextAreaItem("input.placeholder.tripDescription", FieldVariant.GHOST);
-        startDateInput = new DatePickerItem("dd/MM/yyyy");
-        endDateInput = new DatePickerItem("dd/MM/yyyy");
-        tagPickerInput = createTagPickerItem();
-
+        startDateInput = new DatePickerItem("dd/MM/yyyy", FieldVariant.GHOST);
+        endDateInput = new DatePickerItem("dd/MM/yyyy", FieldVariant.GHOST);
         titleInputContainer.getChildren().add(titleInput);
         descriptionInputContainer.getChildren().add(descriptionInput);
         startDateContainer.getChildren().add(startDateInput);
         endDateContainer.getChildren().add(endDateInput);
-        tagPickerContainer.getChildren().add(tagPickerInput);
         uploadArea = imageUploadPanel.getUploadArea();
         coverPreview = imageUploadPanel.getCoverPreview();
         uploadPlaceholder = imageUploadPanel.getUploadPlaceholder();
@@ -182,6 +179,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
         installRoundedClip(uploadArea, 16);
         bindLocalizedText();
+        configureTagPicker();
         initializeCountrySelector();
         refreshLocalizedUi();
         initializeActionPickers();
@@ -733,6 +731,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
                 .placeholderKey("trip.add.picker.route.search")
                 .noResultKey("trip.add.menu.route.empty")
                 .variant(FieldVariant.GHOST)
+                .displayMode(SearchDisplayMode.INLINE)
                 .maxVisibleResults(8)
                 .showOnEmptyQuery(true)
                 .onResultSelected(entry -> addExistingRoute(entry.getValue()))
@@ -746,6 +745,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
                 .placeholderKey("trip.add.picker.place.search")
                 .noResultKey("trip.add.menu.place.empty")
                 .variant(FieldVariant.GHOST)
+                .displayMode(SearchDisplayMode.INLINE)
                 .maxVisibleResults(8)
                 .showOnEmptyQuery(true)
                 .onResultSelected(entry -> addExistingPlace(entry.getValue()))
@@ -759,9 +759,9 @@ public class AddTripController extends SimpleLifecycleAwareController {
     private void setRoutePickerVisible(boolean visible) {
         routePickerContainer.setVisible(visible);
         routePickerContainer.setManaged(visible);
-        addRouteButton.getStyleClass().remove("trip-editor-outline-button-expanded");
+        addRouteButton.getStyleClass().remove("trip-editor-add-action-button-expanded");
         if (visible) {
-            addRouteButton.getStyleClass().add("trip-editor-outline-button-expanded");
+            addRouteButton.getStyleClass().add("trip-editor-add-action-button-expanded");
             refreshRoutePicker();
             Platform.runLater(() -> routeSearchView.getSearchField().requestFocus());
         } else {
@@ -772,9 +772,9 @@ public class AddTripController extends SimpleLifecycleAwareController {
     private void setPlacePickerVisible(boolean visible) {
         placePickerContainer.setVisible(visible);
         placePickerContainer.setManaged(visible);
-        addPlaceButton.getStyleClass().remove("trip-editor-outline-button-expanded");
+        addPlaceButton.getStyleClass().remove("trip-editor-add-action-button-expanded");
         if (visible) {
-            addPlaceButton.getStyleClass().add("trip-editor-outline-button-expanded");
+            addPlaceButton.getStyleClass().add("trip-editor-add-action-button-expanded");
             refreshPlacePicker();
             Platform.runLater(() -> placeSearchView.getSearchField().requestFocus());
         } else {
@@ -783,8 +783,8 @@ public class AddTripController extends SimpleLifecycleAwareController {
     }
 
     private void configurePickerButtonIcons() {
-        routeCreateButton.setGraphic(createPickerIcon("fth-plus", "trip-editor-picker-create-icon", 14));
-        placeCreateButton.setGraphic(createPickerIcon("fth-plus", "trip-editor-picker-create-icon", 14));
+        routeCreateButton.setGraphic(createPickerIcon("fth-edit-2", "trip-editor-picker-create-icon", 14));
+        placeCreateButton.setGraphic(createPickerIcon("fth-edit-2", "trip-editor-picker-create-icon", 14));
     }
 
     private FontIcon createPickerIcon(String literal, String styleClass, int size) {
@@ -1006,17 +1006,14 @@ public class AddTripController extends SimpleLifecycleAwareController {
         context.setFullScreenContent(fullScreen);
     }
 
-    private TagPickerItem createTagPickerItem() {
-        TagPickerItem input = new TagPickerItem();
-        input.setPlaceholderText(I18n.t("trip.add.select.tag"));
-        input.setPopupTitle(I18n.t("trip.add.tag.popupTitle"));
-        input.setAvailableTags(AVAILABLE_TAGS);
-        input.setOnSelectionChanged(tags -> {
+    private void configureTagPicker() {
+        tagPickerInput.setPlaceholderText(I18n.t("trip.add.select.tag"));
+        tagPickerInput.setPopupTitle(I18n.t("trip.add.tag.popupTitle"));
+        tagPickerInput.setAvailableTags(AVAILABLE_TAGS);
+        tagPickerInput.setOnSelectionChanged(tags -> {
             selectedTags.clear();
             selectedTags.addAll(tags);
         });
-        input.getStyleClass().add("trip-editor-tag-picker");
-        return input;
     }
 
     private void syncTagPicker() {
@@ -1080,7 +1077,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
     private Select<String> createSelectModel(List<String> values, String placeholderKey) {
         return Select.<String>builder()
                 .placeholder(I18n.t(placeholderKey))
-                .variant(FieldVariant.FILLED)
+                .variant(FieldVariant.GHOST)
                 .items(values.stream().map(this::toEntry).toList())
                 .build();
     }

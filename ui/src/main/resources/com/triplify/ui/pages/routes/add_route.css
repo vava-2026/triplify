@@ -60,16 +60,6 @@
     -fx-pref-height: 44px;
 }
 
-.add-route-field .input-item.input-item--filled {
-    -fx-background-color: #eef5fb;
-    -fx-border-color: transparent;
-}
-
-.add-route-field .input-item:focused {
-    -fx-border-color: #5f95c0;
-    -fx-background-color: white;
-}
-
 .add-route-textarea-field .textarea-item {
     -fx-pref-height: 108px;
     -fx-min-height: 108px;
@@ -236,12 +226,10 @@
 }
 
 .add-route-add-place-button {
-    -fx-pref-height: 56px;
-    -fx-border-style: segments(7, 5);
-    -fx-border-color: #93b7d6;
-    -fx-background-color: #f8fbfe;
-    -fx-background-radius: 14px;
-    -fx-border-radius: 14px;
+    -fx-pref-height: 46px;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-padding: 0 16 0 16;
 }
 
 .add-route-empty-card {
