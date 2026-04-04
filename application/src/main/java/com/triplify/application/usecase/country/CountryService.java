@@ -16,5 +16,7 @@ public interface CountryService {
 
     Result<CountryResponse> unbanCountry(UnbanCountryRequest request);
 
+    Result<CountryResponse> getCountryById(GetCountryByIdRequest request);
+
     Result<Page<CountryResponse>> getCountries(GetCountriesRequest request);
 }

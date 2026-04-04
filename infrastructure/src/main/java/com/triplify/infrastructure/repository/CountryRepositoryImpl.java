@@ -43,7 +43,7 @@ public class CountryRepositoryImpl implements CountryRepository {
         return Optional.empty();
     }
 
-    public Page<Country> findAll(PageRequest page, CountryFilter filter) {
+    public Page<Country> findList(PageRequest page, CountryFilter filter) {
         String sql = "SELECT id, created_by, name, name_sk, emoji_unicode, is_available " +
                 "FROM countries " +
                 "WHERE 1=1 ";

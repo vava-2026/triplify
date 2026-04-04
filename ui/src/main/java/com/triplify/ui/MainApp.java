@@ -5,7 +5,13 @@ import com.triplify.application.usecase.auth.AuthService;
 import com.triplify.application.usecase.auth.dto.LogInRequest;
 import com.triplify.application.usecase.country.CountryService;
 import com.triplify.application.usecase.country.dto.*;
+import com.triplify.application.usecase.place.PlaceService;
+import com.triplify.application.usecase.place.dto.AddPlaceRequest;
+import com.triplify.application.usecase.place.dto.DeletePlaceRequest;
+import com.triplify.application.usecase.place.dto.GetPlacesRequest;
+import com.triplify.application.usecase.place.dto.UpdatePlaceRequest;
 import com.triplify.domain.filter.CountryFilter;
+import com.triplify.domain.filter.PlaceFilter;
 import com.triplify.domain.pagination.PageRequest;
 import com.triplify.ui.shared.toast.ToastService;
 import com.google.inject.Injector;
@@ -43,6 +49,10 @@ public class MainApp extends Application {
 
     private static final Logger log = LoggerFactory.getLogger(MainApp.class);
     private static Injector injectorRef;
+
+    @Inject private AuthService authService;
+    @Inject private CountryService countryService;
+    @Inject private PlaceService placeService;
 
     @Inject private FxmlLoaderHelper fxml;
     @Inject private ToastService toastService;
@@ -175,6 +185,37 @@ public class MainApp extends Application {
         URL themeUrl = getClass().getResource("/com/triplify/ui/shared/css/theme.css");
         if (themeUrl == null) throw new IllegalStateException("theme.css not found");
         scene.getStylesheets().add(themeUrl.toExternalForm());
+
+        // TODO: remove, only for testing
+        authService.login(new LogInRequest("admin@triplify.com", "password"));
+
+        var austriaPage = new PageRequest(0, 10);
+        var austriaFilter = new CountryFilter("Austria", null, false);
+        var austria = countryService.getCountries(new GetCountriesRequest(austriaPage, austriaFilter)).getValue().items().getFirst();
+
+        var vienna = placeService.addPlace(new AddPlaceRequest(austria.id(), null, "Vienna", "Capital of Austria", 48.2082, 16.3738)).getValue();
+        var linz = placeService.addPlace(new AddPlaceRequest(austria.id(), null, "Linz", "City in Austria", 4.2, 18.3738)).getValue();
+        var grazRes = placeService.addPlace(new AddPlaceRequest(austria.id(), null, "Graz", "City in Austria", 88.22, 13.38));
+        var graz = grazRes.getValue();
+
+        var viennaUpdated = placeService.updatePlace(new UpdatePlaceRequest(vienna.id(), austria.id(), null, "Vienna Updated", "Capital of Austria, updated", 48.2082, 16.3738)).getValue();
+        assert(viennaUpdated.id().equals(vienna.id()));
+
+         var placesInAustria = placeService.getPlaces(new GetPlacesRequest(new PageRequest(0, 10), new PlaceFilter(null, austria.id()))).getValue().items();
+         assert(placesInAustria.size() == 3);
+
+         placeService.deletePlace(new DeletePlaceRequest(linz.id()));
+         var placesAfterDeletion = placeService.getPlaces(new GetPlacesRequest(new PageRequest(0, 10), new PlaceFilter(null, null))).getValue().items();
+         assert(placesAfterDeletion.size() == 2);
+         assert(placesAfterDeletion.stream().noneMatch(p -> p.id().equals(linz.id())));
+
+         var grazFromDb = placeService.getPlaces(new GetPlacesRequest(new PageRequest(0, 10), new PlaceFilter("gra", null))).getValue().items().getFirst();
+         assert(grazFromDb.id().equals(graz.id()));
+
+        placeService.deletePlace(new DeletePlaceRequest(graz.id()));
+        placeService.deletePlace(new DeletePlaceRequest(vienna.id()));
+
+         log.info("Test data setup complete");
 
         stage.setTitle("Triplify");
         stage.setScene(scene);

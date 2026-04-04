@@ -2,16 +2,10 @@ package com.triplify.infrastructure.di;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
-import com.triplify.domain.repository.ImageRepository;
+import com.triplify.domain.repository.*;
 import com.triplify.domain.service.ImageStorageService;
-import com.triplify.domain.repository.CountryRepository;
 import com.triplify.domain.service.PasswordEncoder;
-import com.triplify.domain.repository.CategoryRepository;
-import com.triplify.domain.repository.UserRepository;
-import com.triplify.infrastructure.repository.CategoryRepositoryImpl;
-import com.triplify.infrastructure.repository.ImageRepositoryImpl;
-import com.triplify.infrastructure.repository.CountryRepositoryImpl;
-import com.triplify.infrastructure.repository.UserRepositoryImpl;
+import com.triplify.infrastructure.repository.*;
 import com.triplify.infrastructure.security.BCryptPasswordEncoder;
 import com.triplify.infrastructure.storage.DiscImageStorage;
 
@@ -25,6 +19,7 @@ public class InfrastructureModule extends AbstractModule {
         bind(CountryRepository.class).to(CountryRepositoryImpl.class).in(Singleton.class);
         bind(PasswordEncoder.class).to(BCryptPasswordEncoder.class).in(Singleton.class);
         bind(ImageStorageService.class).to(DiscImageStorage.class).in(Singleton.class);
+        bind(PlaceRepository.class).to(PlaceRepositoryImpl.class).in(Singleton.class);
     }
 }
 
