@@ -119,14 +119,6 @@
     -fx-smooth: true;
 }
 
-.add-route-action-group {
-    -fx-spacing: 10px;
-}
-
-.add-route-action-button {
-    -fx-pref-height: 42px;
-}
-
 .add-route-length-label {
     -fx-text-fill: #8b96a1;
     -fx-font-size: 12px;

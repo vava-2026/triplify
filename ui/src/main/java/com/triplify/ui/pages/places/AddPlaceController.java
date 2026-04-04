@@ -10,6 +10,7 @@ import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.component.countries.model.Countries;
 import com.triplify.ui.shared.component.countries.view.CountriesView;
+import com.triplify.ui.shared.component.action_buttons.view.EditorActionButtonsView;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.input_item.TextAreaItem;
 import com.triplify.ui.shared.component.upload_panel.view.ImageUploadPanelView;
@@ -65,8 +66,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     @FXML private InteractiveMap interactiveMap;
     @FXML private Label selectedCoordinatesLabel;
 
-    @FXML private Button saveButton;
-    @FXML private Button discardButton;
+    @FXML private EditorActionButtonsView actionButtonsView;
 
     @Inject private PlaceService placeService;
     @Inject private CountryService countryService;
@@ -109,8 +109,10 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         initializeCoverPreview();
         bindUploadPanelHandlers();
 
-        configureButtonIcon(saveButton, "fth-save");
-        configureButtonIcon(discardButton, "fth-trash-2");
+        configureButtonIcon(actionButtonsView.getPrimaryButton(), "fth-save");
+        configureButtonIcon(actionButtonsView.getSecondaryButton(), "fth-trash-2");
+        actionButtonsView.getPrimaryButton().setOnAction(event -> onSave());
+        actionButtonsView.getSecondaryButton().setOnAction(event -> onDiscard());
 
         installRoundedClip(uploadArea, 16);
         installRoundedClip(interactiveMap, 18);

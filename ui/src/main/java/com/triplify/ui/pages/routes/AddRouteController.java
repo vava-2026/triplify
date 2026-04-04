@@ -3,6 +3,7 @@ package com.triplify.ui.pages.routes;
 import com.google.inject.Inject;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.routing.TriplifyRouterContext;
+import com.triplify.ui.shared.component.action_buttons.view.EditorActionButtonsView;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.search.model.Search;
 import com.triplify.ui.shared.component.search.view.SearchView;
@@ -62,8 +63,7 @@ public class AddRouteController extends SimpleLifecycleAwareController {
     @FXML private Label routeLengthLabel;
 
     @FXML private Button addPlaceButton;
-    @FXML private Button saveButton;
-    @FXML private Button discardButton;
+    @FXML private EditorActionButtonsView actionButtonsView;
 
     @Inject private ToastService toast;
 
@@ -107,8 +107,10 @@ public class AddRouteController extends SimpleLifecycleAwareController {
         initializePlaceSearch();
 
         configureButtonIcon(addPlaceButton, "fth-plus");
-        configureButtonIcon(saveButton, "fth-save");
-        configureButtonIcon(discardButton, "fth-trash-2");
+        configureButtonIcon(actionButtonsView.getPrimaryButton(), "fth-save");
+        configureButtonIcon(actionButtonsView.getSecondaryButton(), "fth-trash-2");
+        actionButtonsView.getPrimaryButton().setOnAction(event -> onSave());
+        actionButtonsView.getSecondaryButton().setOnAction(event -> onDiscard());
 
         installRoundedClip(uploadArea, 16);
 

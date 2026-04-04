@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.lang.String?>
+<?import com.triplify.ui.shared.component.action_buttons.view.EditorActionButtonsView?>
 <?import com.triplify.ui.shared.component.section_header.view.SectionHeaderView?>
 <?import com.triplify.ui.shared.component.upload_panel.view.ImageUploadPanelView?>
 <?import javafx.geometry.Insets?>
@@ -69,18 +70,9 @@
                                                   uploadSubtitle="SVG, PNG, JPEG"/>
                         </VBox>
 
-                        <VBox styleClass="add-place-action-group">
-                            <Button fx:id="saveButton"
-                                    maxWidth="Infinity"
-                                    onAction="#onSave"
-                                    text="Save Place"
-                                    styleClass="app-btn,app-btn-primary,add-place-action-button"/>
-                            <Button fx:id="discardButton"
-                                    maxWidth="Infinity"
-                                    onAction="#onDiscard"
-                                    text="Discard Changes"
-                                    styleClass="app-btn,app-btn-danger-outline,add-place-action-button"/>
-                        </VBox>
+                        <EditorActionButtonsView fx:id="actionButtonsView"
+                                                 primaryText="Save Place"
+                                                 secondaryText="Discard Changes"/>
                     </VBox>
                 </FlowPane>
             </VBox>

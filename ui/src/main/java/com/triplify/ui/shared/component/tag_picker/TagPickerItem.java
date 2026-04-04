@@ -1,5 +1,9 @@
 package com.triplify.ui.shared.component.tag_picker;
 
+import com.triplify.ui.i18n.I18n;
+import com.triplify.ui.shared.util.Localization;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.InvalidationListener;
 import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
@@ -61,6 +65,8 @@ public class TagPickerItem extends VBox {
 
     private final List<String> availableTags = new ArrayList<>();
     private final LinkedHashSet<String> selectedTags = new LinkedHashSet<>();
+    private final StringProperty placeholderKey = new SimpleStringProperty();
+    private final StringProperty popupTitleKey = new SimpleStringProperty();
     private Consumer<Set<String>> onSelectionChanged;
     private String popupTitle = DEFAULT_POPUP_TITLE;
     private Window trackedWindow;
@@ -86,7 +92,32 @@ public class TagPickerItem extends VBox {
         configureFieldBehavior();
         configurePopup();
         configurePopupAnchorTracking();
+        configureLocalizationBindings();
         updateSelectedView();
+    }
+
+    private void configureLocalizationBindings() {
+        placeholderKey.addListener((obs, oldKey, newKey) -> bindPromptText(newKey));
+        popupTitleKey.addListener((obs, oldKey, newKey) -> bindPopupTitle(newKey));
+    }
+
+    private void bindPromptText(String key) {
+        inputField.promptTextProperty().unbind();
+        if (key == null || key.isBlank()) {
+            return;
+        }
+        Localization.bindText(inputField.promptTextProperty(), key);
+    }
+
+    private void bindPopupTitle(String key) {
+        popupTitleLabel.textProperty().unbind();
+        if (key == null || key.isBlank()) {
+            popupTitle = DEFAULT_POPUP_TITLE;
+            popupTitleLabel.setText(popupTitle);
+            return;
+        }
+        popupTitle = I18n.t(key);
+        Localization.bindText(popupTitleLabel.textProperty(), key);
     }
 
     private void configureShellButtons() {
@@ -457,12 +488,38 @@ public class TagPickerItem extends VBox {
     }
 
     public void setPlaceholderText(String text) {
+        inputField.promptTextProperty().unbind();
         inputField.setPromptText(text);
     }
 
     public void setPopupTitle(String text) {
+        popupTitleLabel.textProperty().unbind();
         popupTitle = text == null || text.isBlank() ? DEFAULT_POPUP_TITLE : text;
         popupTitleLabel.setText(popupTitle);
+    }
+
+    public String getPlaceholderKey() {
+        return placeholderKey.get();
+    }
+
+    public void setPlaceholderKey(String key) {
+        placeholderKey.set(key);
+    }
+
+    public StringProperty placeholderKeyProperty() {
+        return placeholderKey;
+    }
+
+    public String getPopupTitleKey() {
+        return popupTitleKey.get();
+    }
+
+    public void setPopupTitleKey(String key) {
+        popupTitleKey.set(key);
+    }
+
+    public StringProperty popupTitleKeyProperty() {
+        return popupTitleKey;
     }
 
     public void setAvailableTags(Collection<String> tags) {

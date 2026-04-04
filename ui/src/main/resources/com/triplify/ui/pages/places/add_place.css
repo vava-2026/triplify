@@ -65,15 +65,6 @@
     -fx-text-fill: -color-ink-muted;
 }
 
-.add-place-action-group {
-    -fx-spacing: 10px;
-}
-
-.add-place-action-button {
-    -fx-pref-height: 42px;
-}
-
-
 .add-place-country-hover {
     -fx-fill: rgba(47, 102, 144, 0.18);
     -fx-stroke: -color-primary;

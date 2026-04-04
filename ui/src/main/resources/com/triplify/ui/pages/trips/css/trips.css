@@ -432,14 +432,6 @@
     -fx-text-fill: #8698a8;
 }
 
-.trip-editor-action-group {
-    -fx-spacing: 10px;
-}
-
-.trip-editor-action-button {
-    -fx-pref-height: 42px;
-}
-
 .trip-editor-add-action-button {
     -fx-pref-height: 56px;
     -fx-background-radius: 14px;

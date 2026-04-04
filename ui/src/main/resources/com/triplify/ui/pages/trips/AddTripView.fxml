@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import com.triplify.ui.shared.component.action_buttons.view.EditorActionButtonsView?>
 <?import com.triplify.ui.shared.component.section_header.view.SectionHeaderView?>
 <?import com.triplify.ui.shared.component.tag_picker.TagPickerItem?>
 <?import com.triplify.ui.shared.component.upload_panel.view.ImageUploadPanelView?>
@@ -136,22 +137,15 @@
 
                             <VBox styleClass="trip-editor-form-group">
                                 <Label fx:id="tagsLabel" text="Tags" styleClass="form-label"/>
-                                <TagPickerItem fx:id="tagPickerInput"/>
+                                <TagPickerItem fx:id="tagPickerInput"
+                                               placeholderKey="trip.add.select.tag"
+                                               popupTitleKey="trip.add.tag.popupTitle"/>
                             </VBox>
                         </VBox>
 
-                        <VBox styleClass="trip-editor-action-group">
-                            <Button fx:id="saveButton"
-                                    maxWidth="Infinity"
-                                    onAction="#onSave"
-                                    text="Save Trip"
-                                    styleClass="app-btn,app-btn-primary,trip-editor-action-button"/>
-                            <Button fx:id="discardButton"
-                                    maxWidth="Infinity"
-                                    onAction="#onDiscard"
-                                    text="Discard Changes"
-                                    styleClass="app-btn,app-btn-danger-outline,trip-editor-action-button"/>
-                        </VBox>
+                        <EditorActionButtonsView fx:id="actionButtonsView"
+                                                 primaryTextKey="trip.add.action.save"
+                                                 secondaryTextKey="trip.add.action.discard"/>
                     </VBox>
                 </FlowPane>
             </VBox>

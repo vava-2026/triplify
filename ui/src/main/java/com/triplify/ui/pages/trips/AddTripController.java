@@ -12,6 +12,7 @@ import com.triplify.application.usecase.route.dto.RouteResponse;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.routing.TriplifyRouterContext;
+import com.triplify.ui.shared.component.action_buttons.view.EditorActionButtonsView;
 import com.triplify.ui.shared.component.countries.model.Countries;
 import com.triplify.ui.shared.component.countries.view.CountriesView;
 import com.triplify.ui.shared.component.date_picker.DatePickerItem;
@@ -117,8 +118,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
     @FXML private Button addCountryButton;
     @FXML private Button addRouteButton;
     @FXML private Button addPlaceButton;
-    @FXML private Button saveButton;
-    @FXML private Button discardButton;
+    @FXML private EditorActionButtonsView actionButtonsView;
 
     @Inject private ToastService toast;
     @Inject private RouteService routeService;
@@ -174,8 +174,10 @@ public class AddTripController extends SimpleLifecycleAwareController {
         configureButtonIcon(addCountryButton, "fth-plus");
         configureButtonIcon(addRouteButton, "fth-plus");
         configureButtonIcon(addPlaceButton, "fth-plus");
-        configureButtonIcon(saveButton, "fth-save");
-        configureButtonIcon(discardButton, "fth-trash-2");
+        configureButtonIcon(actionButtonsView.getPrimaryButton(), "fth-save");
+        configureButtonIcon(actionButtonsView.getSecondaryButton(), "fth-trash-2");
+        actionButtonsView.getPrimaryButton().setOnAction(event -> onSave());
+        actionButtonsView.getSecondaryButton().setOnAction(event -> onDiscard());
 
         installRoundedClip(uploadArea, 16);
         bindLocalizedText();
@@ -378,8 +380,6 @@ public class AddTripController extends SimpleLifecycleAwareController {
         Localization.bindText(addPlaceButton.textProperty(), "trip.add.action.addPlace");
         Localization.bindText(routeCreateButton.textProperty(), "trip.add.action.createRoute");
         Localization.bindText(placeCreateButton.textProperty(), "trip.add.action.createPlace");
-        Localization.bindText(saveButton.textProperty(), "trip.add.action.save");
-        Localization.bindText(discardButton.textProperty(), "trip.add.action.discard");
     }
 
     private void refreshLocalizedUi() {
@@ -1005,8 +1005,6 @@ public class AddTripController extends SimpleLifecycleAwareController {
     }
 
     private void configureTagPicker() {
-        tagPickerInput.setPlaceholderText(I18n.t("trip.add.select.tag"));
-        tagPickerInput.setPopupTitle(I18n.t("trip.add.tag.popupTitle"));
         tagPickerInput.setAvailableTags(AVAILABLE_TAGS);
         tagPickerInput.setOnSelectionChanged(tags -> {
             selectedTags.clear();

@@ -61,3 +61,11 @@
 .editor-cover-preview {
     -fx-smooth: true;
 }
+
+.editor-action-group {
+    -fx-spacing: 10px;
+}
+
+.editor-action-button {
+    -fx-pref-height: 42px;
+}
