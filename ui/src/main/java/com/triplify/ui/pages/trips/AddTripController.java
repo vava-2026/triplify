@@ -17,6 +17,7 @@ import com.triplify.ui.shared.component.countries.model.Countries;
 import com.triplify.ui.shared.component.countries.view.CountriesView;
 import com.triplify.ui.shared.component.date_picker.DatePickerItem;
 import com.triplify.ui.shared.component.input_item.InputItem;
+import com.triplify.ui.shared.component.media_card.view.EditorMediaCardView;
 import com.triplify.ui.shared.component.search.model.Search;
 import com.triplify.ui.shared.component.search.model.SearchDisplayMode;
 import com.triplify.ui.shared.component.search.model.SearchSize;
@@ -44,7 +45,6 @@ import javafx.scene.input.DragEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -107,7 +107,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
     @FXML private VBox categorySelectContainer;
     @FXML private TagPickerItem tagPickerInput;
-    @FXML private VBox routeListContainer;
+    @FXML private FlowPane routeListContainer;
     @FXML private FlowPane placesFlow;
     @FXML private VBox routePickerContainer;
     @FXML private VBox routeSearchContainer;
@@ -528,7 +528,9 @@ public class AddTripController extends SimpleLifecycleAwareController {
     private void renderRoutes() {
         routeListContainer.getChildren().clear();
         if (routeItems.isEmpty()) {
-            routeListContainer.getChildren().add(createEmptyState(I18n.t("trip.add.empty.routes")));
+            Region emptyState = createEmptyState(I18n.t("trip.add.empty.routes"));
+            emptyState.prefWidthProperty().bind(routeListContainer.widthProperty());
+            routeListContainer.getChildren().add(emptyState);
             return;
         }
 
@@ -552,55 +554,26 @@ public class AddTripController extends SimpleLifecycleAwareController {
     }
 
     private VBox buildRouteCard(RouteItem item) {
-        VBox root = new VBox();
-        root.getStyleClass().add("trip-editor-route-card");
-
-        HBox row = new HBox(12);
-        row.setAlignment(Pos.CENTER_LEFT);
-
-        ImageView preview = createImageView(item.imagePath(), 86, 58);
-        VBox textBox = new VBox(4);
-        Label title = new Label(item.title());
-        title.getStyleClass().add("trip-editor-route-title");
-        Label subtitle = new Label(item.subtitle());
-        subtitle.getStyleClass().add("trip-editor-route-subtitle");
-        textBox.getChildren().addAll(title, subtitle);
-        HBox.setHgrow(textBox, Priority.ALWAYS);
-
-        HBox actions = new HBox(6);
-        actions.setAlignment(Pos.CENTER_RIGHT);
-        Button editButton = createInlineIconButton("fth-edit-2", () ->
-                toast.info(I18n.t("trip.add.toast.route.edit.title"), formatMessage("trip.add.toast.route.edit.body", item.title())));
-        Button removeButton = createInlineIconButton("fth-trash-2", () -> {
+        EditorMediaCardView card = new EditorMediaCardView();
+        card.setPreviewImage(loadImage(item.imagePath()));
+        card.setTitle(item.title());
+        card.setSubtitle(item.subtitle());
+        card.setOnRemove(() -> {
             routeItems.remove(item);
             renderRoutes();
         });
-        actions.getChildren().addAll(editButton, removeButton);
-
-        row.getChildren().addAll(preview, textBox, actions);
-        root.getChildren().add(row);
-        return root;
+        return card;
     }
 
     private VBox buildPlaceCard(PlaceItem item) {
-        VBox card = new VBox(8);
-        card.getStyleClass().add("trip-editor-place-card");
-
-        ImageView preview = createImageView(item.imagePath(), 152, 96);
-        Button removeButton = createInlineIconButton("fth-trash-2", () -> {
+        EditorMediaCardView card = new EditorMediaCardView();
+        card.setPreviewImage(loadImage(item.imagePath()));
+        card.setTitle(item.title());
+        card.setSubtitle(item.subtitle());
+        card.setOnRemove(() -> {
             placeItems.remove(item);
             renderPlaces();
         });
-        removeButton.getStyleClass().add("trip-editor-place-remove-button");
-        StackPane previewShell = new StackPane(preview, removeButton);
-        StackPane.setAlignment(removeButton, Pos.TOP_RIGHT);
-        previewShell.getStyleClass().add("trip-editor-place-preview-shell");
-        Label title = new Label(item.title());
-        title.getStyleClass().add("trip-editor-place-title");
-        Label subtitle = new Label(item.subtitle());
-        subtitle.getStyleClass().add("trip-editor-place-subtitle");
-
-        card.getChildren().addAll(previewShell, title, subtitle);
         return card;
     }
 
@@ -613,32 +586,6 @@ public class AddTripController extends SimpleLifecycleAwareController {
         pane.getStyleClass().add("trip-editor-empty-card");
         pane.setMaxWidth(Double.MAX_VALUE);
         return pane;
-    }
-
-    private Button createInlineIconButton(String iconLiteral, Runnable action) {
-        Button button = new Button();
-        button.setFocusTraversable(false);
-        button.getStyleClass().add("trip-editor-icon-button");
-        FontIcon icon = new FontIcon(iconLiteral);
-        icon.setIconSize(14);
-        icon.getStyleClass().add("trip-editor-icon-button-glyph");
-        button.setGraphic(icon);
-        button.setOnAction(event -> action.run());
-        return button;
-    }
-
-    private ImageView createImageView(String imagePath, double width, double height) {
-        ImageView view = new ImageView(loadImage(imagePath));
-        view.setFitWidth(width);
-        view.setFitHeight(height);
-        view.setPreserveRatio(false);
-        view.getStyleClass().add("trip-editor-thumb");
-
-        Rectangle clip = new Rectangle(width, height);
-        clip.setArcWidth(16);
-        clip.setArcHeight(16);
-        view.setClip(clip);
-        return view;
     }
 
     private void showCoverImage(String imagePath, String tripName) {

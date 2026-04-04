@@ -1,6 +1,13 @@
 package com.triplify.ui.pages.routes;
 
 import com.google.inject.Inject;
+import com.triplify.application.usecase.place.PlaceService;
+import com.triplify.application.usecase.place.dto.GetPlacesRequest;
+import com.triplify.application.usecase.place.dto.PlaceResponse;
+import com.triplify.application.usecase.route.RouteService;
+import com.triplify.application.usecase.route.dto.AddPlaceToRouteRequest;
+import com.triplify.application.usecase.route.dto.AddRouteRequest;
+import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.routing.TriplifyRouterContext;
@@ -46,11 +53,14 @@ import rahulstech.jfx.routing.element.RouterArgument;
 import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.function.Consumer;
 
 public class AddRouteController extends SimpleLifecycleAwareController {
 
@@ -79,6 +89,9 @@ public class AddRouteController extends SimpleLifecycleAwareController {
     @FXML private EditorActionButtonsView actionButtonsView;
 
     @Inject private ToastService toast;
+    @Inject private RouteService routeService;
+    @Inject private PlaceService placeService;
+    @Inject private ErrorHandler errorHandler;
 
     private final List<RoutePlaceItem> availablePlaceItems = new ArrayList<>();
     private final List<RoutePlaceItem> placeItems = new ArrayList<>();
@@ -130,7 +143,7 @@ public class AddRouteController extends SimpleLifecycleAwareController {
         setPlacePickerVisible(false);
         bindLocalizedText();
 
-        populateDemoPlaces();
+        refreshAvailablePlaces();
         refreshLocalizedUi();
         I18n.bundleProperty().addListener((obs, oldBundle, newBundle) -> refreshLocalizedUi());
         renderPlaces();
@@ -172,6 +185,7 @@ public class AddRouteController extends SimpleLifecycleAwareController {
     @Override
     public void onLifecycleShow() {
         updateFullScreenMode(false);
+        refreshAvailablePlaces();
     }
 
     @Override
@@ -186,16 +200,34 @@ public class AddRouteController extends SimpleLifecycleAwareController {
 
     @FXML
     private void onSave() {
-        if (!titleInput.validateRequired()) {
-            return;
-        }
+        clearFieldErrors();
 
-        String routeTitle = titleInput.getText().trim();
-        String message = tripName == null || tripName.isBlank()
-                ? formatMessage("route.add.toast.ready", routeTitle)
-                : formatMessage("route.add.toast.addedToTrip", routeTitle, tripName);
-        toast.success(I18n.t("route.add.toast.saved.title"), message);
-        getRouter().popBackStack();
+        AddRouteRequest request = new AddRouteRequest(
+                coverImagePath == null ? null : Path.of(coverImagePath),
+                normalize(titleInput.getText()),
+                normalizeNullable(descriptionInput.getText()),
+                calculateRouteLength()
+        );
+
+        Map<String, Consumer<String>> fieldHandlers = Map.of(
+                "title", message -> titleInput.showError(message)
+        );
+
+        var result = routeService.addRoute(request);
+        result.onSuccess(route -> {
+            boolean linkedAllPlaces = linkPlacesToRoute(route.id());
+            String routeTitle = titleInput.getText().trim();
+            String message = tripName == null || tripName.isBlank()
+                    ? formatMessage("route.add.toast.ready", routeTitle)
+                    : formatMessage("route.add.toast.addedToTrip", routeTitle, tripName);
+
+            toast.success(I18n.t("route.add.toast.saved.title"), message);
+            if (!linkedAllPlaces) {
+                toast.warning(I18n.t("route.add.toast.place.link.failed"));
+            }
+            getRouter().popBackStack();
+        });
+        result.onFailure(error -> errorHandler.handle(error, fieldHandlers));
     }
 
     @FXML
@@ -263,15 +295,21 @@ public class AddRouteController extends SimpleLifecycleAwareController {
         event.consume();
     }
 
-    private void populateDemoPlaces() {
+    private void refreshAvailablePlaces() {
         availablePlaceItems.clear();
-        placeItems.clear();
-        availablePlaceItems.add(new RoutePlaceItem("place-1", "Uzhhorod Cathedral", "Uzhhorod, Ukraine", DEFAULT_IMAGE));
-        availablePlaceItems.add(new RoutePlaceItem("place-2", "Central Park", "New-York, USA", DEFAULT_IMAGE));
-        availablePlaceItems.add(new RoutePlaceItem("place-3", "Charles Bridge", "Prague, Czechia", DEFAULT_IMAGE));
+        if (placeService == null) {
+            return;
+        }
 
-        placeItems.add(availablePlaceItems.get(0));
-        placeItems.add(availablePlaceItems.get(1));
+        var result = placeService.getPlaces(new GetPlacesRequest(null, null));
+        if (result.isFailure()) {
+            toast.warning(I18n.t("route.add.toast.places.loadFailed"));
+            return;
+        }
+
+        availablePlaceItems.addAll(result.getValue().items().stream()
+                .map(this::toRoutePlaceItem)
+                .toList());
     }
 
     private void renderPlaces() {
@@ -312,14 +350,12 @@ public class AddRouteController extends SimpleLifecycleAwareController {
 
         HBox actions = new HBox(10);
         actions.setAlignment(Pos.CENTER_RIGHT);
-        Button editButton = createInlineIconButton("fth-edit-2", () ->
-                toast.info(I18n.t("route.add.toast.place.edit.title"), formatMessage("route.add.toast.place.edit.body", item.title())));
         Button removeButton = createInlineIconButton("fth-trash-2", () -> {
             placeItems.remove(item);
             renderPlaces();
         });
         Region handle = createHandle(item, row);
-        actions.getChildren().addAll(editButton, removeButton, handle);
+        actions.getChildren().addAll(removeButton, handle);
 
         row.setOnMouseDragEntered(event -> reorderPlaces(item));
         row.setOnMouseReleased(event -> finishDragging());
@@ -678,8 +714,27 @@ public class AddRouteController extends SimpleLifecycleAwareController {
         renderPlaces();
     }
 
+    private void clearFieldErrors() {
+        titleInput.clearError();
+    }
+
+    private boolean linkPlacesToRoute(String routeId) {
+        for (RoutePlaceItem item : placeItems) {
+            var linkResult = routeService.addPlaceToRoute(new AddPlaceToRouteRequest(routeId, item.id()));
+            if (linkResult.isFailure()) {
+                errorHandler.handle(linkResult.getError());
+                return false;
+            }
+        }
+        return true;
+    }
+
     private void updateRouteLengthLabel() {
         routeLengthLabel.setText(String.format(Locale.US, I18n.t("route.add.length"), placeItems.size() * 1.25));
+    }
+
+    private double calculateRouteLength() {
+        return placeItems.size() * 1.25;
     }
 
     private String formatMessage(String key, Object... args) {
@@ -696,6 +751,27 @@ public class AddRouteController extends SimpleLifecycleAwareController {
 
     private boolean isVectorImage(File file) {
         return file.getName().toLowerCase(Locale.ROOT).endsWith(".svg");
+    }
+
+    private String normalize(String value) {
+        return value == null ? null : value.trim();
+    }
+
+    private String normalizeNullable(String value) {
+        String normalized = normalize(value);
+        return normalized == null || normalized.isBlank() ? null : normalized;
+    }
+
+    private RoutePlaceItem toRoutePlaceItem(PlaceResponse response) {
+        String subtitle = response.country() != null && response.country().name() != null && !response.country().name().isBlank()
+                ? response.country().name()
+                : response.description();
+        return new RoutePlaceItem(
+                response.id(),
+                response.title(),
+                subtitle,
+                response.coverImage() == null || response.coverImage().url() == null ? DEFAULT_IMAGE : response.coverImage().url().toString()
+        );
     }
 
     private InputItem createInput(String placeholderKey) {

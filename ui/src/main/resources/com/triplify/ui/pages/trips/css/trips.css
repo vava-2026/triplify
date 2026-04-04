@@ -450,52 +450,14 @@
     -fx-spacing: 12px;
 }
 
-.trip-editor-route-card {
-    -fx-background-color: #f8fbfe;
-    -fx-background-radius: 14px;
-    -fx-padding: 10px;
-    -fx-border-color: rgba(47, 102, 144, 0.08);
-    -fx-border-radius: 14px;
-}
-
-.trip-editor-route-title {
-    -fx-font-size: 13px;
-    -fx-font-weight: bold;
-    -fx-text-fill: -color-ink;
-}
-
-.trip-editor-route-subtitle {
-    -fx-font-size: 12px;
-    -fx-text-fill: #8698a8;
+.trip-editor-routes-flow {
+    -fx-hgap: 12px;
+    -fx-vgap: 12px;
 }
 
 .trip-editor-places-flow {
     -fx-hgap: 12px;
     -fx-vgap: 12px;
-}
-
-.trip-editor-place-card {
-    -fx-pref-width: 152px;
-    -fx-background-color: #f8fbfe;
-    -fx-background-radius: 14px;
-    -fx-padding: 10px;
-    -fx-border-color: rgba(47, 102, 144, 0.08);
-    -fx-border-radius: 14px;
-}
-
-.trip-editor-place-preview-shell {
-    -fx-padding: 0;
-}
-
-.trip-editor-place-title {
-    -fx-font-size: 13px;
-    -fx-font-weight: bold;
-    -fx-text-fill: -color-ink;
-}
-
-.trip-editor-place-subtitle {
-    -fx-font-size: 11px;
-    -fx-text-fill: #8698a8;
 }
 
 .trip-editor-empty-card {
@@ -513,36 +475,6 @@
     -fx-font-size: 12px;
 }
 
-.trip-editor-icon-button {
-    -fx-min-width: 30px;
-    -fx-pref-width: 30px;
-    -fx-max-width: 30px;
-    -fx-min-height: 30px;
-    -fx-pref-height: 30px;
-    -fx-max-height: 30px;
-    -fx-background-color: white;
-    -fx-background-radius: 10px;
-    -fx-border-color: rgba(47, 102, 144, 0.08);
-    -fx-border-radius: 10px;
-    -fx-cursor: hand;
-    -fx-padding: 0;
-}
-
-.trip-editor-icon-button-glyph {
-    -fx-icon-color: -color-primary-dark;
-}
-
-.trip-editor-place-remove-button {
-    -fx-min-width: 26px;
-    -fx-pref-width: 26px;
-    -fx-max-width: 26px;
-    -fx-min-height: 26px;
-    -fx-pref-height: 26px;
-    -fx-max-height: 26px;
-    -fx-translate-x: -6px;
-    -fx-translate-y: 6px;
-    -fx-effect: dropshadow(gaussian, rgba(12, 25, 38, 0.10), 10, 0, 0, 2);
-}
 
 .trip-editor-picker-panel {
     -fx-spacing: 0;

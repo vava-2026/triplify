@@ -68,7 +68,7 @@
                                                iconLiteral="fth-map"
                                                title="Planned Routes"/>
 
-                            <VBox fx:id="routeListContainer" styleClass="trip-editor-list"/>
+                            <FlowPane fx:id="routeListContainer" styleClass="trip-editor-routes-flow"/>
 
                             <Button fx:id="addRouteButton"
                                     maxWidth="Infinity"
