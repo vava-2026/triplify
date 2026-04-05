@@ -12,4 +12,6 @@ public interface UserSessionContext {
     void clear();
     Optional<SessionUser> getCurrent();
     boolean isLoggedIn();
+    Optional<SessionUser> load();
+    void save();
 }

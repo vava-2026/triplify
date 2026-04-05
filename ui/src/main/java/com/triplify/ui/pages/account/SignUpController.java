@@ -150,12 +150,14 @@ public class SignUpController extends SimpleLifecycleAwareController {
     public void onLifecycleHide() {
         TriplifyRouterContext context = (TriplifyRouterContext) getRouter().getContext();
         context.setFullScreenContent(false);
+        clearForm();
     }
 
     @Override
     public void onLifecycleDestroy() {
         TriplifyRouterContext context = (TriplifyRouterContext) getRouter().getContext();
         context.setFullScreenContent(false);
+        clearForm();
     }
 
     private void onSignUp() {
@@ -194,6 +196,28 @@ public class SignUpController extends SimpleLifecycleAwareController {
         usernameInput.clearError();
         emailInput.clearError();
         passwordInput.clearError();
+        clearTermsError();
+    }
+
+    private void clearForm() {
+        if (usernameInput != null) {
+            usernameInput.setText("");
+            usernameInput.clearError();
+        }
+        if (emailInput != null) {
+            emailInput.setText("");
+            emailInput.clearError();
+        }
+        if (passwordInput != null) {
+            passwordInput.reset();
+        }
+        if (termsCheckbox != null) {
+            termsCheckbox.setSelected(false);
+        }
+        selectedRole = RoleEnum.USER;
+        if (regularUserButton != null && configManagerButton != null) {
+            setActiveRoleButton(regularUserButton);
+        }
         clearTermsError();
     }
 

@@ -10,6 +10,7 @@ import com.triplify.application.usecase.place.dto.AddPlaceRequest;
 import com.triplify.application.usecase.place.dto.DeletePlaceRequest;
 import com.triplify.application.usecase.place.dto.GetPlacesRequest;
 import com.triplify.application.usecase.place.dto.UpdatePlaceRequest;
+import com.triplify.application.usecase.session.UserSessionContext;
 import com.triplify.domain.filter.CountryFilter;
 import com.triplify.domain.filter.PlaceFilter;
 import com.triplify.domain.pagination.PageRequest;
@@ -56,7 +57,9 @@ public class MainApp extends Application {
 
     @Inject private FxmlLoaderHelper fxml;
     @Inject private ToastService toastService;
+    @Inject private UserSessionContext userSessionContext;
     private Router router;
+    private MenuItem startupMenuItem;
 
     public static void launch(Injector injector, String[] args) {
         injectorRef = injector;
@@ -71,6 +74,7 @@ public class MainApp extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         log.info("App launched");
+        startupMenuItem = userSessionContext.load().isPresent() ? MenuItem.MAP : null;
 
         // Sidebar island
         FxmlLoadResult<Node, SidebarIslandView> islandResult = fxml.load("/com/triplify/ui/shared/menu/view/SidebarIsland.fxml");
@@ -130,11 +134,12 @@ public class MainApp extends Application {
         contentArea.visibleProperty().bind(isMap.not());
         contentArea.managedProperty().bind(isMap.not());
 
-        BooleanBinding showMenu = routerContext.fullScreenContentProperty().not();
+        BooleanBinding showMenu = routerContext.fullScreenContentProperty().not().or(isMap);
         menu.visibleProperty().bind(showMenu);
         menu.managedProperty().bind(showMenu);
-        islandPane.visibleProperty().bind(showMenu);
-        islandPane.managedProperty().bind(showMenu);
+        BooleanBinding showIsland = showMenu.or(isMap);
+        islandPane.visibleProperty().bind(showIsland);
+        islandPane.managedProperty().bind(showIsland);
         showMenu.addListener((obs, wasVisible, isVisible) -> {
             if (isVisible) {
                 menuView.refreshAccountSection();
@@ -152,6 +157,10 @@ public class MainApp extends Application {
         contentArea.routerProperty().addListener((obs, oldRouter, newRouter) -> {
             router = newRouter;
             log.info("Router initialized: {}", newRouter != null ? "ready" : "null");
+
+            if (router != null && startupMenuItem != null) {
+                routerContext.setSelectedMenuItem(startupMenuItem);
+            }
         });
 
         menuView.getViewModel().selectedItemProperty().addListener((obs, oldItem, newItem) -> {
@@ -161,10 +170,14 @@ public class MainApp extends Application {
             }
         });
 
+        if (router != null && startupMenuItem != null) {
+            menuView.getViewModel().setSelectedItem(startupMenuItem);
+        }
+
         HBox topBar = new HBox(islandPane, header);
         topBar.getStyleClass().add("app-top-bar");
-        topBar.visibleProperty().bind(showMenu);
-        topBar.managedProperty().bind(showMenu);
+        topBar.visibleProperty().bind(showIsland);
+        topBar.managedProperty().bind(showIsland);
 
         HBox bottomRow = new HBox(menu, contentArea);
         bottomRow.getStyleClass().add("app-bottom-row");
@@ -186,37 +199,6 @@ public class MainApp extends Application {
         if (themeUrl == null) throw new IllegalStateException("theme.css not found");
         scene.getStylesheets().add(themeUrl.toExternalForm());
 
-        // TODO: remove, only for testing
-        authService.login(new LogInRequest("admin@triplify.com", "password"));
-
-        var austriaPage = new PageRequest(0, 10);
-        var austriaFilter = new CountryFilter("Austria", null, false);
-        var austria = countryService.getCountries(new GetCountriesRequest(austriaPage, austriaFilter)).getValue().items().getFirst();
-
-        var vienna = placeService.addPlace(new AddPlaceRequest(austria.id(), null, "Vienna", "Capital of Austria", 48.2082, 16.3738)).getValue();
-        var linz = placeService.addPlace(new AddPlaceRequest(austria.id(), null, "Linz", "City in Austria", 4.2, 18.3738)).getValue();
-        var grazRes = placeService.addPlace(new AddPlaceRequest(austria.id(), null, "Graz", "City in Austria", 88.22, 13.38));
-        var graz = grazRes.getValue();
-
-        var viennaUpdated = placeService.updatePlace(new UpdatePlaceRequest(vienna.id(), austria.id(), null, "Vienna Updated", "Capital of Austria, updated", 48.2082, 16.3738)).getValue();
-        assert(viennaUpdated.id().equals(vienna.id()));
-
-         var placesInAustria = placeService.getPlaces(new GetPlacesRequest(new PageRequest(0, 10), new PlaceFilter(null, austria.id()))).getValue().items();
-         assert(placesInAustria.size() == 3);
-
-         placeService.deletePlace(new DeletePlaceRequest(linz.id()));
-         var placesAfterDeletion = placeService.getPlaces(new GetPlacesRequest(new PageRequest(0, 10), new PlaceFilter(null, null))).getValue().items();
-         assert(placesAfterDeletion.size() == 2);
-         assert(placesAfterDeletion.stream().noneMatch(p -> p.id().equals(linz.id())));
-
-         var grazFromDb = placeService.getPlaces(new GetPlacesRequest(new PageRequest(0, 10), new PlaceFilter("gra", null))).getValue().items().getFirst();
-         assert(grazFromDb.id().equals(graz.id()));
-
-        placeService.deletePlace(new DeletePlaceRequest(graz.id()));
-        placeService.deletePlace(new DeletePlaceRequest(vienna.id()));
-
-         log.info("Test data setup complete");
-
         stage.setTitle("Triplify");
         stage.setScene(scene);
         stage.show();
@@ -228,6 +210,7 @@ public class MainApp extends Application {
 
     @Override
     public void stop() throws Exception {
+        userSessionContext.save();
         if (router != null) router.dispose();
         super.stop();
     }
