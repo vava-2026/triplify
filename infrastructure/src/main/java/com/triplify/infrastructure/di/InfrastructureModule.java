@@ -24,6 +24,8 @@ public class InfrastructureModule extends AbstractModule {
         bind(RouteRepository.class).to(RouteRepositoryImpl.class).in(Singleton.class);
         bind(RoutePlaceRepository.class).to(RoutePlaceRepositoryImpl.class).in(Singleton.class);
         bind(TripRepository.class).to(TripRepositoryImpl.class).in(Singleton.class);
+        bind(TripRouteRepository.class).to(TripRouteRepositoryImpl.class).in(Singleton.class);
+        bind(TripPlaceRepository.class).to(TripPlaceRepositoryImpl.class).in(Singleton.class);
     }
 }
 

@@ -5,6 +5,10 @@ import com.triplify.application.usecase.category.CategoryService;
 import com.triplify.application.usecase.category.dto.CategoryResponse;
 import com.triplify.application.usecase.country.CountryService;
 import com.triplify.application.response.TripStatus;
+import com.triplify.application.usecase.tag.TagService;
+import com.triplify.application.usecase.tag.dto.CreateTagRequest;
+import com.triplify.application.usecase.tag.dto.GetTagsRequest;
+import com.triplify.application.usecase.tag.dto.TagResponse;
 import com.triplify.application.usecase.trip.TripService;
 import com.triplify.application.usecase.trip.dto.AddTripRequest;
 import com.triplify.application.usecase.trip.dto.GetTripByIdRequest;
@@ -16,7 +20,21 @@ import com.triplify.application.usecase.place.dto.PlaceResponse;
 import com.triplify.application.usecase.route.RouteService;
 import com.triplify.application.usecase.route.dto.GetRoutesRequest;
 import com.triplify.application.usecase.route.dto.RouteResponse;
+import com.triplify.application.usecase.tripplace.TripPlaceService;
+import com.triplify.application.usecase.tripplace.dto.AddTripPlaceRequest;
+import com.triplify.application.usecase.tripplace.dto.DeleteTripPlaceRequest;
+import com.triplify.application.usecase.tripplace.dto.GetTripPlacesRequest;
+import com.triplify.application.usecase.tripplace.dto.TripPlaceResponse;
+import com.triplify.application.usecase.triproute.TripRouteService;
+import com.triplify.application.usecase.triproute.dto.AddTripRouteRequest;
+import com.triplify.application.usecase.triproute.dto.DeleteTripRouteRequest;
+import com.triplify.application.usecase.triproute.dto.GetTripRoutesRequest;
+import com.triplify.application.usecase.triproute.dto.TripRouteResponse;
 import com.triplify.domain.model.enums.StatusEnum;
+import com.triplify.domain.model.enums.TripPlaceSourceType;
+import com.triplify.domain.pagination.Page;
+import com.triplify.domain.pagination.PageRequest;
+import com.triplify.domain.result.Result;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.routing.TriplifyRouterContext;
@@ -40,6 +58,7 @@ import com.triplify.ui.shared.component.upload_panel.view.ImageUploadPanelView;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.toast.ToastService;
 import com.triplify.ui.shared.util.Localization;
+import com.triplify.application.model.ColorTheme;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -86,9 +105,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
     private static final List<String> AVAILABLE_CATEGORIES = List.of(
             "Culture", "Tourism", "Nature", "Relax", "Memorial", "Food"
     );
-    private static final List<String> AVAILABLE_TAGS = List.of(
-            "City", "Adventure", "Food", "Study", "Hike", "Relax", "Family", "Photography"
-    );
+    private static final int DEFAULT_PAGE_SIZE = 100;
     private static final String DEFAULT_IMAGE = "/com/triplify/ui/pages/trips/images/one.png";
 
     @FXML private VBox contentContainer;
@@ -134,13 +151,17 @@ public class AddTripController extends SimpleLifecycleAwareController {
     @Inject private ToastService toast;
     @Inject private TripService tripService;
     @Inject private CategoryService categoryService;
+    @Inject private TagService tagService;
     @Inject private RouteService routeService;
     @Inject private PlaceService placeService;
+    @Inject private TripRouteService tripRouteService;
+    @Inject private TripPlaceService tripPlaceService;
     @Inject private CountryService countryService;
 
     private final Set<String> selectedCountryIds = new LinkedHashSet<>();
     private final Map<String, String> selectedCountryLabelsById = new java.util.LinkedHashMap<>();
-    private final Set<String> selectedTags = new LinkedHashSet<>();
+    private final Set<String> selectedTagLabels = new LinkedHashSet<>();
+    private final Set<String> selectedTagIds = new LinkedHashSet<>();
     private final List<RouteItem> routeItems = new ArrayList<>();
     private final List<PlaceItem> placeItems = new ArrayList<>();
 
@@ -165,6 +186,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
     private List<RouteItem> availableRouteCandidates = List.of();
     private List<PlaceItem> availablePlaceCandidates = List.of();
     private List<CategoryResponse> availableCategories = List.of();
+    private List<TagOption> availableTags = List.of();
     private boolean coverImageDirty;
 
     @FXML
@@ -199,6 +221,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
         configureTagPicker();
         initializeCountrySelector();
         loadAvailableCategories();
+        loadAvailableTags();
         refreshLocalizedUi();
         initializeActionPickers();
         I18n.bundleProperty().addListener((obs, oldBundle, newBundle) -> refreshLocalizedUi());
@@ -350,6 +373,12 @@ public class AddTripController extends SimpleLifecycleAwareController {
         StatusEnum status = mapTripStatus(tripStatus);
         Instant startedAt = toInstant(startDateInput.getValue());
         Instant endedAt = toInstant(endDateInput.getValue());
+        Result<Set<String>> tagIdsResult = ensureSelectedTagsPersisted();
+        if (tagIdsResult.isFailure()) {
+            toast.error(I18n.t("trip.add.toast.title.saved"), tagIdsResult.getError().message());
+            return;
+        }
+
         Set<Path> images = coverImagePath == null || coverImagePath.isBlank()
                 ? Set.of()
                 : Set.of(Path.of(coverImagePath));
@@ -362,7 +391,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
                         status,
                         startedAt,
                         endedAt,
-                        new LinkedHashSet<>(selectedTags),
+                        tagIdsResult.getValue(),
                         images,
                         new LinkedHashSet<>(selectedCountryIds)
                 ))
@@ -374,12 +403,18 @@ public class AddTripController extends SimpleLifecycleAwareController {
                         status,
                         startedAt,
                         endedAt,
-                        new LinkedHashSet<>(selectedTags),
+                        tagIdsResult.getValue(),
                         coverImageDirty ? images : null,
                         new LinkedHashSet<>(selectedCountryIds)
                 ));
 
         result.onSuccess(savedTrip -> {
+            var relationsResult = syncTripRelations(savedTrip.id());
+            if (relationsResult.isFailure()) {
+                toast.error(I18n.t("trip.add.toast.title.saved"), relationsResult.getError().message());
+                return;
+            }
+
             String message = createMode
                     ? formatMessage("trip.add.toast.trip.ready", tripTitle)
                     : formatMessage("trip.add.toast.trip.updated", tripTitle);
@@ -468,8 +503,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
         tagPickerInput.setPlaceholderText(I18n.t("trip.add.select.tag"));
         tagPickerInput.setPopupTitle(I18n.t("trip.add.tag.popupTitle"));
-        tagPickerInput.setAvailableTags(AVAILABLE_TAGS);
-        tagPickerInput.setSelectedTags(selectedTags);
+        syncTagPicker();
 
         if (routePickerContainer.isVisible()) {
             refreshRoutePicker();
@@ -496,6 +530,38 @@ public class AddTripController extends SimpleLifecycleAwareController {
         }
 
         availableCategories = result.getValue();
+    }
+
+    private void loadAvailableTags() {
+        if (tagService == null) {
+            availableTags = List.of();
+            return;
+        }
+
+        List<TagOption> items = new ArrayList<>();
+        PageRequest pageRequest = new PageRequest(0, DEFAULT_PAGE_SIZE);
+
+        while (true) {
+            var result = tagService.getTags(new GetTagsRequest(pageRequest, null));
+            if (result.isFailure()) {
+                log.warn("Failed to load tags for trip editor", result.getError());
+                availableTags = List.of();
+                return;
+            }
+
+            Page<TagResponse> page = result.getValue();
+            page.items().stream()
+                    .map(tag -> new TagOption(tag.id(), safeText(tag.name())))
+                    .filter(tag -> tag.id() != null && !tag.id().isBlank() && !tag.label().isBlank())
+                    .forEach(items::add);
+
+            if (!page.hasNext()) {
+                break;
+            }
+            pageRequest = pageRequest.next();
+        }
+
+        availableTags = items;
     }
 
     private List<Entry<String>> createCategoryEntries() {
@@ -538,8 +604,17 @@ public class AddTripController extends SimpleLifecycleAwareController {
         }
         renderCountryChips();
 
-        selectedTags.clear();
-        parseCsv(tripTagsCsv).forEach(selectedTags::add);
+        selectedTagLabels.clear();
+        selectedTagIds.clear();
+        parseCsv(tripTagsCsv).stream()
+                .filter(tag -> tag != null && !tag.isBlank())
+                .forEach(tag -> {
+                    selectedTagLabels.add(tag);
+                    String tagId = findTagIdByLabel(tag);
+                    if (tagId != null && !tagId.isBlank()) {
+                        selectedTagIds.add(tagId);
+                    }
+                });
         syncTagPicker();
 
         categorySelectModel.setSelectedItem(findEntry(categorySelectModel, tripCategory));
@@ -900,14 +975,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
         if (routeService == null) {
             return List.of();
         }
-        var result = routeService.getRoutes(new GetRoutesRequest(null, null));
-        if (result.isFailure()) {
-            log.warn("Failed to load routes for trip picker", result.getError());
-            toast.warning(I18n.t("trip.add.toast.routes.loadFailed"));
-            return List.of();
-        }
-
-        return result.getValue().items().stream()
+        return loadAllRoutes().stream()
                 .map(this::toRouteItem)
                 .filter(route -> route.id() != null && !containsRoute(route.id()))
                 .toList();
@@ -917,17 +985,52 @@ public class AddTripController extends SimpleLifecycleAwareController {
         if (placeService == null) {
             return List.of();
         }
-        var result = placeService.getPlaces(new GetPlacesRequest(null, null));
-        if (result.isFailure()) {
-            log.warn("Failed to load places for trip picker", result.getError());
-            toast.warning(I18n.t("trip.add.toast.places.loadFailed"));
-            return List.of();
-        }
-
-        return result.getValue().items().stream()
+        return loadAllPlaces().stream()
                 .map(this::toPlaceItem)
                 .filter(place -> place.id() != null && !containsPlace(place.id()))
                 .toList();
+    }
+
+    private List<RouteResponse> loadAllRoutes() {
+        List<RouteResponse> routes = new ArrayList<>();
+        PageRequest pageRequest = new PageRequest(0, DEFAULT_PAGE_SIZE);
+
+        while (true) {
+            var result = routeService.getRoutes(new GetRoutesRequest(pageRequest, null));
+            if (result.isFailure()) {
+                log.warn("Failed to load routes for trip picker", result.getError());
+                toast.warning(I18n.t("trip.add.toast.routes.loadFailed"));
+                return List.of();
+            }
+
+            Page<RouteResponse> page = result.getValue();
+            routes.addAll(page.items());
+            if (!page.hasNext()) {
+                return routes;
+            }
+            pageRequest = pageRequest.next();
+        }
+    }
+
+    private List<PlaceResponse> loadAllPlaces() {
+        List<PlaceResponse> places = new ArrayList<>();
+        PageRequest pageRequest = new PageRequest(0, DEFAULT_PAGE_SIZE);
+
+        while (true) {
+            var result = placeService.getPlaces(new GetPlacesRequest(pageRequest, null));
+            if (result.isFailure()) {
+                log.warn("Failed to load places for trip picker", result.getError());
+                toast.warning(I18n.t("trip.add.toast.places.loadFailed"));
+                return List.of();
+            }
+
+            Page<PlaceResponse> page = result.getValue();
+            places.addAll(page.items());
+            if (!page.hasNext()) {
+                return places;
+            }
+            pageRequest = pageRequest.next();
+        }
     }
 
     private void addExistingRoute(RouteItem route) {
@@ -1026,16 +1129,74 @@ public class AddTripController extends SimpleLifecycleAwareController {
     }
 
     private void configureTagPicker() {
-        tagPickerInput.setAvailableTags(AVAILABLE_TAGS);
+        tagPickerInput.setAllowCustomTags(true);
+        tagPickerInput.setAvailableTags(availableTagLabels());
         tagPickerInput.setOnSelectionChanged(tags -> {
-            selectedTags.clear();
-            selectedTags.addAll(tags);
+            selectedTagLabels.clear();
+            selectedTagLabels.addAll(tags);
+            selectedTagIds.clear();
+            tags.stream()
+                    .map(this::findTagIdByLabel)
+                    .filter(tagId -> tagId != null && !tagId.isBlank())
+                    .forEach(selectedTagIds::add);
         });
     }
 
     private void syncTagPicker() {
-        tagPickerInput.setAvailableTags(AVAILABLE_TAGS);
-        tagPickerInput.setSelectedTags(selectedTags);
+        tagPickerInput.setAvailableTags(availableTagLabels());
+        tagPickerInput.setSelectedTags(selectedTagLabels());
+    }
+
+    private List<String> availableTagLabels() {
+        return availableTags.stream()
+                .map(TagOption::label)
+                .filter(label -> label != null && !label.isBlank())
+                .toList();
+    }
+
+    private List<String> selectedTagLabels() {
+        if (!selectedTagLabels.isEmpty()) {
+            return selectedTagLabels.stream().toList();
+        }
+        return selectedTagIds.stream()
+                .map(this::findTagLabelById)
+                .filter(label -> label != null && !label.isBlank())
+                .toList();
+    }
+
+    private String findTagIdByLabel(String label) {
+        if (label == null || label.isBlank()) {
+            return null;
+        }
+        return availableTags.stream()
+                .filter(tag -> label.equalsIgnoreCase(tag.label()))
+                .map(TagOption::id)
+                .findFirst()
+                .orElse(null);
+    }
+
+    private String findTagLabelById(String id) {
+        if (id == null || id.isBlank()) {
+            return null;
+        }
+        return availableTags.stream()
+                .filter(tag -> id.equals(tag.id()))
+                .map(TagOption::label)
+                .findFirst()
+                .orElse(null);
+    }
+
+    private ColorTheme pickTagColor(String label) {
+        ColorTheme[] palette = {
+                ColorTheme.BLUE,
+                ColorTheme.GREEN,
+                ColorTheme.ORANGE,
+                ColorTheme.PURPLE,
+                ColorTheme.YELLOW,
+                ColorTheme.PINK,
+                ColorTheme.GRAY
+        };
+        return palette[Math.floorMod(label == null ? 0 : label.hashCode(), palette.length)];
     }
 
     private void initializeCoverPreview() {
@@ -1291,12 +1452,18 @@ public class AddTripController extends SimpleLifecycleAwareController {
         }
         renderCountryChips();
 
-        selectedTags.clear();
+        selectedTagLabels.clear();
+        selectedTagIds.clear();
         if (trip.tags() != null) {
             trip.tags().stream()
-                    .map(tag -> tag.name() == null ? null : tag.name().trim())
-                    .filter(tag -> tag != null && !tag.isBlank())
-                    .forEach(selectedTags::add);
+                    .forEach(tag -> {
+                        if (tag.name() != null && !tag.name().isBlank()) {
+                            selectedTagLabels.add(tag.name().trim());
+                        }
+                        if (tag.id() != null && !tag.id().isBlank()) {
+                            selectedTagIds.add(tag.id());
+                        }
+                    });
         }
         syncTagPicker();
 
@@ -1310,6 +1477,205 @@ public class AddTripController extends SimpleLifecycleAwareController {
         }
         coverImageDirty = false;
         showCoverImage(coverPath, trip.title());
+
+        loadTripRoutes(trip.id());
+        loadTripPlaces(trip.id());
+    }
+
+    private Result<Void> syncTripRelations(String targetTripId) {
+        Result<Void> routeResult = replaceTripRoutes(targetTripId);
+        if (routeResult.isFailure()) {
+            return routeResult;
+        }
+        return replaceTripPlaces(targetTripId);
+    }
+
+    private Result<Set<String>> ensureSelectedTagsPersisted() {
+        LinkedHashSet<String> resolvedIds = new LinkedHashSet<>();
+
+        for (String label : selectedTagLabels()) {
+            if (label == null || label.isBlank()) {
+                continue;
+            }
+
+            String existingId = findTagIdByLabel(label);
+            if (existingId != null && !existingId.isBlank()) {
+                resolvedIds.add(existingId);
+                continue;
+            }
+
+            if (tagService == null) {
+                return Result.fail(new com.triplify.application.error.ApplicationError.Unexpected(
+                        "Tag service is unavailable"
+                ));
+            }
+
+            var createResult = tagService.createTag(new CreateTagRequest(label.trim(), pickTagColor(label)));
+            if (createResult.isFailure()) {
+                return Result.fail(createResult.getError());
+            }
+
+            TagResponse created = createResult.getValue();
+            availableTags = new ArrayList<>(availableTags);
+            availableTags.add(new TagOption(created.id(), created.name()));
+            resolvedIds.add(created.id());
+        }
+
+        selectedTagIds.clear();
+        selectedTagIds.addAll(resolvedIds);
+        syncTagPicker();
+        return Result.ok(new LinkedHashSet<>(resolvedIds));
+    }
+
+    private Result<Void> replaceTripRoutes(String targetTripId) {
+        if (tripRouteService == null) {
+            return Result.ok();
+        }
+
+        Result<List<TripRouteResponse>> existingResult = loadAllTripRoutes(targetTripId);
+        if (existingResult.isFailure()) {
+            return Result.fail(existingResult.getError());
+        }
+
+        for (TripRouteResponse tripRoute : existingResult.getValue()) {
+            var deleteResult = tripRouteService.deleteTripRoute(new DeleteTripRouteRequest(tripRoute.id()));
+            if (deleteResult.isFailure()) {
+                return Result.fail(deleteResult.getError());
+            }
+        }
+
+        for (int i = 0; i < routeItems.size(); i++) {
+            RouteItem item = routeItems.get(i);
+            var addResult = tripRouteService.addTripRoute(new AddTripRouteRequest(targetTripId, item.id(), i));
+            if (addResult.isFailure()) {
+                return Result.fail(addResult.getError());
+            }
+        }
+
+        return Result.ok();
+    }
+
+    private Result<Void> replaceTripPlaces(String targetTripId) {
+        if (tripPlaceService == null) {
+            return Result.ok();
+        }
+
+        Result<List<TripPlaceResponse>> existingResult = loadAllTripPlaces(targetTripId);
+        if (existingResult.isFailure()) {
+            return Result.fail(existingResult.getError());
+        }
+
+        for (TripPlaceResponse tripPlace : existingResult.getValue()) {
+            var deleteResult = tripPlaceService.deleteTripPlace(new DeleteTripPlaceRequest(tripPlace.id()));
+            if (deleteResult.isFailure()) {
+                return Result.fail(deleteResult.getError());
+            }
+        }
+
+        for (PlaceItem item : placeItems) {
+            var addResult = tripPlaceService.addTripPlace(new AddTripPlaceRequest(
+                    targetTripId,
+                    item.id(),
+                    null,
+                    TripPlaceSourceType.MANUAL,
+                    null,
+                    null
+            ));
+            if (addResult.isFailure()) {
+                return Result.fail(addResult.getError());
+            }
+        }
+
+        return Result.ok();
+    }
+
+    private void loadTripRoutes(String targetTripId) {
+        routeItems.clear();
+        Result<List<TripRouteResponse>> result = loadAllTripRoutes(targetTripId);
+        if (result.isFailure()) {
+            log.warn("Failed to load trip routes for trip '{}'", targetTripId, result.getError());
+            toast.warning(I18n.t("trip.add.toast.routes.loadFailed"));
+            renderRoutes();
+            return;
+        }
+
+        result.getValue().stream()
+                .map(TripRouteResponse::route)
+                .filter(route -> route != null)
+                .map(this::toRouteItem)
+                .forEach(routeItems::add);
+        renderRoutes();
+    }
+
+    private void loadTripPlaces(String targetTripId) {
+        placeItems.clear();
+        Result<List<TripPlaceResponse>> result = loadAllTripPlaces(targetTripId);
+        if (result.isFailure()) {
+            log.warn("Failed to load trip places for trip '{}'", targetTripId, result.getError());
+            toast.warning(I18n.t("trip.add.toast.places.loadFailed"));
+            renderPlaces();
+            return;
+        }
+
+        result.getValue().stream()
+                .map(TripPlaceResponse::place)
+                .filter(place -> place != null)
+                .map(this::toPlaceItem)
+                .forEach(placeItems::add);
+        renderPlaces();
+    }
+
+    private Result<List<TripRouteResponse>> loadAllTripRoutes(String targetTripId) {
+        if (tripRouteService == null) {
+            return Result.ok(List.of());
+        }
+
+        List<TripRouteResponse> items = new ArrayList<>();
+        PageRequest pageRequest = new PageRequest(0, DEFAULT_PAGE_SIZE);
+
+        while (true) {
+            var result = tripRouteService.getTripRoutes(new GetTripRoutesRequest(
+                    pageRequest,
+                    new GetTripRoutesRequest.Filter(targetTripId, null)
+            ));
+            if (result.isFailure()) {
+                return Result.fail(result.getError());
+            }
+
+            Page<TripRouteResponse> page = result.getValue();
+            items.addAll(page.items());
+            if (!page.hasNext()) {
+                return Result.ok(items);
+            }
+            pageRequest = pageRequest.next();
+        }
+    }
+
+    private Result<List<TripPlaceResponse>> loadAllTripPlaces(String targetTripId) {
+        if (tripPlaceService == null) {
+            return Result.ok(List.of());
+        }
+
+        List<TripPlaceResponse> items = new ArrayList<>();
+        PageRequest pageRequest = new PageRequest(0, DEFAULT_PAGE_SIZE);
+
+        while (true) {
+            var result = tripPlaceService.getTripPlaces(new GetTripPlacesRequest(
+                    pageRequest,
+                    new GetTripPlacesRequest.Filter(targetTripId, null, null, null, null, null),
+                    new GetTripPlacesRequest.OrderBy(true)
+            ));
+            if (result.isFailure()) {
+                return Result.fail(result.getError());
+            }
+
+            Page<TripPlaceResponse> page = result.getValue();
+            items.addAll(page.items());
+            if (!page.hasNext()) {
+                return Result.ok(items);
+            }
+            pageRequest = pageRequest.next();
+        }
     }
 
     private String resolveSelectedCategoryId() {
@@ -1411,6 +1777,8 @@ public class AddTripController extends SimpleLifecycleAwareController {
         return imagePath;
     }
 
+
+    private record TagOption(String id, String label) { }
 
     private record RouteItem(String id, String title, String subtitle, String imagePath) { }
 

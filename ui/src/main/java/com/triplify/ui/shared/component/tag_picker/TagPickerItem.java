@@ -70,6 +70,7 @@ public class TagPickerItem extends VBox {
     private Consumer<Set<String>> onSelectionChanged;
     private String popupTitle = DEFAULT_POPUP_TITLE;
     private Window trackedWindow;
+    private boolean allowCustomTags = true;
 
     public TagPickerItem() {
         FXMLLoader loader = new FXMLLoader(FXML_URL);
@@ -338,7 +339,7 @@ public class TagPickerItem extends VBox {
 
         String filter = normalizedTag(inputField.getText());
         String matchingTag = findMatchingTag(filter);
-        if (filter != null && !filter.isBlank() && matchingTag == null) {
+        if (allowCustomTags && filter != null && !filter.isBlank() && matchingTag == null) {
             popupChipFlow.getChildren().add(createSuggestionChip(filter, true));
         }
 
@@ -408,6 +409,9 @@ public class TagPickerItem extends VBox {
     private void addCurrentInputAsTag() {
         String typedTag = normalizedTag(inputField.getText());
         if (typedTag == null || typedTag.isBlank()) {
+            return;
+        }
+        if (!allowCustomTags && findMatchingTag(typedTag) == null) {
             return;
         }
         addTag(typedTag);
@@ -559,5 +563,16 @@ public class TagPickerItem extends VBox {
 
     public void setOnSelectionChanged(Consumer<Set<String>> onSelectionChanged) {
         this.onSelectionChanged = onSelectionChanged;
+    }
+
+    public boolean isAllowCustomTags() {
+        return allowCustomTags;
+    }
+
+    public void setAllowCustomTags(boolean allowCustomTags) {
+        this.allowCustomTags = allowCustomTags;
+        if (popup.isShowing()) {
+            renderPopupList();
+        }
     }
 }

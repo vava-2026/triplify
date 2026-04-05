@@ -14,14 +14,15 @@ import java.util.List;
 @Singleton
 public class DatabaseMigrationInitializer {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseMigrationInitializer.class);
-    private static final int CURRENT_SCHEMA_VERSION = 6;
+    private static final int CURRENT_SCHEMA_VERSION = 7;
     private static final List<MigrationStep> MIGRATIONS = List.of(
             new MigrationStep(1, "migrations/initial.sql"),
             new MigrationStep(2, "migrations/V2__countries_created_by_nullable.sql"),
             new MigrationStep(3, "seeders/country_seeder.sql"),
             new MigrationStep(4, "migrations/V4__trip_places_source_tracking.sql"),
             new MigrationStep(5, "migrations/V5__seed_default_categories.sql"),
-            new MigrationStep(6, "migrations/V6__seed_default_categories_retry.sql")
+            new MigrationStep(6, "migrations/V6__seed_default_categories_retry.sql"),
+            new MigrationStep(7, "migrations/V7__seed_default_tags.sql")
     );
 
     public void initialize() {
