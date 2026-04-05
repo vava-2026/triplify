@@ -9,6 +9,8 @@ import com.triplify.domain.model.enums.RoleEnum;
 import com.triplify.domain.result.Result;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
+import com.triplify.ui.routing.RouteIds;
+import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.component.badge.model.Badge;
 import com.triplify.ui.shared.component.badge.model.BadgeGroup;
 import com.triplify.ui.shared.component.badge.view.BadgeView;
@@ -64,6 +66,9 @@ public class AccountController extends SimpleLifecycleAwareController {
             logOffButton.setOnAction(e -> {
                 authService.logout();
                 toast.success("Logged off successfully");
+                TriplifyRouterContext context = (TriplifyRouterContext) getRouter().getContext();
+                context.setSelectedMenuItem(null);
+                getRouter().moveto(RouteIds.START);
                 render();
             });
             editFormContainer.getChildren().addAll(usernameLabel, logOffButton);
