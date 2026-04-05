@@ -25,7 +25,13 @@ public class Place {
     private UUID countryId;
 
     @Setter(AccessLevel.PRIVATE)
+    private Country country;
+
+    @Setter(AccessLevel.PRIVATE)
     private UUID coverImageId;
+
+    @Setter(AccessLevel.PRIVATE)
+    private Image coverImage;
 
     @NonNull
     @Setter(AccessLevel.PRIVATE)
@@ -56,6 +62,30 @@ public class Place {
         this.updatedAt = Instant.now();
     }
 
+    public Place(@NonNull UUID userId, @NonNull UUID countryId, UUID coverImageId, @NonNull String title, String description, double latitude, double longitude) {
+        this(userId, countryId, title);
+        this.coverImageId = coverImageId;
+        this.description = description;
+        validateLocation(latitude, longitude);
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
+
+    public Place(@NonNull UUID id, @NonNull UUID userId, @NonNull UUID countryId, UUID coverImageId, @NonNull String title, String description, double latitude, double longitude)
+    {
+        this.id = id;
+        this.userId = userId;
+        this.countryId = countryId;
+        this.coverImageId = coverImageId;
+        this.title = title;
+        this.description = description;
+        validateLocation(latitude, longitude);
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
+    }
+
     public void updateTitle(@NonNull String title) throws IllegalArgumentException {
         if (title.isBlank()) throw new IllegalArgumentException("Title must not be blank.");
         log.debug("Place [{}] title: {} to {}", id, this.title, title);
@@ -80,18 +110,37 @@ public class Place {
     public void updateCountry(@NonNull UUID countryId) {
         log.debug("Place [{}] country: {} to {}", id, this.countryId, countryId);
         setCountryId(countryId);
+        setCountry(null);
+        setUpdatedAt(Instant.now());
+    }
+
+    public void updateCountry(@NonNull Country country) {
+        if (!country.getId().equals(countryId)) {
+            log.debug("Place [{}] country changed via object: {} to {}", id, this.countryId, country.getId());
+            setCountryId(country.getId());
+        }
+        setCountry(country);
         setUpdatedAt(Instant.now());
     }
 
     public void updateCoverImage(@NonNull UUID coverImageId) {
         log.debug("Place [{}] coverImage updated: {}", id, coverImageId);
         setCoverImageId(coverImageId);
+        setCoverImage(null);
+        setUpdatedAt(Instant.now());
+    }
+
+    public void updateCoverImage(@NonNull Image coverImage) {
+        log.debug("Place [{}] coverImage linked: {}", id, coverImage.getId());
+        setCoverImageId(coverImage.getId());
+        setCoverImage(coverImage);
         setUpdatedAt(Instant.now());
     }
 
     public void removeCoverImage() {
         log.debug("Place [{}] coverImage removed.", id);
         setCoverImageId(null);
+        setCoverImage(null);
         setUpdatedAt(Instant.now());
     }
 

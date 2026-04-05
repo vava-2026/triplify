@@ -5,7 +5,14 @@ import com.triplify.application.usecase.auth.AuthService;
 import com.triplify.application.usecase.auth.dto.LogInRequest;
 import com.triplify.application.usecase.country.CountryService;
 import com.triplify.application.usecase.country.dto.*;
+import com.triplify.application.usecase.place.PlaceService;
+import com.triplify.application.usecase.place.dto.AddPlaceRequest;
+import com.triplify.application.usecase.place.dto.DeletePlaceRequest;
+import com.triplify.application.usecase.place.dto.GetPlacesRequest;
+import com.triplify.application.usecase.place.dto.UpdatePlaceRequest;
+import com.triplify.application.usecase.session.UserSessionContext;
 import com.triplify.domain.filter.CountryFilter;
+import com.triplify.domain.filter.PlaceFilter;
 import com.triplify.domain.pagination.PageRequest;
 import com.triplify.ui.shared.toast.ToastService;
 import com.google.inject.Injector;
@@ -44,13 +51,15 @@ public class MainApp extends Application {
     private static final Logger log = LoggerFactory.getLogger(MainApp.class);
     private static Injector injectorRef;
 
-    // TODO: remove only for testing
     @Inject private AuthService authService;
     @Inject private CountryService countryService;
+    @Inject private PlaceService placeService;
 
     @Inject private FxmlLoaderHelper fxml;
     @Inject private ToastService toastService;
+    @Inject private UserSessionContext userSessionContext;
     private Router router;
+    private MenuItem startupMenuItem;
 
     public static void launch(Injector injector, String[] args) {
         injectorRef = injector;
@@ -65,6 +74,7 @@ public class MainApp extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         log.info("App launched");
+        startupMenuItem = userSessionContext.load().isPresent() ? MenuItem.MAP : null;
 
         // Sidebar island
         FxmlLoadResult<Node, SidebarIslandView> islandResult = fxml.load("/com/triplify/ui/shared/menu/view/SidebarIsland.fxml");
@@ -124,11 +134,12 @@ public class MainApp extends Application {
         contentArea.visibleProperty().bind(isMap.not());
         contentArea.managedProperty().bind(isMap.not());
 
-        BooleanBinding showMenu = routerContext.fullScreenContentProperty().not();
+        BooleanBinding showMenu = routerContext.fullScreenContentProperty().not().or(isMap);
         menu.visibleProperty().bind(showMenu);
         menu.managedProperty().bind(showMenu);
-        islandPane.visibleProperty().bind(showMenu);
-        islandPane.managedProperty().bind(showMenu);
+        BooleanBinding showIsland = showMenu.or(isMap);
+        islandPane.visibleProperty().bind(showIsland);
+        islandPane.managedProperty().bind(showIsland);
         showMenu.addListener((obs, wasVisible, isVisible) -> {
             if (isVisible) {
                 menuView.refreshAccountSection();
@@ -146,6 +157,10 @@ public class MainApp extends Application {
         contentArea.routerProperty().addListener((obs, oldRouter, newRouter) -> {
             router = newRouter;
             log.info("Router initialized: {}", newRouter != null ? "ready" : "null");
+
+            if (router != null && startupMenuItem != null) {
+                routerContext.setSelectedMenuItem(startupMenuItem);
+            }
         });
 
         menuView.getViewModel().selectedItemProperty().addListener((obs, oldItem, newItem) -> {
@@ -155,10 +170,14 @@ public class MainApp extends Application {
             }
         });
 
+        if (router != null && startupMenuItem != null) {
+            menuView.getViewModel().setSelectedItem(startupMenuItem);
+        }
+
         HBox topBar = new HBox(islandPane, header);
         topBar.getStyleClass().add("app-top-bar");
-        topBar.visibleProperty().bind(showMenu);
-        topBar.managedProperty().bind(showMenu);
+        topBar.visibleProperty().bind(showIsland);
+        topBar.managedProperty().bind(showIsland);
 
         HBox bottomRow = new HBox(menu, contentArea);
         bottomRow.getStyleClass().add("app-bottom-row");
@@ -180,41 +199,6 @@ public class MainApp extends Application {
         if (themeUrl == null) throw new IllegalStateException("theme.css not found");
         scene.getStylesheets().add(themeUrl.toExternalForm());
 
-        // TODO: remove this, only for testing purposes
-        var authenticated = authService.login(new LogInRequest("admin@triplify.com", "password"));
-        if (!authenticated.isSuccess()) {
-            log.error("Failed to authenticate test user: {}", authenticated.getError().message());
-            return;
-        }
-
-        var pageRequest = PageRequest.defaultRequest();
-        var filter = new CountryFilter("MyCountry", null, false);
-        var myCountryPage = countryService.getCountries(new GetCountriesRequest(pageRequest, filter)).getValue();
-        CountryResponse myCountry = null;
-        if (!myCountryPage.items().isEmpty()) {
-            myCountry = myCountryPage.items().getFirst();
-        }
-        else
-        {
-            myCountry = countryService.addCountry(new AddCountryRequest("MyCountry", "MyCountrySk", "myc")).getValue();
-        }
-
-        var updated = countryService.updateCountry(new UpdateCountryRequest(myCountry.id(), "MyCountry2", "MyCountrySk2", "myc2")).getValue();
-        assert (updated.id().equals(myCountry.id()));
-        countryService.banCountry(new BanCountryRequest(myCountry.id())).getValue();
-        countryService.unbanCountry(new UnbanCountryRequest(myCountry.id())).getValue();
-
-        log.info("Selecting countries starting with 'Au'");
-        var pageRequest2 = PageRequest.defaultRequest();
-        var filter2 = new CountryFilter("Au", null, false);
-        var countries = countryService.getCountries(new GetCountriesRequest(pageRequest2, filter2)).getValue();
-        for (CountryResponse c : countries.items()) {
-            log.info("Country: id='{}', name='{}', nameSk='{}', emojiUnicode='{}', isAvailable='{}'",
-                    c.id(), c.name(), c.nameSk(), c.emojiUnicode(), c.isAvailable());
-        }
-
-        var deleted = countryService.deleteCountry(new DeleteCountryRequest(myCountry.id())).getValue();
-
         stage.setTitle("Triplify");
         stage.setScene(scene);
         stage.show();
@@ -226,6 +210,7 @@ public class MainApp extends Application {
 
     @Override
     public void stop() throws Exception {
+        userSessionContext.save();
         if (router != null) router.dispose();
         super.stop();
     }
