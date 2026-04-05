@@ -1,14 +1,22 @@
 package com.triplify.ui.pages.trips;
 
 import com.google.inject.Inject;
+import com.triplify.application.usecase.category.CategoryService;
+import com.triplify.application.usecase.category.dto.CategoryResponse;
 import com.triplify.application.usecase.country.CountryService;
 import com.triplify.application.response.TripStatus;
+import com.triplify.application.usecase.trip.TripService;
+import com.triplify.application.usecase.trip.dto.AddTripRequest;
+import com.triplify.application.usecase.trip.dto.GetTripByIdRequest;
+import com.triplify.application.usecase.trip.dto.TripResponse;
+import com.triplify.application.usecase.trip.dto.UpdateTripRequest;
 import com.triplify.application.usecase.place.PlaceService;
 import com.triplify.application.usecase.place.dto.GetPlacesRequest;
 import com.triplify.application.usecase.place.dto.PlaceResponse;
 import com.triplify.application.usecase.route.RouteService;
 import com.triplify.application.usecase.route.dto.GetRoutesRequest;
 import com.triplify.application.usecase.route.dto.RouteResponse;
+import com.triplify.domain.model.enums.StatusEnum;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.routing.TriplifyRouterContext;
@@ -59,7 +67,9 @@ import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 import java.io.File;
 import java.nio.file.Path;
 import java.text.MessageFormat;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -122,6 +132,8 @@ public class AddTripController extends SimpleLifecycleAwareController {
     @FXML private EditorActionButtonsView actionButtonsView;
 
     @Inject private ToastService toast;
+    @Inject private TripService tripService;
+    @Inject private CategoryService categoryService;
     @Inject private RouteService routeService;
     @Inject private PlaceService placeService;
     @Inject private CountryService countryService;
@@ -134,7 +146,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
     private InputItem titleInput;
     private TextAreaItem descriptionInput;
-    private Long tripId;
+    private String tripId;
     private boolean createMode;
     private TripStatus tripStatus;
     private String coverImagePath;
@@ -152,6 +164,8 @@ public class AddTripController extends SimpleLifecycleAwareController {
     private SearchView<PlaceItem> placeSearchView;
     private List<RouteItem> availableRouteCandidates = List.of();
     private List<PlaceItem> availablePlaceCandidates = List.of();
+    private List<CategoryResponse> availableCategories = List.of();
+    private boolean coverImageDirty;
 
     @FXML
     public void initialize() {
@@ -184,6 +198,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
         bindLocalizedText();
         configureTagPicker();
         initializeCountrySelector();
+        loadAvailableCategories();
         refreshLocalizedUi();
         initializeActionPickers();
         I18n.bundleProperty().addListener((obs, oldBundle, newBundle) -> refreshLocalizedUi());
@@ -196,7 +211,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
     public void onLifecycleInitialize() {
         RouterArgument data = getRouter().getCurrentData();
         tripId = readTripId(data);
-        createMode = tripId == null || tripId <= 0;
+        createMode = tripId == null || tripId.isBlank() || "0".equals(tripId);
         tripStatus = data == null ? null : data.getValue("tripStatus");
 
         String tripName = data == null ? null : data.getValue("tripName");
@@ -208,10 +223,27 @@ public class AddTripController extends SimpleLifecycleAwareController {
         String tripStartDate = data == null ? null : data.getValue("tripStartDate");
         String tripEndDate = data == null ? null : data.getValue("tripEndDate");
 
-        populateHeader(tripName, tripDates);
-        populateForm(tripName, tripCountry, tripCategory, tripTags, tripStartDate, tripEndDate);
-        populateDemoLists(tripName, tripCountry);
-        showCoverImage(tripCoverUrl, tripName);
+        if (createMode) {
+            populateHeader(tripName, tripDates);
+            populateForm(tripName, tripCountry, tripCategory, tripTags, tripStartDate, tripEndDate);
+            routeItems.clear();
+            placeItems.clear();
+            renderRoutes();
+            renderPlaces();
+            coverImageDirty = false;
+            showCoverImage(tripCoverUrl, tripName);
+        } else {
+            loadExistingTrip(
+                    tripName,
+                    tripCountry,
+                    tripCategory,
+                    tripTags,
+                    tripStartDate,
+                    tripEndDate,
+                    tripCoverUrl,
+                    tripDates
+            );
+        }
 
         log.info("Trip editor opened: id={}, name={}, createMode={}", tripId, tripName, createMode);
     }
@@ -308,11 +340,53 @@ public class AddTripController extends SimpleLifecycleAwareController {
             return;
         }
 
+        String categoryId = resolveSelectedCategoryId();
+        if (categoryId == null || categoryId.isBlank()) {
+            toast.warning(I18n.t("trip.add.toast.category.required"));
+            return;
+        }
+
         String tripTitle = titleInput.getText().trim();
-        String message = createMode
-                ? formatMessage("trip.add.toast.trip.ready", tripTitle)
-                : formatMessage("trip.add.toast.trip.updated", tripTitle);
-        toast.success(I18n.t("trip.add.toast.title.saved"), message);
+        StatusEnum status = mapTripStatus(tripStatus);
+        Instant startedAt = toInstant(startDateInput.getValue());
+        Instant endedAt = toInstant(endDateInput.getValue());
+        Set<Path> images = coverImagePath == null || coverImagePath.isBlank()
+                ? Set.of()
+                : Set.of(Path.of(coverImagePath));
+
+        var result = createMode
+                ? tripService.addTrip(new AddTripRequest(
+                        categoryId,
+                        tripTitle,
+                        normalizeNullable(descriptionInput.getText()),
+                        status,
+                        startedAt,
+                        endedAt,
+                        new LinkedHashSet<>(selectedTags),
+                        images,
+                        new LinkedHashSet<>(selectedCountryIds)
+                ))
+                : tripService.updateTrip(new UpdateTripRequest(
+                        tripId,
+                        categoryId,
+                        tripTitle,
+                        normalizeNullable(descriptionInput.getText()),
+                        status,
+                        startedAt,
+                        endedAt,
+                        new LinkedHashSet<>(selectedTags),
+                        coverImageDirty ? images : null,
+                        new LinkedHashSet<>(selectedCountryIds)
+                ));
+
+        result.onSuccess(savedTrip -> {
+            String message = createMode
+                    ? formatMessage("trip.add.toast.trip.ready", tripTitle)
+                    : formatMessage("trip.add.toast.trip.updated", tripTitle);
+            toast.success(I18n.t("trip.add.toast.title.saved"), message);
+            getRouter().popBackStack();
+        });
+        result.onFailure(error -> toast.error(I18n.t("trip.add.toast.title.saved"), error.message()));
     }
 
     @FXML
@@ -386,7 +460,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
     private void refreshLocalizedUi() {
         String selectedCategory = selectedValue(categorySelectModel);
 
-        categorySelectModel = createSelectModel(AVAILABLE_CATEGORIES, "trip.add.select.category");
+        categorySelectModel = createSelectModel(createCategoryEntries(), "trip.add.select.category");
 
         categorySelectModel.setSelectedItem(findEntry(categorySelectModel, selectedCategory));
 
@@ -406,6 +480,34 @@ public class AddTripController extends SimpleLifecycleAwareController {
         renderCountryChips();
         renderRoutes();
         renderPlaces();
+    }
+
+    private void loadAvailableCategories() {
+        if (categoryService == null) {
+            availableCategories = List.of();
+            return;
+        }
+
+        var result = categoryService.getAllCategories();
+        if (result.isFailure()) {
+            log.warn("Failed to load categories for trip editor", result.getError());
+            availableCategories = List.of();
+            return;
+        }
+
+        availableCategories = result.getValue();
+    }
+
+    private List<Entry<String>> createCategoryEntries() {
+        if (availableCategories != null && !availableCategories.isEmpty()) {
+            return availableCategories.stream()
+                    .map(category -> Entry.builder(category.id(), category.name()).build())
+                    .toList();
+        }
+
+        return AVAILABLE_CATEGORIES.stream()
+                .map(this::toEntry)
+                .toList();
     }
 
     private void populateHeader(String tripName, String tripDates) {
@@ -444,47 +546,6 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
         startDateInput.setValue(parseDate(tripStartDate));
         endDateInput.setValue(parseDate(tripEndDate));
-    }
-
-    private void populateDemoLists(String tripName, String tripCountry) {
-        routeItems.clear();
-        placeItems.clear();
-
-        if (createMode) {
-            renderRoutes();
-            renderPlaces();
-            return;
-        }
-
-        String fallbackCountry = safeText(tripCountry).isBlank() ? "Trip route" : tripCountry;
-        routeItems.add(new RouteItem(
-                "demo-route-1",
-                safeText(tripName).isBlank() ? fallbackCountry + " Centre" : tripName + " Centre",
-                "Scenic transfer",
-                DEFAULT_IMAGE
-        ));
-        routeItems.add(new RouteItem(
-                "demo-route-2",
-                fallbackCountry + " Highlights",
-                "City walk",
-                DEFAULT_IMAGE
-        ));
-
-        placeItems.add(new PlaceItem(
-                "demo-place-1",
-                fallbackCountry + " Cathedral",
-                safeText(tripCountry).isBlank() ? "Old Town" : tripCountry,
-                DEFAULT_IMAGE
-        ));
-        placeItems.add(new PlaceItem(
-                "demo-place-2",
-                safeText(tripName).isBlank() ? "Central Park" : tripName + " Viewpoint",
-                "Popular stop",
-                DEFAULT_IMAGE
-        ));
-
-        renderRoutes();
-        renderPlaces();
     }
 
     private void renderCountryChips() {
@@ -589,6 +650,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
     }
 
     private void showCoverImage(String imagePath, String tripName) {
+        coverImagePath = imagePath;
         if (imagePath == null || imagePath.isBlank()) {
             coverPreview.setImage(null);
             coverPreview.setVisible(false);
@@ -633,6 +695,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
         }
 
         coverImagePath = file.getAbsolutePath();
+        coverImageDirty = true;
         selectedImageLabel.setText(file.getName());
         selectedImageLabel.setVisible(true);
         selectedImageLabel.setManaged(true);
@@ -808,7 +871,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
     private void openCreateRoute() {
         RouterArgument args = new RouterArgument();
-        int targetTripId = tripId == null ? 0 : tripId.intValue();
+        String targetTripId = tripId == null || tripId.isBlank() ? "0" : tripId;
         String targetTripName = titleInput.getText() == null || titleInput.getText().isBlank()
                 ? currentTripDisplayName
                 : titleInput.getText().trim();
@@ -820,7 +883,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
     private void openCreatePlace() {
         RouterArgument args = new RouterArgument();
-        int targetTripId = tripId == null ? 0 : tripId.intValue();
+        String targetTripId = tripId == null || tripId.isBlank() ? "0" : tripId;
         String targetTripName = titleInput.getText() == null || titleInput.getText().isBlank()
                 ? currentTripDisplayName
                 : titleInput.getText().trim();
@@ -1028,11 +1091,11 @@ public class AddTripController extends SimpleLifecycleAwareController {
         coverPreview.setViewport(new Rectangle2D(0, y, imageWidth, cropHeight));
     }
 
-    private Select<String> createSelectModel(List<String> values, String placeholderKey) {
+    private Select<String> createSelectModel(List<Entry<String>> entries, String placeholderKey) {
         return Select.<String>builder()
                 .placeholder(I18n.t(placeholderKey))
                 .variant(FieldVariant.GHOST)
-                .items(values.stream().map(this::toEntry).toList())
+                .items(entries)
                 .build();
     }
 
@@ -1087,7 +1150,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
             return null;
         }
         return model.getItems().stream()
-                .filter(entry -> value.equals(entry.getValue()))
+                .filter(entry -> value.equals(entry.getValue()) || value.equals(entry.getLabel()))
                 .findFirst()
                 .orElse(null);
     }
@@ -1099,16 +1162,13 @@ public class AddTripController extends SimpleLifecycleAwareController {
         return model.getSelectedItem().getValue();
     }
 
-    private Long readTripId(RouterArgument data) {
+    private String readTripId(RouterArgument data) {
         if (data == null) {
             return null;
         }
 
         Object raw = data.getValue("tripId");
-        if (raw instanceof Number number) {
-            return number.longValue();
-        }
-        return null;
+        return raw == null ? null : raw.toString();
     }
 
     private LocalDate parseDate(String value) {
@@ -1158,6 +1218,146 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
         String normalized = value.trim();
         return normalized.isBlank() ? null : normalized;
+    }
+
+    private void loadExistingTrip(
+            String fallbackTripName,
+            String fallbackTripCountry,
+            String fallbackTripCategory,
+            String fallbackTripTags,
+            String fallbackTripStartDate,
+            String fallbackTripEndDate,
+            String fallbackTripCoverUrl,
+            String fallbackTripDates
+    ) {
+        routeItems.clear();
+        placeItems.clear();
+        renderRoutes();
+        renderPlaces();
+
+        if (tripId == null || tripId.isBlank()) {
+            populateHeader(fallbackTripName, fallbackTripDates);
+            populateForm(
+                    fallbackTripName,
+                    fallbackTripCountry,
+                    fallbackTripCategory,
+                    fallbackTripTags,
+                    fallbackTripStartDate,
+                    fallbackTripEndDate
+            );
+            coverImageDirty = false;
+            showCoverImage(fallbackTripCoverUrl, fallbackTripName);
+            return;
+        }
+
+        var result = tripService.getTripById(new GetTripByIdRequest(tripId));
+        if (result.isFailure()) {
+            log.warn("Failed to load trip '{}' from service, using router fallback", tripId, result.getError());
+            populateHeader(fallbackTripName, fallbackTripDates);
+            populateForm(
+                    fallbackTripName,
+                    fallbackTripCountry,
+                    fallbackTripCategory,
+                    fallbackTripTags,
+                    fallbackTripStartDate,
+                    fallbackTripEndDate
+            );
+            coverImageDirty = false;
+            showCoverImage(fallbackTripCoverUrl, fallbackTripName);
+            return;
+        }
+
+        applyTripResponse(result.getValue());
+    }
+
+    private void applyTripResponse(TripResponse trip) {
+        currentTripDisplayName = trip.title() == null || trip.title().isBlank()
+                ? I18n.t("trip.add.default.name")
+                : trip.title();
+        tripStatus = toLegacyTripStatus(trip.status());
+
+        titleInput.setText(safeText(trip.title()));
+        descriptionInput.setText(safeText(trip.description()));
+        startDateInput.setValue(toLocalDate(trip.startedAt()));
+        endDateInput.setValue(toLocalDate(trip.endedAt()));
+
+        selectedCountryIds.clear();
+        selectedCountryLabelsById.clear();
+        if (trip.countries() != null) {
+            for (var country : trip.countries()) {
+                selectedCountryIds.add(country.id());
+                selectedCountryLabelsById.put(country.id(), country.name());
+            }
+        }
+        renderCountryChips();
+
+        selectedTags.clear();
+        if (trip.tags() != null) {
+            trip.tags().stream()
+                    .map(tag -> tag.name() == null ? null : tag.name().trim())
+                    .filter(tag -> tag != null && !tag.isBlank())
+                    .forEach(selectedTags::add);
+        }
+        syncTagPicker();
+
+        String categoryId = trip.category() == null ? null : trip.category().id();
+        categorySelectModel.setSelectedItem(findEntry(categorySelectModel, categoryId));
+
+        String coverPath = null;
+        if (trip.images() != null && !trip.images().isEmpty()) {
+            var image = trip.images().iterator().next();
+            coverPath = image.url() == null ? null : image.url().toString();
+        }
+        coverImageDirty = false;
+        showCoverImage(coverPath, trip.title());
+    }
+
+    private String resolveSelectedCategoryId() {
+        String selected = selectedValue(categorySelectModel);
+        if (selected == null || selected.isBlank()) {
+            return null;
+        }
+
+        if (availableCategories != null) {
+            for (CategoryResponse category : availableCategories) {
+                if (selected.equals(category.id()) || selected.equals(category.name())) {
+                    return category.id();
+                }
+            }
+        }
+
+        return selected;
+    }
+
+    private StatusEnum mapTripStatus(TripStatus status) {
+        if (status == null) {
+            return StatusEnum.PLANNED;
+        }
+
+        return switch (status) {
+            case VISITED -> StatusEnum.VISITED;
+            case ONGOING -> StatusEnum.ONGOING;
+            case PLANNED, DRAFTED, REJECTED -> StatusEnum.PLANNED;
+        };
+    }
+
+    private Instant toInstant(LocalDate value) {
+        return value == null ? null : value.atStartOfDay().toInstant(ZoneOffset.UTC);
+    }
+
+    private TripStatus toLegacyTripStatus(StatusEnum status) {
+        if (status == null) {
+            return TripStatus.PLANNED;
+        }
+        return switch (status) {
+            case VISITED -> TripStatus.VISITED;
+            case ONGOING -> TripStatus.ONGOING;
+            case PLANNED, CANCELED -> TripStatus.PLANNED;
+        };
+    }
+
+    private LocalDate toLocalDate(Instant value) {
+        return value == null ? null : value.atZone(ZoneOffset.UTC).toLocalDate();
     }
 
     private String formatMessage(String key, Object... args) {

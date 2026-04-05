@@ -4,6 +4,7 @@ import com.triplify.domain.model.enums.ColorEnum;
 
 public enum ColorTheme {
 
+    GRAY("app-theme-gray"),
     RED("app-theme-red"),
     ORANGE("app-theme-orange"),
     YELLOW("app-theme-yellow"),
@@ -25,6 +26,7 @@ public enum ColorTheme {
 
     public static ColorTheme from(ColorEnum color) {
         return switch (color) {
+            case GRAY -> GRAY;
             case RED -> RED;
             case ORANGE -> ORANGE;
             case YELLOW -> YELLOW;

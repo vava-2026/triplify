@@ -4,12 +4,12 @@
         home="start">
 
     <arguments id="addTripArgs">
-        <argument name="tripId" type="int" required="true"/>
+        <argument name="tripId" type="string" required="true"/>
         <argument name="tripName" type="string" required="true"/>
     </arguments>
 
     <arguments id="addPlaceArgs">
-        <argument name="tripId" type="int" required="true"/>
+        <argument name="tripId" type="string" required="true"/>
         <argument name="tripName" type="string" required="true"/>
     </arguments>
 

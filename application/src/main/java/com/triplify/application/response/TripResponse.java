@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public record TripResponse(
-        long id,
+        String id,
         String name,
         String country,
         String category,

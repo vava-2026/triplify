@@ -2,14 +2,15 @@ package com.triplify.ui.pages.trips;
 
 import com.google.inject.Inject;
 import com.triplify.application.pagination.Pagination;
-import com.triplify.application.request.SearchTripsRequest;
 import com.triplify.application.request.TripSort;
-import com.triplify.application.response.SearchTripsResponse;
 import com.triplify.application.response.TripResponse;
 import com.triplify.application.response.TripStatus;
-import com.triplify.application.service.TripService;
-import com.triplify.application.service.TripServiceImpl;
 import com.triplify.application.usecase.country.CountryService;
+import com.triplify.application.usecase.image.dto.ImageResponse;
+import com.triplify.application.usecase.tag.dto.TagResponse;
+import com.triplify.application.usecase.trip.TripService;
+import com.triplify.domain.model.enums.StatusEnum;
+import com.triplify.domain.pagination.PageRequest;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.shared.component.card_grid.CardGridPane;
 import com.triplify.ui.shared.component.countries.model.Countries;
@@ -31,9 +32,13 @@ import org.slf4j.LoggerFactory;
 import rahulstech.jfx.routing.element.RouterArgument;
 import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 public class MyTripsController extends SimpleLifecycleAwareController {
 
@@ -48,7 +53,7 @@ public class MyTripsController extends SimpleLifecycleAwareController {
     @FXML private javafx.scene.control.ComboBox<TripSort> sortSelect;
     @FXML private CardGridPane<TripResponse> cardGrid;
 
-    private final TripService tripService = new TripServiceImpl();
+    @Inject private TripService tripService;
     @Inject private CountryService countryService;
     private Select<String> categorySelectModel;
     private Select<String> tagSelectModel;
@@ -63,10 +68,17 @@ public class MyTripsController extends SimpleLifecycleAwareController {
         cardGrid.refresh();
     }
 
+    @Override
+    public void onLifecycleShow() {
+        if (cardGrid != null) {
+            cardGrid.refresh();
+        }
+    }
+
     @FXML
     public void onCreateTrip() {
         RouterArgument args = new RouterArgument();
-        args.addArgument("tripId", 0);
+        args.addArgument("tripId", "0");
         args.addArgument("tripName", "Create Trip");
         args.addArgument("tripStatus", TripStatus.DRAFTED);
         getRouter().moveto(RouteIds.ADD_TRIP, args);
@@ -107,7 +119,6 @@ public class MyTripsController extends SimpleLifecycleAwareController {
 
         statusSelect.getSelectionModel().selectFirst();
         startTimeSelect.getSelectionModel().selectFirst();
-
         selectFirst(categorySelectModel);
         selectFirst(tagSelectModel);
 
@@ -139,21 +150,54 @@ public class MyTripsController extends SimpleLifecycleAwareController {
     }
 
     private CardGridPane.PageResult<TripResponse> loadTripsPage(int page, int pageSize) {
-        String country = normalizeFilter(countryFilterView == null ? null : countryFilterView.getSelectedCountryId());
-        String category = normalizeFilter(selectedValue(categorySelectModel));
-        String tag = normalizeFilter(selectedValue(tagSelectModel));
-        TripStatus status = TripStatus.fromLabel(statusSelect.getValue());
-        String startTime = normalizeStartTime(startTimeSelect.getValue());
+        TripStatus statusFilter = TripStatus.fromLabel(statusSelect.getValue());
+        if (statusFilter == TripStatus.DRAFTED || statusFilter == TripStatus.REJECTED) {
+            return new CardGridPane.PageResult<>(List.of(), Pagination.request(page, pageSize).withTotals(0));
+        }
 
-        SearchTripsRequest request = new SearchTripsRequest(
-                country, category, tag, status, startTime,
-                sortSelect.getValue(),
-                Pagination.request(page, pageSize)
+        Instant now = Instant.now();
+        Instant startedFrom = null;
+        Instant startedTo = null;
+        String startTimeFilter = normalizeStartTime(startTimeSelect.getValue());
+        if (startTimeFilter != null) {
+            startedFrom = now;
+            startedTo = switch (startTimeFilter) {
+                case "Next 30 days" -> now.plusSeconds(30L * 24 * 60 * 60);
+                case "Next 6 months" -> now.plusSeconds(183L * 24 * 60 * 60);
+                case "Next year" -> now.plusSeconds(365L * 24 * 60 * 60);
+                default -> null;
+            };
+        }
+
+        var request = new com.triplify.application.usecase.trip.dto.GetTripsRequest(
+                new PageRequest(Math.max(0, page - 1), pageSize),
+                new com.triplify.application.usecase.trip.dto.GetTripsRequest.Filter(
+                        null,
+                        normalizeFilter(countryFilterView == null ? null : countryFilterView.getSelectedCountryId()),
+                        toDomainStatus(statusFilter),
+                        null,
+                        null,
+                        startedFrom,
+                        startedTo
+                ),
+                new com.triplify.application.usecase.trip.dto.GetTripsRequest.OrderBy(sortSelect.getValue() == TripSort.OLDEST_FIRST)
         );
-        log.info("Trips search requested: {}", request);
 
-        SearchTripsResponse response = tripService.searchTrips(request);
-        return new CardGridPane.PageResult<>(response.trips(), response.pagination());
+        var result = tripService.getTrips(request);
+        if (result.isFailure()) {
+            log.warn("Failed to load trips for My Trips page: {}", result.getError().message());
+            return new CardGridPane.PageResult<>(List.of(), Pagination.request(page, pageSize).withTotals(0));
+        }
+
+        List<TripResponse> trips = result.getValue().items().stream()
+                .map(this::toLegacyTrip)
+                .filter(trip -> matchesText(trip.category(), normalizeFilter(selectedValue(categorySelectModel))))
+                .filter(trip -> matchesTag(trip.tags(), normalizeFilter(selectedValue(tagSelectModel))))
+                .sorted(resolveComparator(sortSelect.getValue()))
+                .toList();
+
+        int totalPages = result.getValue().hasNext() ? page + 1 : page;
+        return new CardGridPane.PageResult<>(trips, new Pagination(page, pageSize, null, totalPages));
     }
 
     private Node buildTripCard(TripResponse trip) {
@@ -196,6 +240,86 @@ public class MyTripsController extends SimpleLifecycleAwareController {
         args.addArgument("tripCoverUrl", trip.coverUrl());
         args.addArgument("tripTags", trip.tags() == null ? "" : String.join(",", trip.tags()));
         getRouter().moveto(RouteIds.ADD_TRIP, args);
+    }
+
+    private TripResponse toLegacyTrip(com.triplify.application.usecase.trip.dto.TripResponse trip) {
+        return new TripResponse(
+                trip.id(),
+                trip.title(),
+                deriveCountryLabel(trip.countries()),
+                trip.category() == null ? "" : trip.category().name(),
+                toLegacyStatus(trip.status()),
+                toLocalDate(trip.startedAt()),
+                toLocalDate(trip.endedAt()),
+                null,
+                deriveCoverUrl(trip.images()),
+                trip.tags() == null ? List.of() : trip.tags().stream().map(TagResponse::name).toList()
+        );
+    }
+
+    private String deriveCountryLabel(java.util.Set<com.triplify.application.usecase.country.dto.CountryResponse> countries) {
+        if (countries == null || countries.isEmpty()) {
+            return "";
+        }
+        if (countries.size() == 1) {
+            return countries.iterator().next().name();
+        }
+        return countries.iterator().next().name() + " +" + (countries.size() - 1);
+    }
+
+    private String deriveCoverUrl(java.util.Set<ImageResponse> images) {
+        if (images == null || images.isEmpty()) {
+            return null;
+        }
+        return images.iterator().next().url().toUri().toString();
+    }
+
+    private LocalDate toLocalDate(Instant value) {
+        return value == null ? null : value.atZone(ZoneOffset.UTC).toLocalDate();
+    }
+
+    private TripStatus toLegacyStatus(StatusEnum status) {
+        if (status == null) {
+            return TripStatus.PLANNED;
+        }
+        return switch (status) {
+            case VISITED -> TripStatus.VISITED;
+            case ONGOING -> TripStatus.ONGOING;
+            case PLANNED, CANCELED -> TripStatus.PLANNED;
+        };
+    }
+
+    private StatusEnum toDomainStatus(TripStatus status) {
+        if (status == null) {
+            return null;
+        }
+        return switch (status) {
+            case VISITED -> StatusEnum.VISITED;
+            case PLANNED -> StatusEnum.PLANNED;
+            case ONGOING -> StatusEnum.ONGOING;
+            case DRAFTED, REJECTED -> null;
+        };
+    }
+
+    private boolean matchesText(String actual, String expected) {
+        if (expected == null || expected.isBlank()) return true;
+        if (actual == null) return false;
+        return actual.toLowerCase(Locale.ROOT).contains(expected.toLowerCase(Locale.ROOT));
+    }
+
+    private boolean matchesTag(List<String> tags, String expected) {
+        if (expected == null || expected.isBlank()) return true;
+        if (tags == null || tags.isEmpty()) return false;
+        String normalized = expected.toLowerCase(Locale.ROOT);
+        return tags.stream().anyMatch(tag -> tag != null && tag.toLowerCase(Locale.ROOT).contains(normalized));
+    }
+
+    private Comparator<TripResponse> resolveComparator(TripSort sort) {
+        return switch (sort) {
+            case NAME_ASC -> Comparator.comparing(TripResponse::name, String.CASE_INSENSITIVE_ORDER);
+            case OLDEST_FIRST -> Comparator.comparing(TripResponse::startDate, Comparator.nullsLast(Comparator.naturalOrder()));
+            case NEWEST_FIRST -> Comparator.comparing(TripResponse::startDate, Comparator.nullsLast(Comparator.reverseOrder()));
+        };
     }
 
     private String normalizeFilter(String value) {
