@@ -99,12 +99,14 @@ public class LoginController extends SimpleLifecycleAwareController {
     public void onLifecycleHide() {
         TriplifyRouterContext context = (TriplifyRouterContext) getRouter().getContext();
         context.setFullScreenContent(false);
+        clearForm();
     }
 
     @Override
     public void onLifecycleDestroy() {
         TriplifyRouterContext context = (TriplifyRouterContext) getRouter().getContext();
         context.setFullScreenContent(false);
+        clearForm();
     }
 
     private void onLogin() {
@@ -133,5 +135,15 @@ public class LoginController extends SimpleLifecycleAwareController {
     private void clearFieldErrors() {
         emailInput.clearError();
         passwordInput.clearError();
+    }
+
+    private void clearForm() {
+        if (emailInput != null) {
+            emailInput.setText("");
+            emailInput.clearError();
+        }
+        if (passwordInput != null) {
+            passwordInput.reset();
+        }
     }
 }

@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.triplify.domain.model.User;
 import com.triplify.domain.repository.UserRepository;
+import com.triplify.domain.util.DefaultDataDirectories;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +17,7 @@ public class UserSessionContextImpl implements UserSessionContext {
 
     private static final Logger log = LoggerFactory.getLogger(UserSessionContextImpl.class);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private static final Path SESSION_FILE = resolveDefaultDataDir().resolve("session.json");
+    private static final Path SESSION_FILE = DefaultDataDirectories.resolve("Triplify").resolve("session.json");
 
     private final UserRepository userRepository;
     private volatile SessionUser currentUser;
@@ -34,6 +35,7 @@ public class UserSessionContextImpl implements UserSessionContext {
     @Override
     public void clear() {
         this.currentUser = null;
+        deletePersistedSession();
     }
 
     @Override
@@ -123,26 +125,4 @@ public class UserSessionContextImpl implements UserSessionContext {
         }
     }
 
-    private static Path resolveDefaultDataDir() {
-        String os = System.getProperty("os.name").toLowerCase();
-        String userHome = System.getProperty("user.home");
-
-        if (os.contains("win")) {
-            String appData = System.getenv("APPDATA");
-            if (appData != null && !appData.isBlank()) {
-                return Path.of(appData).resolve("Triplify");
-            }
-            return Path.of(userHome, "AppData", "Roaming", "Triplify");
-        }
-
-        if (os.contains("mac")) {
-            return Path.of(userHome, "Library", "Application Support", "Triplify");
-        }
-
-        String xdgDataHome = System.getenv("XDG_DATA_HOME");
-        if (xdgDataHome != null && !xdgDataHome.isBlank()) {
-            return Path.of(xdgDataHome).resolve("triplify");
-        }
-        return Path.of(userHome, ".local", "share", "triplify");
-    }
 }
