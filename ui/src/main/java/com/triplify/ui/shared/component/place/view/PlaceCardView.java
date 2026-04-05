@@ -1,7 +1,6 @@
 package com.triplify.ui.shared.component.place.view;
 
-import com.triplify.application.response.PlaceResponse;
-import com.triplify.application.response.PlaceStatus;
+import com.triplify.application.usecase.place.dto.PlaceResponse;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -9,20 +8,19 @@ import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundImage;
 import javafx.scene.layout.BackgroundPosition;
 import javafx.scene.layout.BackgroundRepeat;
 import javafx.scene.layout.BackgroundSize;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.layout.Region;
 import javafx.scene.shape.Rectangle;
 
 import java.io.IOException;
 import java.net.URL;
-import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -35,19 +33,21 @@ public class PlaceCardView implements Initializable {
     );
 
     private static final Map<String, Image> IMAGE_CACHE = new ConcurrentHashMap<>();
-    private static final int MAX_IMAGE_WIDTH = 600;
+    private static final int MAX_IMAGE_WIDTH  = 600;
     private static final int MAX_IMAGE_HEIGHT = 400;
+    private static final DateTimeFormatter DATE_FORMAT =
+            DateTimeFormatter.ofPattern("MMM d, yyyy").withZone(ZoneId.systemDefault());
 
     private static final BackgroundSize COVER_SIZE = new BackgroundSize(
             1, 1, true, true, false, true
     );
 
-    @FXML private VBox root;
+    @FXML private VBox      root;
     @FXML private StackPane media;
-    @FXML private Label statusLabel;
-    @FXML private Label titleLabel;
-    @FXML private Label countryLabel;
-    @FXML private Label dateLabel;
+    @FXML private Label     statusLabel;
+    @FXML private Label     titleLabel;
+    @FXML private Label     countryLabel;
+    @FXML private Label     dateLabel;
 
     private Runnable onOpen;
 
@@ -59,7 +59,6 @@ public class PlaceCardView implements Initializable {
         media.minHeightProperty().set(Region.USE_PREF_SIZE);
         media.maxHeightProperty().set(Region.USE_PREF_SIZE);
 
-        // Media
         Rectangle clip = new Rectangle();
         clip.widthProperty().bind(media.widthProperty());
         clip.heightProperty().bind(media.heightProperty());
@@ -69,71 +68,69 @@ public class PlaceCardView implements Initializable {
 
         StackPane.setMargin(statusLabel, new Insets(8, 8, 0, 0));
 
-        root.setOnMouseClicked(event -> {
-            if (onOpen != null) {
-                onOpen.run();
-            }
-        });
+        root.setOnMouseClicked(e -> { if (onOpen != null) onOpen.run(); });
     }
 
-    public Node getRoot() {
-        return root;
-    }
-
-    public void setOnOpen(Runnable onOpen) {
-        this.onOpen = onOpen;
-    }
+    public Node     getRoot()              { return root; }
+    public void     setOnOpen(Runnable r)  { this.onOpen = r; }
 
     public void setPlace(PlaceResponse place) {
         if (place == null) return;
 
-        titleLabel.setText(place.name());
-        countryLabel.setText(place.country());
+        // title
+        titleLabel.setText(place.title());
 
-        // Clearing previous background and styles
+        // country — CountryResponse can be null if not loaded
+        if (countryLabel != null) {
+            String countryName = place.country() != null ? place.country().name() : "-";
+            countryLabel.setText(countryName);
+        }
+
+        // date from createdAt Instant
+        if (dateLabel != null) {
+            dateLabel.setText(place.createdAt() != null
+                    ? DATE_FORMAT.format(place.createdAt())
+                    : "Date TBA");
+        }
+
+        // cover image from ImageResponse
         media.setBackground(null);
         media.getStyleClass().removeIf(s -> s.equals("trip-cover-default"));
 
+        String imageUrl = place.coverImage() != null && place.coverImage().url() != null
+                ? place.coverImage().url().toString()
+                : null;
         boolean imageApplied = false;
-        if (place.imageUrl() != null && !place.imageUrl().isBlank()) {
-            Image image = resolveImage(place.imageUrl());
+        if (imageUrl != null && !imageUrl.isBlank()) {
+            Image image = resolveImage(imageUrl);
             if (image != null && !image.isError()) {
-                BackgroundImage bg = new BackgroundImage(
+                media.setBackground(new Background(new BackgroundImage(
                         image,
                         BackgroundRepeat.NO_REPEAT,
                         BackgroundRepeat.NO_REPEAT,
                         BackgroundPosition.CENTER,
                         COVER_SIZE
-                );
-                media.setBackground(new Background(bg));
+                )));
                 imageApplied = true;
             }
         }
-
         if (!imageApplied) {
             media.getStyleClass().add("trip-cover-default");
         }
 
-        // Status badge
-        statusLabel.getStyleClass().removeIf(s -> s.startsWith("place-status-"));
-        if (place.status() != null) {
-            statusLabel.setText(place.status().getLabel());
-            statusLabel.getStyleClass().add(place.status().getCssClass());
-        } else {
-            statusLabel.setText("Not visited");
-            statusLabel.getStyleClass().add("place-status-not-visited");
-        }
-
-        if (dateLabel != null) {
-            dateLabel.setText(formatDate(place.date()));
+        // status badge — real PlaceResponse has no status, hide the label
+        if (statusLabel != null) {
+            statusLabel.setVisible(false);
+            statusLabel.setManaged(false);
         }
     }
 
     private Image resolveImage(String imageUrl) {
         return IMAGE_CACHE.computeIfAbsent(imageUrl, url -> {
-            String resolved = url;
-            if (url.startsWith("/")) {
-                URL resource = getClass().getResource(url);
+            String normalized = url.replace('\\', '/');
+            String resolved = normalized;
+            if (normalized.startsWith("/")) {
+                URL resource = getClass().getResource(normalized);
                 if (resource == null) return null;
                 resolved = resource.toExternalForm();
             }
@@ -142,27 +139,16 @@ public class PlaceCardView implements Initializable {
     }
 
     public static PlaceCardView create(PlaceResponse place, Runnable onOpen) {
-        if (FXML_URL == null) throw new IllegalStateException("PlaceCard.fxml not found");
+        if (FXML_URL == null) throw new IllegalStateException("TripPlaceCard.fxml not found");
         FXMLLoader loader = new FXMLLoader(FXML_URL);
         try {
             loader.load();
         } catch (IOException e) {
-            throw new RuntimeException("Failed to load PlaceCard.fxml", e);
+            throw new RuntimeException("Failed to load TripPlaceCard.fxml", e);
         }
         PlaceCardView view = loader.getController();
         view.setOnOpen(onOpen);
         view.setPlace(place);
         return view;
     }
-
-    private String formatDate(String raw) {
-        if (raw == null || raw.isBlank()) return "Date TBA";
-        try {
-            LocalDate date = LocalDate.parse(raw);
-            return date.format(DateTimeFormatter.ofPattern("MMM d, yyyy"));
-        } catch (Exception e) {
-            return raw;
-        }
-    }
 }
-

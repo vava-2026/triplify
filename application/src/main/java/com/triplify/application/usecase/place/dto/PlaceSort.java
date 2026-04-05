@@ -1,4 +1,4 @@
-package com.triplify.application.request;
+package com.triplify.application.usecase.place.dto;
 
 public enum PlaceSort {
 
