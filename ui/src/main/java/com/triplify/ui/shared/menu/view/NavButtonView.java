@@ -1,9 +1,7 @@
 package com.triplify.ui.shared.menu.view;
 
-import com.google.inject.Inject;
 import com.triplify.ui.routing.AppPage;
 import com.triplify.ui.shared.menu.viewmodel.NavButtonViewModel;
-import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import com.triplify.ui.theme.AppColors;
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
