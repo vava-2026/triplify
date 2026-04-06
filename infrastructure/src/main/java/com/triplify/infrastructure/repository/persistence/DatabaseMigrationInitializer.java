@@ -17,7 +17,8 @@ public class DatabaseMigrationInitializer {
     private static final int BASELINE_SCHEMA_VERSION = 1;
     private static final String[] SEEDERS = {
             "seeders/user_seeder.sql",
-            "seeders/country_seeder.sql"
+            "seeders/country_seeder.sql",
+            "seeders/story_seeder.sql"
     };
 
     public void initialize() {
