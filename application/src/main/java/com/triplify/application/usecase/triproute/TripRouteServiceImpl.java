@@ -20,12 +20,17 @@ import com.triplify.application.usecase.triproute.dto.UpdateTripRouteStatusReque
 import com.triplify.domain.error.RouteError;
 import com.triplify.domain.error.TripError;
 import com.triplify.domain.error.TripRouteError;
+import com.triplify.domain.model.RoutePlace;
 import com.triplify.domain.model.Trip;
+import com.triplify.domain.model.TripPlace;
 import com.triplify.domain.model.TripRoute;
+import com.triplify.domain.model.enums.TripPlaceSourceType;
 import com.triplify.domain.model.enums.StatusEnum;
 import com.triplify.domain.pagination.Page;
 import com.triplify.domain.pagination.PageRequest;
+import com.triplify.domain.repository.RoutePlaceRepository;
 import com.triplify.domain.repository.RouteRepository;
+import com.triplify.domain.repository.TripPlaceRepository;
 import com.triplify.domain.repository.TripRepository;
 import com.triplify.domain.repository.TripRouteRepository;
 import com.triplify.domain.result.Result;
@@ -45,6 +50,8 @@ public class TripRouteServiceImpl implements TripRouteService {
     private final TripRouteRepository tripRouteRepository;
     private final TripRepository tripRepository;
     private final RouteRepository routeRepository;
+    private final RoutePlaceRepository routePlaceRepository;
+    private final TripPlaceRepository tripPlaceRepository;
     private final RouteService routeService;
     private final UserSessionContext userSessionContext;
 
@@ -53,12 +60,16 @@ public class TripRouteServiceImpl implements TripRouteService {
             TripRouteRepository tripRouteRepository,
             TripRepository tripRepository,
             RouteRepository routeRepository,
+            RoutePlaceRepository routePlaceRepository,
+            TripPlaceRepository tripPlaceRepository,
             RouteService routeService,
             UserSessionContext userSessionContext
     ) {
         this.tripRouteRepository = tripRouteRepository;
         this.tripRepository = tripRepository;
         this.routeRepository = routeRepository;
+        this.routePlaceRepository = routePlaceRepository;
+        this.tripPlaceRepository = tripPlaceRepository;
         this.routeService = routeService;
         this.userSessionContext = userSessionContext;
     }
@@ -86,6 +97,7 @@ public class TripRouteServiceImpl implements TripRouteService {
                 request.order()
         );
         tripRouteRepository.create(tripRoute);
+        syncRouteDerivedPlaces(tripRoute.getTripId().toString());
         return getTripRouteById(new GetTripRouteByIdRequest(tripRoute.getId().toString()));
     }
 
@@ -133,8 +145,10 @@ public class TripRouteServiceImpl implements TripRouteService {
             return Result.fail(tripResult.getError());
         }
 
+        String tripId = existing.getTripId().toString();
         tripRouteRepository.delete(existing);
-        resequenceTripRoutes(existing.getTripId().toString());
+        resequenceTripRoutes(tripId);
+        syncRouteDerivedPlaces(tripId);
         return Result.ok();
     }
 
@@ -364,6 +378,49 @@ public class TripRouteServiceImpl implements TripRouteService {
                     Instant.now()
             );
             tripRouteRepository.update(updated);
+        }
+    }
+
+    private void syncRouteDerivedPlaces(String tripId) {
+        removeExistingRouteDerivedPlaces(tripId);
+
+        List<TripRoute> tripRoutes = tripRouteRepository.findList(new PageRequest(0, 512), tripId, null).items();
+        for (TripRoute tripRoute : tripRoutes) {
+            List<RoutePlace> routePlaces = routePlaceRepository.findByRouteId(tripRoute.getRouteId().toString());
+            for (RoutePlace routePlace : routePlaces) {
+                if (tripPlaceRepository.findByTripIdAndPlaceId(tripId, routePlace.getPlaceId().toString()).isPresent()) {
+                    continue;
+                }
+                tripPlaceRepository.create(new TripPlace(
+                        tripRoute.getTripId(),
+                        routePlace.getPlaceId(),
+                        tripRoute.getId(),
+                        routePlace.getId()
+                ));
+            }
+        }
+    }
+
+    private void removeExistingRouteDerivedPlaces(String tripId) {
+        PageRequest pageRequest = new PageRequest(0, 512);
+        while (true) {
+            Page<TripPlace> page = tripPlaceRepository.findList(
+                    pageRequest,
+                    tripId,
+                    TripPlaceSourceType.ROUTE,
+                    null,
+                    null,
+                    null,
+                    null,
+                    true
+            );
+            for (TripPlace tripPlace : page.items()) {
+                tripPlaceRepository.delete(tripPlace);
+            }
+            if (!page.hasNext()) {
+                return;
+            }
+            pageRequest = pageRequest.next();
         }
     }
 }

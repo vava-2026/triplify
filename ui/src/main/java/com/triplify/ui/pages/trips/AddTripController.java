@@ -56,6 +56,7 @@ import com.triplify.ui.shared.component.select.view.SelectView;
 import com.triplify.ui.shared.component.input_item.TextAreaItem;
 import com.triplify.ui.shared.component.upload_panel.view.ImageUploadPanelView;
 import com.triplify.ui.shared.model.FieldVariant;
+import com.triplify.ui.storage.EditorDraftStorage;
 import com.triplify.ui.shared.toast.ToastService;
 import com.triplify.ui.shared.util.Localization;
 import com.triplify.application.model.ColorTheme;
@@ -246,7 +247,10 @@ public class AddTripController extends SimpleLifecycleAwareController {
         String tripStartDate = data == null ? null : data.getValue("tripStartDate");
         String tripEndDate = data == null ? null : data.getValue("tripEndDate");
 
-        if (createMode) {
+        EditorDraftStorage.TripDraft draft = EditorDraftStorage.consumeTripDraft();
+        if (matchesTripDraft(draft)) {
+            applyTripDraft(draft);
+        } else if (createMode) {
             populateHeader(tripName, tripDates);
             populateForm(tripName, tripCountry, tripCategory, tripTags, tripStartDate, tripEndDate);
             routeItems.clear();
@@ -268,12 +272,15 @@ public class AddTripController extends SimpleLifecycleAwareController {
             );
         }
 
+        consumeReturnedEditorResults();
         log.info("Trip editor opened: id={}, name={}, createMode={}", tripId, tripName, createMode);
     }
 
     @Override
     public void onLifecycleShow() {
         updateFullScreenMode(false);
+        EditorDraftStorage.clearTripDraft();
+        consumeReturnedEditorResults();
     }
 
     @Override
@@ -288,6 +295,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
     @FXML
     private void onDiscard() {
+        EditorDraftStorage.clearTripDraft();
         getRouter().popBackStack();
     }
 
@@ -304,7 +312,9 @@ public class AddTripController extends SimpleLifecycleAwareController {
             selectedCountryIds.add(countryId);
             selectedCountryLabelsById.putIfAbsent(countryId, countryLabel);
             renderCountryChips();
-            countrySelectView.clearSearch();
+            if (countrySelectView != null) {
+                countrySelectView.clearSearch();
+            }
         }
         pendingCountryEntry = null;
     }
@@ -340,12 +350,14 @@ public class AddTripController extends SimpleLifecycleAwareController {
     @FXML
     private void onCreateRoute() {
         setRoutePickerVisible(false);
+        EditorDraftStorage.saveTripDraft(captureTripDraft());
         openCreateRoute();
     }
 
     @FXML
     private void onCreatePlace() {
         setPlacePickerVisible(false);
+        EditorDraftStorage.saveTripDraft(captureTripDraft());
         openCreatePlace();
     }
 
@@ -418,6 +430,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
             String message = createMode
                     ? formatMessage("trip.add.toast.trip.ready", tripTitle)
                     : formatMessage("trip.add.toast.trip.updated", tripTitle);
+            EditorDraftStorage.clearTripDraft();
             toast.success(I18n.t("trip.add.toast.title.saved"), message);
             getRouter().popBackStack();
         });
@@ -648,6 +661,13 @@ public class AddTripController extends SimpleLifecycleAwareController {
     }
 
     private void initializeCountrySelector() {
+        if (countryService == null) {
+            InputItem placeholder = new InputItem("trip.add.select.country", FieldVariant.GHOST);
+            placeholder.setDisable(true);
+            countrySelectContainer.getChildren().setAll(placeholder);
+            return;
+        }
+
         Countries countriesModel = Countries.builder(countryService)
                 .placeholderKey("trip.add.select.country")
                 .noResultKey("search.noResult")
@@ -677,14 +697,15 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
     private void renderPlaces() {
         placesFlow.getChildren().clear();
-        if (placeItems.isEmpty()) {
+        List<PlaceItem> displayedPlaces = displayedPlaceItems();
+        if (displayedPlaces.isEmpty()) {
             Region emptyState = createEmptyState(I18n.t("trip.add.empty.places"));
             emptyState.prefWidthProperty().bind(placesFlow.widthProperty());
             placesFlow.getChildren().add(emptyState);
             return;
         }
 
-        for (PlaceItem item : placeItems) {
+        for (PlaceItem item : displayedPlaces) {
             placesFlow.getChildren().add(buildPlaceCard(item));
         }
     }
@@ -697,6 +718,9 @@ public class AddTripController extends SimpleLifecycleAwareController {
         card.setOnRemove(() -> {
             routeItems.remove(item);
             renderRoutes();
+            renderPlaces();
+            refreshRoutePicker();
+            refreshPlacePicker();
         });
         return card;
     }
@@ -706,10 +730,14 @@ public class AddTripController extends SimpleLifecycleAwareController {
         card.setPreviewImage(loadImage(item.imagePath()));
         card.setTitle(item.title());
         card.setSubtitle(item.subtitle());
-        card.setOnRemove(() -> {
-            placeItems.remove(item);
-            renderPlaces();
-        });
+        card.setRemoveVisible(item.isManual());
+        if (item.isManual()) {
+            card.setOnRemove(() -> {
+                placeItems.removeIf(existing -> item.id().equals(existing.id()));
+                renderPlaces();
+                refreshPlacePicker();
+            });
+        }
         return card;
     }
 
@@ -953,6 +981,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
         args.addArgument("tripId", targetTripId);
         args.addArgument("tripName", targetTripName == null || targetTripName.isBlank() ? "New Trip" : targetTripName);
+        args.addArgument("editorReturnTarget", EditorDraftStorage.TARGET_TRIP);
         getRouter().moveto(RouteIds.ADD_ROUTE, args);
     }
 
@@ -968,6 +997,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
                 "tripName",
                 targetTripName == null || targetTripName.isBlank() ? I18n.t("trip.add.default.name") : targetTripName
         );
+        args.addArgument("editorReturnTarget", EditorDraftStorage.TARGET_TRIP);
         getRouter().moveto(RouteIds.ADD_PLACE, args);
     }
 
@@ -986,7 +1016,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
             return List.of();
         }
         return loadAllPlaces().stream()
-                .map(this::toPlaceItem)
+                .map(this::toManualPlaceItem)
                 .filter(place -> place.id() != null && !containsPlace(place.id()))
                 .toList();
     }
@@ -1041,7 +1071,9 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
         routeItems.add(route);
         renderRoutes();
+        renderPlaces();
         refreshRoutePicker();
+        refreshPlacePicker();
         setRoutePickerVisible(false);
         toast.success(I18n.t("trip.add.toast.route.added.title"), route.title());
     }
@@ -1052,7 +1084,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
             return;
         }
 
-        placeItems.add(place);
+        placeItems.add(place.manualCopy());
         renderPlaces();
         refreshPlacePicker();
         setPlacePickerVisible(false);
@@ -1064,7 +1096,155 @@ public class AddTripController extends SimpleLifecycleAwareController {
     }
 
     private boolean containsPlace(String placeId) {
-        return placeId != null && placeItems.stream().anyMatch(item -> placeId.equals(item.id()));
+        return placeId != null && displayedPlaceItems().stream().anyMatch(item -> placeId.equals(item.id()));
+    }
+
+    private List<PlaceItem> displayedPlaceItems() {
+        Map<String, PlaceItem> itemsById = new java.util.LinkedHashMap<>();
+        for (PlaceItem item : placeItems) {
+            itemsById.putIfAbsent(item.id(), item);
+        }
+        for (RouteItem route : routeItems) {
+            for (PlaceItem item : route.derivedPlaces()) {
+                itemsById.putIfAbsent(item.id(), item);
+            }
+        }
+        return new ArrayList<>(itemsById.values());
+    }
+
+    private EditorDraftStorage.TripDraft captureTripDraft() {
+        return new EditorDraftStorage.TripDraft(
+                tripId,
+                normalizeNullable(titleInput.getText()),
+                normalizeNullable(descriptionInput.getText()),
+                currentTripDisplayName,
+                tripStatus,
+                startDateInput.getValue(),
+                endDateInput.getValue(),
+                selectedValue(categorySelectModel),
+                new LinkedHashSet<>(selectedCountryIds),
+                new java.util.LinkedHashMap<>(selectedCountryLabelsById),
+                new LinkedHashSet<>(selectedTagLabels),
+                new LinkedHashSet<>(selectedTagIds),
+                coverImagePath,
+                coverImageDirty,
+                routeItems.stream()
+                        .map(route -> new EditorDraftStorage.RouteDraftItem(
+                                route.id(),
+                                route.title(),
+                                route.subtitle(),
+                                route.imagePath(),
+                                route.derivedPlaces().stream()
+                                        .map(place -> new EditorDraftStorage.PlaceDraftItem(
+                                                place.id(),
+                                                place.title(),
+                                                place.subtitle(),
+                                                place.imagePath(),
+                                                place.sourceType(),
+                                                place.sourceRouteId()
+                                        ))
+                                        .toList()
+                        ))
+                        .toList(),
+                placeItems.stream()
+                        .map(place -> new EditorDraftStorage.PlaceDraftItem(
+                                place.id(),
+                                place.title(),
+                                place.subtitle(),
+                                place.imagePath(),
+                                place.sourceType(),
+                                place.sourceRouteId()
+                        ))
+                        .toList()
+        );
+    }
+
+    private boolean matchesTripDraft(EditorDraftStorage.TripDraft draft) {
+        if (draft == null) {
+            return false;
+        }
+        return normalizeTripKey(tripId).equals(normalizeTripKey(draft.tripId()));
+    }
+
+    private void applyTripDraft(EditorDraftStorage.TripDraft draft) {
+        titleInput.setText(safeText(draft.title()));
+        descriptionInput.setText(safeText(draft.description()));
+        currentTripDisplayName = draft.currentTripDisplayName() == null || draft.currentTripDisplayName().isBlank()
+                ? I18n.t("trip.add.default.name")
+                : draft.currentTripDisplayName();
+        tripStatus = draft.tripStatus();
+        startDateInput.setValue(draft.startDate());
+        endDateInput.setValue(draft.endDate());
+
+        selectedCountryIds.clear();
+        selectedCountryIds.addAll(draft.selectedCountryIds());
+        selectedCountryLabelsById.clear();
+        selectedCountryLabelsById.putAll(draft.selectedCountryLabelsById());
+        renderCountryChips();
+
+        selectedTagLabels.clear();
+        selectedTagLabels.addAll(draft.selectedTagLabels());
+        selectedTagIds.clear();
+        selectedTagIds.addAll(draft.selectedTagIds());
+        syncTagPicker();
+
+        categorySelectModel.setSelectedItem(findEntry(categorySelectModel, draft.categoryValue()));
+
+        routeItems.clear();
+        draft.routes().stream()
+                .map(route -> new RouteItem(
+                        route.id(),
+                        route.title(),
+                        route.subtitle(),
+                        route.imagePath(),
+                        route.derivedPlaces().stream()
+                                .map(place -> new PlaceItem(
+                                        place.id(),
+                                        place.title(),
+                                        place.subtitle(),
+                                        place.imagePath(),
+                                        place.sourceType() == null ? TripPlaceSourceType.ROUTE : place.sourceType(),
+                                        place.sourceRouteId()
+                                ))
+                                .toList()
+                ))
+                .forEach(routeItems::add);
+
+        placeItems.clear();
+        draft.manualPlaces().stream()
+                .map(place -> new PlaceItem(
+                        place.id(),
+                        place.title(),
+                        place.subtitle(),
+                        place.imagePath(),
+                        place.sourceType() == null ? TripPlaceSourceType.MANUAL : place.sourceType(),
+                        place.sourceRouteId()
+                ))
+                .forEach(placeItems::add);
+
+        coverImageDirty = draft.coverImageDirty();
+        showCoverImage(draft.coverImagePath(), draft.title());
+        renderRoutes();
+        renderPlaces();
+    }
+
+    private void consumeReturnedEditorResults() {
+        RouteResponse createdRoute = EditorDraftStorage.consumePendingRoute(EditorDraftStorage.TARGET_TRIP);
+        if (createdRoute != null) {
+            addExistingRoute(toRouteItem(createdRoute));
+        }
+
+        PlaceResponse createdPlace = EditorDraftStorage.consumePendingPlace(EditorDraftStorage.TARGET_TRIP);
+        if (createdPlace != null) {
+            addExistingPlace(toManualPlaceItem(createdPlace));
+        }
+    }
+
+    private String normalizeTripKey(String value) {
+        if (value == null || value.isBlank() || "0".equals(value.trim())) {
+            return "";
+        }
+        return value.trim();
     }
 
 
@@ -1076,11 +1256,16 @@ public class AddTripController extends SimpleLifecycleAwareController {
                 response.id(),
                 safeText(response.title()).isBlank() ? I18n.t("trip.add.fallback.route") : response.title(),
                 subtitle,
-                imagePath(response.coverImage() == null ? null : response.coverImage().url())
+                imagePath(response.coverImage() == null ? null : response.coverImage().url()),
+                response.places() == null
+                        ? List.of()
+                        : response.places().stream()
+                                .map(place -> toRouteDerivedPlaceItem(place, response.id()))
+                                .toList()
         );
     }
 
-    private PlaceItem toPlaceItem(PlaceResponse response) {
+    private PlaceItem toManualPlaceItem(PlaceResponse response) {
         String subtitle = response.country() != null && response.country().name() != null && !response.country().name().isBlank()
                 ? response.country().name()
                 : safeText(response.description());
@@ -1088,7 +1273,23 @@ public class AddTripController extends SimpleLifecycleAwareController {
                 response.id(),
                 safeText(response.title()).isBlank() ? I18n.t("trip.add.fallback.place") : response.title(),
                 subtitle,
-                imagePath(response.coverImage() == null ? null : response.coverImage().url())
+                imagePath(response.coverImage() == null ? null : response.coverImage().url()),
+                TripPlaceSourceType.MANUAL,
+                null
+        );
+    }
+
+    private PlaceItem toRouteDerivedPlaceItem(PlaceResponse response, String routeId) {
+        String subtitle = response.country() != null && response.country().name() != null && !response.country().name().isBlank()
+                ? response.country().name()
+                : safeText(response.description());
+        return new PlaceItem(
+                response.id(),
+                safeText(response.title()).isBlank() ? I18n.t("trip.add.fallback.place") : response.title(),
+                subtitle,
+                imagePath(response.coverImage() == null ? null : response.coverImage().url()),
+                TripPlaceSourceType.ROUTE,
+                routeId
         );
     }
 
@@ -1560,7 +1761,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
             return Result.ok();
         }
 
-        Result<List<TripPlaceResponse>> existingResult = loadAllTripPlaces(targetTripId);
+        Result<List<TripPlaceResponse>> existingResult = loadAllTripPlaces(targetTripId, TripPlaceSourceType.MANUAL);
         if (existingResult.isFailure()) {
             return Result.fail(existingResult.getError());
         }
@@ -1609,7 +1810,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
     private void loadTripPlaces(String targetTripId) {
         placeItems.clear();
-        Result<List<TripPlaceResponse>> result = loadAllTripPlaces(targetTripId);
+        Result<List<TripPlaceResponse>> result = loadAllTripPlaces(targetTripId, TripPlaceSourceType.MANUAL);
         if (result.isFailure()) {
             log.warn("Failed to load trip places for trip '{}'", targetTripId, result.getError());
             toast.warning(I18n.t("trip.add.toast.places.loadFailed"));
@@ -1620,7 +1821,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
         result.getValue().stream()
                 .map(TripPlaceResponse::place)
                 .filter(place -> place != null)
-                .map(this::toPlaceItem)
+                .map(this::toManualPlaceItem)
                 .forEach(placeItems::add);
         renderPlaces();
     }
@@ -1652,6 +1853,10 @@ public class AddTripController extends SimpleLifecycleAwareController {
     }
 
     private Result<List<TripPlaceResponse>> loadAllTripPlaces(String targetTripId) {
+        return loadAllTripPlaces(targetTripId, null);
+    }
+
+    private Result<List<TripPlaceResponse>> loadAllTripPlaces(String targetTripId, TripPlaceSourceType sourceType) {
         if (tripPlaceService == null) {
             return Result.ok(List.of());
         }
@@ -1662,7 +1867,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
         while (true) {
             var result = tripPlaceService.getTripPlaces(new GetTripPlacesRequest(
                     pageRequest,
-                    new GetTripPlacesRequest.Filter(targetTripId, null, null, null, null, null),
+                    new GetTripPlacesRequest.Filter(targetTripId, sourceType, null, null, null, null),
                     new GetTripPlacesRequest.OrderBy(true)
             ));
             if (result.isFailure()) {
@@ -1780,7 +1985,22 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
     private record TagOption(String id, String label) { }
 
-    private record RouteItem(String id, String title, String subtitle, String imagePath) { }
+    private record RouteItem(String id, String title, String subtitle, String imagePath, List<PlaceItem> derivedPlaces) { }
 
-    private record PlaceItem(String id, String title, String subtitle, String imagePath) { }
+    private record PlaceItem(
+            String id,
+            String title,
+            String subtitle,
+            String imagePath,
+            TripPlaceSourceType sourceType,
+            String sourceRouteId
+    ) {
+        private boolean isManual() {
+            return sourceType != TripPlaceSourceType.ROUTE;
+        }
+
+        private PlaceItem manualCopy() {
+            return new PlaceItem(id, title, subtitle, imagePath, TripPlaceSourceType.MANUAL, null);
+        }
+    }
 }

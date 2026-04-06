@@ -62,4 +62,9 @@ public class EditorMediaCardView extends VBox {
     public void setOnRemove(Runnable action) {
         removeButton.setOnAction(event -> action.run());
     }
+
+    public void setRemoveVisible(boolean visible) {
+        removeButton.setVisible(visible);
+        removeButton.setManaged(visible);
+    }
 }

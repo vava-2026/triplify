@@ -11,6 +11,7 @@ import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.component.countries.model.Countries;
 import com.triplify.ui.shared.component.countries.view.CountriesView;
+import com.triplify.ui.storage.EditorDraftStorage;
 import com.triplify.ui.shared.component.action_buttons.view.EditorActionButtonsView;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.section_header.view.SectionHeaderView;
@@ -86,6 +87,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
 
     private Integer tripId;
     private String tripName;
+    private String returnTarget;
     private Double selectedLatitude = DEFAULT_LATITUDE;
     private Double selectedLongitude = DEFAULT_LONGITUDE;
     private String coverImagePath;
@@ -100,16 +102,22 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     @FXML
     public void initialize() {
         titleInput = new InputItem("input.placeholder.placeTitle", FieldVariant.GHOST);
-        countriesView = new CountriesView(
-                Countries.builder(countryService)
-                        .variant(FieldVariant.GHOST)
-                        .searchOnTyping(true)
-                        .onLoadFailed(errorHandler::handle)
-                        .build()
-        );
+        if (countryService == null) {
+            InputItem placeholderCountryInput = new InputItem("input.placeholder.country", FieldVariant.GHOST);
+            placeholderCountryInput.setDisable(true);
+            countryInputContainer.getChildren().add(placeholderCountryInput);
+        } else {
+            countriesView = new CountriesView(
+                    Countries.builder(countryService)
+                            .variant(FieldVariant.GHOST)
+                            .searchOnTyping(true)
+                            .onLoadFailed(errorHandler::handle)
+                            .build()
+            );
+            countryInputContainer.getChildren().add(countriesView);
+        }
         descriptionInput = new TextAreaItem("input.placeholder.placeDescription", FieldVariant.GHOST);
         titleInputContainer.getChildren().add(titleInput);
-        countryInputContainer.getChildren().add(countriesView);
         descriptionInputContainer.getChildren().add(descriptionInput);
         uploadArea = imageUploadPanel.getUploadArea();
         coverPreview = imageUploadPanel.getCoverPreview();
@@ -139,6 +147,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         RouterArgument data = getRouter().getCurrentData();
         tripId = data == null ? null : data.getValue("tripId");
         tripName = data == null ? null : data.getValue("tripName");
+        returnTarget = data == null ? null : data.getValue("editorReturnTarget");
     }
 
     @Override
@@ -161,7 +170,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         clearFieldErrors();
 
         AddPlaceRequest request = new AddPlaceRequest(
-                normalize(countriesView.getSelectedCountryId()),
+                normalize(countriesView == null ? null : countriesView.getSelectedCountryId()),
                 coverImagePath == null ? null : java.nio.file.Path.of(coverImagePath),
                 normalize(titleInput.getText()),
                 normalizeNullable(descriptionInput.getText()),
@@ -169,13 +178,16 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
                 selectedLongitude
         );
 
-        Map<String, Consumer<String>> fieldHandlers = Map.of(
-                "title", message -> titleInput.showError(message),
-                "countryId", message -> countriesView.showError(message)
-        );
+        Map<String, Consumer<String>> fieldHandlers = countriesView == null
+                ? Map.of("title", message -> titleInput.showError(message))
+                : Map.of(
+                        "title", message -> titleInput.showError(message),
+                        "countryId", message -> countriesView.showError(message)
+                );
 
         var result = placeService.addPlace(request);
-        result.onSuccess(ignored -> {
+        result.onSuccess(place -> {
+            EditorDraftStorage.savePendingPlace(returnTarget, place);
             String message = tripName == null || tripName.isBlank()
                     ? I18n.t("place.add.toast.saved.body")
                     : formatMessage("place.add.toast.saved.body.trip", tripName);
@@ -237,7 +249,9 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
 
     private void clearFieldErrors() {
         titleInput.clearError();
-        countriesView.clearError();
+        if (countriesView != null) {
+            countriesView.clearError();
+        }
     }
 
     private void handleCoverImage(File file) {
@@ -346,7 +360,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
             }
         });
         interactiveMap.selectedCountryNameProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null && !newVal.isBlank()) {
+            if (countriesView != null && newVal != null && !newVal.isBlank()) {
                 countriesView.selectCountryByName(newVal);
             }
         });

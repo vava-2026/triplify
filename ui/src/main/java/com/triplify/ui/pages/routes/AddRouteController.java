@@ -7,6 +7,8 @@ import com.triplify.application.usecase.place.dto.PlaceResponse;
 import com.triplify.application.usecase.route.RouteService;
 import com.triplify.application.usecase.route.dto.AddPlaceToRouteRequest;
 import com.triplify.application.usecase.route.dto.AddRouteRequest;
+import com.triplify.application.usecase.route.dto.GetRouteByIdRequest;
+import com.triplify.application.usecase.route.dto.RouteResponse;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.routing.RouteIds;
@@ -22,6 +24,7 @@ import com.triplify.ui.shared.component.section_header.view.SectionHeaderView;
 import com.triplify.ui.shared.component.input_item.TextAreaItem;
 import com.triplify.ui.shared.component.upload_panel.view.ImageUploadPanelView;
 import com.triplify.ui.shared.model.FieldVariant;
+import com.triplify.ui.storage.EditorDraftStorage;
 import com.triplify.ui.shared.toast.ToastService;
 import com.triplify.ui.shared.util.Localization;
 import javafx.fxml.FXML;
@@ -98,6 +101,7 @@ public class AddRouteController extends SimpleLifecycleAwareController {
 
     private Integer tripId;
     private String tripName;
+    private String returnTarget;
     private String coverImagePath;
     private InputItem titleInput;
     private TextAreaItem descriptionInput;
@@ -180,12 +184,21 @@ public class AddRouteController extends SimpleLifecycleAwareController {
         RouterArgument data = getRouter().getCurrentData();
         tripId = data == null ? null : data.getValue("tripId");
         tripName = data == null ? null : data.getValue("tripName");
+        returnTarget = data == null ? null : data.getValue("editorReturnTarget");
+
+        EditorDraftStorage.RouteDraft draft = EditorDraftStorage.consumeRouteDraft();
+        if (matchesDraftContext(draft)) {
+            applyDraft(draft);
+        }
     }
 
     @Override
     public void onLifecycleShow() {
         updateFullScreenMode(false);
         refreshAvailablePlaces();
+        EditorDraftStorage.clearRouteDraft();
+        consumeReturnedPlace();
+        renderPlaces();
     }
 
     @Override
@@ -216,6 +229,9 @@ public class AddRouteController extends SimpleLifecycleAwareController {
         var result = routeService.addRoute(request);
         result.onSuccess(route -> {
             boolean linkedAllPlaces = linkPlacesToRoute(route.id());
+            RouteResponse savedRoute = loadSavedRoute(route.id(), route);
+            EditorDraftStorage.clearRouteDraft();
+            EditorDraftStorage.savePendingRoute(returnTarget, savedRoute);
             String routeTitle = titleInput.getText().trim();
             String message = tripName == null || tripName.isBlank()
                     ? formatMessage("route.add.toast.ready", routeTitle)
@@ -232,6 +248,7 @@ public class AddRouteController extends SimpleLifecycleAwareController {
 
     @FXML
     private void onDiscard() {
+        EditorDraftStorage.clearRouteDraft();
         getRouter().popBackStack();
     }
 
@@ -244,9 +261,11 @@ public class AddRouteController extends SimpleLifecycleAwareController {
     @FXML
     private void onCreatePlace() {
         setPlacePickerVisible(false);
+        EditorDraftStorage.saveRouteDraft(captureDraft());
         RouterArgument args = new RouterArgument();
         args.addArgument("tripId", tripId == null ? 0 : tripId);
         args.addArgument("tripName", tripName == null || tripName.isBlank() ? I18n.t("trip.add.default.name") : tripName);
+        args.addArgument("editorReturnTarget", EditorDraftStorage.TARGET_ROUTE);
         getRouter().moveto(RouteIds.ADD_PLACE, args);
     }
 
@@ -712,6 +731,96 @@ public class AddRouteController extends SimpleLifecycleAwareController {
         toast.success(I18n.t("route.add.toast.place.added.title"), candidate.title());
         setPlacePickerVisible(false);
         renderPlaces();
+    }
+
+    private EditorDraftStorage.RouteDraft captureDraft() {
+        return new EditorDraftStorage.RouteDraft(
+                tripId == null ? null : tripId.toString(),
+                tripName,
+                normalize(titleInput.getText()),
+                normalizeNullable(descriptionInput.getText()),
+                coverImagePath,
+                placeItems.stream()
+                        .map(item -> new EditorDraftStorage.PlaceDraftItem(
+                                item.id(),
+                                item.title(),
+                                item.subtitle(),
+                                item.imagePath(),
+                                null,
+                                null
+                        ))
+                        .toList()
+        );
+    }
+
+    private boolean matchesDraftContext(EditorDraftStorage.RouteDraft draft) {
+        if (draft == null) {
+            return false;
+        }
+
+        String currentTripKey = tripId == null ? null : tripId.toString();
+        return normalizeKey(currentTripKey).equals(normalizeKey(draft.tripId()));
+    }
+
+    private void applyDraft(EditorDraftStorage.RouteDraft draft) {
+        titleInput.setText(draft.title() == null ? "" : draft.title());
+        descriptionInput.setText(draft.description() == null ? "" : draft.description());
+        placeItems.clear();
+        draft.places().stream()
+                .map(item -> new RoutePlaceItem(item.id(), item.title(), item.subtitle(), item.imagePath()))
+                .forEach(placeItems::add);
+        coverImagePath = draft.coverImagePath();
+        if (coverImagePath == null || coverImagePath.isBlank()) {
+            selectedImageLabel.setVisible(false);
+            selectedImageLabel.setManaged(false);
+            selectedImageLabel.setText("");
+            coverPreview.setImage(null);
+            coverPreview.setVisible(false);
+            coverPreview.setManaged(false);
+            uploadPlaceholder.setVisible(true);
+            uploadPlaceholder.setManaged(true);
+        } else {
+            selectedImageLabel.setText(new File(coverImagePath).getName());
+            selectedImageLabel.setVisible(true);
+            selectedImageLabel.setManaged(true);
+            if (isVectorImage(new File(coverImagePath))) {
+                coverPreview.setImage(null);
+                coverPreview.setVisible(false);
+                coverPreview.setManaged(false);
+                uploadPlaceholder.setVisible(true);
+                uploadPlaceholder.setManaged(true);
+            } else {
+                setCoverPreviewImage(loadImage(coverImagePath));
+                coverPreview.setVisible(true);
+                coverPreview.setManaged(false);
+                uploadPlaceholder.setVisible(false);
+                uploadPlaceholder.setManaged(false);
+            }
+        }
+        renderPlaces();
+    }
+
+    private void consumeReturnedPlace() {
+        PlaceResponse place = EditorDraftStorage.consumePendingPlace(EditorDraftStorage.TARGET_ROUTE);
+        if (place == null) {
+            return;
+        }
+        addExistingPlace(toRoutePlaceItem(place));
+    }
+
+    private RouteResponse loadSavedRoute(String routeId, RouteResponse fallback) {
+        var result = routeService.getRouteById(new GetRouteByIdRequest(routeId));
+        if (result.isFailure()) {
+            return fallback;
+        }
+        return result.getValue();
+    }
+
+    private String normalizeKey(String value) {
+        if (value == null || value.isBlank() || "0".equals(value.trim())) {
+            return "";
+        }
+        return value.trim();
     }
 
     private void clearFieldErrors() {
