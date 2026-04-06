@@ -70,11 +70,10 @@ public class BadgeView extends VBox {
             badgeImage.setImage(placeholderImage);
         }
 
-        if (badge.isUnlocked() && !getStyleClass().contains(LOCKED_CLASS)) {
-            getStyleClass().add(LOCKED_CLASS);
-        }
-        else {
+        if (badge.isUnlocked()) {
             getStyleClass().remove(LOCKED_CLASS);
+        } else if (!getStyleClass().contains(LOCKED_CLASS)) {
+            getStyleClass().add(LOCKED_CLASS);
         }
     }
 }

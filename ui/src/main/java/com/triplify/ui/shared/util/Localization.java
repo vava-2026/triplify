@@ -44,11 +44,15 @@ public final class Localization {
     }
 
     public static StringBinding localizedBinding(LocalizedName localizedName) {
-        return localizedBinding(localizedName::name, localizedName::nameSk);
+        return localizedName == null
+                ? localizedBinding(() -> "", () -> "")
+                : localizedBinding(localizedName::name, localizedName::nameSk);
     }
 
     public static StringBinding localizedDescriptionBinding(LocalizedDescription localizedDescription) {
-        return localizedBinding(localizedDescription::description, localizedDescription::descriptionSk);
+        return localizedDescription == null
+                ? localizedBinding(() -> "", () -> "")
+                : localizedBinding(localizedDescription::description, localizedDescription::descriptionSk);
     }
 
     public static void bindLocalizedText(StringProperty property, Supplier<String> english, Supplier<String> slovak) {
