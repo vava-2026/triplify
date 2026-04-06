@@ -79,7 +79,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     @Inject private ToastService toast;
     @Inject private ErrorHandler errorHandler;
 
-    private Integer tripId;
+    private Long tripId;
     private String tripName;
     private Double selectedLatitude = DEFAULT_LATITUDE;
     private Double selectedLongitude = DEFAULT_LONGITUDE;
