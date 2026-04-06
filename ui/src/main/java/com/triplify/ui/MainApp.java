@@ -13,8 +13,6 @@ import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import com.triplify.ui.shared.util.FxmlLoadResult;
 import javafx.application.Application;
 import javafx.beans.binding.BooleanBinding;
-import javafx.fxml.FXMLLoader;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.layout.HBox;
