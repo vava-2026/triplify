@@ -1,7 +1,7 @@
 package com.triplify.ui.shared.menu.view;
 
 import com.google.inject.Inject;
-import com.triplify.ui.shared.menu.model.NavItem;
+import com.triplify.ui.routing.AppPage;
 import com.triplify.ui.shared.menu.viewmodel.NavButtonViewModel;
 import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import com.triplify.ui.theme.AppColors;
@@ -32,16 +32,14 @@ public class NavButtonView implements Initializable {
     @FXML private FontIcon icon;
     @FXML private Label label;
 
-    @Inject private FxmlLoaderHelper fxmlLoader;
-
     private NavButtonViewModel viewModel;
     private Runnable onSelect;
 
     private final DoubleProperty borderProgress = new SimpleDoubleProperty(0.0);
     private Timeline hoverTimeline;
 
-    public NavButtonView withNavItem(NavItem navItem) {
-        configure(navItem);
+    public NavButtonView withPage(AppPage page) {
+        configure(page);
         return this;
     }
 
@@ -70,11 +68,11 @@ public class NavButtonView implements Initializable {
         }
     }
 
-    public NavItem getNavItem() { return viewModel.getNavItem(); }
+    public AppPage getPage() { return viewModel.getPage(); }
 
-    private void configure(NavItem navItem) {
-        viewModel = new NavButtonViewModel(navItem);
-        icon.setIconLiteral(navItem.getIcon());
+    private void configure(AppPage page) {
+        viewModel = new NavButtonViewModel(page);
+        icon.setIconLiteral(page.getIcon());
         icon.setIconSize(18);
         label.textProperty().bind(viewModel.labelBinding());
     }

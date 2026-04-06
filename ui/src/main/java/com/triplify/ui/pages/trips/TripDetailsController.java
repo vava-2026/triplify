@@ -1,6 +1,8 @@
 package com.triplify.ui.pages.trips;
 
+import com.google.inject.Inject;
 import com.triplify.application.response.TripStatus;
+import com.triplify.ui.routing.GuardedNavigator;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.routing.TriplifyRouterContext;
 import javafx.fxml.FXML;
@@ -13,6 +15,8 @@ import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 public class TripDetailsController extends SimpleLifecycleAwareController {
 
     private static final Logger log = LoggerFactory.getLogger(TripDetailsController.class);
+
+    @Inject private GuardedNavigator guardedNavigator;
 
     @FXML private Label tripNameLabel;
     @FXML private Label tripIdLabel;
@@ -64,7 +68,7 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
 
     @FXML
     private void onBack() {
-        getRouter().popBackStack();
+        guardedNavigator.goBack(getRouter());
     }
 
     @FXML
@@ -79,6 +83,6 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         RouterArgument args = new RouterArgument();
         args.addArgument("tripId", id);
         args.addArgument("tripName", name == null ? tripNameLabel.getText() : name);
-        getRouter().moveto(RouteIds.ADD_PLACE, args);
+        guardedNavigator.goTo(getRouter(), RouteIds.ADD_PLACE, args);
     }
 }
