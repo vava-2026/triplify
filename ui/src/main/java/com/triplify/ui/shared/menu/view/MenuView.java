@@ -73,7 +73,6 @@ public class MenuView implements Initializable {
         sidebarRoot.setMaxHeight(Double.MAX_VALUE);
         mainPageInner.setMaxHeight(Double.MAX_VALUE);
         refreshAccountSection();
-        renderNavigation();
 
         viewModel.activePrimaryPageProperty().addListener(
                 (obs, oldVal, newVal) -> refreshActiveState(newVal));
