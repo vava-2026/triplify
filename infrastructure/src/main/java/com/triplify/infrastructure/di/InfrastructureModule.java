@@ -20,6 +20,7 @@ public class InfrastructureModule extends AbstractModule {
         bind(PasswordEncoder.class).to(BCryptPasswordEncoder.class).in(Singleton.class);
         bind(ImageStorageService.class).to(DiscImageStorage.class).in(Singleton.class);
         bind(PlaceRepository.class).to(PlaceRepositoryImpl.class).in(Singleton.class);
+        bind(TagRepository.class).to(TagRepositoryImpl.class).in(Singleton.class);
     }
 }
 
