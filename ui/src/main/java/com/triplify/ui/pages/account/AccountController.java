@@ -9,6 +9,7 @@ import com.triplify.domain.model.enums.RoleEnum;
 import com.triplify.domain.result.Result;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
+import com.triplify.ui.routing.GuardedNavigator;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.component.badge.model.Badge;
@@ -40,6 +41,7 @@ public class AccountController extends SimpleLifecycleAwareController {
     @Inject private AuthService authService;
     @Inject private UserSessionContext userSessionContext;
     @Inject private ErrorHandler errorHandler;
+    @Inject private GuardedNavigator guardedNavigator;
 
     private InputItem usernameInput;
     private InputItem emailInput;
@@ -88,9 +90,7 @@ public class AccountController extends SimpleLifecycleAwareController {
             logOffButton.setOnAction(e -> {
                 authService.logout();
                 toast.success("Logged off successfully");
-                TriplifyRouterContext context = (TriplifyRouterContext) getRouter().getContext();
-                context.setSelectedMenuItem(null);
-                getRouter().moveto(RouteIds.START);
+                guardedNavigator.goTo(getRouter(), RouteIds.START);
                 render();
             });
             editFormContainer.getChildren().addAll(usernameLabel, logOffButton);

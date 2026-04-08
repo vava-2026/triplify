@@ -9,6 +9,7 @@ import com.triplify.application.usecase.place.PlaceService;
 import com.triplify.ui.map.CountryBoundary;
 import com.triplify.ui.map.CountryBoundaryLoader;
 import com.triplify.ui.error.ErrorHandler;
+import com.triplify.ui.routing.GuardedNavigator;
 import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.input_item.TextAreaItem;
@@ -78,6 +79,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     @Inject private PlaceService placeService;
     @Inject private ToastService toast;
     @Inject private ErrorHandler errorHandler;
+    @Inject private GuardedNavigator guardedNavigator;
 
     private Long tripId;
     private String tripName;
@@ -165,14 +167,14 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
                     ? "Place saved successfully."
                     : "Place added to " + tripName + ".";
             toast.success("Place saved", message);
-            getRouter().popBackStack();
+            guardedNavigator.goBack(getRouter());
         });
         result.onFailure(error -> errorHandler.handle(error, fieldHandlers));
     }
 
     @FXML
     private void onDiscard() {
-        getRouter().popBackStack();
+        guardedNavigator.goBack(getRouter());
     }
 
     @FXML

@@ -8,9 +8,11 @@ import com.triplify.application.response.TripResponse;
 import com.triplify.application.response.TripStatus;
 import com.triplify.application.service.TripService;
 import com.triplify.application.service.TripServiceImpl;
+import com.triplify.ui.routing.GuardedNavigator;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.shared.component.card_grid.CardGridPane;
 import com.triplify.ui.shared.component.trip.view.TripCardView;
+import com.google.inject.Inject;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -41,6 +43,7 @@ public class MyTripsController extends SimpleLifecycleAwareController {
     @FXML private ComboBox<TripSort> sortSelect;
     @FXML private CardGridPane<TripResponse> cardGrid;
 
+    @Inject private GuardedNavigator guardedNavigator;
     private final TripService tripService = new TripServiceImpl();
 
     @FXML
@@ -162,7 +165,7 @@ public class MyTripsController extends SimpleLifecycleAwareController {
         args.addArgument("tripCategory", trip.category());
         args.addArgument("tripStatus", trip.status());
         args.addArgument("tripDates", dateRange);
-        getRouter().moveto(RouteIds.TRIP_DETAILS, args);
+        guardedNavigator.goTo(getRouter(), RouteIds.TRIP_DETAILS, args);
     }
 
     private String normalizeFilter(String value) {

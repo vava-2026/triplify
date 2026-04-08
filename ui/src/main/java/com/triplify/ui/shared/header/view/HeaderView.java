@@ -2,6 +2,7 @@ package com.triplify.ui.shared.header.view;
 
 import com.triplify.application.model.ColorTheme;
 import com.triplify.ui.pages.trips.MyTripsController;
+import com.triplify.ui.routing.AppPage;
 import com.triplify.ui.shared.component.select.entry.model.Entry;
 import com.triplify.ui.shared.component.search.model.Search;
 import com.triplify.ui.shared.component.search.view.SearchView;
@@ -50,5 +51,9 @@ public class HeaderView implements Initializable {
 //        searchView.setClip(null);
 
         searchContainer.getChildren().add(searchView);
+    }
+
+    public void setActivePage(AppPage page) {
+        viewModel.activePageProperty().set(page);
     }
 }

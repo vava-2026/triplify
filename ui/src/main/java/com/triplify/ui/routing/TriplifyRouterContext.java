@@ -1,7 +1,6 @@
 package com.triplify.ui.routing;
 
 import com.google.inject.Injector;
-import com.triplify.ui.shared.menu.model.MenuItem;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -17,7 +16,8 @@ import java.util.ResourceBundle;
 public class TriplifyRouterContext extends BaseRouterContext {
 
     private final BooleanProperty fullScreenContent = new SimpleBooleanProperty(false);
-    private final ObjectProperty<MenuItem> selectedMenuItem = new SimpleObjectProperty<>();
+    private final ObjectProperty<AppPage> currentPage = new SimpleObjectProperty<>();
+    private final ObjectProperty<AppPage> selectedPrimaryPage = new SimpleObjectProperty<>();
     private final Injector injector;
 
     public TriplifyRouterContext(Injector injector) {
@@ -69,15 +69,27 @@ public class TriplifyRouterContext extends BaseRouterContext {
         fullScreenContent.set(value);
     }
 
-    public ObjectProperty<MenuItem> selectedMenuItemProperty() {
-        return selectedMenuItem;
+    public ObjectProperty<AppPage> currentPageProperty() {
+        return currentPage;
     }
 
-    public MenuItem getSelectedMenuItem() {
-        return selectedMenuItem.get();
+    public AppPage getCurrentPage() {
+        return currentPage.get();
     }
 
-    public void setSelectedMenuItem(MenuItem value) {
-        selectedMenuItem.set(value);
+    public void setCurrentPage(AppPage value) {
+        currentPage.set(value);
+    }
+
+    public ObjectProperty<AppPage> selectedPrimaryPageProperty() {
+        return selectedPrimaryPage;
+    }
+
+    public AppPage getSelectedPrimaryPage() {
+        return selectedPrimaryPage.get();
+    }
+
+    public void setSelectedPrimaryPage(AppPage value) {
+        selectedPrimaryPage.set(value);
     }
 }
