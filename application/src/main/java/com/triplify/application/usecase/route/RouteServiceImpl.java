@@ -83,10 +83,7 @@ public class RouteServiceImpl implements RouteService {
                 request.length()
         );
 
-        Result<Void> coverImageResult = replaceCoverImage(route, request.coverImage(), request.title());
-        if (coverImageResult.isFailure()) {
-            return Result.fail(coverImageResult.getError());
-        }
+        replaceCoverImage(route, request.coverImage(), request.title()).orThrow();
 
         routeRepository.create(route);
         log.info("Added new route with id='{}', title='{}' by userId='{}'", route.getId(), route.getTitle(), user.userId());
@@ -96,20 +93,12 @@ public class RouteServiceImpl implements RouteService {
     @Override
     public Result<RouteResponse> updateRoute(UpdateRouteRequest request) {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
-        Result<Route> routeResult = requireOwnedRoute(request.id(), user.userId());
-        if (routeResult.isFailure()) {
-            return Result.fail(routeResult.getError());
-        }
-
-        Route route = routeResult.getValue();
+        Route route = requireOwnedRoute(request.id(), user.userId()).orThrow();
         route.updateTitle(request.title());
         route.updateDescription(normalizeDescription(request.description()));
         route.updateLength(request.length());
 
-        Result<Void> coverImageResult = replaceCoverImage(route, request.coverImage(), request.title());
-        if (coverImageResult.isFailure()) {
-            return Result.fail(coverImageResult.getError());
-        }
+        replaceCoverImage(route, request.coverImage(), request.title()).orThrow();
 
         routeRepository.update(route);
         log.info("Updated route with id='{}', title='{}' by userId='{}'", route.getId(), route.getTitle(), user.userId());
@@ -119,12 +108,8 @@ public class RouteServiceImpl implements RouteService {
     @Override
     public Result<Void> deleteRoute(DeleteRouteRequest request) {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
-        Result<Route> routeResult = requireOwnedRoute(request.id(), user.userId());
-        if (routeResult.isFailure()) {
-            return Result.fail(routeResult.getError());
-        }
-
-        routeRepository.delete(routeResult.getValue());
+        Route route = requireOwnedRoute(request.id(), user.userId()).orThrow();
+        routeRepository.delete(route);
         log.info("Deleted route with id='{}' by userId='{}'", request.id(), user.userId());
         return Result.ok();
     }
@@ -132,17 +117,14 @@ public class RouteServiceImpl implements RouteService {
     @Override
     public Result<RouteResponse> addPlaceToRoute(AddPlaceToRouteRequest request) {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
-        Result<Route> routeResult = requireOwnedRoute(request.routeId(), user.userId());
-        if (routeResult.isFailure()) {
-            return Result.fail(routeResult.getError());
-        }
+        Route route = requireOwnedRoute(request.routeId(), user.userId()).orThrow();
 
         if (placeRepository.findById(request.placeId()).isEmpty()) {
             return Result.fail(new PlaceError.NotFound(request.placeId()));
         }
 
         if (routePlaceRepository.findByRouteIdAndPlaceId(request.routeId(), request.placeId()).isPresent()) {
-            return Result.ok(toResponse(routeResult.getValue(), routePlaceRepository.findByRouteId(request.routeId())));
+            return Result.ok(toResponse(route, routePlaceRepository.findByRouteId(request.routeId())));
         }
 
         List<RoutePlace> currentPlaces = routePlaceRepository.findByRouteId(request.routeId());
@@ -151,7 +133,7 @@ public class RouteServiceImpl implements RouteService {
                 .max()
                 .orElse(-1) + 1;
 
-        RoutePlace routePlace = new RoutePlace(routeResult.getValue().getId(), UUID.fromString(request.placeId()), nextOrder);
+        RoutePlace routePlace = new RoutePlace(route.getId(), UUID.fromString(request.placeId()), nextOrder);
         routePlaceRepository.create(routePlace);
 
         log.info("Added placeId='{}' to routeId='{}' by userId='{}'", request.placeId(), request.routeId(), user.userId());
@@ -161,10 +143,7 @@ public class RouteServiceImpl implements RouteService {
     @Override
     public Result<RouteResponse> deletePlaceFromRoute(DeletePlaceFromRouteRequest request) {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
-        Result<Route> routeResult = requireOwnedRoute(request.routeId(), user.userId());
-        if (routeResult.isFailure()) {
-            return Result.fail(routeResult.getError());
-        }
+        Route route = requireOwnedRoute(request.routeId(), user.userId()).orThrow();
 
         var routePlaceRes = routePlaceRepository.findByRouteIdAndPlaceId(request.routeId(), request.placeId());
         if (routePlaceRes.isEmpty()) {
@@ -175,16 +154,13 @@ public class RouteServiceImpl implements RouteService {
         resequenceRoutePlaces(request.routeId());
 
         log.info("Deleted placeId='{}' from routeId='{}' by userId='{}'", request.placeId(), request.routeId(), user.userId());
-        return Result.ok(toResponse(routeResult.getValue(), routePlaceRepository.findByRouteId(request.routeId())));
+        return Result.ok(toResponse(route, routePlaceRepository.findByRouteId(request.routeId())));
     }
 
     @Override
     public Result<RouteResponse> rearrangePlacesInRoute(RearrangePlacesInRouteRequest request) {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
-        Result<Route> routeResult = requireOwnedRoute(request.id(), user.userId());
-        if (routeResult.isFailure()) {
-            return Result.fail(routeResult.getError());
-        }
+        Route route = requireOwnedRoute(request.id(), user.userId()).orThrow();
 
         List<String> placeIdsInOrder = request.placeIdsInOrder();
         if (placeIdsInOrder == null) {
@@ -218,7 +194,7 @@ public class RouteServiceImpl implements RouteService {
         }
 
         log.info("Rearranged places in routeId='{}' by userId='{}'", request.id(), user.userId());
-        return Result.ok(toResponse(routeResult.getValue(), routePlaceRepository.findByRouteId(request.id())));
+        return Result.ok(toResponse(route, routePlaceRepository.findByRouteId(request.id())));
     }
 
     @Override
@@ -264,19 +240,12 @@ public class RouteServiceImpl implements RouteService {
         }
 
         if (route.getCoverImage() != null) {
-            var deleteImageRes = imageService.deleteImage(new DeleteImageRequest(route.getCoverImage().getId().toString()));
-            if (deleteImageRes.isFailure()) {
-                return Result.fail(deleteImageRes.getError());
-            }
+            imageService.deleteImage(new DeleteImageRequest(route.getCoverImage().getId().toString())).orThrow();
             route.removeCoverImage();
         }
 
-        var imageResult = imageService.addImage(new AddImageRequest(newCoverImage, DEFAULT_IMAGE_DESCRIPTION + title));
-        if (imageResult.isFailure()) {
-            return Result.fail(imageResult.getError());
-        }
-
-        route.updateCoverImage(UUID.fromString(imageResult.getValue().id()));
+        ImageResponse image = imageService.addImage(new AddImageRequest(newCoverImage, DEFAULT_IMAGE_DESCRIPTION + title)).orThrow();
+        route.updateCoverImage(UUID.fromString(image.id()));
         return Result.ok();
     }
 

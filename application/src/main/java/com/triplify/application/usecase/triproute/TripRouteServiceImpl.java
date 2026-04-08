@@ -77,10 +77,7 @@ public class TripRouteServiceImpl implements TripRouteService {
     @Override
     public Result<TripRouteResponse> addTripRoute(AddTripRouteRequest request) {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
-        Result<Trip> tripResult = requireOwnedTrip(request.tripId(), user.userId());
-        if (tripResult.isFailure()) {
-            return Result.fail(tripResult.getError());
-        }
+        requireOwnedTrip(request.tripId(), user.userId()).orThrow();
 
         if (routeRepository.findById(request.routeId()).isEmpty()) {
             return Result.fail(new RouteError.NotFound(request.routeId()));
@@ -104,16 +101,8 @@ public class TripRouteServiceImpl implements TripRouteService {
     @Override
     public Result<TripRouteResponse> updateTripRoute(UpdateTripRouteRequest request) {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
-        Result<TripRoute> existingResult = requireTripRoute(request.id());
-        if (existingResult.isFailure()) {
-            return Result.fail(existingResult.getError());
-        }
-
-        TripRoute existing = existingResult.getValue();
-        Result<Trip> tripResult = requireOwnedTrip(existing.getTripId().toString(), user.userId());
-        if (tripResult.isFailure()) {
-            return Result.fail(tripResult.getError());
-        }
+        TripRoute existing = requireTripRoute(request.id()).orThrow();
+        requireOwnedTrip(existing.getTripId().toString(), user.userId()).orThrow();
 
         TripRoute updated = new TripRoute(
                 existing.getId(),
@@ -134,16 +123,8 @@ public class TripRouteServiceImpl implements TripRouteService {
     @Override
     public Result<Void> deleteTripRoute(DeleteTripRouteRequest request) {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
-        Result<TripRoute> existingResult = requireTripRoute(request.id());
-        if (existingResult.isFailure()) {
-            return Result.fail(existingResult.getError());
-        }
-
-        TripRoute existing = existingResult.getValue();
-        Result<Trip> tripResult = requireOwnedTrip(existing.getTripId().toString(), user.userId());
-        if (tripResult.isFailure()) {
-            return Result.fail(tripResult.getError());
-        }
+        TripRoute existing = requireTripRoute(request.id()).orThrow();
+        requireOwnedTrip(existing.getTripId().toString(), user.userId()).orThrow();
 
         String tripId = existing.getTripId().toString();
         tripRouteRepository.delete(existing);
@@ -155,10 +136,7 @@ public class TripRouteServiceImpl implements TripRouteService {
     @Override
     public Result<TripRouteResponse> rearrangeTripRoutes(RearrangeTripRoutesRequest request) {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
-        Result<Trip> tripResult = requireOwnedTrip(request.id(), user.userId());
-        if (tripResult.isFailure()) {
-            return Result.fail(tripResult.getError());
-        }
+        requireOwnedTrip(request.id(), user.userId()).orThrow();
         if (request.routesIdsInOrder() == null) {
             return Result.fail(new ApplicationError.Unexpected("Trip route order is required"));
         }
@@ -217,28 +195,14 @@ public class TripRouteServiceImpl implements TripRouteService {
     @Override
     public Result<TripRouteResponse> updateStatus(UpdateTripRouteStatusRequest request) {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
-        Result<TripRoute> existingResult = requireTripRoute(request.id());
-        if (existingResult.isFailure()) {
-            return Result.fail(existingResult.getError());
-        }
+        TripRoute existing = requireTripRoute(request.id()).orThrow();
+        requireOwnedTrip(existing.getTripId().toString(), user.userId()).orThrow();
 
-        TripRoute existing = existingResult.getValue();
-        Result<Trip> tripResult = requireOwnedTrip(existing.getTripId().toString(), user.userId());
-        if (tripResult.isFailure()) {
-            return Result.fail(tripResult.getError());
-        }
-
-        Result<Void> statusResult = validateStatusTransition(existing.getStatus(), request.status());
-        if (statusResult.isFailure()) {
-            return Result.fail(statusResult.getError());
-        }
+        validateStatusTransition(existing.getStatus(), request.status()).orThrow();
 
         Instant startedAt = request.startedAt() != null ? request.startedAt() : existing.getStartedAt();
         Instant endedAt = request.endedAt() != null ? request.endedAt() : existing.getEndedAt();
-        Result<Void> datesResult = validateDates(startedAt, endedAt);
-        if (datesResult.isFailure()) {
-            return Result.fail(datesResult.getError());
-        }
+        validateDates(startedAt, endedAt).orThrow();
 
         TripRoute updated = new TripRoute(
                 existing.getId(),
@@ -258,11 +222,7 @@ public class TripRouteServiceImpl implements TripRouteService {
 
     @Override
     public Result<TripRouteResponse> getTripRouteById(GetTripRouteByIdRequest request) {
-        Result<TripRoute> tripRouteResult = requireTripRoute(request.id());
-        if (tripRouteResult.isFailure()) {
-            return Result.fail(tripRouteResult.getError());
-        }
-        return toResponse(tripRouteResult.getValue());
+        return toResponse(requireTripRoute(request.id()).orThrow());
     }
 
     @Override
@@ -276,11 +236,7 @@ public class TripRouteServiceImpl implements TripRouteService {
 
         List<TripRouteResponse> responses = new ArrayList<>(page.items().size());
         for (TripRoute tripRoute : page.items()) {
-            Result<TripRouteResponse> response = toResponse(tripRoute);
-            if (response.isFailure()) {
-                return Result.fail(response.getError());
-            }
-            responses.add(response.getValue());
+            responses.add(toResponse(tripRoute).orThrow());
         }
 
         return Result.ok(new Page<>(responses, page.page(), page.size(), page.hasNext()));
@@ -336,17 +292,14 @@ public class TripRouteServiceImpl implements TripRouteService {
     }
 
     private Result<TripRouteResponse> toResponse(TripRoute tripRoute) {
-        Result<RouteResponse> routeResult = routeService.getRouteById(
+        RouteResponse route = routeService.getRouteById(
                 new GetRouteByIdRequest(tripRoute.getRouteId().toString())
-        );
-        if (routeResult.isFailure()) {
-            return Result.fail(routeResult.getError());
-        }
+        ).orThrow();
 
         return Result.ok(new TripRouteResponse(
                 tripRoute.getId().toString(),
                 tripRoute.getTripId().toString(),
-                routeResult.getValue(),
+                route,
                 tripRoute.getOrder(),
                 tripRoute.getStatus(),
                 tripRoute.getStartedAt(),

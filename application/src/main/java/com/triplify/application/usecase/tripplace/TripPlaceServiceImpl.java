@@ -71,10 +71,7 @@ public class TripPlaceServiceImpl implements TripPlaceService {
     @Override
     public Result<TripPlaceResponse> addTripPlace(AddTripPlaceRequest request) {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
-        Result<Trip> tripResult = requireOwnedTrip(request.tripId(), user.userId());
-        if (tripResult.isFailure()) {
-            return Result.fail(tripResult.getError());
-        }
+        requireOwnedTrip(request.tripId(), user.userId()).orThrow();
 
         if (placeRepository.findById(request.placeId()).isEmpty()) {
             return Result.fail(new PlaceError.NotFound(request.placeId()));
@@ -85,12 +82,7 @@ public class TripPlaceServiceImpl implements TripPlaceService {
             return getTripPlaceById(new GetTripPlaceByIdRequest(existing.get().getId().toString()));
         }
 
-        Result<RouteSourceRefs> routeSourceValidation = validateRouteSource(request);
-        if (routeSourceValidation.isFailure()) {
-            return Result.fail(routeSourceValidation.getError());
-        }
-
-        RouteSourceRefs routeSourceRefs = routeSourceValidation.getValue();
+        RouteSourceRefs routeSourceRefs = validateRouteSource(request).orThrow();
         TripPlace tripPlace = routeSourceRefs == null
                 ? new TripPlace(UUID.fromString(request.tripId()), UUID.fromString(request.placeId()))
                 : new TripPlace(
@@ -111,16 +103,8 @@ public class TripPlaceServiceImpl implements TripPlaceService {
     @Override
     public Result<TripPlaceResponse> updateTripPlace(UpdateTripPlaceRequest request) {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
-        Result<TripPlace> existingResult = requireTripPlace(request.id());
-        if (existingResult.isFailure()) {
-            return Result.fail(existingResult.getError());
-        }
-
-        TripPlace existing = existingResult.getValue();
-        Result<Trip> tripResult = requireOwnedTrip(existing.getTripId().toString(), user.userId());
-        if (tripResult.isFailure()) {
-            return Result.fail(tripResult.getError());
-        }
+        TripPlace existing = requireTripPlace(request.id()).orThrow();
+        requireOwnedTrip(existing.getTripId().toString(), user.userId()).orThrow();
 
         TripPlace updated = new TripPlace(
                 existing.getId(),
@@ -141,16 +125,8 @@ public class TripPlaceServiceImpl implements TripPlaceService {
     @Override
     public Result<Void> deleteTripPlace(DeleteTripPlaceRequest request) {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
-        Result<TripPlace> existingResult = requireTripPlace(request.id());
-        if (existingResult.isFailure()) {
-            return Result.fail(existingResult.getError());
-        }
-
-        TripPlace existing = existingResult.getValue();
-        Result<Trip> tripResult = requireOwnedTrip(existing.getTripId().toString(), user.userId());
-        if (tripResult.isFailure()) {
-            return Result.fail(tripResult.getError());
-        }
+        TripPlace existing = requireTripPlace(request.id()).orThrow();
+        requireOwnedTrip(existing.getTripId().toString(), user.userId()).orThrow();
 
         tripPlaceRepository.delete(existing);
         return Result.ok();
@@ -158,11 +134,7 @@ public class TripPlaceServiceImpl implements TripPlaceService {
 
     @Override
     public Result<TripPlaceResponse> getTripPlaceById(GetTripPlaceByIdRequest request) {
-        Result<TripPlace> tripPlaceResult = requireTripPlace(request.id());
-        if (tripPlaceResult.isFailure()) {
-            return Result.fail(tripPlaceResult.getError());
-        }
-        return toResponse(tripPlaceResult.getValue());
+        return toResponse(requireTripPlace(request.id()).orThrow());
     }
 
     @Override
@@ -183,11 +155,7 @@ public class TripPlaceServiceImpl implements TripPlaceService {
 
         List<TripPlaceResponse> responses = new ArrayList<>(page.items().size());
         for (TripPlace tripPlace : page.items()) {
-            Result<TripPlaceResponse> response = toResponse(tripPlace);
-            if (response.isFailure()) {
-                return Result.fail(response.getError());
-            }
-            responses.add(response.getValue());
+            responses.add(toResponse(tripPlace).orThrow());
         }
 
         return Result.ok(new Page<>(responses, page.page(), page.size(), page.hasNext()));
@@ -250,17 +218,14 @@ public class TripPlaceServiceImpl implements TripPlaceService {
     }
 
     private Result<TripPlaceResponse> toResponse(TripPlace tripPlace) {
-        Result<PlaceResponse> placeResult = placeService.getPlaceById(
+        PlaceResponse place = placeService.getPlaceById(
                 new GetPlaceByIdRequest(tripPlace.getPlaceId().toString())
-        );
-        if (placeResult.isFailure()) {
-            return Result.fail(placeResult.getError());
-        }
+        ).orThrow();
 
         return Result.ok(new TripPlaceResponse(
                 tripPlace.getId().toString(),
                 tripPlace.getTripId().toString(),
-                placeResult.getValue(),
+                place,
                 tripPlace.getSourceType(),
                 tripPlace.getTripRouteId() == null ? null : tripPlace.getTripRouteId().toString(),
                 tripPlace.getRoutePlaceId() == null ? null : tripPlace.getRoutePlaceId().toString(),

@@ -87,22 +87,15 @@ public class TripServiceImpl implements TripService {
     public Result<TripResponse> addTrip(AddTripRequest request) {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
 
-        Result<ResolvedTripRelations> relationsResult = resolveRelations(
+        ResolvedTripRelations relations = resolveRelations(
                 request.categoryId(),
                 normalizeStringSet(request.countryIds()),
                 normalizeStringSet(request.tagIds())
-        );
-        if (relationsResult.isFailure()) {
-            return Result.fail(relationsResult.getError());
-        }
+        ).orThrow();
 
-        Result<Void> datesValidation = validateDates(request.startedAt(), request.endedAt());
-        if (datesValidation.isFailure()) {
-            return Result.fail(datesValidation.getError());
-        }
+        validateDates(request.startedAt(), request.endedAt()).orThrow();
 
         Instant now = Instant.now();
-        ResolvedTripRelations relations = relationsResult.getValue();
         Trip trip = new Trip(
                 UUID.randomUUID(),
                 user.userId(),
@@ -125,10 +118,7 @@ public class TripServiceImpl implements TripService {
         tripRepository.replaceTagIds(trip.getId().toString(), idsOfTags(relations.tags()));
         tripRepository.replaceCountryIds(trip.getId().toString(), idsOfCountries(relations.countries()));
 
-        Result<Void> imagesResult = replaceTripImages(trip.getId().toString(), request.images(), false);
-        if (imagesResult.isFailure()) {
-            return Result.fail(imagesResult.getError());
-        }
+        replaceTripImages(trip.getId().toString(), request.images(), false).orThrow();
 
         log.info("Added trip id='{}', title='{}' by userId='{}'", trip.getId(), trip.getTitle(), user.userId());
         return getTripById(new GetTripByIdRequest(trip.getId().toString()));
@@ -137,32 +127,17 @@ public class TripServiceImpl implements TripService {
     @Override
     public Result<TripResponse> updateTrip(UpdateTripRequest request) {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
-        Result<Trip> existingResult = requireOwnedTrip(request.id(), user.userId());
-        if (existingResult.isFailure()) {
-            return Result.fail(existingResult.getError());
-        }
+        Trip existing = requireOwnedTrip(request.id(), user.userId()).orThrow();
 
-        Result<Void> statusValidation = validateStatusTransition(existingResult.getValue().getStatus(), request.status());
-        if (statusValidation.isFailure()) {
-            return Result.fail(statusValidation.getError());
-        }
+        validateStatusTransition(existing.getStatus(), request.status()).orThrow();
 
-        Result<Void> datesValidation = validateDates(request.startedAt(), request.endedAt());
-        if (datesValidation.isFailure()) {
-            return Result.fail(datesValidation.getError());
-        }
+        validateDates(request.startedAt(), request.endedAt()).orThrow();
 
-        Result<ResolvedTripRelations> relationsResult = resolveRelations(
+        ResolvedTripRelations relations = resolveRelations(
                 request.categoryId(),
                 normalizeStringSet(request.countryIds()),
                 normalizeStringSet(request.tagIds())
-        );
-        if (relationsResult.isFailure()) {
-            return Result.fail(relationsResult.getError());
-        }
-
-        Trip existing = existingResult.getValue();
-        ResolvedTripRelations relations = relationsResult.getValue();
+        ).orThrow();
         Trip updatedTrip = new Trip(
                 existing.getId(),
                 existing.getUserId(),
@@ -186,10 +161,7 @@ public class TripServiceImpl implements TripService {
         tripRepository.replaceCountryIds(updatedTrip.getId().toString(), idsOfCountries(relations.countries()));
 
         if (request.images() != null) {
-            Result<Void> imagesResult = replaceTripImages(updatedTrip.getId().toString(), request.images(), true);
-            if (imagesResult.isFailure()) {
-                return Result.fail(imagesResult.getError());
-            }
+            replaceTripImages(updatedTrip.getId().toString(), request.images(), true).orThrow();
         }
 
         log.info("Updated trip id='{}' by userId='{}'", updatedTrip.getId(), user.userId());
@@ -199,24 +171,15 @@ public class TripServiceImpl implements TripService {
     @Override
     public Result<Void> deleteTrip(DeleteTripRequest request) {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
-        Result<Trip> existingResult = requireOwnedTrip(request.id(), user.userId());
-        if (existingResult.isFailure()) {
-            return Result.fail(existingResult.getError());
+        Trip existing = requireOwnedTrip(request.id(), user.userId()).orThrow();
+
+        Set<ImageResponse> images = loadTripImages(request.id()).orThrow();
+
+        for (ImageResponse image : images) {
+            imageService.deleteImage(new DeleteImageRequest(image.id())).orThrow();
         }
 
-        Result<Set<ImageResponse>> imagesResult = loadTripImages(request.id());
-        if (imagesResult.isFailure()) {
-            return Result.fail(imagesResult.getError());
-        }
-
-        for (ImageResponse image : imagesResult.getValue()) {
-            Result<Void> deleteImageResult = imageService.deleteImage(new DeleteImageRequest(image.id()));
-            if (deleteImageResult.isFailure()) {
-                return Result.fail(deleteImageResult.getError());
-            }
-        }
-
-        tripRepository.delete(existingResult.getValue());
+        tripRepository.delete(existing);
         log.info("Deleted trip id='{}' by userId='{}'", request.id(), user.userId());
         return Result.ok();
     }
@@ -224,23 +187,12 @@ public class TripServiceImpl implements TripService {
     @Override
     public Result<TripResponse> updateStatus(UpdateTripStatusRequest request) {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
-        Result<Trip> existingResult = requireOwnedTrip(request.id(), user.userId());
-        if (existingResult.isFailure()) {
-            return Result.fail(existingResult.getError());
-        }
-
-        Trip existing = existingResult.getValue();
-        Result<Void> statusValidation = validateStatusTransition(existing.getStatus(), request.status());
-        if (statusValidation.isFailure()) {
-            return Result.fail(statusValidation.getError());
-        }
+        Trip existing = requireOwnedTrip(request.id(), user.userId()).orThrow();
+        validateStatusTransition(existing.getStatus(), request.status()).orThrow();
 
         Instant startedAt = request.startedAt() != null ? request.startedAt() : existing.getStartedAt();
         Instant endedAt = request.endedAt() != null ? request.endedAt() : existing.getEndedAt();
-        Result<Void> datesValidation = validateDates(startedAt, endedAt);
-        if (datesValidation.isFailure()) {
-            return Result.fail(datesValidation.getError());
-        }
+        validateDates(startedAt, endedAt).orThrow();
 
         Trip updatedTrip = new Trip(
                 existing.getId(),
@@ -290,11 +242,7 @@ public class TripServiceImpl implements TripService {
 
         List<TripResponse> responses = new ArrayList<>(tripsPage.items().size());
         for (Trip trip : tripsPage.items()) {
-            Result<TripResponse> responseResult = toResponse(trip);
-            if (responseResult.isFailure()) {
-                return Result.fail(responseResult.getError());
-            }
-            responses.add(responseResult.getValue());
+            responses.add(toResponse(trip).orThrow());
         }
 
         return Result.ok(new Page<>(responses, tripsPage.page(), tripsPage.size(), tripsPage.hasNext()));
@@ -380,10 +328,7 @@ public class TripServiceImpl implements TripService {
             return Result.ok();
         }
 
-        Result<Set<ImageResponse>> existingImagesResult = loadTripImages(tripId);
-        if (existingImagesResult.isFailure()) {
-            return Result.fail(existingImagesResult.getError());
-        }
+        Set<ImageResponse> existingImages = loadTripImages(tripId).orThrow();
 
         LinkedHashSet<String> uploadedImageIds = new LinkedHashSet<>();
         for (Path imagePath : requestedImages) {
@@ -396,7 +341,7 @@ public class TripServiceImpl implements TripService {
         }
 
         if (removeExistingImages) {
-            for (ImageResponse existingImage : existingImagesResult.getValue()) {
+            for (ImageResponse existingImage : existingImages) {
                 Result<Void> deleteResult = imageService.deleteImage(new DeleteImageRequest(existingImage.id()));
                 if (deleteResult.isFailure()) {
                     cleanupImages(uploadedImageIds);
@@ -420,16 +365,11 @@ public class TripServiceImpl implements TripService {
         PageRequest pageRequest = new PageRequest(0, IMAGE_PAGE_SIZE);
 
         while (true) {
-            Result<Page<ImageResponse>> result = imageService.getImages(new GetImagesRequest(
+            Page<ImageResponse> page = imageService.getImages(new GetImagesRequest(
                     pageRequest,
                     new GetImagesRequest.Filter(tripId, ImageOwnerType.TRIP, null, null),
                     new GetImagesRequest.OrderBy(true)
-            ));
-            if (result.isFailure()) {
-                return Result.fail(result.getError());
-            }
-
-            Page<ImageResponse> page = result.getValue();
+            )).orThrow();
             images.addAll(page.items());
             if (!page.hasNext()) {
                 break;
@@ -441,10 +381,7 @@ public class TripServiceImpl implements TripService {
     }
 
     private Result<TripResponse> toResponse(Trip trip) {
-        Result<Set<ImageResponse>> imagesResult = loadTripImages(trip.getId().toString());
-        if (imagesResult.isFailure()) {
-            return Result.fail(imagesResult.getError());
-        }
+        Set<ImageResponse> images = loadTripImages(trip.getId().toString()).orThrow();
 
         Category category = trip.getCategory();
         CategoryResponse categoryResponse = category == null ? null : new CategoryResponse(
@@ -483,7 +420,7 @@ public class TripServiceImpl implements TripService {
                 trip.getCreatedAt(),
                 trip.getUpdatedAt(),
                 tagResponses,
-                imagesResult.getValue(),
+                images,
                 countryResponses
         ));
     }

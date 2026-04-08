@@ -52,21 +52,14 @@ public class PlaceServiceImpl implements PlaceService {
     public Result<PlaceResponse> addPlace(AddPlaceRequest request) {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
 
-        Result<CountryResponse> country = countryService.getCountryById(new GetCountryByIdRequest(request.countryId()));
-        if (country.isFailure()) {
-            return Result.fail(country.getError());
-        }
+        CountryResponse countryResponse = countryService.getCountryById(new GetCountryByIdRequest(request.countryId())).orThrow();
         ImageResponse image = null;
         if (request.coverImage() != null) {
-            var imageResult = imageService.addImage(new AddImageRequest(request.coverImage(), DEFAULT_IMAGE_DESCRIPTION + request.title()));
-            if (imageResult.isFailure()) {
-                return Result.fail(imageResult.getError());
-            }
-            image = imageResult.getValue();
+            image = imageService.addImage(new AddImageRequest(request.coverImage(), DEFAULT_IMAGE_DESCRIPTION + request.title())).orThrow();
         }
 
         UUID imageId = image != null ? UUID.fromString(image.id()) : null;
-        Place place = new Place(user.userId(), UUID.fromString(country.getValue().id()), imageId, request.title(), request.description(), request.latitude(), request.longitude());
+        Place place = new Place(user.userId(), UUID.fromString(countryResponse.id()), imageId, request.title(), request.description(), request.latitude(), request.longitude());
         placeRepository.create(place);
         log.info("Added new place with id='{}', title='{}' by userId='{}'", place.getId(), place.getTitle(), user.userId());
 
@@ -89,30 +82,21 @@ public class PlaceServiceImpl implements PlaceService {
             return Result.fail(new PlaceError.NotOwner("Place with id '" + request.id() + "' is not owned by user"));
         }
 
-        Result<CountryResponse> country = countryService.getCountryById(new GetCountryByIdRequest(request.countryId()));
-        if (country.isFailure()) {
-            return Result.fail(country.getError());
-        }
+        CountryResponse countryResponse = countryService.getCountryById(new GetCountryByIdRequest(request.countryId())).orThrow();
         UUID imageId = null;
         if (old.getCoverImage() != null && !old.getCoverImage().getUrl().equals(request.coverImage())){
-            var deleteImageRes = imageService.deleteImage(new DeleteImageRequest(old.getCoverImage().getId().toString()));
-            if (deleteImageRes.isFailure()) {
-                return Result.fail(deleteImageRes.getError());
-            }
+            imageService.deleteImage(new DeleteImageRequest(old.getCoverImage().getId().toString())).orThrow();
 
             if (request.coverImage() != null) {
                 var imageResult = imageService.addImage(new AddImageRequest(request.coverImage(), DEFAULT_IMAGE_DESCRIPTION + request.title()));
-                if (imageResult.isFailure()) {
-                    return Result.fail(imageResult.getError());
-                }
-                imageId = UUID.fromString(imageResult.getValue().id());
+                imageId = UUID.fromString(imageResult.orThrow().id());
             }
             else {
                 imageId = old.getCoverImage().getId();
             }
         }
 
-        Place place = new Place(UUID.fromString(request.id()), user.userId(), UUID.fromString(country.getValue().id()), imageId, request.title(), request.description(), request.latitude(), request.longitude());
+        Place place = new Place(UUID.fromString(request.id()), user.userId(), UUID.fromString(countryResponse.id()), imageId, request.title(), request.description(), request.latitude(), request.longitude());
         placeRepository.update(place);
 
         log.info("Updated new place with id='{}', title='{}' by userId='{}'", place.getId(), place.getTitle(), user.userId());
