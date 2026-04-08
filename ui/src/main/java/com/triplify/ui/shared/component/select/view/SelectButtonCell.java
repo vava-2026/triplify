@@ -44,18 +44,18 @@ public class SelectButtonCell<T> extends ListCell<Entry<T>> {
     @Override
     protected void updateItem(Entry<T> entry, boolean empty) {
         super.updateItem(entry, empty);
-        getStyleClass().remove("select-placeholder");
         if (empty || entry == null) {
+            entryView.update(null);
             if (emojiView != null) {
                 wrapper.getChildren().setAll(emojiView, placeholderLabel);
                 setGraphic(wrapper);
                 setText(null);
+                setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
             } else {
                 setGraphic(null);
                 setText(placeholder);
+                setContentDisplay(ContentDisplay.TEXT_ONLY);
             }
-            getStyleClass().add("select-placeholder");
-            setContentDisplay(ContentDisplay.TEXT_ONLY);
         } else {
             entryView.update(entry);
             if (emojiView != null) {

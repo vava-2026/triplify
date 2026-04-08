@@ -8,13 +8,13 @@ import com.triplify.domain.result.Result;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.i18n.Language;
+import com.triplify.ui.routing.GuardedNavigator;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.component.button.model.ButtonVariant;
 import com.triplify.ui.shared.component.button.view.AppButtonView;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.input_item.PasswordItem;
-import com.triplify.ui.shared.menu.model.MenuItem;
 import com.triplify.ui.shared.toast.ToastService;
 import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import javafx.beans.binding.Bindings;
@@ -50,6 +50,7 @@ public class LoginController extends SimpleLifecycleAwareController {
     @Inject private UserSessionContext sessionContext;
     @Inject private ErrorHandler errorHandler;
     @Inject private FxmlLoaderHelper fxmlLoader;
+    @Inject private GuardedNavigator guardedNavigator;
 
     private InputItem emailInput;
     private PasswordItem passwordInput;
@@ -72,7 +73,7 @@ public class LoginController extends SimpleLifecycleAwareController {
         passwordLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("login.field.password"), I18n.bundleProperty()));
         noAccountLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("login.noAccount"), I18n.bundleProperty()));
         createAccountLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("login.createAccount"), I18n.bundleProperty()));
-        createAccountLabel.setOnMouseClicked(event -> getRouter().moveto(RouteIds.SIGN_UP));
+        createAccountLabel.setOnMouseClicked(event -> guardedNavigator.goTo(getRouter(), RouteIds.SIGN_UP));
 
         emailInput = new InputItem("login.placeholder.email");
         passwordInput = new PasswordItem("login.placeholder.password");
@@ -99,12 +100,14 @@ public class LoginController extends SimpleLifecycleAwareController {
     public void onLifecycleHide() {
         TriplifyRouterContext context = (TriplifyRouterContext) getRouter().getContext();
         context.setFullScreenContent(false);
+        clearForm();
     }
 
     @Override
     public void onLifecycleDestroy() {
         TriplifyRouterContext context = (TriplifyRouterContext) getRouter().getContext();
         context.setFullScreenContent(false);
+        clearForm();
     }
 
     private void onLogin() {
@@ -120,9 +123,7 @@ public class LoginController extends SimpleLifecycleAwareController {
             var user = sessionContext.getCurrent().orElseThrow(() -> new IllegalStateException("User should be set in session after successful login"));
             log.info("Login successful for user '{}'", user.username());
             toast.success("Welcome back, " + user.username() + "!");
-            TriplifyRouterContext context = (TriplifyRouterContext) getRouter().getContext();
-            context.setSelectedMenuItem(MenuItem.MAP);
-            getRouter().moveto(RouteIds.MAP);
+            guardedNavigator.openDefault(getRouter());
         });
         result.onFailure(error -> errorHandler.handle(error, java.util.Map.of(
                 "email", message -> emailInput.showError(message),
@@ -133,5 +134,15 @@ public class LoginController extends SimpleLifecycleAwareController {
     private void clearFieldErrors() {
         emailInput.clearError();
         passwordInput.clearError();
+    }
+
+    private void clearForm() {
+        if (emailInput != null) {
+            emailInput.setText("");
+            emailInput.clearError();
+        }
+        if (passwordInput != null) {
+            passwordInput.reset();
+        }
     }
 }

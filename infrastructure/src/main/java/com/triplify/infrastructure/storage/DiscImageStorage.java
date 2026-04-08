@@ -2,11 +2,11 @@ package com.triplify.infrastructure.storage;
 
 import com.google.inject.Inject;
 import com.triplify.domain.service.ImageStorageService;
+import com.triplify.domain.util.DefaultDataDirectories;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Locale;
 import java.util.Set;
@@ -86,20 +86,7 @@ public class DiscImageStorage implements ImageStorageService {
      * Resolves the application data directory based on the operating system.
      */
     private static Path resolveDefaultStorageDirectory() {
-        String os = System.getProperty("os.name").toLowerCase(Locale.ROOT);
-        String userHome = System.getProperty("user.home");
-        Path basePath;
-
-        if (os.contains("win")) {
-            String appData = System.getenv("APPDATA");
-            basePath = appData != null ? Paths.get(appData) : Paths.get(userHome, "AppData", "Roaming");
-        } else if (os.contains("mac")) {
-            basePath = Paths.get(userHome, "Library", "Application Support");
-        } else {
-            basePath = Paths.get(userHome, ".local", "share");
-        }
-
-        return basePath.resolve(APP_FOLDER_NAME);
+        return DefaultDataDirectories.resolve(APP_FOLDER_NAME);
     }
 
     private void initializeStorage() {

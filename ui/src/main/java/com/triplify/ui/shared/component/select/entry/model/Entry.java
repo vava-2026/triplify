@@ -1,11 +1,13 @@
 package com.triplify.ui.shared.component.select.entry.model;
 
 import com.triplify.application.model.ColorTheme;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ObservableValue;
 
 public class Entry<T> {
 
     private final T value;
-    private final String label;
+    private final ObservableValue<String> label;
     private final String iconLiteral;
     private final ColorTheme colorTheme;
     private final String emoji;
@@ -23,6 +25,10 @@ public class Entry<T> {
     }
 
     public String getLabel() {
+        return label == null ? "" : label.getValue();
+    }
+
+    public ObservableValue<String> labelProperty() {
         return label;
     }
 
@@ -52,23 +58,37 @@ public class Entry<T> {
 
     @Override
     public String toString() {
-        return label;
+        return getLabel();
     }
 
     public static <T> Builder<T> builder(T value, String label) {
+        return new Builder<>(value, new SimpleStringProperty(label));
+    }
+
+    public static <T> Builder<T> builder(T value, ObservableValue<String> label) {
         return new Builder<>(value, label);
     }
 
     public static final class Builder<T> {
         private final T value;
-        private final String label;
+        private ObservableValue<String> label;
         private String iconLiteral;
         private ColorTheme colorTheme;
         private String emoji;
 
-        private Builder(T value, String label) {
+        private Builder(T value, ObservableValue<String> label) {
             this.value = value;
             this.label = label;
+        }
+
+        public Builder<T> label(String label) {
+            this.label = new SimpleStringProperty(label);
+            return this;
+        }
+
+        public Builder<T> labelBinding(ObservableValue<String> label) {
+            this.label = label;
+            return this;
         }
 
         public Builder<T> icon(String iconLiteral) {

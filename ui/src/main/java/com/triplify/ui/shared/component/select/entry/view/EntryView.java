@@ -5,6 +5,7 @@ import com.triplify.ui.shared.component.select.entry.model.Entry;
 import com.triplify.ui.shared.util.EmojiUtil;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -39,7 +40,7 @@ public class EntryView<T> extends HBox {
         if (entry == null) {
             emoji.setVisible(false);
             emoji.setManaged(false);
-            label.setText(null);
+            bindLabel(null);
             icon.setVisible(false);
             icon.setManaged(false);
             applyColorTheme(null);
@@ -57,7 +58,7 @@ public class EntryView<T> extends HBox {
             emoji.setManaged(false);
         }
 
-        label.setText(entry.getLabel());
+        bindLabel(entry.labelProperty());
 
         if (entry.hasIcon()) {
             icon.setIconLiteral(entry.getIconLiteral());
@@ -69,6 +70,15 @@ public class EntryView<T> extends HBox {
         }
 
         applyColorTheme(entry.hasColorTheme() ? entry.getColorTheme() : null);
+    }
+
+    private void bindLabel(ObservableValue<String> value) {
+        label.textProperty().unbind();
+        if (value == null) {
+            label.setText(null);
+            return;
+        }
+        label.textProperty().bind(value);
     }
 
     private void applyColorTheme(ColorTheme theme) {

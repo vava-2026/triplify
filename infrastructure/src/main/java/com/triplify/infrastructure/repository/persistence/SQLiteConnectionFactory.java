@@ -3,6 +3,7 @@ package com.triplify.infrastructure.repository.persistence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sqlite.SQLiteConnection;
+import com.triplify.domain.util.DefaultDataDirectories;
 
 import java.io.IOException;
 import java.net.URI;
@@ -247,29 +248,6 @@ public class SQLiteConnectionFactory {
             return Path.of(configuredPath.trim());
         }
 
-        return resolveDefaultDataDir().resolve("triplify.db");
-    }
-
-    private static Path resolveDefaultDataDir() {
-        String os = System.getProperty("os.name").toLowerCase();
-        String userHome = System.getProperty("user.home");
-
-        if (os.contains("win")) {
-            String appData = System.getenv("APPDATA");
-            if (appData != null && !appData.isBlank()) {
-                return Path.of(appData).resolve("Triplify");
-            }
-            return Path.of(userHome, "AppData", "Roaming", "Triplify");
-        }
-
-        if (os.contains("mac")) {
-            return Path.of(userHome, "Library", "Application Support", "Triplify");
-        }
-
-        String xdgDataHome = System.getenv("XDG_DATA_HOME");
-        if (xdgDataHome != null && !xdgDataHome.isBlank()) {
-            return Path.of(xdgDataHome).resolve("triplify");
-        }
-        return Path.of(userHome, ".local", "share", "triplify"); // Linux fallback
+        return DefaultDataDirectories.resolve("Triplify").resolve("triplify.db");
     }
 }

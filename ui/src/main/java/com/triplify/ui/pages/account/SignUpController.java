@@ -9,6 +9,7 @@ import com.triplify.domain.model.enums.RoleEnum;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.i18n.Language;
+import com.triplify.ui.routing.GuardedNavigator;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.component.button.model.ButtonVariant;
@@ -16,7 +17,6 @@ import com.triplify.ui.shared.component.button.view.AppButtonView;
 import com.triplify.ui.shared.component.checkbox_item.CheckboxItem;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.input_item.PasswordItem;
-import com.triplify.ui.shared.menu.model.MenuItem;
 import com.triplify.ui.shared.toast.ToastService;
 import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import javafx.beans.binding.Bindings;
@@ -61,6 +61,7 @@ public class SignUpController extends SimpleLifecycleAwareController {
     @Inject private UserSessionContext sessionContext;
     @Inject private ErrorHandler errorHandler;
     @Inject private FxmlLoaderHelper fxmlLoader;
+    @Inject private GuardedNavigator guardedNavigator;
 
     private InputItem usernameInput;
     private InputItem emailInput;
@@ -90,7 +91,7 @@ public class SignUpController extends SimpleLifecycleAwareController {
         roleLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("signup.field.role"), I18n.bundleProperty()));
         haveAccountLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("signup.haveAccount"), I18n.bundleProperty()));
         goToLoginLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("signup.goToLogin"), I18n.bundleProperty()));
-        goToLoginLabel.setOnMouseClicked(ignored -> getRouter().moveto(RouteIds.LOGIN));
+        goToLoginLabel.setOnMouseClicked(ignored -> guardedNavigator.goTo(getRouter(), RouteIds.LOGIN));
 
         usernameInput = new InputItem("signup.placeholder.username");
         emailInput = new InputItem("signup.placeholder.email");
@@ -150,12 +151,14 @@ public class SignUpController extends SimpleLifecycleAwareController {
     public void onLifecycleHide() {
         TriplifyRouterContext context = (TriplifyRouterContext) getRouter().getContext();
         context.setFullScreenContent(false);
+        clearForm();
     }
 
     @Override
     public void onLifecycleDestroy() {
         TriplifyRouterContext context = (TriplifyRouterContext) getRouter().getContext();
         context.setFullScreenContent(false);
+        clearForm();
     }
 
     private void onSignUp() {
@@ -178,9 +181,7 @@ public class SignUpController extends SimpleLifecycleAwareController {
             var user = sessionContext.getCurrent().orElseThrow(() -> new IllegalStateException("User should be set in session after successful sign up"));
             log.info("Sign up successful for user '{}'", user.username());
             toast.success("Welcome, " + user.username() + "!");
-            TriplifyRouterContext context = (TriplifyRouterContext) getRouter().getContext();
-            context.setSelectedMenuItem(MenuItem.MAP);
-            getRouter().moveto(RouteIds.MAP);
+            guardedNavigator.openDefault(getRouter());
         });
         result.onFailure(error -> errorHandler.handle(error, java.util.Map.of(
                 "email", message -> emailInput.showError(message),
@@ -194,6 +195,28 @@ public class SignUpController extends SimpleLifecycleAwareController {
         usernameInput.clearError();
         emailInput.clearError();
         passwordInput.clearError();
+        clearTermsError();
+    }
+
+    private void clearForm() {
+        if (usernameInput != null) {
+            usernameInput.setText("");
+            usernameInput.clearError();
+        }
+        if (emailInput != null) {
+            emailInput.setText("");
+            emailInput.clearError();
+        }
+        if (passwordInput != null) {
+            passwordInput.reset();
+        }
+        if (termsCheckbox != null) {
+            termsCheckbox.setSelected(false);
+        }
+        selectedRole = RoleEnum.USER;
+        if (regularUserButton != null && configManagerButton != null) {
+            setActiveRoleButton(regularUserButton);
+        }
         clearTermsError();
     }
 

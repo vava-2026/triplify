@@ -9,6 +9,9 @@ import com.triplify.domain.model.enums.RoleEnum;
 import com.triplify.domain.result.Result;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
+import com.triplify.ui.routing.GuardedNavigator;
+import com.triplify.ui.routing.RouteIds;
+import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.component.badge.model.Badge;
 import com.triplify.ui.shared.component.badge.model.BadgeGroup;
 import com.triplify.ui.shared.component.badge.view.BadgeView;
@@ -38,6 +41,7 @@ public class AccountController extends SimpleLifecycleAwareController {
     @Inject private AuthService authService;
     @Inject private UserSessionContext userSessionContext;
     @Inject private ErrorHandler errorHandler;
+    @Inject private GuardedNavigator guardedNavigator;
 
     private InputItem usernameInput;
     private InputItem emailInput;
@@ -48,9 +52,31 @@ public class AccountController extends SimpleLifecycleAwareController {
         render();
 
         BadgeView badgeView = new BadgeView();
-        badgeView.update(new Badge("Super Traveler", "Awarded for completing 10 trips", null, BadgeGroup.RED, 1, 10, 5, false));
+        badgeView.update(new Badge(
+                "Super Traveler",
+                "Super cestovatel",
+                "Awarded for completing 10 trips",
+                "Ocenenie za dokoncenie 10 vyletov",
+                null,
+                BadgeGroup.RED,
+                1,
+                10,
+                5,
+                false
+        ));
         BadgeView badgeView2 = new BadgeView();
-        badgeView2.update(new Badge("Super Traveler2", "Awarded for completing 10 trips", null, BadgeGroup.RED, 1, 10, 6, true));
+        badgeView2.update(new Badge(
+                "Mountain Explorer",
+                "Horsky objavitel",
+                "Awarded for completing 10 trips",
+                "Ocenenie za dokoncenie 10 vyletov",
+                null,
+                BadgeGroup.RED,
+                1,
+                10,
+                6,
+                true
+        ));
         badgesGrid.add(badgeView, 0, 0);
         badgesGrid.add(badgeView2, 1, 0);
     }
@@ -64,6 +90,7 @@ public class AccountController extends SimpleLifecycleAwareController {
             logOffButton.setOnAction(e -> {
                 authService.logout();
                 toast.success("Logged off successfully");
+                guardedNavigator.goTo(getRouter(), RouteIds.START);
                 render();
             });
             editFormContainer.getChildren().addAll(usernameLabel, logOffButton);

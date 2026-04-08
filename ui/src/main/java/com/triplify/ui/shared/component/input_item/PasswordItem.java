@@ -103,6 +103,15 @@ public class PasswordItem extends VBox {
         textField.setText(text);
     }
 
+    public void reset() {
+        setText("");
+        clearError();
+        textField.setVisible(false);
+        passwordField.setVisible(true);
+        toggleIcon.setIconLiteral("fth-eye-off");
+        isVisible = false;
+    }
+
     public void showError(String message) {
         errorLabel.setText(message);
         errorLabel.setVisible(true);

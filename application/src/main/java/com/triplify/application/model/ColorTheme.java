@@ -37,5 +37,18 @@ public enum ColorTheme {
             case PINK -> PINK;
         };
     }
+
+    public ColorEnum toColorEnum() {
+        return switch (this) {
+            case RED -> ColorEnum.RED;
+            case ORANGE -> ColorEnum.ORANGE;
+            case YELLOW -> ColorEnum.YELLOW;
+            case GREEN -> ColorEnum.GREEN;
+            case TEAL -> ColorEnum.TEAL;
+            case BLUE -> ColorEnum.BLUE;
+            case PURPLE -> ColorEnum.PURPLE;
+            case PINK -> ColorEnum.PINK;
+        };
+    }
 }
 

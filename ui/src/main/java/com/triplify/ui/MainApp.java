@@ -1,28 +1,18 @@
 package com.triplify.ui;
 
 import com.google.inject.Inject;
-import com.triplify.application.usecase.auth.AuthService;
-import com.triplify.application.usecase.auth.dto.LogInRequest;
-import com.triplify.application.usecase.country.CountryService;
-import com.triplify.application.usecase.country.dto.*;
-import com.triplify.domain.filter.CountryFilter;
-import com.triplify.domain.pagination.PageRequest;
-import com.triplify.ui.shared.toast.ToastService;
+import com.triplify.application.usecase.session.UserSessionContext;
 import com.google.inject.Injector;
+import com.triplify.ui.routing.GuardedNavigator;
 import com.triplify.ui.routing.TriplifyRouterContext;
-import com.triplify.ui.shared.component.input_item.InputItem;
-import com.triplify.ui.shared.component.input_item.PasswordItem;
 import com.triplify.ui.shared.header.view.HeaderView;
-import com.triplify.ui.shared.menu.model.MenuItem;
 import com.triplify.ui.shared.menu.view.MenuView;
 import com.triplify.ui.shared.menu.view.SidebarIslandView;
+import com.triplify.ui.shared.toast.ToastService;
 import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import com.triplify.ui.shared.util.FxmlLoadResult;
 import javafx.application.Application;
-import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
-import javafx.fxml.FXMLLoader;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.layout.HBox;
@@ -37,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import rahulstech.jfx.routing.Router;
 import rahulstech.jfx.routing.layout.RouterStackPane;
 import java.net.URL;
-import java.util.List;
 
 public class MainApp extends Application {
 
@@ -46,7 +35,10 @@ public class MainApp extends Application {
 
     @Inject private FxmlLoaderHelper fxml;
     @Inject private ToastService toastService;
+    @Inject private UserSessionContext userSessionContext;
+    @Inject private GuardedNavigator guardedNavigator;
     private Router router;
+    private boolean initialNavigationHandled;
 
     public static void launch(Injector injector, String[] args) {
         injectorRef = injector;
@@ -61,6 +53,7 @@ public class MainApp extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         log.info("App launched");
+        userSessionContext.load();
 
         // Sidebar island
         FxmlLoadResult<Node, SidebarIslandView> islandResult = fxml.load("/com/triplify/ui/shared/menu/view/SidebarIsland.fxml");
@@ -77,23 +70,24 @@ public class MainApp extends Application {
         Node menu = menuResult.node();
         MenuView menuView = menuResult.controller();
         menuView.setIslandController(islandView);
+        menuView.setNavigationHandler(page -> {
+            if (router != null) {
+                guardedNavigator.goTo(router, page.getRouteId());
+            }
+        });
 
         // Header
         FxmlLoadResult<Node, HeaderView> headerResult = fxml.load("/com/triplify/ui/shared/header/view/HeaderView.fxml");
         Node header = headerResult.node();
         HeaderView headerView = headerResult.controller();
         HBox.setHgrow(header, Priority.ALWAYS);
-        headerView.getViewModel().activeItemProperty().bind(menuView.getViewModel().selectedItemProperty());
-
-        // Map layer
-        FxmlLoadResult<Node, ?> mapResult = fxml.load("/com/triplify/ui/pages/map/MapView.fxml");
-        Node mapView = mapResult.node();
 
         // Router content area
         TriplifyRouterContext routerContext = new TriplifyRouterContext(injectorRef);
         RouterStackPane contentArea = new RouterStackPane();
 
         contentArea.getStyleClass().add("app-content");
+        contentArea.setOpacity(0);
         contentArea.setContext(routerContext);
         contentArea.setRouterConfig("router.xml");
         HBox.setHgrow(contentArea, Priority.ALWAYS);
@@ -103,28 +97,23 @@ public class MainApp extends Application {
         contentClip.heightProperty().bind(contentArea.heightProperty());
         contentArea.setClip(contentClip);
 
-        routerContext.selectedMenuItemProperty().addListener((obs, oldItem, newItem) -> {
-            if (newItem != null && newItem != menuView.getViewModel().getSelectedItem()) {
-                menuView.getViewModel().setSelectedItem(newItem);
+        routerContext.selectedPrimaryPageProperty().addListener((obs, oldPage, newPage) -> {
+            if (newPage != menuView.getViewModel().getActivePrimaryPage()) {
+                menuView.getViewModel().setActivePrimaryPage(newPage);
             }
         });
 
-        //isMap binding
-        BooleanBinding isMap = Bindings.createBooleanBinding(
-                () -> menuView.getViewModel().getSelectedItem() == MenuItem.MAP,
-                menuView.getViewModel().selectedItemProperty());
-
-        mapView.visibleProperty().bind(isMap);
-        mapView.managedProperty().bind(isMap);
-
-        contentArea.visibleProperty().bind(isMap.not());
-        contentArea.managedProperty().bind(isMap.not());
+        routerContext.currentPageProperty().addListener((obs, oldPage, newPage) -> {
+            menuView.getViewModel().setCurrentPage(newPage);
+            headerView.setActivePage(newPage);
+        });
 
         BooleanBinding showMenu = routerContext.fullScreenContentProperty().not();
         menu.visibleProperty().bind(showMenu);
         menu.managedProperty().bind(showMenu);
-        islandPane.visibleProperty().bind(showMenu);
-        islandPane.managedProperty().bind(showMenu);
+        BooleanBinding showIsland = showMenu;
+        islandPane.visibleProperty().bind(showIsland);
+        islandPane.managedProperty().bind(showIsland);
         showMenu.addListener((obs, wasVisible, isVisible) -> {
             if (isVisible) {
                 menuView.refreshAccountSection();
@@ -142,19 +131,24 @@ public class MainApp extends Application {
         contentArea.routerProperty().addListener((obs, oldRouter, newRouter) -> {
             router = newRouter;
             log.info("Router initialized: {}", newRouter != null ? "ready" : "null");
-        });
 
-        menuView.getViewModel().selectedItemProperty().addListener((obs, oldItem, newItem) -> {
-            if (router != null && newItem != null) {
-                log.info("Navigate to route: {}", newItem.getRouteId());
-                router.moveto(newItem.getRouteId());
+            if (router != null && !initialNavigationHandled) {
+                initialNavigationHandled = true;
+                if (userSessionContext.getCurrent().isPresent()) {
+                    guardedNavigator.openDefault(router);
+                } else {
+                    guardedNavigator.syncContext(router);
+                }
+                contentArea.setOpacity(1);
+            } else if (router != null) {
+                guardedNavigator.syncContext(router);
             }
         });
 
         HBox topBar = new HBox(islandPane, header);
         topBar.getStyleClass().add("app-top-bar");
-        topBar.visibleProperty().bind(showMenu);
-        topBar.managedProperty().bind(showMenu);
+        topBar.visibleProperty().bind(showIsland);
+        topBar.managedProperty().bind(showIsland);
 
         HBox bottomRow = new HBox(menu, contentArea);
         bottomRow.getStyleClass().add("app-bottom-row");
@@ -164,7 +158,7 @@ public class MainApp extends Application {
         normalLayout.getStyleClass().add("app-root");
 
         // Root
-        StackPane root = new StackPane(mapView, normalLayout);
+        StackPane root = new StackPane(normalLayout);
         root.getStyleClass().add("app-scene-root");
 
         toastService.attach(root);
@@ -187,6 +181,7 @@ public class MainApp extends Application {
 
     @Override
     public void stop() throws Exception {
+        userSessionContext.save();
         if (router != null) router.dispose();
         super.stop();
     }
