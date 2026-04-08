@@ -50,9 +50,31 @@ public class AccountController extends SimpleLifecycleAwareController {
         render();
 
         BadgeView badgeView = new BadgeView();
-        badgeView.update(new Badge("Super Traveler", "Awarded for completing 10 trips", null, BadgeGroup.RED, 1, 10, 5, false));
+        badgeView.update(new Badge(
+                "Super Traveler",
+                "Super cestovatel",
+                "Awarded for completing 10 trips",
+                "Ocenenie za dokoncenie 10 vyletov",
+                null,
+                BadgeGroup.RED,
+                1,
+                10,
+                5,
+                false
+        ));
         BadgeView badgeView2 = new BadgeView();
-        badgeView2.update(new Badge("Super Traveler2", "Awarded for completing 10 trips", null, BadgeGroup.RED, 1, 10, 6, true));
+        badgeView2.update(new Badge(
+                "Mountain Explorer",
+                "Horsky objavitel",
+                "Awarded for completing 10 trips",
+                "Ocenenie za dokoncenie 10 vyletov",
+                null,
+                BadgeGroup.RED,
+                1,
+                10,
+                6,
+                true
+        ));
         badgesGrid.add(badgeView, 0, 0);
         badgesGrid.add(badgeView2, 1, 0);
     }

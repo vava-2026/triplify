@@ -45,15 +45,17 @@ public class SelectButtonCell<T> extends ListCell<Entry<T>> {
     protected void updateItem(Entry<T> entry, boolean empty) {
         super.updateItem(entry, empty);
         if (empty || entry == null) {
+            entryView.update(null);
             if (emojiView != null) {
                 wrapper.getChildren().setAll(emojiView, placeholderLabel);
                 setGraphic(wrapper);
                 setText(null);
+                setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
             } else {
                 setGraphic(null);
                 setText(placeholder);
+                setContentDisplay(ContentDisplay.TEXT_ONLY);
             }
-            setContentDisplay(ContentDisplay.TEXT_ONLY);
         } else {
             entryView.update(entry);
             if (emojiView != null) {

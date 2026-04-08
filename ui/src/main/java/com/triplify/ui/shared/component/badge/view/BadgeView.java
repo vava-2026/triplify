@@ -2,6 +2,7 @@ package com.triplify.ui.shared.component.badge.view;
 
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.component.badge.model.Badge;
+import com.triplify.ui.shared.util.Localization;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -37,7 +38,9 @@ public class BadgeView extends VBox {
     }
 
     public void update(Badge badge) {
-        badgeName.setText(badge.getName());
+        badgeName.textProperty().unbind();
+        badgeStat.textProperty().unbind();
+        Localization.bindLocalizedText(badgeName.textProperty(), badge);
 
         badgeStat.textProperty().bind(
                 Bindings.createStringBinding(() -> I18n.t("badge.countriesVisited")
@@ -67,11 +70,10 @@ public class BadgeView extends VBox {
             badgeImage.setImage(placeholderImage);
         }
 
-        if (badge.isUnlocked() && !getStyleClass().contains(LOCKED_CLASS)) {
-            getStyleClass().add(LOCKED_CLASS);
-        }
-        else {
+        if (badge.isUnlocked()) {
             getStyleClass().remove(LOCKED_CLASS);
+        } else if (!getStyleClass().contains(LOCKED_CLASS)) {
+            getStyleClass().add(LOCKED_CLASS);
         }
     }
 }

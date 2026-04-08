@@ -24,7 +24,7 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
     public void onLifecycleInitialize() {
         RouterArgument data = getRouter().getCurrentData();
         String name = data == null ? null : data.getValue("tripName");
-        Integer id = data == null ? null : data.getValue("tripId");
+        Long id = data == null ? null : data.getValue("tripId");
         String category = data == null ? null : data.getValue("tripCategory");
         String dates = data == null ? null : data.getValue("tripDates");
         TripStatus status = data == null ? null : data.getValue("tripStatus");
@@ -70,7 +70,7 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
     @FXML
     private void onAddPlace() {
         RouterArgument currentData = getRouter().getCurrentData();
-        Integer id = currentData == null ? null : currentData.getValue("tripId");
+        Long id = currentData == null ? null : currentData.getValue("tripId");
         String name = currentData == null ? null : currentData.getValue("tripName");
         if (id == null) {
             return;
