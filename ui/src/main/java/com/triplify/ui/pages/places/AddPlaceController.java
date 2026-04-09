@@ -3,8 +3,11 @@ package com.triplify.ui.pages.places;
 import com.gluonhq.maps.MapPoint;
 import com.google.inject.Inject;
 import com.triplify.application.usecase.country.CountryService;
+import com.triplify.application.usecase.place.dto.DeletePlaceRequest;
+import com.triplify.application.usecase.place.dto.GetPlaceByIdRequest;
 import com.triplify.application.usecase.place.dto.AddPlaceRequest;
 import com.triplify.application.usecase.place.PlaceService;
+import com.triplify.application.usecase.place.dto.UpdatePlaceRequest;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.map.InteractiveMap;
 import com.triplify.ui.error.ErrorHandler;
@@ -88,6 +91,9 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     private Integer tripId;
     private String tripName;
     private String returnTarget;
+    private String placeId;
+    private boolean editMode;
+    private boolean placeLoaded;
     private Double selectedLatitude = DEFAULT_LATITUDE;
     private Double selectedLongitude = DEFAULT_LONGITUDE;
     private String coverImagePath;
@@ -148,11 +154,16 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         tripId = data == null ? null : data.getValue("tripId");
         tripName = data == null ? null : data.getValue("tripName");
         returnTarget = data == null ? null : data.getValue("editorReturnTarget");
+        placeId = data == null ? null : data.getValue("placeId");
+        editMode = placeId != null && !placeId.isBlank();
     }
 
     @Override
     public void onLifecycleShow() {
         updateFullScreenMode(false);
+        if (editMode && !placeLoaded) {
+            loadPlaceForEdit();
+        }
     }
 
     @Override
@@ -169,14 +180,10 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     private void onSave() {
         clearFieldErrors();
 
-        AddPlaceRequest request = new AddPlaceRequest(
-                normalize(countriesView == null ? null : countriesView.getSelectedCountryId()),
-                coverImagePath == null ? null : java.nio.file.Path.of(coverImagePath),
-                normalize(titleInput.getText()),
-                normalizeNullable(descriptionInput.getText()),
-                selectedLatitude,
-                selectedLongitude
-        );
+        String countryId = normalize(countriesView == null ? null : countriesView.getSelectedCountryId());
+        java.nio.file.Path coverImage = coverImagePath == null ? null : java.nio.file.Path.of(coverImagePath);
+        String title = normalize(titleInput.getText());
+        String description = normalizeNullable(descriptionInput.getText());
 
         Map<String, Consumer<String>> fieldHandlers = countriesView == null
                 ? Map.of("title", message -> titleInput.showError(message))
@@ -185,10 +192,31 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
                         "countryId", message -> countriesView.showError(message)
                 );
 
-        var result = placeService.addPlace(request);
+        var result = editMode
+                ? placeService.updatePlace(new UpdatePlaceRequest(
+                        placeId,
+                        countryId,
+                        coverImage,
+                        title,
+                        description,
+                        selectedLatitude,
+                        selectedLongitude
+                ))
+                : placeService.addPlace(new AddPlaceRequest(
+                        countryId,
+                        coverImage,
+                        title,
+                        description,
+                        selectedLatitude,
+                        selectedLongitude
+                ));
         result.onSuccess(place -> {
-            EditorDraftStorage.savePendingPlace(returnTarget, place);
-            String message = tripName == null || tripName.isBlank()
+            if (returnTarget != null && !returnTarget.isBlank()) {
+                EditorDraftStorage.savePendingPlace(returnTarget, place);
+            }
+            String message = editMode
+                    ? I18n.t("place.edit.toast.saved.body")
+                    : tripName == null || tripName.isBlank()
                     ? I18n.t("place.add.toast.saved.body")
                     : formatMessage("place.add.toast.saved.body.trip", tripName);
             toast.success(I18n.t("place.add.toast.saved.title"), message);
@@ -367,6 +395,51 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         
         interactiveMap.setMapCenter(DEFAULT_LATITUDE, DEFAULT_LONGITUDE);
         interactiveMap.setPinPosition(DEFAULT_LATITUDE, DEFAULT_LONGITUDE);
+    }
+
+    private void loadPlaceForEdit() {
+        var result = placeService.getPlaceById(new GetPlaceByIdRequest(placeId));
+        if (result.isFailure()) {
+            errorHandler.handle(result.getError());
+            getRouter().popBackStack();
+            return;
+        }
+
+        var place = result.getValue();
+        titleInput.setText(place.title() == null ? "" : place.title());
+        descriptionInput.setText(place.description() == null ? "" : place.description());
+        if (countriesView != null && place.country() != null && place.country().name() != null) {
+            countriesView.selectCountryByName(place.country().name());
+        }
+
+        selectedLatitude = place.latitude();
+        selectedLongitude = place.longitude();
+        interactiveMap.setMapCenter(selectedLatitude, selectedLongitude);
+        interactiveMap.setPinPosition(selectedLatitude, selectedLongitude);
+        updateSelectedCoordinatesLabel();
+
+        if (place.coverImage() != null && place.coverImage().url() != null) {
+            coverImagePath = place.coverImage().url().toString();
+            selectedImageLabel.setText(new File(coverImagePath).getName());
+            selectedImageLabel.setVisible(true);
+            selectedImageLabel.setManaged(true);
+
+            if (isVectorImage(new File(coverImagePath))) {
+                coverPreview.setImage(null);
+                coverPreview.setVisible(false);
+                coverPreview.setManaged(false);
+                uploadPlaceholder.setVisible(true);
+                uploadPlaceholder.setManaged(true);
+            } else {
+                setCoverPreviewImage(new Image(new File(coverImagePath).toURI().toString(), true));
+                coverPreview.setVisible(true);
+                coverPreview.setManaged(false);
+                uploadPlaceholder.setVisible(false);
+                uploadPlaceholder.setManaged(false);
+            }
+        }
+
+        placeLoaded = true;
     }
 
     private void updateSelectedCoordinatesLabel() {

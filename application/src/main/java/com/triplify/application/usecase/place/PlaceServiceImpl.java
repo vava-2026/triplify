@@ -83,17 +83,19 @@ public class PlaceServiceImpl implements PlaceService {
         }
 
         CountryResponse countryResponse = countryService.getCountryById(new GetCountryByIdRequest(request.countryId())).orThrow();
-        UUID imageId = null;
-        if (old.getCoverImage() != null && !old.getCoverImage().getUrl().equals(request.coverImage())){
-            imageService.deleteImage(new DeleteImageRequest(old.getCoverImage().getId().toString())).orThrow();
-
-            if (request.coverImage() != null) {
+        UUID imageId = old.getCoverImageId();
+        if (old.getCoverImage() != null) {
+            if (request.coverImage() == null) {
+                imageService.deleteImage(new DeleteImageRequest(old.getCoverImage().getId().toString())).orThrow();
+                imageId = null;
+            } else if (!old.getCoverImage().getUrl().equals(request.coverImage())) {
+                imageService.deleteImage(new DeleteImageRequest(old.getCoverImage().getId().toString())).orThrow();
                 var imageResult = imageService.addImage(new AddImageRequest(request.coverImage(), DEFAULT_IMAGE_DESCRIPTION + request.title()));
                 imageId = UUID.fromString(imageResult.orThrow().id());
             }
-            else {
-                imageId = old.getCoverImage().getId();
-            }
+        } else if (request.coverImage() != null) {
+            var imageResult = imageService.addImage(new AddImageRequest(request.coverImage(), DEFAULT_IMAGE_DESCRIPTION + request.title()));
+            imageId = UUID.fromString(imageResult.orThrow().id());
         }
 
         Place place = new Place(UUID.fromString(request.id()), user.userId(), UUID.fromString(countryResponse.id()), imageId, request.title(), request.description(), request.latitude(), request.longitude());

@@ -41,6 +41,7 @@ public class InteractiveMap extends StackPane {
     private final Button recenterButton;
     private final Button zoomInButton;
     private final Button zoomOutButton;
+    private final VBox controlsBox;
 
     private CountryHoverLayer countryHoverLayer;
     private PinLayer pinLayer;
@@ -51,6 +52,7 @@ public class InteractiveMap extends StackPane {
     private double mapDragSceneX;
     private double mapDragSceneY;
     private boolean rightMouseDragging;
+    private boolean selectionEnabled = true;
 
     private final ObjectProperty<MapPoint> selectedPoint = new SimpleObjectProperty<>();
     private final ObjectProperty<String> selectedCountryName = new SimpleObjectProperty<>();
@@ -95,19 +97,19 @@ public class InteractiveMap extends StackPane {
         zoomOutButton.setFocusTraversable(false);
         zoomOutButton.setOnAction(ignore -> handleZoom(-ZOOM_STEP));
 
-        VBox controlsVBox = new VBox();
-        controlsVBox.getStyleClass().add("add-place-map-controls");
-        controlsVBox.setSpacing(10);
-        controlsVBox.setPadding(new Insets(10));
-        controlsVBox.getChildren().addAll(recenterButton, zoomInButton, zoomOutButton);
+        controlsBox = new VBox();
+        controlsBox.getStyleClass().add("add-place-map-controls");
+        controlsBox.setSpacing(10);
+        controlsBox.setPadding(new Insets(10));
+        controlsBox.getChildren().addAll(recenterButton, zoomInButton, zoomOutButton);
 
-        getChildren().addAll(mapContainer, hoveredCountryLabel, controlsVBox);
+        getChildren().addAll(mapContainer, hoveredCountryLabel, controlsBox);
 
         StackPane.setAlignment(hoveredCountryLabel, Pos.TOP_LEFT);
         StackPane.setMargin(hoveredCountryLabel, new Insets(14, 0, 0, 14));
 
-        StackPane.setAlignment(controlsVBox, Pos.BOTTOM_RIGHT);
-        StackPane.setMargin(controlsVBox, new Insets(0, 10, 10, 0));
+        StackPane.setAlignment(controlsBox, Pos.BOTTOM_RIGHT);
+        StackPane.setMargin(controlsBox, new Insets(0, 10, 10, 0));
 
         initMapLayers();
         initEventHandlers();
@@ -220,6 +222,15 @@ public class InteractiveMap extends StackPane {
         selectedCountryName.set(countryBoundary == null ? null : countryBoundary.name());
     }
 
+    public void setSelectionEnabled(boolean selectionEnabled) {
+        this.selectionEnabled = selectionEnabled;
+    }
+
+    public void setControlsVisible(boolean visible) {
+        controlsBox.setVisible(visible);
+        controlsBox.setManaged(visible);
+    }
+
     private void handleZoom(double zoomDelta) {
         mapView.setZoom(clamp(mapView.getZoom() + zoomDelta, MIN_ZOOM, MAX_ZOOM));
         if (mapView.getZoom() > MAX_COUNTRY_HOVER_ZOOM) {
@@ -285,6 +296,9 @@ public class InteractiveMap extends StackPane {
     }
 
     private void updateSelectionFromScenePoint(double sceneX, double sceneY) {
+        if (!selectionEnabled) {
+            return;
+        }
         Point2D localPoint = mapView.sceneToLocal(sceneX, sceneY);
         if (!isPointInsideMap(localPoint.getX(), localPoint.getY())) return;
         MapPoint point = mapView.getMapPosition(localPoint.getX(), localPoint.getY());

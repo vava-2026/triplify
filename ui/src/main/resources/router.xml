@@ -13,6 +13,10 @@
         <argument name="tripName" type="string" required="true"/>
     </arguments>
 
+    <arguments id="placeDetailsArgs">
+        <argument name="placeId" type="string" required="true"/>
+    </arguments>
+
     <destination id="start"
                  fxml="com/triplify/ui/pages/start/StartPageView.fxml"
                  singleTop="true"/>
@@ -41,6 +45,11 @@
     <destination id="add_place"
                  fxml="com/triplify/ui/pages/places/AddPlaceView.fxml"
                  arguments="addPlaceArgs"
+                 singleTop="true"/>
+
+    <destination id="place_details"
+                 fxml="com/triplify/ui/pages/places/PlaceDetailsView.fxml"
+                 arguments="placeDetailsArgs"
                  singleTop="true"/>
 
     <destination id="add_route"
