@@ -400,7 +400,7 @@ public class TripRepositoryImpl implements TripRepository {
         if (rs.getString("c_id") != null) {
             category = new Category(
                     UUID.fromString(rs.getString("c_id")),
-                    UUID.fromString(rs.getString("c_created_by")),
+                    nullableUuid(rs.getString("c_created_by")),
                     rs.getString("c_name"),
                     rs.getString("c_name_sk"),
                     rs.getString("c_description"),

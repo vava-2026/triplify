@@ -50,8 +50,8 @@
                  singleTop="true"/>
 
     <destination id="trip_details"
-                 fxml="com/triplify/ui/pages/trips/TripDetailsView.fxml"
-                 arguments="tripDetailsArgs"
+                 fxml="com/triplify/ui/pages/placeholder/PlaceholderPageView.fxml"
+                 singleTop="true"/>
     <destination id="add_trip"
                  fxml="com/triplify/ui/pages/trips/AddTripView.fxml"
                  arguments="addTripArgs"

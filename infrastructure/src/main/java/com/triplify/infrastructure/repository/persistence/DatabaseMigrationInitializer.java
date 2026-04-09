@@ -19,10 +19,10 @@ public class DatabaseMigrationInitializer {
             new MigrationStep(1, "migrations/initial.sql"),
             new MigrationStep(2, "migrations/V2__countries_created_by_nullable.sql"),
             new MigrationStep(3, "seeders/country_seeder.sql"),
-            new MigrationStep(4, "migrations/V4__trip_places_source_tracking.sql"),
-            new MigrationStep(5, "migrations/V5__seed_default_categories.sql"),
-            new MigrationStep(6, "migrations/V6__seed_default_categories_retry.sql"),
-            new MigrationStep(7, "migrations/V7__seed_default_tags.sql")
+            new MigrationStep(4, "migrations/V3__trip_places_source_tracking.sql"),
+            new MigrationStep(5, "migrations/V4__categories_created_by_nullable.sql"),
+            new MigrationStep(6, "seeders/category_seeder.sql"),
+            new MigrationStep(7, "migrations/V7__expand_color_palette.sql")
     );
 
     public void initialize() {
@@ -74,11 +74,7 @@ public class DatabaseMigrationInitializer {
         String sqlScript = readSql(fileName);
 
         try (Statement stmt = connection.createStatement()) {
-            for (String statement : splitStatements(sqlScript)) {
-                if (!statement.isBlank()) {
-                    stmt.execute(statement);
-                }
-            }
+            stmt.executeUpdate(sqlScript);
         } catch (SQLException e) {
             logger.error("SQL execution failed for file: {}", fileName, e);
             throw new RuntimeException("Could not execute SQL file: " + fileName, e);
@@ -92,38 +88,6 @@ public class DatabaseMigrationInitializer {
             }
             return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
         }
-    }
-
-    private List<String> splitStatements(String sqlScript) {
-        List<String> statements = new java.util.ArrayList<>();
-        StringBuilder current = new StringBuilder();
-        boolean inSingleQuote = false;
-        boolean inDoubleQuote = false;
-
-        for (int i = 0; i < sqlScript.length(); i++) {
-            char ch = sqlScript.charAt(i);
-
-            if (ch == '\'' && !inDoubleQuote) {
-                inSingleQuote = !inSingleQuote;
-            } else if (ch == '"' && !inSingleQuote) {
-                inDoubleQuote = !inDoubleQuote;
-            }
-
-            if (ch == ';' && !inSingleQuote && !inDoubleQuote) {
-                statements.add(current.toString().trim());
-                current.setLength(0);
-                continue;
-            }
-
-            current.append(ch);
-        }
-
-        String trailing = current.toString().trim();
-        if (!trailing.isBlank()) {
-            statements.add(trailing);
-        }
-
-        return statements;
     }
 
     private record MigrationStep(int version, String fileName) {

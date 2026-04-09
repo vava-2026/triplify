@@ -9,7 +9,7 @@ SELECT InitSpatialMetaData(1);
 -- ENUMS (enforced via CHECK)
 -- ROLE_ENUM  : 'user' | 'pro-user' | 'configuration manager'
 -- STATUS_ENUM: 'planned' | 'ongoing' | 'visited' | 'canceled'
--- COLOR_ENUM : 'red' | 'orange' | 'yellow' | 'green' | 'blue' | 'purple' | 'pink' | 'gray'
+-- COLOR_ENUM : 'gray' | 'red_dark' | 'red' | 'rose' | 'orange' | 'amber' | 'yellow' | 'golden_brown' | 'lime' | 'green' | 'indigo' | 'violet' | 'steel_blue' | 'teal' | 'blue' | 'cyan' | 'sage' | 'brown' | 'purple' | 'pink'
 
 CREATE TABLE images (
     id          TEXT NOT NULL PRIMARY KEY,
@@ -56,7 +56,7 @@ CREATE TABLE categories (
     description_sk TEXT,
     emoji_unicode TEXT,
     color TEXT NOT NULL DEFAULT 'gray'
-      CHECK (color IN ('red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'gray'))
+      CHECK (color IN ('gray', 'red_dark', 'red', 'rose', 'orange', 'amber', 'yellow', 'golden_brown', 'lime', 'green', 'indigo', 'violet', 'steel_blue', 'teal', 'blue', 'cyan', 'sage', 'brown', 'purple', 'pink'))
 );
 
 CREATE TABLE countries (
@@ -78,7 +78,7 @@ CREATE TABLE tags (
           ON DELETE CASCADE ON UPDATE CASCADE,
     name    TEXT NOT NULL COLLATE NOCASE,
     color   TEXT NOT NULL DEFAULT 'gray'
-      CHECK (color IN ('red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'gray')),
+      CHECK (color IN ('gray', 'red_dark', 'red', 'rose', 'orange', 'amber', 'yellow', 'golden_brown', 'lime', 'green', 'indigo', 'violet', 'steel_blue', 'teal', 'blue', 'cyan', 'sage', 'brown', 'purple', 'pink')),
 
     UNIQUE (user_id, name)
 );

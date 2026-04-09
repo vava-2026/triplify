@@ -386,7 +386,7 @@ public class TripServiceImpl implements TripService {
         Category category = trip.getCategory();
         CategoryResponse categoryResponse = category == null ? null : new CategoryResponse(
                 category.getId().toString(),
-                category.getCreatedById().toString(),
+                category.getCreatedById() == null ? null : category.getCreatedById().toString(),
                 category.getName(),
                 category.getNameSk(),
                 category.getDescription(),

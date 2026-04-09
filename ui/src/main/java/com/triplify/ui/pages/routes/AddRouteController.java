@@ -99,7 +99,7 @@ public class AddRouteController extends SimpleLifecycleAwareController {
     private final List<RoutePlaceItem> availablePlaceItems = new ArrayList<>();
     private final List<RoutePlaceItem> placeItems = new ArrayList<>();
 
-    private Integer tripId;
+    private String tripId;
     private String tripName;
     private String returnTarget;
     private String coverImagePath;

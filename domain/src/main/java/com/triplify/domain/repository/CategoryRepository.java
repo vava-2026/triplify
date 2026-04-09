@@ -8,7 +8,6 @@ import java.util.Optional;
 public interface CategoryRepository {
     Optional<Category> findById(String id);
     List<Category> findAll();
-    Optional<Category> findById(String id);
     boolean existsByName(String name, String nameSk);
     void create(Category category);
     void update(Category category);

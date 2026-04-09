@@ -44,7 +44,7 @@ public class TagPickerItem extends VBox {
     private static final String THEME_STYLESHEET = "/com/triplify/ui/shared/css/theme.css";
     private static final String COMPONENT_STYLESHEET = "/com/triplify/ui/shared/component/tag_picker/css/tag_picker.css";
     private static final double POPUP_OFFSET_Y = 3.0;
-    private static final int COLOR_VARIANTS = 5;
+    private static final int COLOR_VARIANTS = 20;
     private static final String DEFAULT_POPUP_TITLE = "All tags";
 
     @FXML private HBox shell;

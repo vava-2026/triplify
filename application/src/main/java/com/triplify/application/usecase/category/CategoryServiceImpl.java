@@ -120,7 +120,7 @@ public class CategoryServiceImpl implements CategoryService {
     private CategoryResponse toResponse(Category c) {
         return new CategoryResponse(
                 c.getId().toString(),
-                c.getCreatedById().toString(),
+                c.getCreatedById() == null ? null : c.getCreatedById().toString(),
                 c.getName(),
                 c.getNameSk(),
                 c.getDescription(),

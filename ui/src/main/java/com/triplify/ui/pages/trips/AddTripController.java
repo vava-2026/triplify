@@ -32,6 +32,7 @@ import com.triplify.application.usecase.triproute.dto.GetTripRoutesRequest;
 import com.triplify.application.usecase.triproute.dto.TripRouteResponse;
 import com.triplify.domain.model.enums.StatusEnum;
 import com.triplify.domain.model.enums.TripPlaceSourceType;
+import com.triplify.domain.error.AppError;
 import com.triplify.domain.pagination.Page;
 import com.triplify.domain.pagination.PageRequest;
 import com.triplify.domain.result.Result;
@@ -39,6 +40,7 @@ import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.component.action_buttons.view.EditorActionButtonsView;
+import com.triplify.ui.shared.component.categories.model.Categories;
 import com.triplify.ui.shared.component.countries.model.Countries;
 import com.triplify.ui.shared.component.countries.view.CountriesView;
 import com.triplify.ui.shared.component.date_picker.DatePickerItem;
@@ -103,9 +105,6 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
     private static final Logger log = LoggerFactory.getLogger(AddTripController.class);
 
-    private static final List<String> AVAILABLE_CATEGORIES = List.of(
-            "Culture", "Tourism", "Nature", "Relax", "Memorial", "Food"
-    );
     private static final int DEFAULT_PAGE_SIZE = 100;
     private static final String DEFAULT_IMAGE = "/com/triplify/ui/pages/trips/images/one.png";
 
@@ -176,6 +175,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
     private DatePickerItem startDateInput;
     private DatePickerItem endDateInput;
     private CountriesView countrySelectView;
+    private Categories categoriesComponent;
     private Entry<String> pendingCountryEntry;
     private Select<String> categorySelectModel;
     private StackPane uploadArea;
@@ -221,6 +221,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
         bindLocalizedText();
         configureTagPicker();
         initializeCountrySelector();
+        categoriesComponent = Categories.builder(categoryService).build();
         loadAvailableCategories();
         loadAvailableTags();
         refreshLocalizedUi();
@@ -530,14 +531,14 @@ public class AddTripController extends SimpleLifecycleAwareController {
     }
 
     private void loadAvailableCategories() {
-        if (categoryService == null) {
+        if (categoriesComponent == null) {
             availableCategories = List.of();
             return;
         }
 
-        var result = categoryService.getAllCategories();
+        var result = categoriesComponent.loadAll();
         if (result.isFailure()) {
-            log.warn("Failed to load categories for trip editor", result.getError());
+            logWarnWithError("Failed to load categories for trip editor", result.getError());
             availableCategories = List.of();
             return;
         }
@@ -557,7 +558,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
         while (true) {
             var result = tagService.getTags(new GetTagsRequest(pageRequest, null));
             if (result.isFailure()) {
-                log.warn("Failed to load tags for trip editor", result.getError());
+                logWarnWithError("Failed to load tags for trip editor", result.getError());
                 availableTags = List.of();
                 return;
             }
@@ -578,15 +579,10 @@ public class AddTripController extends SimpleLifecycleAwareController {
     }
 
     private List<Entry<String>> createCategoryEntries() {
-        if (availableCategories != null && !availableCategories.isEmpty()) {
-            return availableCategories.stream()
-                    .map(category -> Entry.builder(category.id(), category.name()).build())
-                    .toList();
+        if (categoriesComponent == null || availableCategories == null || availableCategories.isEmpty()) {
+            return List.of();
         }
-
-        return AVAILABLE_CATEGORIES.stream()
-                .map(this::toEntry)
-                .toList();
+        return categoriesComponent.toEntries(availableCategories);
     }
 
     private void populateHeader(String tripName, String tripDates) {
@@ -1028,7 +1024,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
         while (true) {
             var result = routeService.getRoutes(new GetRoutesRequest(pageRequest, null));
             if (result.isFailure()) {
-                log.warn("Failed to load routes for trip picker", result.getError());
+                logWarnWithError("Failed to load routes for trip picker", result.getError());
                 toast.warning(I18n.t("trip.add.toast.routes.loadFailed"));
                 return List.of();
             }
@@ -1049,7 +1045,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
         while (true) {
             var result = placeService.getPlaces(new GetPlacesRequest(pageRequest, null));
             if (result.isFailure()) {
-                log.warn("Failed to load places for trip picker", result.getError());
+                logWarnWithError("Failed to load places for trip picker", result.getError());
                 toast.warning(I18n.t("trip.add.toast.places.loadFailed"));
                 return List.of();
             }
@@ -1389,11 +1385,24 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
     private ColorTheme pickTagColor(String label) {
         ColorTheme[] palette = {
-                ColorTheme.BLUE,
-                ColorTheme.GREEN,
+                ColorTheme.RED_DARK,
+                ColorTheme.RED,
+                ColorTheme.ROSE,
                 ColorTheme.ORANGE,
-                ColorTheme.PURPLE,
+                ColorTheme.AMBER,
                 ColorTheme.YELLOW,
+                ColorTheme.GOLDEN_BROWN,
+                ColorTheme.LIME,
+                ColorTheme.GREEN,
+                ColorTheme.INDIGO,
+                ColorTheme.VIOLET,
+                ColorTheme.STEEL_BLUE,
+                ColorTheme.BLUE,
+                ColorTheme.CYAN,
+                ColorTheme.TEAL,
+                ColorTheme.SAGE,
+                ColorTheme.BROWN,
+                ColorTheme.PURPLE,
                 ColorTheme.PINK,
                 ColorTheme.GRAY
         };
@@ -1614,7 +1623,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
         var result = tripService.getTripById(new GetTripByIdRequest(tripId));
         if (result.isFailure()) {
-            log.warn("Failed to load trip '{}' from service, using router fallback", tripId, result.getError());
+            logWarnWithError("Failed to load trip '" + tripId + "' from service, using router fallback", result.getError());
             populateHeader(fallbackTripName, fallbackTripDates);
             populateForm(
                     fallbackTripName,
@@ -1794,7 +1803,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
         routeItems.clear();
         Result<List<TripRouteResponse>> result = loadAllTripRoutes(targetTripId);
         if (result.isFailure()) {
-            log.warn("Failed to load trip routes for trip '{}'", targetTripId, result.getError());
+            logWarnWithError("Failed to load trip routes for trip '" + targetTripId + "'", result.getError());
             toast.warning(I18n.t("trip.add.toast.routes.loadFailed"));
             renderRoutes();
             return;
@@ -1812,7 +1821,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
         placeItems.clear();
         Result<List<TripPlaceResponse>> result = loadAllTripPlaces(targetTripId, TripPlaceSourceType.MANUAL);
         if (result.isFailure()) {
-            log.warn("Failed to load trip places for trip '{}'", targetTripId, result.getError());
+            logWarnWithError("Failed to load trip places for trip '" + targetTripId + "'", result.getError());
             toast.warning(I18n.t("trip.add.toast.places.loadFailed"));
             renderPlaces();
             return;
@@ -1980,6 +1989,25 @@ public class AddTripController extends SimpleLifecycleAwareController {
         }
 
         return imagePath;
+    }
+
+    private void logWarnWithError(String message, AppError error) {
+        if (error == null) {
+            log.warn("{}", message);
+            return;
+        }
+
+        if (error instanceof com.triplify.application.error.ApplicationError.StorageFailure storage && storage.cause() != null) {
+            log.warn("{} [code={}, message={}]", message, error.code(), error.message(), storage.cause());
+            return;
+        }
+
+        if (error instanceof com.triplify.application.error.ApplicationError.FileFailure fileFailure && fileFailure.cause() != null) {
+            log.warn("{} [code={}, message={}]", message, error.code(), error.message(), fileFailure.cause());
+            return;
+        }
+
+        log.warn("{} [code={}, message={}]", message, error.code(), error.message());
     }
 
 

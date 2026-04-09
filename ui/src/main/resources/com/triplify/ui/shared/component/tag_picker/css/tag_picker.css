@@ -180,26 +180,101 @@
 }
 
 .app-tag-picker-chip-color-0 {
-    -fx-border-color: #ff5c5c;
-    -fx-text-fill: #ff4c4c;
+    -fx-border-color: -color-theme-red-dark-fg;
+    -fx-text-fill: -color-theme-red-dark-fg;
 }
 
 .app-tag-picker-chip-color-1 {
-    -fx-border-color: #8d9298;
-    -fx-text-fill: #6f7479;
+    -fx-border-color: -color-theme-red-fg;
+    -fx-text-fill: -color-theme-red-fg;
 }
 
 .app-tag-picker-chip-color-2 {
-    -fx-border-color: #4d87c7;
-    -fx-text-fill: #2f69a8;
+    -fx-border-color: -color-theme-rose-fg;
+    -fx-text-fill: -color-theme-rose-fg;
 }
 
 .app-tag-picker-chip-color-3 {
-    -fx-border-color: #ffa01a;
-    -fx-text-fill: #f68e00;
+    -fx-border-color: -color-theme-orange-fg;
+    -fx-text-fill: -color-theme-orange-fg;
 }
 
 .app-tag-picker-chip-color-4 {
-    -fx-border-color: #62b57c;
-    -fx-text-fill: #4f9968;
+    -fx-border-color: -color-theme-amber-fg;
+    -fx-text-fill: -color-theme-amber-fg;
+}
+
+.app-tag-picker-chip-color-5 {
+    -fx-border-color: -color-theme-yellow-fg;
+    -fx-text-fill: -color-theme-yellow-fg;
+}
+
+.app-tag-picker-chip-color-6 {
+    -fx-border-color: -color-theme-golden-brown-fg;
+    -fx-text-fill: -color-theme-golden-brown-fg;
+}
+
+.app-tag-picker-chip-color-7 {
+    -fx-border-color: -color-theme-lime-fg;
+    -fx-text-fill: -color-theme-lime-fg;
+}
+
+.app-tag-picker-chip-color-8 {
+    -fx-border-color: -color-theme-green-fg;
+    -fx-text-fill: -color-theme-green-fg;
+}
+
+.app-tag-picker-chip-color-9 {
+    -fx-border-color: -color-theme-indigo-fg;
+    -fx-text-fill: -color-theme-indigo-fg;
+}
+
+.app-tag-picker-chip-color-10 {
+    -fx-border-color: -color-theme-violet-fg;
+    -fx-text-fill: -color-theme-violet-fg;
+}
+
+.app-tag-picker-chip-color-11 {
+    -fx-border-color: -color-theme-steel-blue-fg;
+    -fx-text-fill: -color-theme-steel-blue-fg;
+}
+
+.app-tag-picker-chip-color-12 {
+    -fx-border-color: -color-theme-blue-fg;
+    -fx-text-fill: -color-theme-blue-fg;
+}
+
+.app-tag-picker-chip-color-13 {
+    -fx-border-color: -color-theme-cyan-fg;
+    -fx-text-fill: -color-theme-cyan-fg;
+}
+
+.app-tag-picker-chip-color-14 {
+    -fx-border-color: -color-theme-teal-fg;
+    -fx-text-fill: -color-theme-teal-fg;
+}
+
+.app-tag-picker-chip-color-15 {
+    -fx-border-color: -color-theme-sage-fg;
+    -fx-text-fill: -color-theme-sage-fg;
+}
+
+.app-tag-picker-chip-color-16 {
+    -fx-border-color: -color-theme-brown-fg;
+    -fx-text-fill: -color-theme-brown-fg;
+}
+
+.app-tag-picker-chip-color-17 {
+    -fx-border-color: -color-theme-violet-fg;
+    -fx-text-fill: -color-theme-violet-fg;
+}
+
+.app-tag-picker-chip-color-18 {
+    -fx-border-color: -color-theme-rose-fg;
+    -fx-text-fill: -color-theme-rose-fg;
+}
+
+.app-tag-picker-chip-color-19 {
+    -fx-border-color: -color-theme-gray-fg;
+    -fx-text-fill: -color-theme-gray-fg;
 }

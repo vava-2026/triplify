@@ -1,6 +1,6 @@
 PRAGMA foreign_keys=off;
 
-INSERT INTO countries (id, created_by, name, name_sk, emoji_unicode, is_available) VALUES
+INSERT OR IGNORE INTO countries (id, created_by, name, name_sk, emoji_unicode, is_available) VALUES
 ('334aa9f2-7417-40df-a348-129ead8daea4', NULL, 'Afghanistan', 'Afganistan', 'U+1F1E6 U+1F1EB', 1),
 ('482f4a3c-b479-440b-a9d9-67828df2ae31', NULL, 'Albania', 'Albánsko', 'U+1F1E6 U+1F1F1', 1),
 ('7b229712-4f7b-4bd5-a4d3-6ed73bfe106a', NULL, 'Algeria', 'Alžírsko', 'U+1F1E9 U+1F1FF', 1),

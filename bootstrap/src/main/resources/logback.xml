@@ -18,7 +18,7 @@
     </appender>
     <logger name="com.triplify.bootstrap" level="DEBUG"/>
     <logger name="com.triplify.ui" level="INFO"/>
-    <logger name="com.triplify.application" level="INFO"/>
+    <logger name="com.triplify.application" level="DEBUG"/>
     <logger name="com.triplify.infrastructure" level="INFO"/>
     <logger name="com.google.inject" level="WARN"/>
     <logger name="rahulstech.jfx.routing" level="WARN"/>

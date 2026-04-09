@@ -80,16 +80,6 @@ public class TagServiceImpl implements TagService {
     }
 
     private ColorEnum toDomainColor(ColorTheme colorTheme) {
-        return switch (colorTheme) {
-            case GRAY -> ColorEnum.GRAY;
-            case RED -> ColorEnum.RED;
-            case ORANGE -> ColorEnum.ORANGE;
-            case YELLOW -> ColorEnum.YELLOW;
-            case GREEN -> ColorEnum.GREEN;
-            case TEAL -> ColorEnum.TEAL;
-            case BLUE -> ColorEnum.BLUE;
-            case PURPLE -> ColorEnum.PURPLE;
-            case PINK -> ColorEnum.PINK;
-        };
+        return colorTheme.toColorEnum();
     }
 }

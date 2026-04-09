@@ -5,13 +5,18 @@ import com.triplify.application.pagination.Pagination;
 import com.triplify.application.request.TripSort;
 import com.triplify.application.response.TripResponse;
 import com.triplify.application.response.TripStatus;
+import com.triplify.application.usecase.category.CategoryService;
+import com.triplify.application.usecase.category.dto.CategoryResponse;
 import com.triplify.application.usecase.country.CountryService;
 import com.triplify.application.usecase.image.dto.ImageResponse;
+import com.triplify.application.usecase.tag.TagService;
+import com.triplify.application.usecase.tag.dto.GetTagsRequest;
 import com.triplify.application.usecase.tag.dto.TagResponse;
 import com.triplify.application.usecase.trip.TripService;
 import com.triplify.domain.model.enums.StatusEnum;
 import com.triplify.domain.pagination.PageRequest;
 import com.triplify.ui.routing.RouteIds;
+import com.triplify.ui.shared.component.categories.model.Categories;
 import com.triplify.ui.shared.component.card_grid.CardGridPane;
 import com.triplify.ui.shared.component.countries.model.Countries;
 import com.triplify.ui.shared.component.countries.view.CountriesView;
@@ -36,14 +41,18 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 public class MyTripsController extends SimpleLifecycleAwareController {
 
     private static final Logger log = LoggerFactory.getLogger(MyTripsController.class);
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("MMM d, yyyy");
+    private static final String ALL_OPTION = "All";
 
     @FXML private VBox countryFilterContainer;
     @FXML private VBox categorySelectContainer;
@@ -55,9 +64,13 @@ public class MyTripsController extends SimpleLifecycleAwareController {
 
     @Inject private TripService tripService;
     @Inject private CountryService countryService;
+    @Inject private CategoryService categoryService;
+    @Inject private TagService tagService;
+    private Categories categoriesComponent;
     private Select<String> categorySelectModel;
     private Select<String> tagSelectModel;
     private CountriesView countryFilterView;
+    private List<CategoryResponse> availableCategories = List.of();
 
     @FXML
     private void initialize() {
@@ -97,14 +110,9 @@ public class MyTripsController extends SimpleLifecycleAwareController {
         countryFilterView.getStyleClass().add("trips-country-filter");
         countryFilterContainer.getChildren().setAll(countryFilterView);
 
-        categorySelectModel = createFilterSelectModel(
-                List.of("All", "Culture", "Tourism", "Nature", "Relax", "Memorial"),
-                "Category"
-        );
-        tagSelectModel = createFilterSelectModel(
-                List.of("All", "City", "Food", "Adventure", "Nature", "Family", "Shopping"),
-                "Tags"
-        );
+        categoriesComponent = Categories.builder(categoryService).build();
+        categorySelectModel = createCategorySelectModel(loadCategoryFilterEntries(), "Category");
+        tagSelectModel = createSelectModelFromValues(loadTagFilterValues(), "Tags");
         statusSelect.setItems(javafx.collections.FXCollections.observableArrayList(
                 "All",
                 TripStatus.VISITED.getLabel(),
@@ -175,7 +183,7 @@ public class MyTripsController extends SimpleLifecycleAwareController {
                         null,
                         normalizeFilter(countryFilterView == null ? null : countryFilterView.getSelectedCountryId()),
                         toDomainStatus(statusFilter),
-                        null,
+                        normalizeFilter(selectedValue(categorySelectModel)),
                         null,
                         startedFrom,
                         startedTo
@@ -191,7 +199,6 @@ public class MyTripsController extends SimpleLifecycleAwareController {
 
         List<TripResponse> trips = result.getValue().items().stream()
                 .map(this::toLegacyTrip)
-                .filter(trip -> matchesText(trip.category(), normalizeFilter(selectedValue(categorySelectModel))))
                 .filter(trip -> matchesTag(trip.tags(), normalizeFilter(selectedValue(tagSelectModel))))
                 .sorted(resolveComparator(sortSelect.getValue()))
                 .toList();
@@ -353,12 +360,64 @@ public class MyTripsController extends SimpleLifecycleAwareController {
         return start == null ? end.format(DATE_FORMAT) : start.format(DATE_FORMAT);
     }
 
-    private Select<String> createFilterSelectModel(List<String> values, String placeholder) {
+    private Select<String> createSelectModelFromValues(List<String> values, String placeholder) {
         return Select.<String>builder()
                 .placeholder(placeholder)
                 .variant(FieldVariant.FILLED)
                 .items(values.stream().map(this::toEntry).toList())
                 .build();
+    }
+
+    private Select<String> createCategorySelectModel(List<Entry<String>> entries, String placeholder) {
+        return Select.<String>builder()
+                .placeholder(placeholder)
+                .variant(FieldVariant.FILLED)
+                .items(entries)
+                .build();
+    }
+
+    private List<Entry<String>> loadCategoryFilterEntries() {
+        if (categoriesComponent == null) {
+            return List.of(Entry.builder("", ALL_OPTION).build());
+        }
+
+        var result = categoriesComponent.loadAll();
+        if (result.isFailure()) {
+            log.warn("Failed to load categories for My Trips filters: {}", result.getError().message());
+            availableCategories = List.of();
+            return List.of(Entry.builder("", ALL_OPTION).build());
+        }
+
+        availableCategories = result.getValue();
+        return categoriesComponent.toEntriesWithAll(availableCategories, ALL_OPTION);
+    }
+
+    private List<String> loadTagFilterValues() {
+        List<String> tags = new ArrayList<>();
+        tags.add(ALL_OPTION);
+
+        PageRequest pageRequest = PageRequest.defaultRequest();
+        while (true) {
+            var result = tagService.getTags(new GetTagsRequest(pageRequest, null));
+            if (result.isFailure()) {
+                log.warn("Failed to load tags for My Trips filters: {}", result.getError().message());
+                return List.copyOf(new LinkedHashSet<>(tags));
+            }
+
+            for (TagResponse tag : result.getValue().items()) {
+                if (tag == null || tag.name() == null || tag.name().isBlank()) {
+                    continue;
+                }
+                tags.add(tag.name().trim());
+            }
+
+            if (!result.getValue().hasNext()) {
+                break;
+            }
+            pageRequest = pageRequest.next();
+        }
+
+        return List.copyOf(new LinkedHashSet<>(tags));
     }
 
     private SelectView<String> createFilterSelectView(Select<String> model, double width) {
