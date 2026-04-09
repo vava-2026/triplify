@@ -1,7 +1,11 @@
 package com.triplify.ui.shared.component.badge.model;
 
 public enum BadgeGroup {
-    RED,
-    GREEN,
-    BLUE
+    COUNTRIES,
+    KILOMETERS,
+    TRIPS,
+    ROUTES,
+    PLACES,
+    STORIES,
+    PHOTOS
 }

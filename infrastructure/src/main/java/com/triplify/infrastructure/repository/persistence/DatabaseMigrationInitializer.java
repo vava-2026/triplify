@@ -18,7 +18,10 @@ public class DatabaseMigrationInitializer {
     private static final String[] SEEDERS = {
             "seeders/user_seeder.sql",
             "seeders/country_seeder.sql",
-            "seeders/category_seeder.sql"
+            "seeders/category_seeder.sql",
+            "seeders/badge_group_seeder.sql",
+            "seeders/badge_image_seeder.sql",
+            "seeders/badge_seeder.sql"
     };
 
     public void initialize() {

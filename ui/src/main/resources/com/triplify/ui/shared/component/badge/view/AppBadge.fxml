@@ -2,6 +2,7 @@
 
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.image.ImageView?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.layout.VBox?>
 
 
@@ -10,26 +11,44 @@
          xmlns:fx="http://javafx.com/fxml"
          styleClass="badge-card"
          stylesheets="@../css/badge.css"
-         alignment="CENTER"
-         spacing="8"
-         prefWidth="160"
-         prefHeight="220">
+               alignment="TOP_CENTER"
+               spacing="0"
+               minWidth="160"
+               prefWidth="160"
+               maxWidth="160"
+               minHeight="180"
+               prefHeight="180"
+               maxHeight="180">
 
+       <padding>
+              <Insets top="10" right="30" bottom="10" left="30"/>
+       </padding>
 
-    <ImageView fx:id="badgeImage"
-               fitWidth="80"
-               fitHeight="80"
-               preserveRatio="true"
-               styleClass="badge-image"/>
+       <VBox alignment="TOP_CENTER" spacing="0">
+              <ImageView fx:id="badgeImage"
+                               fitWidth="100"
+                               fitHeight="100"
+                               preserveRatio="true"
+                               styleClass="badge-image"/>
 
-    <Label fx:id="badgeName"
-           styleClass="badge-name"
-           wrapText="true"
-           alignment="CENTER"
-           text="Badge Name"/>
+              <VBox alignment="TOP_CENTER" spacing="0" prefWidth="150" maxWidth="150">
+                     <Label fx:id="badgeName"
+                               styleClass="badge-name"
+                               wrapText="true"
+                               alignment="CENTER"
+                               minWidth="120"
+                               prefWidth="120"
+                               maxWidth="120"
+                               text="Badge Name"/>
 
-    <Label fx:id="badgeStat"
-           styleClass="badge-stat"
-           text="Countries visited: 0/0"/>
+                     <Label fx:id="badgeStat"
+                               styleClass="badge-stat"
+                               alignment="CENTER"
+                               minWidth="150"
+                               prefWidth="150"
+                               maxWidth="150"
+                               text="Countries visited: 0/0"/>
+              </VBox>
+       </VBox>
 
 </fx:root>

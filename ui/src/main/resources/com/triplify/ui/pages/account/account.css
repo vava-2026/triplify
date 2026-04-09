@@ -56,7 +56,7 @@
 
 .badges-grid {
     -fx-padding: 10;
-    -fx-hgap: 15;
-    -fx-vgap: 15;
+    -fx-hgap: 20;
+    -fx-vgap: 20;
     -fx-alignment: center;
 }

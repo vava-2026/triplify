@@ -4,6 +4,7 @@ import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.component.badge.model.Badge;
 import com.triplify.ui.shared.util.Localization;
 import javafx.beans.binding.Bindings;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.canvas.Canvas;
@@ -12,6 +13,7 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
 import java.io.IOException;
@@ -19,6 +21,9 @@ import java.net.URL;
 
 public class BadgeView extends VBox {
     static private final String LOCKED_CLASS = "badge-locked";
+    private static final double TITLE_WIDTH = 120.0;
+    private static final double TITLE_SINGLE_LINE_HEIGHT = 20.0;
+    private static final double TITLE_DOUBLE_LINE_HEIGHT = 40.0;
 
     @FXML private ImageView badgeImage;
     @FXML private Label badgeName;
@@ -35,6 +40,15 @@ public class BadgeView extends VBox {
         } catch (IOException e) {
             throw new RuntimeException("Failed to load AppBadge.fxml", e);
         }
+
+        badgeName.textProperty().addListener((obs, oldValue, newValue) -> updateTitleLayout());
+        badgeName.widthProperty().addListener((obs, oldValue, newValue) -> updateTitleLayout());
+        sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                Platform.runLater(this::updateTitleLayout);
+            }
+        });
+        updateTitleLayout();
     }
 
     public void update(Badge badge) {
@@ -52,7 +66,7 @@ public class BadgeView extends VBox {
         );
 
         // for placeholder generation (TODO: replace with a proper placeholder image)
-        double imageSize = 75;
+        double imageSize = 100;
 
         if (badge.getImage() != null && !badge.getImage().isBlank()) {
             try {
@@ -75,5 +89,33 @@ public class BadgeView extends VBox {
         } else if (!getStyleClass().contains(LOCKED_CLASS)) {
             getStyleClass().add(LOCKED_CLASS);
         }
+    }
+
+    private void updateTitleLayout() {
+        String title = badgeName.getText();
+        boolean usesTwoLines = shouldUseTwoLines(title);
+        badgeName.setMinHeight(TITLE_SINGLE_LINE_HEIGHT);
+        badgeName.setPrefHeight(usesTwoLines ? TITLE_DOUBLE_LINE_HEIGHT : TITLE_SINGLE_LINE_HEIGHT);
+        badgeName.setMaxHeight(TITLE_DOUBLE_LINE_HEIGHT);
+    }
+
+    private boolean shouldUseTwoLines(String title) {
+        if (title == null || title.isBlank()) {
+            return false;
+        }
+
+        badgeName.applyCss();
+
+        double width = badgeName.getWidth();
+        if (width <= 0) {
+            width = badgeName.getPrefWidth() > 0 ? badgeName.getPrefWidth() : TITLE_WIDTH;
+        }
+
+        double previousPrefHeight = badgeName.getPrefHeight();
+        badgeName.setPrefHeight(Region.USE_COMPUTED_SIZE);
+        double requiredHeight = badgeName.prefHeight(width);
+        badgeName.setPrefHeight(previousPrefHeight);
+
+        return requiredHeight > TITLE_SINGLE_LINE_HEIGHT + 0.5;
     }
 }

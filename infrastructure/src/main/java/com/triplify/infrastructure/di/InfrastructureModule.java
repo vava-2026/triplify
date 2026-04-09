@@ -14,6 +14,8 @@ public class InfrastructureModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(CategoryRepository.class).to(CategoryRepositoryImpl.class).in(Singleton.class);
+        bind(BadgeRepository.class).to(BadgeRepositoryImpl.class).in(Singleton.class);
+        bind(BadgeGroupRepository.class).to(BadgeGroupRepositoryImpl.class).in(Singleton.class);
         bind(UserRepository.class).to(UserRepositoryImpl.class).in(Singleton.class);
         bind(ImageRepository.class).to(ImageRepositoryImpl.class).in(Singleton.class);
         bind(CountryRepository.class).to(CountryRepositoryImpl.class).in(Singleton.class);
@@ -22,4 +24,3 @@ public class InfrastructureModule extends AbstractModule {
         bind(PlaceRepository.class).to(PlaceRepositoryImpl.class).in(Singleton.class);
     }
 }
-
