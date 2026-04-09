@@ -6,11 +6,13 @@ import com.triplify.domain.pagination.Page;
 import com.triplify.domain.pagination.PageRequest;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 public interface TripPlaceRepository {
     Optional<TripPlace> findById(String id);
     Optional<TripPlace> findByTripIdAndPlaceId(String tripId, String placeId);
+    List<TripPlace> findByPlaceId(String placeId);
     Page<TripPlace> findList(
             PageRequest pageRequest,
             String tripId,

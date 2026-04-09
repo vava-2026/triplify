@@ -30,6 +30,6 @@
             </graphic>
         </Button>
     </StackPane>
-    <Label fx:id="titleLabel" styleClass="editor-media-title"/>
-    <Label fx:id="subtitleLabel" styleClass="editor-media-subtitle"/>
+    <Label fx:id="titleLabel" styleClass="editor-media-title" wrapText="true"/>
+    <Label fx:id="subtitleLabel" styleClass="editor-media-subtitle" wrapText="true"/>
 </fx:root>

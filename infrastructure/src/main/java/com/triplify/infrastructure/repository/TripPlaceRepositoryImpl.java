@@ -65,6 +65,25 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
     }
 
     @Override
+    public List<TripPlace> findByPlaceId(String placeId) {
+        try (Connection conn = SQLiteConnectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(selectSql(conn, " WHERE place_id = ? ORDER BY created_at DESC"))) {
+            ColumnState columns = tripPlaceColumns(conn);
+            ps.setString(1, placeId);
+            try (ResultSet rs = ps.executeQuery()) {
+                List<TripPlace> items = new ArrayList<>();
+                while (rs.next()) {
+                    items.add(mapRow(rs, columns));
+                }
+                return items;
+            }
+        } catch (SQLException e) {
+            log.error("Failed to find trip places by placeId='{}'", placeId, e);
+            throw new RuntimeException("Database error while finding trip places by place id", e);
+        }
+    }
+
+    @Override
     public Page<TripPlace> findList(
             PageRequest pageRequest,
             String tripId,

@@ -23,10 +23,11 @@
     <stylesheets>
         <String fx:value="/com/triplify/ui/pages/places/add_place.css"/>
         <String fx:value="/com/triplify/ui/pages/places/place_details.css"/>
+        <String fx:value="/com/triplify/ui/pages/trips/css/trips.css"/>
     </stylesheets>
     <content>
         <StackPane styleClass="page-root,place-details-root">
-            <VBox styleClass="place-details-content" spacing="20">
+            <VBox fx:id="contentContainer" styleClass="place-details-content" spacing="20">
                 <StackPane styleClass="place-details-hero">
                     <ImageView fx:id="heroImageView"
                                fitWidth="1120"
@@ -49,25 +50,31 @@
                     </VBox>
                 </StackPane>
 
-                <FlowPane styleClass="place-details-overview" prefWrapLength="1000">
-                    <VBox styleClass="place-details-main-column" spacing="20">
-                        <VBox styleClass="page-card,place-details-card" spacing="12">
-                            <Label fx:id="descriptionTitleLabel" styleClass="place-details-card-title" text="Description"/>
-                            <Label fx:id="descriptionValueLabel" styleClass="place-details-description" wrapText="true"/>
+                <VBox styleClass="place-details-sections" spacing="20">
+                    <FlowPane fx:id="topRowFlow" styleClass="place-details-top-row" prefWrapLength="1000">
+                        <VBox styleClass="place-details-main-column" spacing="20">
+                            <VBox styleClass="page-card,place-details-card,place-details-description-card" spacing="12">
+                                <Label fx:id="descriptionTitleLabel" styleClass="place-details-card-title" text="Description"/>
+                                <Label fx:id="descriptionValueLabel" styleClass="place-details-description" wrapText="true"/>
+                            </VBox>
                         </VBox>
 
-                        <VBox styleClass="page-card,place-details-card" spacing="16">
-                            <SectionHeaderView fx:id="associatedPlacesHeader"
+                        <VBox styleClass="place-details-side-column" spacing="14">
+                            <VBox styleClass="page-card,place-details-card,place-details-map-card" spacing="12">
+                                <Label fx:id="mapTitleLabel" styleClass="place-details-card-title" text="Map"/>
+                                <InteractiveMap fx:id="placeMap"/>
+                            </VBox>
+
+                            <DetailActionButtonsView fx:id="actionButtonsView"/>
+                        </VBox>
+                    </FlowPane>
+
+                    <VBox styleClass="place-details-associated-sections" spacing="20">
+                        <VBox styleClass="place-details-trips-section" spacing="12">
+                            <SectionHeaderView fx:id="associatedTripsHeader"
                                                iconLiteral="fth-map-pin"
-                                               title="Associated Poi"/>
-                            <FlowPane fx:id="associatedPlacesFlow" styleClass="place-details-grid"/>
-                        </VBox>
-
-                        <VBox styleClass="page-card,place-details-card" spacing="16">
-                            <SectionHeaderView fx:id="associatedStoriesHeader"
-                                               iconLiteral="fth-book-open"
-                                               title="Associated Stories"/>
-                            <FlowPane fx:id="associatedStoriesFlow" styleClass="place-details-grid"/>
+                                               title="Associated Trips"/>
+                            <FlowPane fx:id="associatedTripsFlow" styleClass="place-details-grid"/>
                         </VBox>
 
                         <VBox styleClass="page-card,place-details-card" spacing="16">
@@ -76,17 +83,15 @@
                                                title="Associated Routes"/>
                             <FlowPane fx:id="associatedRoutesFlow" styleClass="place-details-grid"/>
                         </VBox>
-                    </VBox>
 
-                    <VBox styleClass="place-details-side-column" spacing="20">
-                        <VBox styleClass="page-card,place-details-card,place-details-map-card" spacing="12">
-                            <Label fx:id="mapTitleLabel" styleClass="place-details-card-title" text="Map"/>
-                            <InteractiveMap fx:id="placeMap"/>
+                        <VBox styleClass="page-card,place-details-card" spacing="16">
+                            <SectionHeaderView fx:id="associatedStoriesHeader"
+                                               iconLiteral="fth-book-open"
+                                               title="Associated Stories"/>
+                            <FlowPane fx:id="associatedStoriesFlow" styleClass="place-details-grid"/>
                         </VBox>
-
-                        <DetailActionButtonsView fx:id="actionButtonsView"/>
                     </VBox>
-                </FlowPane>
+                </VBox>
             </VBox>
         </StackPane>
     </content>

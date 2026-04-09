@@ -34,6 +34,8 @@ import com.triplify.domain.repository.TripPlaceRepository;
 import com.triplify.domain.repository.TripRepository;
 import com.triplify.domain.repository.TripRouteRepository;
 import com.triplify.domain.result.Result;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -46,6 +48,8 @@ import java.util.UUID;
 
 @Authenticated
 public class TripRouteServiceImpl implements TripRouteService {
+
+    private static final Logger log = LoggerFactory.getLogger(TripRouteServiceImpl.class);
 
     private final TripRouteRepository tripRouteRepository;
     private final TripRepository tripRepository;
@@ -236,7 +240,21 @@ public class TripRouteServiceImpl implements TripRouteService {
 
         List<TripRouteResponse> responses = new ArrayList<>(page.items().size());
         for (TripRoute tripRoute : page.items()) {
-            responses.add(toResponse(tripRoute).orThrow());
+            Result<TripRouteResponse> responseResult = toResponse(tripRoute);
+            if (responseResult.isSuccess()) {
+                responses.add(responseResult.getValue());
+                continue;
+            }
+
+            if (isMissingRouteError(responseResult.getError())) {
+                log.warn("Deleting stale trip route '{}' because route '{}' is missing",
+                        tripRoute.getId(), tripRoute.getRouteId());
+                tripRouteRepository.delete(tripRoute);
+                syncRouteDerivedPlaces(tripRoute.getTripId().toString());
+                continue;
+            }
+
+            return Result.fail(responseResult.getError());
         }
 
         return Result.ok(new Page<>(responses, page.page(), page.size(), page.hasNext()));
@@ -292,9 +310,14 @@ public class TripRouteServiceImpl implements TripRouteService {
     }
 
     private Result<TripRouteResponse> toResponse(TripRoute tripRoute) {
-        RouteResponse route = routeService.getRouteById(
+        Result<RouteResponse> routeResult = routeService.getRouteById(
                 new GetRouteByIdRequest(tripRoute.getRouteId().toString())
-        ).orThrow();
+        );
+        if (routeResult.isFailure()) {
+            return Result.fail(routeResult.getError());
+        }
+
+        RouteResponse route = routeResult.getValue();
 
         return Result.ok(new TripRouteResponse(
                 tripRoute.getId().toString(),
@@ -308,6 +331,10 @@ public class TripRouteServiceImpl implements TripRouteService {
                 tripRoute.getUpdatedAt(),
                 Set.<ImageResponse>of()
         ));
+    }
+
+    private boolean isMissingRouteError(com.triplify.domain.error.AppError error) {
+        return error != null && "error.route.not.found".equals(error.code());
     }
 
     private void resequenceTripRoutes(String tripId) {

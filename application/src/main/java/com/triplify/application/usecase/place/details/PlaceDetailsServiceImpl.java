@@ -6,14 +6,16 @@ import com.triplify.application.usecase.place.dto.GetPlaceByIdRequest;
 import com.triplify.application.usecase.place.dto.PlaceResponse;
 import com.triplify.application.usecase.place.details.dto.GetPlaceDetailsRequest;
 import com.triplify.application.usecase.place.details.dto.PlaceDetailsResponse;
+import com.triplify.application.usecase.trip.TripService;
+import com.triplify.application.usecase.trip.dto.GetTripByIdRequest;
 import com.triplify.application.usecase.route.dto.RouteResponse;
-import com.triplify.domain.filter.PlaceFilter;
 import com.triplify.domain.model.Route;
 import com.triplify.domain.model.RoutePlace;
+import com.triplify.domain.model.TripPlace;
 import com.triplify.domain.pagination.PageRequest;
-import com.triplify.domain.repository.PlaceRepository;
 import com.triplify.domain.repository.RoutePlaceRepository;
 import com.triplify.domain.repository.RouteRepository;
+import com.triplify.domain.repository.TripPlaceRepository;
 import com.triplify.domain.result.Result;
 import com.triplify.application.usecase.place.PlaceService;
 
@@ -26,25 +28,28 @@ import java.util.Set;
 @Authenticated
 public class PlaceDetailsServiceImpl implements PlaceDetailsService {
 
-    private static final int ASSOCIATED_PLACES_LIMIT = 8;
+    private static final int ASSOCIATED_TRIPS_LIMIT = 8;
     private static final int ASSOCIATED_ROUTES_LIMIT = 8;
 
     private final PlaceService placeService;
-    private final PlaceRepository placeRepository;
+    private final TripService tripService;
     private final RouteRepository routeRepository;
     private final RoutePlaceRepository routePlaceRepository;
+    private final TripPlaceRepository tripPlaceRepository;
 
     @Inject
     PlaceDetailsServiceImpl(
             PlaceService placeService,
-            PlaceRepository placeRepository,
+            TripService tripService,
             RouteRepository routeRepository,
-            RoutePlaceRepository routePlaceRepository
+            RoutePlaceRepository routePlaceRepository,
+            TripPlaceRepository tripPlaceRepository
     ) {
         this.placeService = placeService;
-        this.placeRepository = placeRepository;
+        this.tripService = tripService;
         this.routeRepository = routeRepository;
         this.routePlaceRepository = routePlaceRepository;
+        this.tripPlaceRepository = tripPlaceRepository;
     }
 
     @Override
@@ -53,24 +58,38 @@ public class PlaceDetailsServiceImpl implements PlaceDetailsService {
 
         return Result.ok(new PlaceDetailsResponse(
                 place,
-                loadAssociatedPlaces(place),
+                loadAssociatedTrips(place.id()),
                 loadAssociatedRoutes(place.id()),
                 List.of()
         ));
     }
 
-    private List<PlaceResponse> loadAssociatedPlaces(PlaceResponse place) {
-        if (place.country() == null || place.country().id() == null || place.country().id().isBlank()) {
+    private List<com.triplify.application.usecase.trip.dto.TripResponse> loadAssociatedTrips(String placeId) {
+        List<TripPlace> relatedTripPlaces = tripPlaceRepository.findByPlaceId(placeId);
+        if (relatedTripPlaces.isEmpty()) {
             return List.of();
         }
 
-        return placeRepository.findList(
-                        new PageRequest(0, ASSOCIATED_PLACES_LIMIT + 1),
-                        new PlaceFilter(null, place.country().id())
-                ).items().stream()
-                .map(PlaceResponse::from)
-                .filter(candidate -> !place.id().equals(candidate.id()))
-                .limit(ASSOCIATED_PLACES_LIMIT)
+        Set<String> tripIds = new LinkedHashSet<>();
+        for (TripPlace tripPlace : relatedTripPlaces) {
+            tripIds.add(tripPlace.getTripId().toString());
+        }
+
+        List<com.triplify.application.usecase.trip.dto.TripResponse> trips = new ArrayList<>();
+        for (String tripId : tripIds) {
+            var result = tripService.getTripById(new GetTripByIdRequest(tripId));
+            if (result.isFailure()) {
+                continue;
+            }
+            trips.add(result.getValue());
+        }
+
+        return trips.stream()
+                .sorted(Comparator.comparing(
+                        com.triplify.application.usecase.trip.dto.TripResponse::updatedAt,
+                        Comparator.nullsLast(Comparator.reverseOrder())
+                ))
+                .limit(ASSOCIATED_TRIPS_LIMIT)
                 .toList();
     }
 

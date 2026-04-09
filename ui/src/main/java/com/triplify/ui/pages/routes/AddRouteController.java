@@ -183,7 +183,7 @@ public class AddRouteController extends SimpleLifecycleAwareController {
     @Override
     public void onLifecycleInitialize() {
         RouterArgument data = getRouter().getCurrentData();
-        tripId = data == null ? null : data.getValue("tripId");
+        tripId = data == null ? null : parseIntegerArgument(data.getValue("tripId"));
         tripName = data == null ? null : data.getValue("tripName");
         returnTarget = data == null ? null : data.getValue("editorReturnTarget");
 
@@ -831,6 +831,30 @@ public class AddRouteController extends SimpleLifecycleAwareController {
             return "";
         }
         return value.trim();
+    }
+
+    private Integer parseIntegerArgument(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Integer integerValue) {
+            return integerValue;
+        }
+        if (value instanceof Number numericValue) {
+            return numericValue.intValue();
+        }
+        if (value instanceof String stringValue) {
+            String normalized = stringValue.trim();
+            if (normalized.isBlank()) {
+                return null;
+            }
+            try {
+                return Integer.valueOf(normalized);
+            } catch (NumberFormatException ignored) {
+                return null;
+            }
+        }
+        return null;
     }
 
     private void clearFieldErrors() {

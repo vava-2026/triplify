@@ -14,6 +14,10 @@ import java.net.URL;
 
 public class EditorMediaCardView extends VBox {
 
+    private static final double DEFAULT_PREVIEW_WIDTH = 152;
+    private static final double DEFAULT_PREVIEW_HEIGHT = 96;
+    private static final double DEFAULT_CLIP_RADIUS = 16;
+
     private static final URL FXML_URL = EditorMediaCardView.class.getResource(
             "/com/triplify/ui/shared/component/media_card/view/EditorMediaCard.fxml"
     );
@@ -25,6 +29,8 @@ public class EditorMediaCardView extends VBox {
     @FXML private Label titleLabel;
     @FXML private Label subtitleLabel;
     @FXML private Button removeButton;
+
+    private final Rectangle previewClip = new Rectangle();
 
     public EditorMediaCardView() {
         FXMLLoader loader = new FXMLLoader(FXML_URL);
@@ -41,10 +47,12 @@ public class EditorMediaCardView extends VBox {
             getStylesheets().add(CSS_URL.toExternalForm());
         }
 
-        Rectangle clip = new Rectangle(152, 96);
-        clip.setArcWidth(16);
-        clip.setArcHeight(16);
-        previewImageView.setClip(clip);
+        previewClip.setArcWidth(DEFAULT_CLIP_RADIUS);
+        previewClip.setArcHeight(DEFAULT_CLIP_RADIUS);
+        previewClip.widthProperty().bind(previewImageView.fitWidthProperty());
+        previewClip.heightProperty().bind(previewImageView.fitHeightProperty());
+        previewImageView.setClip(previewClip);
+        setPreviewSize(DEFAULT_PREVIEW_WIDTH, DEFAULT_PREVIEW_HEIGHT);
     }
 
     public void setTitle(String title) {
@@ -57,6 +65,17 @@ public class EditorMediaCardView extends VBox {
 
     public void setPreviewImage(Image image) {
         previewImageView.setImage(image);
+    }
+
+    public void setCardWidth(double width) {
+        setPrefWidth(width);
+        setMinWidth(width);
+        setMaxWidth(width);
+    }
+
+    public void setPreviewSize(double width, double height) {
+        previewImageView.setFitWidth(width);
+        previewImageView.setFitHeight(height);
     }
 
     public void setOnRemove(Runnable action) {

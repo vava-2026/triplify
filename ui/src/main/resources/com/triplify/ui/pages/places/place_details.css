@@ -3,8 +3,8 @@
 }
 
 .place-details-content {
-    -fx-max-width: 1180px;
-    -fx-pref-width: 1180px;
+    -fx-max-width: 1120px;
+    -fx-pref-width: 1120px;
     -fx-spacing: 20px;
 }
 
@@ -58,14 +58,18 @@
     -fx-text-fill: rgba(255, 255, 255, 0.88);
 }
 
-.place-details-overview {
+.place-details-sections {
+    -fx-spacing: 20px;
+}
+
+.place-details-top-row {
     -fx-hgap: 20px;
     -fx-vgap: 20px;
 }
 
 .place-details-main-column {
-    -fx-pref-width: 720px;
-    -fx-max-width: 720px;
+    -fx-pref-width: 704px;
+    -fx-max-width: 704px;
 }
 
 .place-details-side-column {
@@ -73,16 +77,32 @@
     -fx-max-width: 396px;
 }
 
+.place-details-associated-sections {
+    -fx-spacing: 20px;
+}
+
+.place-details-trips-section {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+    -fx-effect: none;
+}
+
 .place-details-card {
     -fx-background-color: -color-on-surface;
     -fx-background-radius: 22px;
-    -fx-padding: 18px;
+    -fx-padding: 18px 18px 20px 18px;
+    -fx-effect: dropshadow(gaussian, rgba(12, 12, 13, 0.06), 16, 0, 0, 4);
+}
+
+.place-details-description-card {
+    -fx-padding: 22px 22px 24px 22px;
 }
 
 .place-details-map-card .add-place-map-shell {
-    -fx-min-height: 360px;
-    -fx-pref-height: 360px;
-    -fx-max-height: 360px;
+    -fx-min-height: 264px;
+    -fx-pref-height: 264px;
+    -fx-max-height: 264px;
+    -fx-background-radius: 18px;
 }
 
 .place-details-card-title {
@@ -93,13 +113,13 @@
 
 .place-details-description {
     -fx-font-size: 13px;
-    -fx-line-spacing: 3px;
+    -fx-line-spacing: 4px;
     -fx-text-fill: -color-ink;
 }
 
 .place-details-grid {
-    -fx-hgap: 12px;
-    -fx-vgap: 12px;
+    -fx-hgap: 16px;
+    -fx-vgap: 16px;
 }
 
 .place-details-meta-title {
@@ -115,11 +135,11 @@
 }
 
 .place-details-story-card {
-    -fx-pref-width: 208px;
+    -fx-pref-width: 244px;
     -fx-background-color: -color-primary-light;
     -fx-background-radius: 14px;
-    -fx-padding: 12px;
-    -fx-spacing: 6px;
+    -fx-padding: 14px;
+    -fx-spacing: 8px;
 }
 
 .place-details-story-title {
@@ -135,4 +155,65 @@
 
 .place-details-meta-list {
     -fx-padding: 4px 0 0;
+}
+
+.place-details-side-column .detail-action-group {
+    -fx-spacing: 12px;
+}
+
+.place-details-side-column .detail-action-button {
+    -fx-pref-height: 44px;
+}
+
+.place-details-associated-sections > .place-details-card {
+    -fx-max-width: Infinity;
+}
+
+.place-details-associated-sections .trip-card {
+    -fx-min-width: 220px;
+    -fx-pref-width: 220px;
+    -fx-max-width: 220px;
+}
+
+.place-details-route-card {
+    -fx-background-color: -color-on-surface;
+    -fx-background-radius: 18px;
+    -fx-padding: 0 0 14px 0;
+    -fx-effect: dropshadow(gaussian, rgba(12, 12, 13, 0.08), 18, 0, 0, 5);
+}
+
+.place-details-route-media {
+    -fx-padding: 0;
+}
+
+.place-details-route-image {
+    -fx-smooth: true;
+}
+
+.place-details-route-body {
+    -fx-padding: 0 18px 0 18px;
+}
+
+.place-details-route-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -color-ink;
+}
+
+.place-details-route-places {
+    -fx-font-size: 14px;
+    -fx-text-fill: -color-ink;
+}
+
+.place-details-route-distance-row {
+    -fx-alignment: center-left;
+}
+
+.place-details-route-distance-icon {
+    -fx-icon-color: #8e98a4;
+}
+
+.place-details-route-distance {
+    -fx-font-size: 13px;
+    -fx-text-fill: #8e98a4;
 }

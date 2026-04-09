@@ -15,9 +15,12 @@ import com.triplify.application.usecase.trip.dto.GetTripByIdRequest;
 import com.triplify.application.usecase.trip.dto.TripResponse;
 import com.triplify.application.usecase.trip.dto.UpdateTripRequest;
 import com.triplify.application.usecase.place.PlaceService;
+import com.triplify.application.usecase.place.dto.GetPlaceByIdRequest;
 import com.triplify.application.usecase.place.dto.GetPlacesRequest;
 import com.triplify.application.usecase.place.dto.PlaceResponse;
 import com.triplify.application.usecase.route.RouteService;
+import com.triplify.application.usecase.route.dto.DeletePlaceFromRouteRequest;
+import com.triplify.application.usecase.route.dto.GetRouteByIdRequest;
 import com.triplify.application.usecase.route.dto.GetRoutesRequest;
 import com.triplify.application.usecase.route.dto.RouteResponse;
 import com.triplify.application.usecase.tripplace.TripPlaceService;
@@ -732,7 +735,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
         card.setPreviewImage(loadImage(item.imagePath()));
         card.setTitle(item.title());
         card.setSubtitle(item.subtitle());
-        card.setRemoveVisible(item.isManual());
+        card.setRemoveVisible(true);
         card.setCursor(Cursor.HAND);
         card.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
             if (isClickOnButton(event.getTarget()) || item.id() == null || item.id().isBlank()) {
@@ -744,13 +747,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
             getRouter().moveto(RouteIds.PLACE_DETAILS, args);
             event.consume();
         });
-        if (item.isManual()) {
-            card.setOnRemove(() -> {
-                placeItems.removeIf(existing -> item.id().equals(existing.id()));
-                renderPlaces();
-                refreshPlacePicker();
-            });
-        }
+        card.setOnRemove(() -> removePlaceFromTrip(item));
         return card;
     }
 
@@ -1034,7 +1031,8 @@ public class AddTripController extends SimpleLifecycleAwareController {
             return List.of();
         }
         return loadAllRoutes().stream()
-                .map(this::toRouteItem)
+                .map(this::loadRouteCandidateItem)
+                .filter(route -> route != null)
                 .filter(route -> route.id() != null && !containsRoute(route.id()))
                 .toList();
     }
@@ -1117,6 +1115,36 @@ public class AddTripController extends SimpleLifecycleAwareController {
         refreshPlacePicker();
         setPlacePickerVisible(false);
         toast.success(I18n.t("trip.add.toast.place.added.title"), place.title());
+    }
+
+    private void removePlaceFromTrip(PlaceItem place) {
+        boolean removedManual = placeItems.removeIf(existing -> place.id().equals(existing.id()));
+
+        List<RouteItem> updatedRoutes = new ArrayList<>(routeItems.size());
+        boolean removedFromRoute = false;
+        for (RouteItem route : routeItems) {
+            List<PlaceItem> filteredPlaces = route.derivedPlaces().stream()
+                    .filter(existing -> !place.id().equals(existing.id()))
+                    .toList();
+            if (filteredPlaces.size() != route.derivedPlaces().size()) {
+                removedFromRoute = true;
+                updatedRoutes.add(new RouteItem(route.id(), route.title(), route.subtitle(), route.imagePath(), filteredPlaces));
+            } else {
+                updatedRoutes.add(route);
+            }
+        }
+
+        routeItems.clear();
+        routeItems.addAll(updatedRoutes);
+
+        if (!removedManual && !removedFromRoute) {
+            return;
+        }
+
+        renderRoutes();
+        renderPlaces();
+        refreshRoutePicker();
+        refreshPlacePicker();
     }
 
     private boolean containsRoute(String routeId) {
@@ -1295,6 +1323,20 @@ public class AddTripController extends SimpleLifecycleAwareController {
                                 .map(place -> toRouteDerivedPlaceItem(place, response.id()))
                                 .toList()
         );
+    }
+
+    private RouteItem loadRouteCandidateItem(RouteResponse response) {
+        if (response == null || response.id() == null || response.id().isBlank() || routeService == null) {
+            return null;
+        }
+
+        var routeResult = routeService.getRouteById(new GetRouteByIdRequest(response.id()));
+        if (routeResult.isFailure()) {
+            log.warn("Failed to load full route '{}' for trip picker", response.id(), routeResult.getError());
+            return null;
+        }
+
+        return toRouteItem(routeResult.getValue());
     }
 
     private PlaceItem toManualPlaceItem(PlaceResponse response) {
@@ -1716,11 +1758,58 @@ public class AddTripController extends SimpleLifecycleAwareController {
     }
 
     private Result<Void> syncTripRelations(String targetTripId) {
+        Result<Void> routePlacesResult = syncEditedRoutePlaces();
+        if (routePlacesResult.isFailure()) {
+            return routePlacesResult;
+        }
+
         Result<Void> routeResult = replaceTripRoutes(targetTripId);
         if (routeResult.isFailure()) {
             return routeResult;
         }
         return replaceTripPlaces(targetTripId);
+    }
+
+    private Result<Void> syncEditedRoutePlaces() {
+        if (routeService == null) {
+            return Result.ok();
+        }
+
+        for (RouteItem routeItem : routeItems) {
+            if (routeItem.id() == null || routeItem.id().isBlank()) {
+                continue;
+            }
+
+            var routeResult = routeService.getRouteById(new GetRouteByIdRequest(routeItem.id()));
+            if (routeResult.isFailure()) {
+                return Result.fail(routeResult.getError());
+            }
+
+            RouteResponse currentRoute = routeResult.getValue();
+            Set<String> desiredPlaceIds = routeItem.derivedPlaces().stream()
+                    .map(PlaceItem::id)
+                    .filter(id -> id != null && !id.isBlank())
+                    .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+
+            List<String> placeIdsToDelete = currentRoute.places() == null
+                    ? List.of()
+                    : currentRoute.places().stream()
+                    .map(PlaceResponse::id)
+                    .filter(id -> id != null && !id.isBlank())
+                    .filter(id -> !desiredPlaceIds.contains(id))
+                    .toList();
+
+            for (String placeIdToDelete : placeIdsToDelete) {
+                var deleteResult = routeService.deletePlaceFromRoute(
+                        new DeletePlaceFromRouteRequest(routeItem.id(), placeIdToDelete)
+                );
+                if (deleteResult.isFailure()) {
+                    return Result.fail(deleteResult.getError());
+                }
+            }
+        }
+
+        return Result.ok();
     }
 
     private Result<Set<String>> ensureSelectedTagsPersisted() {
@@ -1793,6 +1882,11 @@ public class AddTripController extends SimpleLifecycleAwareController {
             return Result.ok();
         }
 
+        Result<Void> reconcileResult = reconcileManualPlacesBeforeSave();
+        if (reconcileResult.isFailure()) {
+            return reconcileResult;
+        }
+
         Result<List<TripPlaceResponse>> existingResult = loadAllTripPlaces(targetTripId, TripPlaceSourceType.MANUAL);
         if (existingResult.isFailure()) {
             return Result.fail(existingResult.getError());
@@ -1817,6 +1911,47 @@ public class AddTripController extends SimpleLifecycleAwareController {
             if (addResult.isFailure()) {
                 return Result.fail(addResult.getError());
             }
+        }
+
+        return Result.ok();
+    }
+
+    private Result<Void> reconcileManualPlacesBeforeSave() {
+        if (placeService == null) {
+            return Result.ok();
+        }
+
+        List<PlaceItem> resolvedItems = new ArrayList<>(placeItems.size());
+        List<String> missingPlaceIds = new ArrayList<>();
+
+        for (PlaceItem item : placeItems) {
+            if (item.id() == null || item.id().isBlank()) {
+                missingPlaceIds.add("<blank>");
+                continue;
+            }
+
+            var placeResult = placeService.getPlaceById(new GetPlaceByIdRequest(item.id()));
+            if (placeResult.isSuccess()) {
+                resolvedItems.add(toManualPlaceItem(placeResult.getValue()));
+                continue;
+            }
+
+            if ("error.place.not.found".equals(placeResult.getError().code())) {
+                missingPlaceIds.add(item.id());
+                continue;
+            }
+
+            return Result.fail(placeResult.getError());
+        }
+
+        placeItems.clear();
+        placeItems.addAll(resolvedItems);
+
+        if (!missingPlaceIds.isEmpty()) {
+            log.warn("Removed missing manual places before saving trip {}: {}", tripId, missingPlaceIds);
+            renderPlaces();
+            refreshPlacePicker();
+            toast.warning(I18n.t("trip.add.toast.title.saved"), "Some missing places were removed before saving.");
         }
 
         return Result.ok();

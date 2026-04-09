@@ -30,6 +30,8 @@ import com.triplify.domain.repository.TripPlaceRepository;
 import com.triplify.domain.repository.TripRepository;
 import com.triplify.domain.repository.TripRouteRepository;
 import com.triplify.domain.result.Result;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -40,6 +42,8 @@ import java.util.UUID;
 
 @Authenticated
 public class TripPlaceServiceImpl implements TripPlaceService {
+
+    private static final Logger log = LoggerFactory.getLogger(TripPlaceServiceImpl.class);
 
     private final TripPlaceRepository tripPlaceRepository;
     private final TripRepository tripRepository;
@@ -155,7 +159,20 @@ public class TripPlaceServiceImpl implements TripPlaceService {
 
         List<TripPlaceResponse> responses = new ArrayList<>(page.items().size());
         for (TripPlace tripPlace : page.items()) {
-            responses.add(toResponse(tripPlace).orThrow());
+            Result<TripPlaceResponse> responseResult = toResponse(tripPlace);
+            if (responseResult.isSuccess()) {
+                responses.add(responseResult.getValue());
+                continue;
+            }
+
+            if (isMissingPlaceError(responseResult.getError())) {
+                log.warn("Deleting stale trip place '{}' because place '{}' is missing",
+                        tripPlace.getId(), tripPlace.getPlaceId());
+                tripPlaceRepository.delete(tripPlace);
+                continue;
+            }
+
+            return Result.fail(responseResult.getError());
         }
 
         return Result.ok(new Page<>(responses, page.page(), page.size(), page.hasNext()));
@@ -218,9 +235,14 @@ public class TripPlaceServiceImpl implements TripPlaceService {
     }
 
     private Result<TripPlaceResponse> toResponse(TripPlace tripPlace) {
-        PlaceResponse place = placeService.getPlaceById(
+        Result<PlaceResponse> placeResult = placeService.getPlaceById(
                 new GetPlaceByIdRequest(tripPlace.getPlaceId().toString())
-        ).orThrow();
+        );
+        if (placeResult.isFailure()) {
+            return Result.fail(placeResult.getError());
+        }
+
+        PlaceResponse place = placeResult.getValue();
 
         return Result.ok(new TripPlaceResponse(
                 tripPlace.getId().toString(),
@@ -234,6 +256,10 @@ public class TripPlaceServiceImpl implements TripPlaceService {
                 tripPlace.getUpdatedAt(),
                 Set.<ImageResponse>of()
         ));
+    }
+
+    private boolean isMissingPlaceError(com.triplify.domain.error.AppError error) {
+        return error != null && "error.place.not.found".equals(error.code());
     }
 
     private record RouteSourceRefs(UUID tripRouteId, UUID routePlaceId) {
