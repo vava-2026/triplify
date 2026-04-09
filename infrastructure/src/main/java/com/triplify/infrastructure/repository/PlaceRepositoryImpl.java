@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
-import java.sql.Timestamp;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -25,7 +24,7 @@ import java.util.UUID;
 
 public class PlaceRepositoryImpl implements PlaceRepository {
 
-    private static final Logger log = LoggerFactory.getLogger(CountryRepositoryImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(PlaceRepositoryImpl.class);
 
     private static final String PLACE_WITH_COUNTRY_AND_IMAGE_SELECT = """
         SELECT 
@@ -67,7 +66,7 @@ public class PlaceRepositoryImpl implements PlaceRepository {
 
         List<Object> params = new ArrayList<>();
 
-        if (filter.countryId() != null) {
+        if (filter.countryId() != null && !filter.countryId().isBlank()) {
             sql += "AND p.country_id = ? ";
             params.add(filter.countryId());
         }
@@ -77,11 +76,11 @@ public class PlaceRepositoryImpl implements PlaceRepository {
         }
 
         sql += "LIMIT ? OFFSET ?";
-        params.add(page.size());
+        params.add(page.size() + 1);
         params.add(page.offset());
 
         try (Connection conn = SQLiteConnectionFactory.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            PreparedStatement ps = conn.prepareStatement(sql)) {
 
             for (int j = 0; j < params.size(); j++) {
                 ps.setObject(j + 1, params.get(j));
@@ -92,7 +91,11 @@ public class PlaceRepositoryImpl implements PlaceRepository {
                 while (rs.next()) {
                     places.add(mapPlaceWithRelations(rs));
                 }
-                return Page.of(places, page, places.size());
+                boolean hasNext = places.size() > page.size();
+                if (hasNext) {
+                    places.remove(places.size() - 1);
+                }
+                return Page.of(places, page, hasNext);
             }
         }
         catch (SQLException e) {
@@ -171,10 +174,9 @@ public class PlaceRepositoryImpl implements PlaceRepository {
     }
 
     private Place mapPlaceWithRelations(ResultSet rs) throws SQLException {
-
         Country country = new Country(
                 UUID.fromString(rs.getString("c_id")),
-                UUID.fromString(rs.getString("c_created_by")),
+                rs.getString("c_created_by") != null? UUID.fromString(rs.getString("c_created_by")):null,
                 rs.getString("c_name"),
                 rs.getString("c_name_sk"),
                 rs.getString("c_emoji_unicode"),

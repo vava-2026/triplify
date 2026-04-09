@@ -47,6 +47,13 @@ public sealed interface Result<T> permits Result.Success, Result.Failure {
         throw new NoSuchElementException("Result is a success");
     }
 
+    default T orThrow() {
+        if (this instanceof Success<T> s) {
+            return s.value();
+        }
+        throw new FailureException(getError());
+    }
+
     default <U> Result<U> map(Function<T, U> fn) {
         return switch (this) {
             case Success<T> s -> Result.ok(fn.apply(s.value()));

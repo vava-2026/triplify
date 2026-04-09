@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import com.triplify.ui.shared.component.action_buttons.view.EditorActionButtonsView?>
+<?import com.triplify.ui.shared.component.section_header.view.SectionHeaderView?>
+<?import com.triplify.ui.shared.component.upload_panel.view.ImageUploadPanelView?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<ScrollPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.triplify.ui.pages.routes.AddRouteController"
+            fitToWidth="true"
+            hbarPolicy="NEVER"
+            vbarPolicy="AS_NEEDED"
+            styleClass="page-scroll">
+    <stylesheets>
+        <String fx:value="/com/triplify/ui/pages/routes/add_route.css"/>
+    </stylesheets>
+    <content>
+        <StackPane styleClass="page-root,add-route-root">
+            <VBox fx:id="contentContainer" styleClass="add-route-content">
+                <Label fx:id="routePageTitleLabel" text="Route" styleClass="add-route-page-title"/>
+
+                <FlowPane fx:id="contentFlow" styleClass="add-route-flow">
+                    <VBox styleClass="add-route-main-column">
+                        <VBox styleClass="page-card,add-route-card" spacing="18">
+                            <SectionHeaderView fx:id="generalSectionHeader" iconLiteral="fth-info" title="General Information"/>
+
+                            <VBox styleClass="add-route-form-group">
+                                <Label fx:id="routeTitleLabel" text="Route Title *" styleClass="form-label"/>
+                                <VBox fx:id="titleInputContainer"/>
+                            </VBox>
+
+                            <VBox styleClass="add-route-form-group">
+                                <Label fx:id="descriptionLabel" text="Description" styleClass="form-label"/>
+                                <VBox fx:id="descriptionInputContainer"/>
+                            </VBox>
+                        </VBox>
+
+                        <VBox styleClass="page-card,add-route-card" spacing="16">
+                            <HBox styleClass="add-route-section-header">
+                                <SectionHeaderView fx:id="placesSectionHeader" iconLiteral="fth-map-pin" title="Places to Visit" HBox.hgrow="ALWAYS"/>
+                                <Label fx:id="routeLengthLabel" text="Length: 0.0km" styleClass="add-route-length-label"/>
+                            </HBox>
+
+                            <VBox fx:id="placesListContainer" styleClass="add-route-places-list"/>
+
+                            <Button fx:id="addPlaceButton"
+                                    maxWidth="Infinity"
+                                    onAction="#onAddPlace"
+                                    text="Add Place"
+                                    styleClass="app-btn,app-btn-dashed-tint,add-route-add-place-button"/>
+
+                            <VBox fx:id="placePickerContainer"
+                                  managed="false"
+                                  visible="false"
+                                  spacing="12">
+                                <VBox fx:id="placeSearchContainer"/>
+                                <Button fx:id="placeCreateButton"
+                                        maxWidth="Infinity"
+                                        onAction="#onCreatePlace"
+                                        text="Create Place"
+                                        styleClass="app-btn,app-btn-tint"/>
+                            </VBox>
+                        </VBox>
+                    </VBox>
+
+                    <VBox styleClass="add-route-side-column">
+                        <VBox styleClass="page-card,add-route-card,add-route-upload-card" spacing="14">
+                            <ImageUploadPanelView fx:id="imageUploadPanel"
+                                                  sectionIconLiteral="fth-image"
+                                                  sectionTitle="Cover Image"
+                                                  uploadTitle="Click to upload&#10;or drag and drop"
+                                                  uploadSubtitle="SVG, PNG, JPEG"/>
+                        </VBox>
+
+                        <EditorActionButtonsView fx:id="actionButtonsView"
+                                                 primaryTextKey="route.add.action.save"
+                                                 secondaryTextKey="route.add.action.discard"/>
+                    </VBox>
+                </FlowPane>
+            </VBox>
+        </StackPane>
+    </content>
+</ScrollPane>

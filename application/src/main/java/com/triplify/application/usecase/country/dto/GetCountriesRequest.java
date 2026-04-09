@@ -4,7 +4,6 @@ import com.triplify.application.error.ValidationMessage;
 import com.triplify.application.usecase.dto.DtoConstraints;
 import com.triplify.domain.filter.CountryFilter;
 import com.triplify.domain.pagination.PageRequest;
-import jakarta.validation.constraints.Size;
 
 public record GetCountriesRequest(
         PageRequest pageRequest,
@@ -13,7 +12,9 @@ public record GetCountriesRequest(
 
     public GetCountriesRequest {
         pageRequest = pageRequest == null ? PageRequest.defaultRequest() : pageRequest;
-        if (filter.name().length() > DtoConstraints.NAME_MAX_LENGTH) {
+        filter = filter == null ? new CountryFilter(null, null, false) : filter;
+        String name = filter.name() == null ? null : filter.name().trim();
+        if (name != null && name.length() > DtoConstraints.NAME_MAX_LENGTH) {
             throw new IllegalArgumentException(ValidationMessage.Constants.NAME_TOO_LONG);
         }
     }

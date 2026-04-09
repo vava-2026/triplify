@@ -11,9 +11,10 @@ public record GetPlacesRequest(
 ) {
 
     public GetPlacesRequest {
+        pageRequest = pageRequest == null ? PageRequest.defaultRequest() : pageRequest;
+        filter = filter == null ? new PlaceFilter(null, null) : filter;
         if (filter.name() != null && filter.name().length() > DtoConstraints.NAME_MAX_LENGTH) {
             throw new IllegalArgumentException(ValidationMessage.Constants.NAME_TOO_LONG);
         }
-        pageRequest = pageRequest == null ? PageRequest.defaultRequest() : pageRequest;
     }
 }

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<fx:root type="VBox"
+         xmlns="http://javafx.com/javafx"
+         xmlns:fx="http://javafx.com/fxml"
+         spacing="14"
+         styleClass="editor-upload-panel">
+    <children>
+        <HBox styleClass="editor-section-header">
+            <children>
+                <FontIcon fx:id="sectionIconNode"
+                          iconLiteral="fth-image"
+                          iconSize="14"
+                          styleClass="editor-section-icon"/>
+                <Label fx:id="sectionTitleLabel"
+                       text="Cover Image"
+                       styleClass="editor-section-title"/>
+            </children>
+        </HBox>
+
+        <StackPane fx:id="uploadArea"
+                   styleClass="editor-upload-area">
+            <children>
+                <ImageView fx:id="coverPreview"
+                           managed="false"
+                           pickOnBounds="true"
+                           preserveRatio="true"
+                           smooth="true"
+                           visible="false"
+                           styleClass="editor-cover-preview"/>
+
+                <VBox fx:id="uploadPlaceholder"
+                      styleClass="editor-upload-placeholder">
+                    <children>
+                        <FontIcon iconLiteral="fth-image"
+                                  iconSize="30"
+                                  styleClass="editor-upload-icon"/>
+                        <Label fx:id="uploadTitleLabel"
+                               text="Click to upload&#10;or drag and drop"
+                               wrapText="true"
+                               styleClass="editor-upload-title"/>
+                        <Label fx:id="uploadSubtitleLabel"
+                               text="SVG, PNG, JPEG"
+                               styleClass="editor-upload-subtitle"/>
+                    </children>
+                </VBox>
+            </children>
+        </StackPane>
+
+        <Label fx:id="selectedImageLabel"
+               managed="false"
+               visible="false"
+               styleClass="editor-helper-text"/>
+    </children>
+</fx:root>

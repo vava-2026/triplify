@@ -76,6 +76,48 @@
     -fx-padding: 0;
 }
 
+.search-inline-content {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-spacing: 0;
+}
+
+.app-search-size-small .search-input-box {
+    -fx-min-height: 36;
+    -fx-pref-height: 36;
+    -fx-max-height: 36;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+}
+
+.app-search-size-small.search-showing .search-input-box {
+    -fx-background-radius: 6 6 0 0;
+    -fx-border-radius: 6 6 0 0;
+}
+
+.app-search-size-small .search-results,
+.app-search-size-small .search-no-results {
+    -fx-background-radius: 0 0 6 6;
+}
+
+.app-search-size-middle .search-input-box {
+    -fx-min-height: 44;
+    -fx-pref-height: 44;
+    -fx-max-height: 44;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+}
+
+.app-search-size-middle.search-showing .search-input-box {
+    -fx-background-radius: 10 10 0 0;
+    -fx-border-radius: 10 10 0 0;
+}
+
+.app-search-size-middle .search-results,
+.app-search-size-middle .search-no-results {
+    -fx-background-radius: 0 0 10 10;
+}
+
 .app-search-variant-filled .search-input-box {
     -fx-background-color: -color-surface;
     -fx-border-color: transparent;

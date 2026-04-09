@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.ComboBox?>
 <?import com.triplify.ui.shared.component.card_grid.CardGridPane?>
 
 <StackPane xmlns="http://javafx.com/javafx"
@@ -18,9 +18,9 @@
 
         <HBox styleClass="trips-toolbar">
             <HBox styleClass="trips-filters">
-                <ComboBox fx:id="countrySelect" promptText="Country" styleClass="trips-filter" prefWidth="130"/>
-                <ComboBox fx:id="categorySelect" promptText="Category" styleClass="trips-filter" prefWidth="130"/>
-                <ComboBox fx:id="tagSelect" promptText="Tags" styleClass="trips-filter" prefWidth="120"/>
+                <VBox fx:id="countryFilterContainer" prefWidth="170"/>
+                <VBox fx:id="categorySelectContainer" prefWidth="130"/>
+                <VBox fx:id="tagSelectContainer" prefWidth="120"/>
                 <ComboBox fx:id="statusSelect" promptText="Status" styleClass="trips-filter" prefWidth="120"/>
                 <ComboBox fx:id="startTimeSelect" promptText="Start Time" styleClass="trips-filter" prefWidth="140"/>
             </HBox>

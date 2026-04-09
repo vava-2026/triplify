@@ -1,9 +1,12 @@
 @import url("/com/triplify/ui/shared/component/entry/css/entry.css");
 @import url("/com/triplify/ui/shared/component/select/css/select.css");
 @import url("/com/triplify/ui/shared/component/search/css/search.css");
+@import url("/com/triplify/ui/shared/component/countries/css/countries.css");
 @import url("/com/triplify/ui/shared/component/button/css/button.css");
 @import url("/com/triplify/ui/shared/component/input_item/input_item.css");
 @import url("/com/triplify/ui/shared/component/checkbox_item/checkbox_item.css");
+@import url("/com/triplify/ui/shared/component/date_picker/css/date_picker.css");
+@import url("/com/triplify/ui/shared/component/tag_picker/css/tag_picker.css");
 @import url("/com/triplify/ui/shared/toast/toast.css");
 @import url("/com/triplify/ui/pages/trips/css/trips.css");
 
@@ -38,14 +41,51 @@
     -color-sign-up-hover: #bbbec1;
     -color-on-sign-up: #000000;
 
-    -color-theme-red: #e74c3c;
-    -color-theme-orange: #e67e22;
-    -color-theme-yellow: #f1c40f;
-    -color-theme-green: #27ae60;
-    -color-theme-teal: #1abc9c;
-    -color-theme-blue: #2980b9;
-    -color-theme-purple: #8e44ad;
-    -color-theme-pink: #e91e8c;
+    -color-theme-red-dark-bg: #F5C1C1;
+    -color-theme-red-dark-fg: #B71C1C;
+    -color-theme-red-bg: #F29997;
+    -color-theme-red-fg: #E53935;
+    -color-theme-rose-bg: #F7BFD4;
+    -color-theme-rose-fg: #D81B60;
+    -color-theme-orange-bg: #FFDFB8;
+    -color-theme-orange-fg: #FB8C00;
+    -color-theme-amber-bg: #F0DCAD;
+    -color-theme-amber-fg: #FFB100;
+    -color-theme-yellow-bg: #FEF1B8;
+    -color-theme-yellow-fg: #FDD835;
+    -color-theme-golden-brown-bg: #F9E0B5;
+    -color-theme-golden-brown-fg: #C77B00;
+    -color-theme-lime-bg: #EEF1C6;
+    -color-theme-lime-fg: #C0CA33;
+    -color-theme-indigo-bg: #D6D1F0;
+    -color-theme-indigo-fg: #5B4BA8;
+    -color-theme-violet-bg: #C1B2D7;
+    -color-theme-violet-fg: #6A4C93;
+    -color-theme-steel-blue-bg: #C9DEEE;
+    -color-theme-steel-blue-fg: #2F6690;
+    -color-theme-blue-bg: #BBDFFB;
+    -color-theme-blue-fg: #42A5F5;
+    -color-theme-cyan-bg: #B8F7FF;
+    -color-theme-cyan-fg: #00ACC1;
+    -color-theme-green-bg: #B2D7BB;
+    -color-theme-green-fg: #025B42;
+    -color-theme-teal-bg: #B8FFF8;
+    -color-theme-teal-fg: #00897B;
+    -color-theme-sage-bg: #E2ECE9;
+    -color-theme-sage-fg: #52796F;
+    -color-theme-brown-bg: #E4D7D2;
+    -color-theme-brown-fg: #6D4C41;
+    -color-theme-gray-bg: #DBDBDB;
+    -color-theme-gray-fg: #757575;
+
+    -color-theme-red: -color-theme-red-fg;
+    -color-theme-orange: -color-theme-orange-fg;
+    -color-theme-yellow: -color-theme-yellow-fg;
+    -color-theme-green: -color-theme-green-fg;
+    -color-theme-teal: -color-theme-teal-fg;
+    -color-theme-blue: -color-theme-blue-fg;
+    -color-theme-purple: -color-theme-violet-fg;
+    -color-theme-pink: -color-theme-rose-fg;
 
     -color-stats-green-bg: #B2D7BB;
     -color-stats-green-fg: #3F784C;
@@ -74,6 +114,7 @@
     -color-scrollbar-thumb: rgba(47, 102, 144, 0.45);
     -color-scrollbar-thumb-hover: rgba(47, 102, 144, 0.7);
     -color-create-border: #8fb0c8;
+    -color-control-prompt: #9aa6b2;
 
 
     -font-family-base: "Plus Jakarta Sans", "Segoe UI", System;
