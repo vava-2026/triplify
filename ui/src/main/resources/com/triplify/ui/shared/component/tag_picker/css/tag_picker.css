@@ -28,7 +28,7 @@
     -fx-padding: 0;
     -fx-font-size: 14px;
     -fx-text-fill: -color-primary-dark;
-    -fx-prompt-text-fill: #9aa6b2;
+    -fx-prompt-text-fill: -color-control-prompt;
 }
 
 .app-tag-picker-selected-flow {
@@ -143,7 +143,7 @@
 }
 
 .app-tag-picker-empty {
-    -fx-text-fill: #9aa6b2;
+    -fx-text-fill: -color-control-prompt;
     -fx-font-size: 12px;
 }
 

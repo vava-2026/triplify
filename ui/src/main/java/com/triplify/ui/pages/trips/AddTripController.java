@@ -1137,7 +1137,9 @@ public class AddTripController extends SimpleLifecycleAwareController {
                                                 place.subtitle(),
                                                 place.imagePath(),
                                                 place.sourceType(),
-                                                place.sourceRouteId()
+                                                place.sourceRouteId(),
+                                                null,
+                                                null
                                         ))
                                         .toList()
                         ))
@@ -1149,7 +1151,9 @@ public class AddTripController extends SimpleLifecycleAwareController {
                                 place.subtitle(),
                                 place.imagePath(),
                                 place.sourceType(),
-                                place.sourceRouteId()
+                                place.sourceRouteId(),
+                                null,
+                                null
                         ))
                         .toList()
         );

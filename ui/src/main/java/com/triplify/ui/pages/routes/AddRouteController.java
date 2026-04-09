@@ -68,6 +68,7 @@ import java.util.function.Consumer;
 public class AddRouteController extends SimpleLifecycleAwareController {
 
     private static final String DEFAULT_IMAGE = "/com/triplify/ui/pages/trips/images/one.png";
+    private static final double EARTH_RADIUS_KM = 6371.0;
 
     @FXML private VBox contentContainer;
     @FXML private FlowPane contentFlow;
@@ -747,7 +748,9 @@ public class AddRouteController extends SimpleLifecycleAwareController {
                                 item.subtitle(),
                                 item.imagePath(),
                                 null,
-                                null
+                                null,
+                                item.latitude(),
+                                item.longitude()
                         ))
                         .toList()
         );
@@ -767,7 +770,14 @@ public class AddRouteController extends SimpleLifecycleAwareController {
         descriptionInput.setText(draft.description() == null ? "" : draft.description());
         placeItems.clear();
         draft.places().stream()
-                .map(item -> new RoutePlaceItem(item.id(), item.title(), item.subtitle(), item.imagePath()))
+                .map(item -> new RoutePlaceItem(
+                        item.id(),
+                        item.title(),
+                        item.subtitle(),
+                        item.imagePath(),
+                        item.latitude(),
+                        item.longitude()
+                ))
                 .forEach(placeItems::add);
         coverImagePath = draft.coverImagePath();
         if (coverImagePath == null || coverImagePath.isBlank()) {
@@ -839,11 +849,21 @@ public class AddRouteController extends SimpleLifecycleAwareController {
     }
 
     private void updateRouteLengthLabel() {
-        routeLengthLabel.setText(String.format(Locale.US, I18n.t("route.add.length"), placeItems.size() * 1.25));
+        routeLengthLabel.setText(String.format(Locale.US, I18n.t("route.add.length"), calculateRouteLength()));
     }
 
     private double calculateRouteLength() {
-        return placeItems.size() * 1.25;
+        if (placeItems.size() < 2) {
+            return 0.0;
+        }
+
+        double totalDistanceKm = 0.0;
+        for (int index = 1; index < placeItems.size(); index++) {
+            RoutePlaceItem previous = placeItems.get(index - 1);
+            RoutePlaceItem current = placeItems.get(index);
+            totalDistanceKm += calculateDistanceKm(previous, current);
+        }
+        return totalDistanceKm;
     }
 
     private String formatMessage(String key, Object... args) {
@@ -879,8 +899,27 @@ public class AddRouteController extends SimpleLifecycleAwareController {
                 response.id(),
                 response.title(),
                 subtitle,
-                response.coverImage() == null || response.coverImage().url() == null ? DEFAULT_IMAGE : response.coverImage().url().toString()
+                response.coverImage() == null || response.coverImage().url() == null ? DEFAULT_IMAGE : response.coverImage().url().toString(),
+                response.latitude(),
+                response.longitude()
         );
+    }
+
+    private double calculateDistanceKm(RoutePlaceItem from, RoutePlaceItem to) {
+        if (from.latitude() == null || from.longitude() == null || to.latitude() == null || to.longitude() == null) {
+            return 0.0;
+        }
+
+        double latitudeDelta = Math.toRadians(to.latitude() - from.latitude());
+        double longitudeDelta = Math.toRadians(to.longitude() - from.longitude());
+        double fromLatitudeRadians = Math.toRadians(from.latitude());
+        double toLatitudeRadians = Math.toRadians(to.latitude());
+
+        double a = Math.sin(latitudeDelta / 2) * Math.sin(latitudeDelta / 2)
+                + Math.cos(fromLatitudeRadians) * Math.cos(toLatitudeRadians)
+                * Math.sin(longitudeDelta / 2) * Math.sin(longitudeDelta / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return EARTH_RADIUS_KM * c;
     }
 
     private InputItem createInput(String placeholderKey) {
@@ -914,5 +953,12 @@ public class AddRouteController extends SimpleLifecycleAwareController {
         return new Image(fallback.toExternalForm(), true);
     }
 
-    private record RoutePlaceItem(String id, String title, String subtitle, String imagePath) { }
+    private record RoutePlaceItem(
+            String id,
+            String title,
+            String subtitle,
+            String imagePath,
+            Double latitude,
+            Double longitude
+    ) { }
 }

@@ -149,7 +149,9 @@ public final class EditorDraftStorage {
             String subtitle,
             String imagePath,
             TripPlaceSourceType sourceType,
-            String sourceRouteId
+            String sourceRouteId,
+            Double latitude,
+            Double longitude
     ) {
     }
 
