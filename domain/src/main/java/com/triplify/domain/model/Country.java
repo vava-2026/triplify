@@ -16,7 +16,6 @@ public class Country {
     @NonNull
     private final UUID id;
 
-    @NonNull
     private final UUID createdById;
 
     @NonNull

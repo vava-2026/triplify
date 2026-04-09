@@ -45,11 +45,7 @@ public class ImageServiceImpl implements ImageService {
     @Override
     public Result<ImageResponse> addImage(AddImageRequest request) {
         Path sourcePath = request.image();
-
-        Result<Void> validation = validateImageFile(sourcePath);
-        if (validation.isFailure()) {
-            return Result.fail(validation.getError());
-        }
+        validateImageFile(sourcePath).orThrow();
 
         try {
             Path storedPath = imageStorageService.store(sourcePath);
@@ -122,10 +118,7 @@ public class ImageServiceImpl implements ImageService {
 
         if (request.image() != null) {
             // Validate and store new image file, then replace old one
-            Result<Void> validation = validateImageFile(request.image());
-            if (validation.isFailure()) {
-                return Result.fail(validation.getError());
-            }
+            validateImageFile(request.image()).orThrow();
 
             oldStoredPath = image.getUrl();
             try {

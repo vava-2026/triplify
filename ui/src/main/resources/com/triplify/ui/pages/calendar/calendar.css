@@ -1,0 +1,66 @@
+.calendar-content {
+    -fx-spacing: 16px;
+    -fx-max-width: 980px;
+}
+
+.calendar-panel {
+    -fx-background-color: white;
+    -fx-background-radius: 20px;
+    -fx-padding: 22px 24px 24px 24px;
+    -fx-effect: dropshadow(gaussian, rgba(12, 12, 13, 0.06), 16, 0, 0, 4);
+}
+
+.calendar-date-grid {
+    -fx-hgap: 16px;
+    -fx-vgap: 16px;
+}
+
+.calendar-date-field {
+    -fx-spacing: 8px;
+    -fx-pref-width: 320px;
+    -fx-min-width: 280px;
+}
+
+.calendar-field-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1f2937;
+}
+
+.calendar-date-shell {
+    -fx-pref-height: 44px;
+    -fx-alignment: center-left;
+    -fx-spacing: 10px;
+    -fx-background-color: #eef5fb;
+    -fx-background-radius: 10px;
+    -fx-border-color: transparent;
+    -fx-border-radius: 10px;
+    -fx-padding: 0 14 0 0;
+}
+
+.calendar-date-shell:focused-within {
+    -fx-background-color: white;
+    -fx-border-color: #5f95c0;
+}
+
+.calendar-date-input {
+    -fx-pref-height: 44px;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+    -fx-font-size: 14px;
+    -fx-text-fill: #374151;
+    -fx-prompt-text-fill: #9aa6b2;
+    -fx-padding: 0 0 0 16;
+}
+
+.calendar-date-input:focused {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.calendar-date-icon {
+    -fx-icon-color: #9aa6b2;
+    -fx-mouse-transparent: true;
+}

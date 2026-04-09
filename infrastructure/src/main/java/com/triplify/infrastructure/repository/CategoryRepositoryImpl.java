@@ -85,7 +85,11 @@ public class CategoryRepositoryImpl implements CategoryRepository {
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, category.getId().toString());
-            ps.setString(2, category.getCreatedById().toString());
+            if (category.getCreatedById() == null) {
+                ps.setNull(2, java.sql.Types.VARCHAR);
+            } else {
+                ps.setString(2, category.getCreatedById().toString());
+            }
             ps.setString(3, category.getName());
             ps.setString(4, category.getNameSk());
             ps.setString(5, category.getDescription());
@@ -143,7 +147,8 @@ public class CategoryRepositoryImpl implements CategoryRepository {
 
     private Category mapRow(ResultSet rs) throws SQLException {
         UUID id = UUID.fromString(rs.getString("id"));
-        UUID createdById = UUID.fromString(rs.getString("created_by"));
+        String createdByRaw = rs.getString("created_by");
+        UUID createdById = createdByRaw == null || createdByRaw.isBlank() ? null : UUID.fromString(createdByRaw);
         String name = rs.getString("name");
         String nameSk = rs.getString("name_sk");
         String description = rs.getString("description");
@@ -155,30 +160,20 @@ public class CategoryRepositoryImpl implements CategoryRepository {
     }
 
     private static String colorToSql(ColorEnum color) {
-        if (color == null) return "blue";
-        return switch (color) {
-            case RED -> "red";
-            case ORANGE -> "orange";
-            case YELLOW -> "yellow";
-            case GREEN -> "green";
-            case TEAL -> "blue";
-            case BLUE -> "blue";
-            case PURPLE -> "purple";
-            case PINK -> "pink";
-        };
+        if (color == null) {
+            return ColorEnum.GRAY.getValue();
+        }
+        return color.getValue();
     }
 
     private static ColorEnum sqlToColor(String color) {
-        if (color == null) return ColorEnum.BLUE;
-        return switch (color) {
-            case "red" -> ColorEnum.RED;
-            case "orange" -> ColorEnum.ORANGE;
-            case "yellow" -> ColorEnum.YELLOW;
-            case "green" -> ColorEnum.GREEN;
-            case "blue" -> ColorEnum.BLUE;
-            case "purple" -> ColorEnum.PURPLE;
-            case "pink" -> ColorEnum.PINK;
-            default -> ColorEnum.BLUE;
-        };
+        if (color == null || color.isBlank()) {
+            return ColorEnum.GRAY;
+        }
+        try {
+            return ColorEnum.valueOf(color.trim().toUpperCase(java.util.Locale.ROOT));
+        } catch (IllegalArgumentException ex) {
+            return ColorEnum.GRAY;
+        }
     }
 }

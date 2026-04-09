@@ -17,7 +17,6 @@ public class Category {
     @NonNull
     private final UUID id;
 
-    @NonNull
     private final UUID createdById;
 
     @NonNull

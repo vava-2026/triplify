@@ -1,6 +1,7 @@
 package com.triplify.application.security;
 
 import com.triplify.application.error.ApplicationError;
+import com.triplify.domain.result.FailureException;
 import com.triplify.domain.result.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +44,10 @@ public class ExceptionHandlingProxy implements InvocationHandler {
             Throwable cause = ex.getCause();
 
             if (Result.class.isAssignableFrom(method.getReturnType())) {
+                if (cause instanceof FailureException failure) {
+                    return Result.fail(failure.getError());
+                }
+
                 String operation = target.getClass().getSimpleName() + "." + method.getName();
                 log.error("Unhandled exception in {}", operation, cause);
                 return Result.fail(new ApplicationError.Unexpected(operation));
