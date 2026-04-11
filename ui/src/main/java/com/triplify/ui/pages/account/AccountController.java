@@ -15,8 +15,7 @@ import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.routing.GuardedNavigator;
 import com.triplify.ui.routing.RouteIds;
-import com.triplify.ui.shared.component.badge.model.Badge;
-import com.triplify.ui.shared.component.badge.model.BadgeGroup;
+import com.triplify.ui.shared.component.badge.viewmodel.BadgeViewModel;
 import com.triplify.ui.shared.component.badge.view.BadgeView;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.input_item.PasswordItem;
@@ -34,7 +33,6 @@ import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 public class AccountController extends SimpleLifecycleAwareController {
@@ -95,18 +93,18 @@ public class AccountController extends SimpleLifecycleAwareController {
         }
     }
 
-    private Badge toUiBadge(BadgeResponse response) {
+    private BadgeViewModel toUiBadge(BadgeResponse response) {
         int requiredValue = response.requiredValue();
         int currentValue = 100;
         boolean unlocked = requiredValue <= 100;
 
-        return new Badge(
+        return new BadgeViewModel(
                 response.name(),
                 response.nameSk(),
                 response.description(),
                 response.descriptionSk(),
                 resolveImageUrl(response.image()),
-                mapGroup(response),
+                response.group(),
                 response.level(),
                 requiredValue,
                 currentValue,
@@ -114,23 +112,6 @@ public class AccountController extends SimpleLifecycleAwareController {
         );
     }
 
-    private BadgeGroup mapGroup(BadgeResponse response) {
-        String groupName = response.group() != null ? response.group().name() : null;
-        if (groupName == null || groupName.isBlank()) {
-            return BadgeGroup.COUNTRIES;
-        }
-
-        return switch (groupName.trim().toLowerCase(Locale.ROOT)) {
-            case "countries" -> BadgeGroup.COUNTRIES;
-            case "kilometers" -> BadgeGroup.KILOMETERS;
-            case "trips" -> BadgeGroup.TRIPS;
-            case "routes" -> BadgeGroup.ROUTES;
-            case "places" -> BadgeGroup.PLACES;
-            case "stories" -> BadgeGroup.STORIES;
-            case "photos" -> BadgeGroup.PHOTOS;
-            default -> BadgeGroup.COUNTRIES;
-        };
-    }
 
     private String resolveImageUrl(ImageResponse image) {
         if (image == null || image.url() == null) {

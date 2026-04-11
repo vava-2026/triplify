@@ -1,18 +1,15 @@
 package com.triplify.ui.shared.component.badge.view;
 
 import com.triplify.ui.i18n.I18n;
-import com.triplify.ui.shared.component.badge.model.Badge;
+import com.triplify.ui.shared.component.badge.viewmodel.BadgeViewModel;
 import com.triplify.ui.shared.util.Localization;
 import javafx.beans.binding.Bindings;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.image.WritableImage;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
@@ -21,6 +18,8 @@ import java.net.URL;
 
 public class BadgeView extends VBox {
     static private final String LOCKED_CLASS = "badge-locked";
+    private static final String DEFAULT_BADGE_RESOURCE = "/com/triplify/ui/shared/component/badge/images/default.png";
+    private static final Image DEFAULT_BADGE_IMAGE = loadDefaultBadgeImage();
     private static final double TITLE_WIDTH = 120.0;
     private static final double TITLE_SINGLE_LINE_HEIGHT = 20.0;
     private static final double TITLE_DOUBLE_LINE_HEIGHT = 40.0;
@@ -51,7 +50,7 @@ public class BadgeView extends VBox {
         updateTitleLayout();
     }
 
-    public void update(Badge badge) {
+    public void update(BadgeViewModel badge) {
         badgeName.textProperty().unbind();
         badgeStat.textProperty().unbind();
         Localization.bindLocalizedText(badgeName.textProperty(), badge);
@@ -64,25 +63,7 @@ public class BadgeView extends VBox {
                         + badge.getRequiredValue()
                         , I18n.bundleProperty())
         );
-
-        // for placeholder generation (TODO: replace with a proper placeholder image)
-        double imageSize = 100;
-
-        if (badge.getImage() != null && !badge.getImage().isBlank()) {
-            try {
-                badgeImage.setImage(new Image(badge.getImage(), true));
-            } catch (Exception ignored) {}
-        }
-        else {
-            // Generate a red circle placeholder image (TODO: replace with a proper placeholder)
-            Canvas canvas = new Canvas(imageSize, imageSize);
-            GraphicsContext gc = canvas.getGraphicsContext2D();
-            gc.setFill(javafx.scene.paint.Color.RED);
-            gc.fillOval(0, 0, imageSize, imageSize);
-            WritableImage placeholderImage = new javafx.scene.image.WritableImage((int)imageSize, (int)imageSize);
-            canvas.snapshot(null, placeholderImage);
-            badgeImage.setImage(placeholderImage);
-        }
+        badgeImage.setImage(resolveBadgeImage(badge.getImage()));
 
         if (badge.isUnlocked()) {
             getStyleClass().remove(LOCKED_CLASS);
@@ -117,5 +98,23 @@ public class BadgeView extends VBox {
         badgeName.setPrefHeight(previousPrefHeight);
 
         return requiredHeight > TITLE_SINGLE_LINE_HEIGHT + 0.5;
+    }
+
+    private Image resolveBadgeImage(String imageUrl) {
+        if (imageUrl != null && !imageUrl.isBlank()) {
+            Image image = new Image(imageUrl, false);
+            if (!image.isError()) {
+                return image;
+            }
+        }
+        return DEFAULT_BADGE_IMAGE;
+    }
+
+    private static Image loadDefaultBadgeImage() {
+        URL defaultUrl = BadgeView.class.getResource(DEFAULT_BADGE_RESOURCE);
+        if (defaultUrl == null) {
+            throw new IllegalStateException("Default badge image not found at " + DEFAULT_BADGE_RESOURCE);
+        }
+        return new Image(defaultUrl.toExternalForm(), false);
     }
 }

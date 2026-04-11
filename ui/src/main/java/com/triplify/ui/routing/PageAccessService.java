@@ -66,8 +66,7 @@ public class PageAccessService {
 
     public String getRoleLabelKey(RoleEnum role) {
         return switch (role) {
-            case USER -> "role.user";
-            case PRO_USER -> "role.proUser";
+            case USER, PRO_USER -> "account.role";
             case CONFIGURATION_MANAGER -> "role.configurationManager";
         };
     }

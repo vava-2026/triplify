@@ -8,7 +8,6 @@ import com.triplify.application.usecase.badge.dto.BadgeResponse;
 import com.triplify.application.usecase.badge.dto.DeleteBadgeRequest;
 import com.triplify.application.usecase.badge.dto.GetBadgesRequest;
 import com.triplify.application.usecase.badge.dto.UpdateBadgeRequest;
-import com.triplify.application.usecase.badgegroup.dto.BadgeGroupResponse;
 import com.triplify.application.usecase.image.ImageService;
 import com.triplify.application.usecase.image.dto.AddImageRequest;
 import com.triplify.application.usecase.image.dto.DeleteImageRequest;
@@ -72,28 +71,20 @@ public class BadgeServiceImpl implements BadgeService {
         }
 
         Badge badge;
-        try {
-            badge = new Badge(user.userId(), UUID.fromString(request.groupId()), request.name(), request.nameSk(), request.level());
-            badge.updateDescription(request.description());
-            badge.updateDescriptionSk(request.descriptionSk());
-            badge.updateRequiredValue(request.requiredValue());
-        } catch (IllegalArgumentException ex) {
-            return Result.fail(new ApplicationError.Unexpected(ex.getMessage()));
-        }
+        badge = new Badge(user.userId(), UUID.fromString(request.groupId()), request.name(), request.nameSk(), request.level());
+        badge.updateDescription(request.description());
+        badge.updateDescriptionSk(request.descriptionSk());
+        badge.updateRequiredValue(request.requiredValue());
 
         ImageResponse image = null;
         if (request.image() != null) {
-            Result<ImageResponse> imageResult = imageService.addImage(new AddImageRequest(request.image(), DEFAULT_IMAGE_DESCRIPTION + request.name()));
-            if (imageResult.isFailure()) {
-                return Result.fail(imageResult.getError());
-            }
-            image = imageResult.getValue();
+            image = imageService.addImage(new AddImageRequest(request.image(), DEFAULT_IMAGE_DESCRIPTION + request.name())).orThrow();
             badge.updateImage(UUID.fromString(image.id()));
         }
 
         badgeRepository.create(badge);
         log.info("Added new badge with id='{}', name='{}' by userId='{}'", badge.getId(), badge.getName(), user.userId());
-        return Result.ok(toResponse(badge, groupRes.get(), image));
+        return Result.ok(BadgeResponse.from(badge, image));
     }
 
     @Override
@@ -110,12 +101,6 @@ public class BadgeServiceImpl implements BadgeService {
         Badge old = oldRes.get();
         String groupId = old.getGroupId().toString();
 
-        Optional<BadgeGroup> groupRes = badgeGroupRepository.findById(groupId);
-        if (groupRes.isEmpty()) {
-            log.warn("Attempt to update badge with non-existing groupId='{}' by userId='{}'", groupId, user.userId());
-            return Result.fail(new BadgeGroupError.NotFound(groupId));
-        }
-
         if (badgeRepository.existsByNameAndLevelExcludingId(groupId, request.name(), request.level(), request.id())) {
             log.warn("Attempted to update badge to duplicate name='{}', level='{}', groupId='{}' by userId='{}'",
                     request.name(), request.level(), groupId, user.userId());
@@ -123,29 +108,25 @@ public class BadgeServiceImpl implements BadgeService {
         }
 
         Badge badge;
-        try {
-            badge = new Badge(
-                    old.getId(),
-                    old.getCreatedById(),
-                    old.getGroupId(),
-                    old.getImageId(),
-                    null,
-                    old.getName(),
-                    old.getNameSk(),
-                    old.getDescription(),
-                    old.getDescriptionSk(),
-                    request.level(),
-                    old.getRequiredValue()
-            );
+        badge = new Badge(
+                old.getId(),
+                old.getCreatedById(),
+                old.getGroupId(),
+                old.getImageId(),
+                null,
+                old.getName(),
+                old.getNameSk(),
+                old.getDescription(),
+                old.getDescriptionSk(),
+                request.level(),
+                old.getRequiredValue()
+        );
 
-            badge.updateName(request.name());
-            badge.updateNameSk(request.nameSk());
-            badge.updateDescription(request.description());
-            badge.updateDescriptionSk(request.descriptionSk());
-            badge.updateRequiredValue(request.requiredValue());
-        } catch (IllegalArgumentException ex) {
-            return Result.fail(new ApplicationError.Unexpected(ex.getMessage()));
-        }
+        badge.updateName(request.name());
+        badge.updateNameSk(request.nameSk());
+        badge.updateDescription(request.description());
+        badge.updateDescriptionSk(request.descriptionSk());
+        badge.updateRequiredValue(request.requiredValue());
 
         ImageResponse image = null;
         if (request.image() != null) {
@@ -160,11 +141,7 @@ public class BadgeServiceImpl implements BadgeService {
                 imageResult = imageService.addImage(new AddImageRequest(request.image(), DEFAULT_IMAGE_DESCRIPTION + request.name()));
             }
 
-            if (imageResult.isFailure()) {
-                return Result.fail(imageResult.getError());
-            }
-
-            image = imageResult.getValue();
+            image = imageResult.orThrow();
             badge.updateImage(UUID.fromString(image.id()));
         } else if (old.getImageId() != null) {
             image = resolveImage(old.getImageId());
@@ -172,7 +149,7 @@ public class BadgeServiceImpl implements BadgeService {
 
         badgeRepository.update(badge);
         log.info("Updated badge with id='{}', name='{}' by userId='{}'", badge.getId(), badge.getName(), user.userId());
-        return Result.ok(toResponse(badge, groupRes.get(), image));
+        return Result.ok(BadgeResponse.from(badge, image));
     }
 
     @Override
@@ -217,36 +194,7 @@ public class BadgeServiceImpl implements BadgeService {
     }
 
     private BadgeResponse toResponse(Badge badge) {
-        BadgeGroup group = badgeGroupRepository.findById(badge.getGroupId().toString())
-                .orElseThrow(() -> new IllegalStateException("Badge group '%s' not found".formatted(badge.getGroupId())));
-
-        return toResponse(badge, group, resolveImage(badge.getImageId()));
-    }
-
-    private BadgeResponse toResponse(Badge badge, BadgeGroup group, ImageResponse image) {
-        return new BadgeResponse(
-                badge.getId().toString(),
-                badge.getCreatedById().toString(),
-                toGroupResponse(group),
-                image,
-                badge.getName(),
-                badge.getNameSk(),
-                badge.getDescription(),
-                badge.getDescriptionSk(),
-                badge.getLevel(),
-                badge.getRequiredValue()
-        );
-    }
-
-    private BadgeGroupResponse toGroupResponse(BadgeGroup group) {
-        return new BadgeGroupResponse(
-                group.getId().toString(),
-                group.getName(),
-                group.getNameSk(),
-                group.getDescription(),
-                group.getDescriptionSk(),
-                group.getCreatedById().toString()
-        );
+        return BadgeResponse.from(badge, resolveImage(badge.getImageId()));
     }
 
     private ImageResponse resolveImage(UUID imageId) {

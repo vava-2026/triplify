@@ -1,32 +1,33 @@
-package com.triplify.ui.shared.component.badge.model;
+package com.triplify.ui.shared.component.badge.viewmodel;
 
 import com.triplify.application.localization.LocalizedDescription;
 import com.triplify.application.localization.LocalizedName;
+import com.triplify.application.usecase.badgegroup.dto.BadgeGroupType;
 import lombok.Getter;
 
 @Getter
-public class Badge implements LocalizedName, LocalizedDescription {
+public class BadgeViewModel implements LocalizedName, LocalizedDescription {
     private final String name;
     private final String nameSk;
     private final String description;
     private final String descriptionSk;
     private final String image;
-    private final BadgeGroup group;
+    private final BadgeGroupType group;
     private final int level;
     private final int requiredValue;
     private final int currentValue;
     private final boolean isUnlocked;
 
-    public Badge(String name,
-                 String nameSk,
-                 String description,
-                 String descriptionSk,
-                 String image,
-                 BadgeGroup group,
-                 int level,
-                 int requiredValue,
-                 int currentValue,
-                 boolean isUnlocked) {
+    public BadgeViewModel(String name,
+                          String nameSk,
+                          String description,
+                          String descriptionSk,
+                          String image,
+                          BadgeGroupType group,
+                          int level,
+                          int requiredValue,
+                          int currentValue,
+                          boolean isUnlocked) {
         this.name = name;
         this.nameSk = nameSk;
         this.description = description;
@@ -59,3 +60,4 @@ public class Badge implements LocalizedName, LocalizedDescription {
         return descriptionSk;
     }
 }
+
