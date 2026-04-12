@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotDiffPersistence">
+    <option name="pendingDiffs">
+      <map>
+        <entry key="$PROJECT_DIR$/ui/src/main/java/com/triplify/ui/shared/component/badge/model/BadgeViewModel.java">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/ui/src/main/java/com/triplify/ui/shared/component/badge/model/BadgeViewModel.java" />
+              <option name="updatedContent" value="package com.triplify.ui.shared.component.badge.model;&#10;&#10;import com.triplify.application.localization.LocalizedDescription;&#10;import com.triplify.application.localization.LocalizedName;&#10;import com.triplify.application.usecase.badgegroup.dto.BadgeGroupType;&#10;import lombok.Getter;&#10;&#10;@Getter&#10;public class BadgeViewModel implements LocalizedName, LocalizedDescription {&#10;    private final String name;&#10;    private final String nameSk;&#10;    private final String description;&#10;    private final String descriptionSk;&#10;    private final String image;&#10;    private final BadgeGroupType group;&#10;    private final int level;&#10;    private final int requiredValue;&#10;    private final int currentValue;&#10;    private final boolean isUnlocked;&#10;&#10;    public BadgeViewModel(String name,&#10;                          String nameSk,&#10;                          String description,&#10;                          String descriptionSk,&#10;                          String image,&#10;                          BadgeGroupType group,&#10;                          int level,&#10;                          int requiredValue,&#10;                          int currentValue,&#10;                          boolean isUnlocked) {&#10;        this.name = name;&#10;        this.nameSk = nameSk;&#10;        this.description = description;&#10;        this.descriptionSk = descriptionSk;&#10;        this.image = image;&#10;        this.group = group;&#10;        this.level = level;&#10;        this.requiredValue = requiredValue;&#10;        this.currentValue = currentValue;&#10;        this.isUnlocked = isUnlocked;&#10;    }&#10;&#10;    @Override&#10;    public String name() {&#10;        return name;&#10;    }&#10;&#10;    @Override&#10;    public String nameSk() {&#10;        return nameSk;&#10;    }&#10;&#10;    @Override&#10;    public String description() {&#10;        return description;&#10;    }&#10;&#10;    @Override&#10;    public String descriptionSk() {&#10;        return descriptionSk;&#10;    }&#10;}&#10;" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>
