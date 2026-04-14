@@ -28,7 +28,7 @@
     <content>
         <StackPane styleClass="page-root,place-details-root">
             <VBox fx:id="contentContainer" styleClass="place-details-content" spacing="20">
-                <StackPane styleClass="place-details-hero">
+                <StackPane fx:id="heroContainer" styleClass="place-details-hero">
                     <ImageView fx:id="heroImageView"
                                fitWidth="1120"
                                fitHeight="320"

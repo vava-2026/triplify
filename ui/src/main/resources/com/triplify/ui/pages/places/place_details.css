@@ -12,7 +12,7 @@
     -fx-min-height: 320px;
     -fx-pref-height: 320px;
     -fx-max-height: 320px;
-    -fx-background-color: -color-surface-dark;
+    -fx-background-color: transparent;
     -fx-background-radius: 28px;
 }
 
@@ -99,9 +99,9 @@
 }
 
 .place-details-map-card .add-place-map-shell {
-    -fx-min-height: 264px;
-    -fx-pref-height: 264px;
-    -fx-max-height: 264px;
+    -fx-min-height: 360px;
+    -fx-pref-height: 360px;
+    -fx-max-height: 360px;
     -fx-background-radius: 18px;
 }
 

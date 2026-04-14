@@ -57,6 +57,7 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
     private static final double ROUTE_CARD_IMAGE_HEIGHT = 164;
 
     @FXML private VBox contentContainer;
+    @FXML private StackPane heroContainer;
     @FXML private FlowPane topRowFlow;
     @FXML private Button backButton;
     @FXML private ImageView heroImageView;
@@ -96,6 +97,9 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         associatedRoutesFlow.prefWrapLengthProperty().bind(contentContainer.widthProperty());
         associatedStoriesFlow.prefWrapLengthProperty().bind(contentContainer.widthProperty());
 
+        heroImageView.fitWidthProperty().bind(heroContainer.widthProperty());
+        heroImageView.fitHeightProperty().bind(heroContainer.heightProperty());
+        installRoundedPaneClip(heroContainer, 28);
         installRoundedImageClip(heroImageView, 28);
         installRoundedPaneClip(placeMap, 20);
         placeMap.setSelectionEnabled(false);
