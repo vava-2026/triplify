@@ -44,6 +44,13 @@ public class GuardedNavigator {
             toastService.error(I18n.t(result.toastKey()));
         }
 
+        if (resolvedData == null
+                && router.getCurrentDestination() != null
+                && result.targetPage().getRouteId().equals(router.getCurrentDestination().getId())) {
+            syncContext(router);
+            return;
+        }
+
         if (resolvedData == null) {
             router.moveto(result.targetPage().getRouteId());
             return;

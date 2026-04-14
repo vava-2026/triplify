@@ -3,7 +3,9 @@ package com.triplify.ui;
 import com.google.inject.Inject;
 import com.triplify.application.usecase.session.UserSessionContext;
 import com.google.inject.Injector;
+import com.triplify.ui.routing.AppPage;
 import com.triplify.ui.routing.GuardedNavigator;
+import com.triplify.ui.routing.PageAccessService;
 import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.header.view.HeaderView;
 import com.triplify.ui.shared.menu.view.MenuView;
@@ -12,6 +14,7 @@ import com.triplify.ui.shared.toast.ToastService;
 import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import com.triplify.ui.shared.util.FxmlLoadResult;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.binding.BooleanBinding;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -37,6 +40,7 @@ public class MainApp extends Application {
     @Inject private ToastService toastService;
     @Inject private UserSessionContext userSessionContext;
     @Inject private GuardedNavigator guardedNavigator;
+    @Inject private PageAccessService pageAccessService;
     private Router router;
     private boolean initialNavigationHandled;
 
@@ -135,11 +139,13 @@ public class MainApp extends Application {
             if (router != null && !initialNavigationHandled) {
                 initialNavigationHandled = true;
                 if (userSessionContext.getCurrent().isPresent()) {
-                    guardedNavigator.openDefault(router);
-                } else {
-                    guardedNavigator.syncContext(router);
+                    AppPage defaultPage = pageAccessService.getDefaultPage(userSessionContext.getCurrent());
+                    router.setHomeDestination(defaultPage.getRouteId());
                 }
-                contentArea.setOpacity(1);
+                Platform.runLater(() -> {
+                    guardedNavigator.syncContext(router);
+                    contentArea.setOpacity(1);
+                });
             } else if (router != null) {
                 guardedNavigator.syncContext(router);
             }
