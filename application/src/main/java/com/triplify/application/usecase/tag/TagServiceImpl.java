@@ -49,14 +49,34 @@ public class TagServiceImpl implements TagService {
 
     @Override
     public Result<TagResponse> updateTag(UpdateTagRequest request) {
-        // TODO: implement tag update.
-        return Result.fail(new ApplicationError.Unexpected("TODO: TagService.updateTag"));
+        SessionUser user = userSessionContext.getCurrent().orElseThrow();
+        try {
+            var existing = tagRepository.findByUserIdAndName(user.userId().toString(), request.name());
+            if (existing.isEmpty()) {
+                return Result.fail(new TagError.NotFound(request.id()));
+            }
+
+            Tag updatedTag = new Tag(existing.get().getId(), user.userId(), request.name(), toDomainColor(request.color()));
+            tagRepository.update(updatedTag);
+            return Result.ok(toResponse(updatedTag));
+        } catch (Exception ex) {
+            return Result.fail(new ApplicationError.StorageFailure("updateTag", ex));
+        }
     }
 
     @Override
     public Result<Void> deleteTag(DeleteTagRequest request) {
-        // TODO: implement tag delete.
-        return Result.fail(new ApplicationError.Unexpected("TODO: TagService.deleteTag"));
+        SessionUser user = userSessionContext.getCurrent().orElseThrow();
+        try {
+            var existing = tagRepository.findById(request.id());
+            if (existing.isEmpty() || !existing.get().getUserId().equals(user.userId())) {
+                return Result.fail(new TagError.NotFound(request.id()));
+            }
+            tagRepository.delete(request.id());
+            return Result.ok();
+        } catch (Exception ex) {
+            return Result.fail(new ApplicationError.StorageFailure("deleteTag", ex));
+        }
     }
 
     @Override
