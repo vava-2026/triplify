@@ -22,7 +22,7 @@ public record BadgeResponse(
     public static BadgeResponse from(Badge badge, ImageResponse image) {
         return new BadgeResponse(
                 badge.getId().toString(),
-                badge.getCreatedById().toString(),
+                badge.getCreatedById() == null ? null : badge.getCreatedById().toString(),
                 BadgeGroupType.fromIdOrThrow(badge.getGroupId().toString()),
                 image,
                 badge.getName(),
