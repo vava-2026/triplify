@@ -59,6 +59,7 @@ public class AuthServiceImpl implements AuthService {
                 user.getEmail(),
                 user.getRole(),
                 user.getAvatarImageId()));
+        sessionContext.save();
         return Result.ok();
     }
 
@@ -80,6 +81,7 @@ public class AuthServiceImpl implements AuthService {
                 user.getEmail(),
                 user.getRole(),
                 user.getAvatarImageId()));
+        sessionContext.save();
         return Result.ok();
     }
 }
