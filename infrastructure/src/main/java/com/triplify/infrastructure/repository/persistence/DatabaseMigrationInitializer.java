@@ -15,7 +15,7 @@ import java.util.List;
 @Singleton
 public class DatabaseMigrationInitializer {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseMigrationInitializer.class);
-    private static final int CURRENT_SCHEMA_VERSION = 7;
+    private static final int CURRENT_SCHEMA_VERSION = 11;
     private static final List<MigrationStep> MIGRATIONS = List.of(
             new MigrationStep(1, "migrations/initial.sql"),
             new MigrationStep(2, "migrations/V2__countries_created_by_nullable.sql"),
@@ -24,9 +24,10 @@ public class DatabaseMigrationInitializer {
             new MigrationStep(5, "migrations/V4__categories_created_by_nullable.sql"),
             new MigrationStep(6, "seeders/category_seeder.sql"),
             new MigrationStep(7, "migrations/V7__expand_color_palette.sql"),
-            new MigrationStep(8, "seeders/badge_group_seeder.sql"),
-            new MigrationStep(9, "seeders/badge_image_seeder.sql"),
-            new MigrationStep(10, "seeders/badge_seeder.sql")
+            new MigrationStep(8, "migrations/V8__badges_created_by_not_null.sql"),
+            new MigrationStep(9, "seeders/badge_group_seeder.sql"),
+            new MigrationStep(10, "seeders/badge_image_seeder.sql"),
+            new MigrationStep(11, "seeders/badge_seeder.sql")
     );
 
     public void initialize() {
