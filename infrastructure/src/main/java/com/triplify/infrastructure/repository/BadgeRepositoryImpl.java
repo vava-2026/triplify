@@ -126,7 +126,7 @@ public class BadgeRepositoryImpl implements BadgeRepository {
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, badge.getId().toString());
-            ps.setString(2, badge.getCreatedById().toString());
+            ps.setObject(2, badge.getCreatedById() != null ? badge.getCreatedById().toString() : null, Types.VARCHAR);
             ps.setString(3, badge.getGroupId().toString());
             ps.setObject(4, badge.getImageId() != null ? badge.getImageId().toString() : null, Types.VARCHAR);
             ps.setString(5, badge.getName());
@@ -185,12 +185,14 @@ public class BadgeRepositoryImpl implements BadgeRepository {
     }
 
     private Badge mapRow(ResultSet rs) throws SQLException {
+        String createdByRaw = rs.getString("created_by");
+        UUID createdById = (createdByRaw == null || createdByRaw.isBlank()) ? null : UUID.fromString(createdByRaw);
         String imageIdRaw = rs.getString("image_id");
         UUID imageId = imageIdRaw == null ? null : UUID.fromString(imageIdRaw);
 
         return new Badge(
                 UUID.fromString(rs.getString("id")),
-                UUID.fromString(rs.getString("created_by")),
+                createdById,
                 UUID.fromString(rs.getString("group_id")),
                 imageId,
                 null,
