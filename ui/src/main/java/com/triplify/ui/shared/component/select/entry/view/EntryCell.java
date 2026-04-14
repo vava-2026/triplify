@@ -21,6 +21,7 @@ public class EntryCell<T> extends ListCell<Entry<T>> {
         setText(null);
 
         if (empty || entry == null) {
+            entryView.update(null);
             setGraphic(null);
         }
         else {

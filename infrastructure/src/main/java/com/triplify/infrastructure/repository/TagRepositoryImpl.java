@@ -1,6 +1,5 @@
 package com.triplify.infrastructure.repository;
 
-import com.triplify.domain.filter.TagFilter;
 import com.triplify.domain.model.Tag;
 import com.triplify.domain.model.enums.ColorEnum;
 import com.triplify.domain.pagination.Page;
@@ -16,7 +15,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 public class TagRepositoryImpl implements TagRepository {
@@ -24,47 +25,13 @@ public class TagRepositoryImpl implements TagRepository {
     private static final Logger log = LoggerFactory.getLogger(TagRepositoryImpl.class);
 
     @Override
-    public Page<Tag> findList(PageRequest pageRequest, TagFilter filter) {
-        boolean hasNameFilter = filter.name() != null && !filter.name().isBlank();
-
-        String whereClause = "WHERE user_id = ? " + (hasNameFilter ? "AND name LIKE ? " : "");
-
-        String countSql = "SELECT COUNT(*) FROM tags " + whereClause;
-        String dataSql = "SELECT id, user_id, name, color FROM tags " + whereClause +
-                "ORDER BY name ASC LIMIT ? OFFSET ?";
-
-        try (Connection conn = SQLiteConnectionFactory.getConnection()) {
-            long total = countRows(conn, countSql, filter, hasNameFilter);
-            if (total == 0) {
-                return Page.empty(pageRequest);
-            }
-
-            try (PreparedStatement ps = conn.prepareStatement(dataSql)) {
-                int idx = 1;
-                ps.setString(idx++, filter.userId().toString());
-                if (hasNameFilter) {
-                    ps.setString(idx++, filter.name() + "%");
-                }
-                ps.setInt(idx++, pageRequest.size());
-                ps.setInt(idx, pageRequest.offset());
-
-                try (ResultSet rs = ps.executeQuery()) {
-                    List<Tag> tags = new ArrayList<>();
-                    while (rs.next()) {
-                        tags.add(mapRow(rs));
-                    }
-                    return Page.of(tags, pageRequest, total);
-                }
-            }
-        } catch (SQLException e) {
-            log.error("Failed to find tags for userId='{}'", filter.userId(), e);
-            throw new RuntimeException("Database error while finding tags", e);
-        }
-    }
-
-    @Override
     public Optional<Tag> findById(String id) {
-        String sql = "SELECT id, user_id, name, color FROM tags WHERE id = ? LIMIT 1";
+        String sql = """
+            SELECT id, user_id, name, color
+            FROM tags
+            WHERE id = ?
+            LIMIT 1
+            """;
 
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -78,126 +45,145 @@ public class TagRepositoryImpl implements TagRepository {
             log.error("Failed to find tag by id='{}'", id, e);
             throw new RuntimeException("Database error while finding tag by id", e);
         }
+
         return Optional.empty();
     }
 
     @Override
-    public boolean existsByUserIdAndName(String userId, String name) {
-        String sql = "SELECT COUNT(*) FROM tags WHERE user_id = ? AND name = ?";
+    public Optional<Tag> findByUserIdAndName(String userId, String name) {
+        String sql = """
+            SELECT id, user_id, name, color
+            FROM tags
+            WHERE user_id = ? AND name = ?
+            LIMIT 1
+            """;
 
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, userId);
             ps.setString(2, name);
             try (ResultSet rs = ps.executeQuery()) {
-                return rs.next() && rs.getInt(1) > 0;
+                if (rs.next()) {
+                    return Optional.of(mapRow(rs));
+                }
             }
         } catch (SQLException e) {
-            log.error("Failed to check tag existence for userId='{}', name='{}'", userId, name, e);
-            throw new RuntimeException("Database error while checking tag existence", e);
+            log.error("Failed to find tag by userId='{}' and name='{}'", userId, name, e);
+            throw new RuntimeException("Database error while finding tag by name", e);
+        }
+
+        return Optional.empty();
+    }
+
+    @Override
+    public List<Tag> findByIds(Set<String> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+
+        String placeholders = String.join(", ", java.util.Collections.nCopies(ids.size(), "?"));
+        String sql = """
+            SELECT id, user_id, name, color
+            FROM tags
+            WHERE id IN (%s)
+            """.formatted(placeholders);
+
+        try (Connection conn = SQLiteConnectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            int index = 1;
+            for (String id : ids) {
+                ps.setString(index++, id);
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                List<Tag> tags = new ArrayList<>();
+                while (rs.next()) {
+                    tags.add(mapRow(rs));
+                }
+                return tags;
+            }
+        } catch (SQLException e) {
+            log.error("Failed to find tags by ids", e);
+            throw new RuntimeException("Database error while finding tags by ids", e);
+        }
+    }
+
+    @Override
+    public Page<Tag> findList(PageRequest pageRequest, String name) {
+        StringBuilder sql = new StringBuilder("""
+            SELECT id, user_id, name, color
+            FROM tags
+            WHERE 1=1
+            """);
+        List<Object> params = new ArrayList<>();
+
+        if (name != null && !name.isBlank()) {
+            sql.append(" AND name LIKE ? ");
+            params.add(name + "%");
+        }
+
+        sql.append(" ORDER BY name COLLATE NOCASE ASC, id ASC LIMIT ? OFFSET ?");
+        params.add(pageRequest.size() + 1);
+        params.add(pageRequest.offset());
+
+        try (Connection conn = SQLiteConnectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                List<Tag> tags = new ArrayList<>();
+                while (rs.next()) {
+                    tags.add(mapRow(rs));
+                }
+
+                boolean hasNext = tags.size() > pageRequest.size();
+                if (hasNext) {
+                    tags.remove(tags.size() - 1);
+                }
+
+                return Page.of(tags, pageRequest, hasNext);
+            }
+        } catch (SQLException e) {
+            log.error("Failed to find tags by name='{}'", name, e);
+            throw new RuntimeException("Database error while finding tags", e);
         }
     }
 
     @Override
     public void create(Tag tag) {
-        String sql = "INSERT INTO tags (id, user_id, name, color) VALUES (?, ?, ?, ?)";
+        String sql = """
+            INSERT INTO tags (id, user_id, name, color)
+            VALUES (?, ?, ?, ?)
+            """;
 
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, tag.getId().toString());
             ps.setString(2, tag.getUserId().toString());
             ps.setString(3, tag.getName());
-            ps.setString(4, colorToSql(tag.getColor()));
+            ps.setString(4, tag.getColor().getValue());
             ps.executeUpdate();
-
-            log.debug("Created tag with id='{}', name='{}' for userId='{}'",
-                    tag.getId(), tag.getName(), tag.getUserId());
         } catch (SQLException e) {
-            log.error("Failed to create tag with id='{}'", tag.getId(), e);
+            log.error("Failed to create tag id='{}'", tag.getId(), e);
             throw new RuntimeException("Database error while creating tag", e);
         }
     }
 
-    @Override
-    public void update(Tag tag) {
-        String sql = "UPDATE tags SET name = ? WHERE id = ?";
-
-        try (Connection conn = SQLiteConnectionFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, tag.getName());
-            ps.setString(2, tag.getId().toString());
-            ps.executeUpdate();
-
-            log.debug("Updated tag with id='{}', name='{}'", tag.getId(), tag.getName());
-        } catch (SQLException e) {
-            log.error("Failed to update tag with id='{}'", tag.getId(), e);
-            throw new RuntimeException("Database error while updating tag", e);
-        }
-    }
-
-    @Override
-    public void delete(Tag tag) {
-        String sql = "DELETE FROM tags WHERE id = ?";
-
-        try (Connection conn = SQLiteConnectionFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, tag.getId().toString());
-            ps.executeUpdate();
-
-            log.debug("Deleted tag with id='{}', name='{}'", tag.getId(), tag.getName());
-        } catch (SQLException e) {
-            log.error("Failed to delete tag with id='{}'", tag.getId(), e);
-            throw new RuntimeException("Database error while deleting tag", e);
-        }
-    }
-
-    private long countRows(Connection conn, String countSql, TagFilter filter, boolean hasNameFilter)
-            throws SQLException {
-        try (PreparedStatement ps = conn.prepareStatement(countSql)) {
-            int idx = 1;
-            ps.setString(idx++, filter.userId().toString());
-            if (hasNameFilter) {
-                ps.setString(idx, filter.name() + "%");
-            }
-            try (ResultSet rs = ps.executeQuery()) {
-                return rs.next() ? rs.getLong(1) : 0L;
-            }
-        }
-    }
-
     private Tag mapRow(ResultSet rs) throws SQLException {
-        UUID id = UUID.fromString(rs.getString("id"));
-        UUID userId = UUID.fromString(rs.getString("user_id"));
-        String name = rs.getString("name");
-        ColorEnum color = sqlToColor(rs.getString("color"));
-        return new Tag(id, userId, name, color);
+        return new Tag(
+                UUID.fromString(rs.getString("id")),
+                UUID.fromString(rs.getString("user_id")),
+                rs.getString("name"),
+                parseColor(rs.getString("color"))
+        );
     }
 
-    private static String colorToSql(ColorEnum color) {
-        if (color == null) return "blue";
-        return switch (color) {
-            case RED -> "red";
-            case ORANGE -> "orange";
-            case YELLOW -> "yellow";
-            case GREEN -> "green";
-            case TEAL -> "blue";
-            case BLUE -> "blue";
-            case PURPLE -> "purple";
-            case PINK -> "pink";
-        };
-    }
-
-    private static ColorEnum sqlToColor(String color) {
-        if (color == null) return ColorEnum.BLUE;
-        return switch (color) {
-            case "red" -> ColorEnum.RED;
-            case "orange" -> ColorEnum.ORANGE;
-            case "yellow" -> ColorEnum.YELLOW;
-            case "green" -> ColorEnum.GREEN;
-            case "blue" -> ColorEnum.BLUE;
-            case "purple" -> ColorEnum.PURPLE;
-            case "pink" -> ColorEnum.PINK;
-            default -> ColorEnum.BLUE;
-        };
+    private ColorEnum parseColor(String color) {
+        if (color == null || color.isBlank()) {
+            return ColorEnum.GRAY;
+        }
+        return ColorEnum.valueOf(color.trim().toUpperCase(Locale.ROOT));
     }
 }

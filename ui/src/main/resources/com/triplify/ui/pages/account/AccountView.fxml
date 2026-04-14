@@ -8,6 +8,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.control.ScrollPane?>
 
 <StackPane xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
@@ -17,37 +18,38 @@
         <String fx:value="/com/triplify/ui/shared/component/input_item/input_item.css"/>
         <String fx:value="/com/triplify/ui/pages/account/account.css"/>
     </stylesheets>
-    <VBox spacing="14">
-        <Label text="Account" styleClass="page-title"/>
-        <Label text="Manage profile and preferences." styleClass="page-subtitle"/>
+    <ScrollPane fitToWidth="true" styleClass="page-scroll">
+        <content>
+            <VBox spacing="14">
+                <Label text="Account" styleClass="page-title"/>
+                <Label text="Manage profile and preferences." styleClass="page-subtitle"/>
 
-        <VBox styleClass="page-card" spacing="6">
-            <Label text="Name: Alex Traveler"/>
-            <Label text="Membership: Explorer"/>
-            <Label text="Email: alex@example.com"/>
-        </VBox>
+                <VBox styleClass="page-card" spacing="6">
+                    <Label text="Name: Alex Traveler"/>
+                    <Label text="Membership: Explorer"/>
+                    <Label text="Email: alex@example.com"/>
+                </VBox>
 
-        <VBox styleClass="page-card" spacing="12">
-            <Label text="Edit Profile" styleClass="account-section-title"/>
-            <VBox fx:id="editFormContainer" spacing="12"/>
-            <HBox styleClass="account-form-actions">
-                <Button text="Save changes" onAction="#onSave" styleClass="account-save-btn"/>
-            </HBox>
-        </VBox>
+                <VBox styleClass="page-card" spacing="12">
+                    <Label text="Edit Profile" styleClass="account-section-title"/>
+                    <VBox fx:id="editFormContainer" spacing="12"/>
+                    <HBox styleClass="account-form-actions">
+                        <Button text="Save changes" onAction="#onSave" styleClass="account-save-btn"/>
+                    </HBox>
+                </VBox>
 
-        <VBox>
-
-            <GridPane fx:id="badgesGrid" styleClass="badges-grid" hgap="12" vgap="12">
-                <columnConstraints>
-                    <ColumnConstraints percentWidth="25"/>
-                    <ColumnConstraints percentWidth="25"/>
-                    <ColumnConstraints percentWidth="25"/>
-                    <ColumnConstraints percentWidth="25"/>
-                    <ColumnConstraints percentWidth="25"/>
-                    <ColumnConstraints percentWidth="25"/>
-                </columnConstraints>
-            </GridPane>
-
-        </VBox>
-    </VBox>
+                <VBox>
+                    <GridPane fx:id="badgesGrid" styleClass="badges-grid">
+                        <columnConstraints>
+                            <ColumnConstraints percentWidth="20"/>
+                            <ColumnConstraints percentWidth="20"/>
+                            <ColumnConstraints percentWidth="20"/>
+                            <ColumnConstraints percentWidth="20"/>
+                            <ColumnConstraints percentWidth="20"/>
+                        </columnConstraints>
+                    </GridPane>
+                </VBox>
+            </VBox>
+        </content>
+    </ScrollPane>
 </StackPane>

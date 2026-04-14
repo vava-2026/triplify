@@ -130,6 +130,54 @@
     -fx-background-color: -color-primary-light;
 }
 
+.app-btn-tint {
+    -fx-background-color: -color-primary-light;
+    -fx-border-color: transparent;
+    -fx-text-fill: -color-primary-dark;
+}
+
+.app-btn-tint .app-btn-icon {
+    -fx-icon-color: -color-primary-dark;
+}
+
+.app-btn-tint:hover {
+    -fx-background-color: #e3eef7;
+}
+
+.app-btn-tint:hover .app-btn-icon {
+    -fx-icon-color: -color-primary-dark;
+}
+
+.app-btn-tint:pressed {
+    -fx-background-color: #d7e8f2;
+}
+
+.app-btn-dashed-tint {
+    -fx-background-color: -color-primary-light;
+    -fx-border-color: #7aa5c9;
+    -fx-border-width: 1.4;
+    -fx-border-style: segments(7, 5);
+    -fx-text-fill: -color-primary-dark;
+}
+
+.app-btn-dashed-tint .app-btn-icon {
+    -fx-icon-color: -color-primary-dark;
+}
+
+.app-btn-dashed-tint:hover {
+    -fx-background-color: #e5eff8;
+    -fx-border-color: #6796bf;
+}
+
+.app-btn-dashed-tint:hover .app-btn-icon {
+    -fx-icon-color: -color-primary-dark;
+}
+
+.app-btn-dashed-tint:pressed {
+    -fx-background-color: #dce9f4;
+    -fx-border-color: #5e89af;
+}
+
 .app-btn-spinner {
     -fx-progress-color: -color-on-primary;
     -fx-pref-width: 18;
@@ -141,7 +189,9 @@
 }
 
 .app-btn-secondary .app-btn-spinner,
-.app-btn-ghost     .app-btn-spinner {
+.app-btn-ghost     .app-btn-spinner,
+.app-btn-tint      .app-btn-spinner,
+.app-btn-dashed-tint .app-btn-spinner {
     -fx-progress-color: -color-primary;
 }
 

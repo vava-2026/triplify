@@ -1,15 +1,10 @@
 package com.triplify.ui.pages.account;
 
-import jakarta.inject.Singleton;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
+import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 
-import java.net.URL;
-import java.util.ResourceBundle;
-
-@Singleton
-public class StatisticsController implements Initializable {
+public class StatisticsController extends SimpleLifecycleAwareController {
 
     @FXML private Label countriesValue;
     @FXML private Label tripsValue;
@@ -17,8 +12,8 @@ public class StatisticsController implements Initializable {
     @FXML private Label travelDaysValue;
     @FXML private Label photosValue;
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    @FXML
+    public void initialize() {
         // TODO: Replace with actual data fetching logic
         countriesValue.setText("33");
         tripsValue.setText("67");

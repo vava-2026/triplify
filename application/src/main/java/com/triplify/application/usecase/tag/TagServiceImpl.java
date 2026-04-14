@@ -12,122 +12,62 @@ import com.triplify.application.usecase.tag.dto.GetTagsRequest;
 import com.triplify.application.usecase.tag.dto.TagResponse;
 import com.triplify.application.usecase.tag.dto.UpdateTagRequest;
 import com.triplify.domain.error.TagError;
-import com.triplify.domain.filter.TagFilter;
 import com.triplify.domain.model.Tag;
 import com.triplify.domain.model.enums.ColorEnum;
 import com.triplify.domain.pagination.Page;
 import com.triplify.domain.repository.TagRepository;
 import com.triplify.domain.result.Result;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Optional;
-import java.util.Random;
 
 @Authenticated
 public class TagServiceImpl implements TagService {
 
-    private static final Logger log = LoggerFactory.getLogger(TagServiceImpl.class);
-
-    // Colors available in the SQL schema — TEAL is excluded as it is not stored in the DB.
-    private static final ColorEnum[] AVAILABLE_COLORS = {
-            ColorEnum.RED, ColorEnum.ORANGE, ColorEnum.YELLOW, ColorEnum.GREEN,
-            ColorEnum.BLUE, ColorEnum.PURPLE, ColorEnum.PINK
-    };
-    private static final Random RANDOM = new Random();
-
     private final TagRepository tagRepository;
-    private final UserSessionContext sessionContext;
+    private final UserSessionContext userSessionContext;
 
     @Inject
-    public TagServiceImpl(TagRepository tagRepository, UserSessionContext sessionContext) {
+    TagServiceImpl(TagRepository tagRepository, UserSessionContext userSessionContext) {
         this.tagRepository = tagRepository;
-        this.sessionContext = sessionContext;
+        this.userSessionContext = userSessionContext;
     }
 
     @Override
     public Result<TagResponse> createTag(CreateTagRequest request) {
-        SessionUser user = sessionContext.getCurrent().orElseThrow();
+        try {
+            SessionUser user = userSessionContext.getCurrent().orElseThrow();
+            var existing = tagRepository.findByUserIdAndName(user.userId().toString(), request.name());
+            if (existing.isPresent()) {
+                return Result.fail(new TagError.AlreadyExists(request.name()));
+            }
 
-        if (tagRepository.existsByUserIdAndName(user.userId().toString(), request.name())) {
-            log.warn("Attempted to create duplicate tag name='{}' for userId='{}'",
-                    request.name(), user.userId());
-            return Result.fail(new TagError.AlreadyExists(request.name()));
+            Tag tag = new Tag(user.userId(), request.name(), toDomainColor(request.color()));
+            tagRepository.create(tag);
+            return Result.ok(toResponse(tag));
+        } catch (Exception ex) {
+            return Result.fail(new ApplicationError.StorageFailure("createTag", ex));
         }
-
-        // Color is assigned randomly — users do not choose their tag color.
-        ColorEnum randomColor = AVAILABLE_COLORS[RANDOM.nextInt(AVAILABLE_COLORS.length)];
-        Tag tag = new Tag(user.userId(), request.name(), randomColor);
-
-        tagRepository.create(tag);
-        log.info("Created tag with id='{}', name='{}' for userId='{}'",
-                tag.getId(), tag.getName(), user.userId());
-        return Result.ok(toResponse(tag));
     }
 
     @Override
     public Result<TagResponse> updateTag(UpdateTagRequest request) {
-        SessionUser user = sessionContext.getCurrent().orElseThrow();
-
-        Optional<Tag> existing = tagRepository.findById(request.id());
-        if (existing.isEmpty() || !existing.get().getUserId().equals(user.userId())) {
-            log.warn("Attempt to update non-existing or not-owned tag with id='{}' by userId='{}'",
-                    request.id(), user.userId());
-            return Result.fail(new TagError.NotFound(request.id()));
-        }
-
-        Tag tag = existing.get();
-
-        // Check name uniqueness only if the name is actually changing.
-        if (!tag.getName().equalsIgnoreCase(request.name())
-                && tagRepository.existsByUserIdAndName(user.userId().toString(), request.name())) {
-            log.warn("Attempted to rename tag id='{}' to already-existing name='{}' for userId='{}'",
-                    request.id(), request.name(), user.userId());
-            return Result.fail(new TagError.AlreadyExists(request.name()));
-        }
-
-        try {
-            tag.updateName(request.name());
-            // Color is intentionally not updated — tag color is fixed after creation.
-        } catch (IllegalArgumentException ex) {
-            return Result.fail(new ApplicationError.Unexpected(ex.getMessage()));
-        }
-
-        tagRepository.update(tag);
-        log.info("Updated tag with id='{}', name='{}' for userId='{}'",
-                tag.getId(), tag.getName(), user.userId());
-        return Result.ok(toResponse(tag));
+        // TODO: implement tag update.
+        return Result.fail(new ApplicationError.Unexpected("TODO: TagService.updateTag"));
     }
 
     @Override
     public Result<Void> deleteTag(DeleteTagRequest request) {
-        SessionUser user = sessionContext.getCurrent().orElseThrow();
-
-        Optional<Tag> existing = tagRepository.findById(request.id());
-        if (existing.isEmpty() || !existing.get().getUserId().equals(user.userId())) {
-            log.warn("Attempt to delete non-existing or not-owned tag with id='{}' by userId='{}'",
-                    request.id(), user.userId());
-            return Result.fail(new TagError.NotFound(request.id()));
-        }
-
-        tagRepository.delete(existing.get());
-        log.info("Deleted tag with id='{}' by userId='{}'", request.id(), user.userId());
-        return Result.ok(null);
+        // TODO: implement tag delete.
+        return Result.fail(new ApplicationError.Unexpected("TODO: TagService.deleteTag"));
     }
 
     @Override
     public Result<Page<TagResponse>> getTags(GetTagsRequest request) {
-        SessionUser user = sessionContext.getCurrent().orElseThrow();
-
-        TagFilter filter = new TagFilter(
-                user.userId(),
-                request.filter() != null ? request.filter().name() : null
-        );
-
-        log.debug("Getting tags for userId='{}', nameFilter='{}'", user.userId(), filter.name());
-
-        Page<Tag> page = tagRepository.findList(request.pageRequest(), filter);
-        return Result.ok(page.map(this::toResponse));
+        try {
+            String name = request.filter() == null ? null : request.filter().name();
+            Page<Tag> page = tagRepository.findList(request.pageRequest(), name);
+            return Result.ok(page.map(this::toResponse));
+        } catch (Exception ex) {
+            return Result.fail(new ApplicationError.StorageFailure("getTags", ex));
+        }
     }
 
     private TagResponse toResponse(Tag tag) {
@@ -135,7 +75,11 @@ public class TagServiceImpl implements TagService {
                 tag.getId().toString(),
                 tag.getUserId().toString(),
                 tag.getName(),
-                ColorTheme.from(tag.getColor())
+                tag.getColor() == null ? null : ColorTheme.from(tag.getColor())
         );
+    }
+
+    private ColorEnum toDomainColor(ColorTheme colorTheme) {
+        return colorTheme.toColorEnum();
     }
 }

@@ -1,16 +1,13 @@
 package com.triplify.ui.shared.menu.view;
 
-import com.triplify.application.usecase.category.dto.CategoryResponse;
-import com.triplify.application.usecase.category.CategoryService;
+import com.google.inject.Inject;
 import com.triplify.application.usecase.image.ImageService;
 import com.triplify.application.usecase.image.dto.GetImageByIdRequest;
 import com.triplify.application.usecase.session.UserSessionContext;
-import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
-import com.triplify.ui.shared.menu.model.MenuItem;
-import com.triplify.ui.shared.menu.model.NavItem;
+import com.triplify.ui.routing.AppPage;
+import com.triplify.ui.routing.PageAccessService;
 import com.triplify.ui.shared.menu.viewmodel.MenuViewModel;
-import com.google.inject.Inject;
 import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import com.triplify.ui.shared.util.FxmlLoadResult;
 import javafx.beans.binding.Bindings;
@@ -31,6 +28,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.function.Consumer;
 
 public class MenuView implements Initializable {
 
@@ -49,57 +47,36 @@ public class MenuView implements Initializable {
     private final MenuViewModel viewModel = new MenuViewModel();
     private final List<NavButtonView> navButtons = new ArrayList<>();
 
-    private final CategoryService categoryService;
-    private final ErrorHandler errorHandler;
     private final FxmlLoaderHelper fxmlLoader;
     private final UserSessionContext userSessionContext;
     private final ImageService imageService;
+    private final PageAccessService pageAccessService;
     private static final Logger log = LoggerFactory.getLogger(MenuView.class);
     private SidebarIslandView islandController;
+    private Consumer<AppPage> navigationHandler;
+    private String currentRoleLabelKey;
 
     @Inject
     public MenuView(
-            CategoryService categoryService,
-            ErrorHandler errorHandler,
             FxmlLoaderHelper fxmlLoader,
             UserSessionContext userSessionContext,
-            ImageService imageService) {
-        this.categoryService = categoryService;
-        this.errorHandler = errorHandler;
+            ImageService imageService,
+            PageAccessService pageAccessService) {
         this.fxmlLoader = fxmlLoader;
         this.userSessionContext = userSessionContext;
         this.imageService = imageService;
+        this.pageAccessService = pageAccessService;
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // TODO: This is just for testing, remove when categories are integrated into the UI
-        var categoriesResult = categoryService.getAllCategories();
-        categoriesResult.onSuccess(categories -> {
-            for (CategoryResponse category : categories) {
-                log.info("Category: {}", category.name());
-            }
-        });
-        categoriesResult.onFailure(errorHandler::handle);
-
         sidebarRoot.setMaxHeight(Double.MAX_VALUE);
         mainPageInner.setMaxHeight(Double.MAX_VALUE);
-        initializeAccountSection();
+        refreshAccountSection();
 
-        for (NavItem navItem : NavItem.values()) {
-            FxmlLoadResult<?, NavButtonView> result = fxmlLoader.load("/com/triplify/ui/shared/menu/view/NavButton.fxml");
-            NavButtonView btn = result.controller().withNavItem(navItem);
-            btn.setOnSelect(() -> viewModel.setSelectedItem(navItem.getMenuItem()));
-            navContainer.getChildren().add(btn.getButton());
-            navButtons.add(btn);
-        }
-
-        accountRole.textProperty().bind(
-                Bindings.createStringBinding(() -> I18n.t("account.role"), I18n.bundleProperty()));
-
-        viewModel.selectedItemProperty().addListener(
+        viewModel.activePrimaryPageProperty().addListener(
                 (obs, oldVal, newVal) -> refreshActiveState(newVal));
-        refreshActiveState(viewModel.getSelectedItem());
+        refreshActiveState(viewModel.getActivePrimaryPage());
 
         viewModel.collapsedProperty().addListener(
                 (obs, oldVal, newVal) -> applyCollapsedState(newVal));
@@ -114,18 +91,25 @@ public class MenuView implements Initializable {
 
     public MenuViewModel getViewModel() { return viewModel; }
 
+    public void setNavigationHandler(Consumer<AppPage> navigationHandler) {
+        this.navigationHandler = navigationHandler;
+    }
+
     public void refreshAccountSection() {
         initializeAccountSection();
+        renderNavigation();
     }
 
     @FXML
     private void onAccountClicked(MouseEvent event) {
-        viewModel.setSelectedItem(MenuItem.ACCOUNT);
+        if (navigationHandler != null) {
+            navigationHandler.accept(AppPage.ACCOUNT);
+        }
     }
 
-    private void refreshActiveState(MenuItem active) {
+    private void refreshActiveState(AppPage active) {
         navButtons.forEach(btn ->
-                btn.setActive(btn.getNavItem().getMenuItem() == active));
+                btn.setActive(btn.getPage() == active));
     }
 
     private void applyCollapsedState(boolean collapsed) {
@@ -146,6 +130,9 @@ public class MenuView implements Initializable {
         var currentUserOpt = userSessionContext.getCurrent();
         if (currentUserOpt.isEmpty()) {
             accountNameLabel.setText("");
+            currentRoleLabelKey = null;
+            accountRole.textProperty().unbind();
+            accountRole.setText("");
             avatarLabel.setText("?");
             showInitialAvatar();
             avatarImageView.setClip(new Circle(19, 19, 19));
@@ -155,6 +142,11 @@ public class MenuView implements Initializable {
         var currentUser = currentUserOpt.get();
         String username = currentUser.username();
         accountNameLabel.setText(username);
+        currentRoleLabelKey = pageAccessService.getRoleLabelKey(currentUser.role());
+        accountRole.textProperty().unbind();
+        accountRole.textProperty().bind(Bindings.createStringBinding(
+                () -> I18n.t(currentRoleLabelKey),
+                I18n.bundleProperty()));
         avatarLabel.setText(extractInitial(username));
         showInitialAvatar();
         avatarImageView.setClip(new Circle(19, 19, 19));
@@ -207,5 +199,24 @@ public class MenuView implements Initializable {
             return "?";
         }
         return username.substring(0, 1).toUpperCase();
+    }
+
+    private void renderNavigation() {
+        navContainer.getChildren().clear();
+        navButtons.clear();
+
+        for (AppPage page : pageAccessService.getPrimaryMenuPages(userSessionContext.getCurrent())) {
+            FxmlLoadResult<?, NavButtonView> result = fxmlLoader.load("/com/triplify/ui/shared/menu/view/NavButton.fxml");
+            NavButtonView button = result.controller().withPage(page);
+            button.setOnSelect(() -> {
+                if (navigationHandler != null) {
+                    navigationHandler.accept(page);
+                }
+            });
+            navContainer.getChildren().add(button.getButton());
+            navButtons.add(button);
+        }
+
+        refreshActiveState(viewModel.getActivePrimaryPage());
     }
 }

@@ -1,17 +1,17 @@
 package com.triplify.domain.repository;
 
-import com.triplify.domain.filter.TagFilter;
 import com.triplify.domain.model.Tag;
 import com.triplify.domain.pagination.Page;
 import com.triplify.domain.pagination.PageRequest;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface TagRepository {
-    Page<Tag> findList(PageRequest pageRequest, TagFilter filter);
     Optional<Tag> findById(String id);
-    boolean existsByUserIdAndName(String userId, String name);
+    Optional<Tag> findByUserIdAndName(String userId, String name);
+    List<Tag> findByIds(Set<String> ids);
+    Page<Tag> findList(PageRequest pageRequest, String name);
     void create(Tag tag);
-    void update(Tag tag);
-    void delete(Tag tag);
 }

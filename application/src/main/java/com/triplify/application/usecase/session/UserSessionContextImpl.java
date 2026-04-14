@@ -54,10 +54,12 @@ public class UserSessionContextImpl implements UserSessionContext {
             currentUser = null;
             return Optional.empty();
         }
+        log.debug("Loading persisted session from {}", SESSION_FILE);
 
         SessionUser storedUser;
         try {
             storedUser = OBJECT_MAPPER.readValue(SESSION_FILE.toFile(), SessionUser.class);
+            log.info("Loaded persisted session for user email='{}'", storedUser.email());
         } catch (IOException e) {
             log.warn("Failed to load persisted session from {}", SESSION_FILE, e);
             deletePersistedSession();
@@ -72,9 +74,11 @@ public class UserSessionContextImpl implements UserSessionContext {
             return Optional.empty();
         }
 
+        log.debug("Validating persisted session for user email='{}'", storedUser.email());
         Optional<User> userFromDb;
         try {
             userFromDb = userRepository.findByEmail(storedUser.email());
+            log.debug("Validated persisted session for user email='{}'", storedUser.email());
         } catch (RuntimeException e) {
             log.warn("Failed to validate persisted session for email='{}'", storedUser.email(), e);
             currentUser = null;
@@ -95,12 +99,15 @@ public class UserSessionContextImpl implements UserSessionContext {
                 user.getEmail(),
                 user.getRole(),
                 user.getAvatarImageId());
+        log.info("Loaded persisted session for user email='{}'", currentUser.email());
         save();
+        log.debug("Persisted session loaded successfully");
         return Optional.of(currentUser);
     }
 
     @Override
     public void save() {
+        log.debug("Saving session to {}", SESSION_FILE);
         SessionUser user = currentUser;
         if (user == null) {
             deletePersistedSession();
@@ -112,17 +119,19 @@ public class UserSessionContextImpl implements UserSessionContext {
             OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValue(
                     SESSION_FILE.toFile(),
                     user);
+            log.debug("Session saved successfully");
         } catch (IOException e) {
             log.warn("Failed to save session to {}", SESSION_FILE, e);
         }
     }
 
     private void deletePersistedSession() {
+        log.debug("Deleting persisted session file {}", SESSION_FILE);
         try {
             Files.deleteIfExists(SESSION_FILE);
+            log.debug("Persisted session file deleted successfully");
         } catch (IOException e) {
             log.warn("Failed to delete persisted session file {}", SESSION_FILE, e);
         }
     }
-
 }
