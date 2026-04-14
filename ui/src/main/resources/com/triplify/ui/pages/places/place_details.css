@@ -87,6 +87,12 @@
     -fx-effect: none;
 }
 
+.place-details-routes-section {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+    -fx-effect: none;
+}
+
 .place-details-card {
     -fx-background-color: -color-on-surface;
     -fx-background-radius: 22px;
@@ -167,53 +173,4 @@
 
 .place-details-associated-sections > .place-details-card {
     -fx-max-width: Infinity;
-}
-
-.place-details-associated-sections .trip-card {
-    -fx-min-width: 220px;
-    -fx-pref-width: 220px;
-    -fx-max-width: 220px;
-}
-
-.place-details-route-card {
-    -fx-background-color: -color-on-surface;
-    -fx-background-radius: 18px;
-    -fx-padding: 0 0 14px 0;
-    -fx-effect: dropshadow(gaussian, rgba(12, 12, 13, 0.08), 18, 0, 0, 5);
-}
-
-.place-details-route-media {
-    -fx-padding: 0;
-}
-
-.place-details-route-image {
-    -fx-smooth: true;
-}
-
-.place-details-route-body {
-    -fx-padding: 0 18px 0 18px;
-}
-
-.place-details-route-title {
-    -fx-font-size: 16px;
-    -fx-font-weight: 800;
-    -fx-text-fill: -color-ink;
-}
-
-.place-details-route-places {
-    -fx-font-size: 14px;
-    -fx-text-fill: -color-ink;
-}
-
-.place-details-route-distance-row {
-    -fx-alignment: center-left;
-}
-
-.place-details-route-distance-icon {
-    -fx-icon-color: #8e98a4;
-}
-
-.place-details-route-distance {
-    -fx-font-size: 13px;
-    -fx-text-fill: #8e98a4;
 }

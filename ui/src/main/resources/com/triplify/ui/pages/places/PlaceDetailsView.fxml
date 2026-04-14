@@ -77,7 +77,7 @@
                             <FlowPane fx:id="associatedTripsFlow" styleClass="place-details-grid"/>
                         </VBox>
 
-                        <VBox styleClass="page-card,place-details-card" spacing="16">
+                        <VBox styleClass="place-details-routes-section" spacing="12">
                             <SectionHeaderView fx:id="associatedRoutesHeader"
                                                iconLiteral="fth-map"
                                                title="Associated Routes"/>

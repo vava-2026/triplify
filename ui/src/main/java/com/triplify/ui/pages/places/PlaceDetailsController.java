@@ -19,19 +19,17 @@ import com.triplify.ui.map.InteractiveMap;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.shared.component.detail_actions.view.DetailActionButtonsView;
 import com.triplify.ui.shared.component.empty_state.view.EmptyStateCardView;
+import com.triplify.ui.shared.component.route.view.RouteCardView;
 import com.triplify.ui.shared.component.section_header.view.SectionHeaderView;
 import com.triplify.ui.shared.component.trip.view.TripCardView;
 import com.triplify.ui.shared.toast.ToastService;
 import com.triplify.ui.shared.util.Localization;
 import javafx.fxml.FXML;
-import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -45,17 +43,11 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 
 public class PlaceDetailsController extends SimpleLifecycleAwareController {
 
     private static final String DEFAULT_IMAGE = "/com/triplify/ui/pages/trips/images/one.png";
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("MMM d, yyyy");
-    private static final double ASSOCIATED_TRIP_CARD_WIDTH = 220;
-    private static final double ROUTE_CARD_WIDTH = 256;
-    private static final double ROUTE_CARD_IMAGE_WIDTH = 256;
-    private static final double ROUTE_CARD_IMAGE_HEIGHT = 164;
-
     @FXML private VBox contentContainer;
     @FXML private StackPane heroContainer;
     @FXML private FlowPane topRowFlow;
@@ -199,12 +191,12 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
 
         for (com.triplify.application.usecase.trip.dto.TripResponse trip : trips) {
             String dateRange = formatDateRange(toLocalDate(trip.startedAt()), toLocalDate(trip.endedAt()));
-            TripCardView card = TripCardView.create(toLegacyTrip(trip), dateRange, () -> openTrip(trip, dateRange));
-            Region root = (Region) card.getRoot();
-            root.setMinWidth(ASSOCIATED_TRIP_CARD_WIDTH);
-            root.setPrefWidth(ASSOCIATED_TRIP_CARD_WIDTH);
-            root.setMaxWidth(ASSOCIATED_TRIP_CARD_WIDTH);
-            associatedTripsFlow.getChildren().add(root);
+            TripCardView card = TripCardView.createForDetails(
+                    toLegacyTrip(trip),
+                    dateRange,
+                    () -> openTrip(trip, dateRange)
+            );
+            associatedTripsFlow.getChildren().add((Region) card.getRoot());
         }
     }
 
@@ -216,7 +208,8 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         }
 
         for (RouteResponse route : routes) {
-            associatedRoutesFlow.getChildren().add(buildRouteCard(route));
+            RouteCardView card = RouteCardView.createForDetails(route, null);
+            associatedRoutesFlow.getChildren().add((Region) card.getRoot());
         }
     }
 
@@ -252,57 +245,6 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         return card;
     }
 
-    private VBox buildRouteCard(RouteResponse route) {
-        VBox card = new VBox(14);
-        card.getStyleClass().add("place-details-route-card");
-        card.setMinWidth(ROUTE_CARD_WIDTH);
-        card.setPrefWidth(ROUTE_CARD_WIDTH);
-        card.setMaxWidth(ROUTE_CARD_WIDTH);
-
-        ImageView coverImage = new ImageView(loadImage(route.coverImage() == null || route.coverImage().url() == null
-                ? DEFAULT_IMAGE
-                : route.coverImage().url().toString()));
-        coverImage.setFitWidth(ROUTE_CARD_IMAGE_WIDTH);
-        coverImage.setFitHeight(ROUTE_CARD_IMAGE_HEIGHT);
-        coverImage.setPreserveRatio(false);
-        coverImage.getStyleClass().add("place-details-route-image");
-        installRoundedImageClip(coverImage, 16);
-
-        StackPane mediaPane = new StackPane(coverImage);
-        mediaPane.getStyleClass().add("place-details-route-media");
-        mediaPane.setMinWidth(ROUTE_CARD_IMAGE_WIDTH);
-        mediaPane.setPrefWidth(ROUTE_CARD_IMAGE_WIDTH);
-        mediaPane.setMaxWidth(ROUTE_CARD_IMAGE_WIDTH);
-
-        VBox body = new VBox(8);
-        body.getStyleClass().add("place-details-route-body");
-
-        Label title = new Label(safeText(route.title(), I18n.t("trip.add.fallback.route")));
-        title.getStyleClass().add("place-details-route-title");
-        title.setWrapText(true);
-
-        Label placesLabel = new Label(formatPlacesCount(route.places() == null ? 0 : route.places().size()));
-        placesLabel.getStyleClass().add("place-details-route-places");
-
-        HBox distanceRow = new HBox(6);
-        distanceRow.setAlignment(Pos.CENTER_LEFT);
-        distanceRow.getStyleClass().add("place-details-route-distance-row");
-
-        FontIcon distanceIcon = new FontIcon("fth-navigation");
-        distanceIcon.setIconSize(14);
-        distanceIcon.getStyleClass().add("place-details-route-distance-icon");
-
-        Label distanceLabel = new Label(formatRouteDistance(route.length()));
-        distanceLabel.getStyleClass().add("place-details-route-distance");
-
-        distanceRow.getChildren().addAll(distanceIcon, distanceLabel);
-        body.getChildren().addAll(title, placesLabel, distanceRow);
-        VBox.setVgrow(body, Priority.NEVER);
-
-        card.getChildren().addAll(mediaPane, body);
-        return card;
-    }
-
     private void openTrip(com.triplify.application.usecase.trip.dto.TripResponse trip, String dateRange) {
         RouterArgument args = new RouterArgument();
         args.addArgument("tripId", trip.id());
@@ -326,14 +268,6 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
 
     private String safeText(String value, String fallback) {
         return value == null || value.isBlank() ? fallback : value;
-    }
-
-    private String formatPlacesCount(int count) {
-        return count == 1 ? "1 place" : count + " places";
-    }
-
-    private String formatRouteDistance(double distanceKm) {
-        return String.format(Locale.US, "%.1f kilometers", distanceKm);
     }
 
     private com.triplify.application.response.TripResponse toLegacyTrip(

@@ -25,6 +25,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class TripCardView implements Initializable {
 
+    private static final double DETAILS_CARD_WIDTH = 257;
+
     private static final URL FXML_URL = TripCardView.class.getResource(
             "/com/triplify/ui/shared/component/trip/view/TripCard.fxml"
     );
@@ -140,6 +142,14 @@ public class TripCardView implements Initializable {
         TripCardView view = loader.getController();
         view.setOnOpen(onOpen);
         view.setTrip(trip, dateRange);
+        return view;
+    }
+
+    public static TripCardView createForDetails(TripResponse trip, String dateRange, Runnable onOpen) {
+        TripCardView view = create(trip, dateRange, onOpen);
+        view.root.setMinWidth(DETAILS_CARD_WIDTH);
+        view.root.setPrefWidth(DETAILS_CARD_WIDTH);
+        view.root.setMaxWidth(DETAILS_CARD_WIDTH);
         return view;
     }
 }
