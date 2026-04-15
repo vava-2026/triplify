@@ -1,7 +1,6 @@
 package com.triplify.application.usecase.tag;
 
 import com.google.inject.Inject;
-import com.triplify.application.error.ApplicationError;
 import com.triplify.application.model.ColorTheme;
 import com.triplify.application.security.Authenticated;
 import com.triplify.application.usecase.session.SessionUser;
@@ -32,67 +31,51 @@ public class TagServiceImpl implements TagService {
 
     @Override
     public Result<TagResponse> createTag(CreateTagRequest request) {
-        try {
-            SessionUser user = userSessionContext.getCurrent().orElseThrow();
-            var existing = tagRepository.findByUserIdAndName(user.userId().toString(), request.name());
-            if (existing.isPresent()) {
-                return Result.fail(new TagError.AlreadyExists(request.name()));
-            }
-
-            Tag tag = new Tag(user.userId(), request.name(), toDomainColor(request.color()));
-            tagRepository.create(tag);
-            return Result.ok(toResponse(tag));
-        } catch (Exception ex) {
-            return Result.fail(new ApplicationError.StorageFailure("createTag", ex));
+        SessionUser user = userSessionContext.getCurrent().orElseThrow();
+        var existing = tagRepository.findByUserIdAndName(user.userId().toString(), request.name());
+        if (existing.isPresent()) {
+            return Result.fail(new TagError.AlreadyExists(request.name()));
         }
+
+        Tag tag = new Tag(user.userId(), request.name(), toDomainColor(request.color()));
+        tagRepository.create(tag);
+        return Result.ok(toResponse(tag));
     }
 
     @Override
     public Result<TagResponse> updateTag(UpdateTagRequest request) {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
-        try {
-            var existing = tagRepository.findById(request.id());
-            if (existing.isEmpty() || !existing.get().getUserId().equals(user.userId())) {
-                return Result.fail(new TagError.NotFound(request.id()));
-            }
-
-            var tagWithSameName = tagRepository.findByUserIdAndName(user.userId().toString(), request.name());
-            if (tagWithSameName.isPresent() && !tagWithSameName.get().getId().equals(existing.get().getId())) {
-                return Result.fail(new TagError.AlreadyExists(request.name()));
-            }
-
-            Tag updatedTag = new Tag(existing.get().getId(), user.userId(), request.name(), toDomainColor(request.color()));
-            tagRepository.update(updatedTag);
-            return Result.ok(toResponse(updatedTag));
-        } catch (Exception ex) {
-            return Result.fail(new ApplicationError.StorageFailure("updateTag", ex));
+        var existing = tagRepository.findById(request.id());
+        if (existing.isEmpty() || !existing.get().getUserId().equals(user.userId())) {
+            return Result.fail(new TagError.NotFound(request.id()));
         }
+
+        var tagWithSameName = tagRepository.findByUserIdAndName(user.userId().toString(), request.name());
+        if (tagWithSameName.isPresent() && !tagWithSameName.get().getId().equals(existing.get().getId())) {
+            return Result.fail(new TagError.AlreadyExists(request.name()));
+        }
+
+        Tag updatedTag = new Tag(existing.get().getId(), user.userId(), request.name(), toDomainColor(request.color()));
+        tagRepository.update(updatedTag);
+        return Result.ok(toResponse(updatedTag));
     }
 
     @Override
     public Result<Void> deleteTag(DeleteTagRequest request) {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
-        try {
-            var existing = tagRepository.findById(request.id());
-            if (existing.isEmpty() || !existing.get().getUserId().equals(user.userId())) {
-                return Result.fail(new TagError.NotFound(request.id()));
-            }
-            tagRepository.delete(request.id());
-            return Result.ok();
-        } catch (Exception ex) {
-            return Result.fail(new ApplicationError.StorageFailure("deleteTag", ex));
+        var existing = tagRepository.findById(request.id());
+        if (existing.isEmpty() || !existing.get().getUserId().equals(user.userId())) {
+            return Result.fail(new TagError.NotFound(request.id()));
         }
+        tagRepository.delete(request.id());
+        return Result.ok();
     }
 
     @Override
     public Result<Page<TagResponse>> getTags(GetTagsRequest request) {
-        try {
-            String name = request.filter() == null ? null : request.filter().name();
-            Page<Tag> page = tagRepository.findList(request.pageRequest(), name);
-            return Result.ok(page.map(this::toResponse));
-        } catch (Exception ex) {
-            return Result.fail(new ApplicationError.StorageFailure("getTags", ex));
-        }
+        String name = request.filter() == null ? null : request.filter().name();
+        Page<Tag> page = tagRepository.findList(request.pageRequest(), name);
+        return Result.ok(page.map(this::toResponse));
     }
 
     private TagResponse toResponse(Tag tag) {
