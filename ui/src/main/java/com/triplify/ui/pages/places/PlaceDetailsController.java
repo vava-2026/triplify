@@ -208,7 +208,7 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         }
 
         for (RouteResponse route : routes) {
-            RouteCardView card = RouteCardView.createForDetails(route, null);
+            RouteCardView card = RouteCardView.createForDetails(route, () -> openRoute(route));
             associatedRoutesFlow.getChildren().add((Region) card.getRoot());
         }
     }
@@ -258,6 +258,18 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         args.addArgument("tripCoverUrl", deriveCoverUrl(trip.images()));
         args.addArgument("tripTags", trip.tags() == null ? "" : String.join(",", trip.tags().stream().map(TagResponse::name).toList()));
         getRouter().moveto(RouteIds.ADD_TRIP, args);
+    }
+
+    private void openRoute(RouteResponse route) {
+        if (route == null || route.id() == null || route.id().isBlank()) {
+            return;
+        }
+
+        RouterArgument args = new RouterArgument();
+        args.addArgument("tripId", "0");
+        args.addArgument("tripName", route.title() == null ? "" : route.title());
+        args.addArgument("routeId", route.id());
+        getRouter().moveto(RouteIds.ADD_ROUTE, args);
     }
 
     private String imagePath(PlaceResponse place) {
