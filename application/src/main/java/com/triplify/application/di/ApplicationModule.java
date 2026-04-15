@@ -23,6 +23,8 @@ import com.triplify.application.usecase.map.MapService;
 import com.triplify.application.usecase.map.MapServiceImpl;
 import com.triplify.application.usecase.place.PlaceService;
 import com.triplify.application.usecase.place.PlaceServiceImpl;
+import com.triplify.application.usecase.place.details.PlaceDetailsService;
+import com.triplify.application.usecase.place.details.PlaceDetailsServiceImpl;
 import com.triplify.application.usecase.route.RouteService;
 import com.triplify.application.usecase.route.RouteServiceImpl;
 import com.triplify.application.usecase.story.StoryService;
@@ -55,6 +57,7 @@ public class ApplicationModule extends AbstractModule {
         bindValidated(ImageService.class, ImageServiceImpl.class);
         bindValidated(MapService.class, MapServiceImpl.class);
         bindValidated(PlaceService.class, PlaceServiceImpl.class);
+        bindValidated(PlaceDetailsService.class, PlaceDetailsServiceImpl.class);
         bindValidated(RouteService.class, RouteServiceImpl.class);
         bindValidated(StoryService.class, StoryServiceImpl.class);
         bindValidated(TagService.class, TagServiceImpl.class);

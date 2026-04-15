@@ -3,7 +3,6 @@ package com.triplify.infrastructure.repository.persistence;
 import com.google.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sqlite.SQLiteConnection;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -79,7 +78,11 @@ public class DatabaseMigrationInitializer {
         String sqlScript = readSql(fileName);
 
         try (Statement stmt = connection.createStatement()) {
-            stmt.executeUpdate(sqlScript);
+            for (String statement : splitStatements(sqlScript)) {
+                if (!statement.isBlank()) {
+                    stmt.execute(statement);
+                }
+            }
         } catch (SQLException e) {
             logger.error("SQL execution failed for file: {}", fileName, e);
             throw new RuntimeException("Could not execute SQL file: " + fileName, e);

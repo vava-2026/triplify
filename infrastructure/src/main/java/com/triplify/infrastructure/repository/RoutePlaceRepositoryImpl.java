@@ -112,6 +112,30 @@ public class RoutePlaceRepositoryImpl implements RoutePlaceRepository {
     }
 
     @Override
+    public List<RoutePlace> findByPlaceId(String placeId) {
+        String sql = ROUTE_PLACE_WITH_RELATIONS_SELECT + """
+             WHERE rp.place_id = ?
+             ORDER BY rp.updated_at DESC, rp.created_at DESC
+            """;
+
+        try (Connection conn = SQLiteConnectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, placeId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                List<RoutePlace> routePlaces = new ArrayList<>();
+                while (rs.next()) {
+                    routePlaces.add(mapRoutePlaceWithRelations(rs));
+                }
+                return routePlaces;
+            }
+        } catch (SQLException e) {
+            log.error("Error fetching RoutePlaces for placeId='{}'", placeId, e);
+            throw new RuntimeException("Database error while finding route places by place", e);
+        }
+    }
+
+    @Override
     public void create(RoutePlace routePlace) {
         String sql = """
             INSERT INTO route_places (id, route_id, place_id, "order")

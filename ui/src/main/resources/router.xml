@@ -13,6 +13,22 @@
         <argument name="tripName" type="string" required="true"/>
     </arguments>
 
+    <arguments id="addPlaceArgs">
+        <argument name="tripId" type="string" required="true"/>
+        <argument name="tripName" type="string" required="true"/>
+    </arguments>
+
+    <arguments id="addRouteArgs">
+        <argument name="tripId" type="string" required="true"/>
+        <argument name="tripName" type="string" required="true"/>
+        <argument name="routeId" type="string" required="false"/>
+        <argument name="editorReturnTarget" type="string" required="false"/>
+    </arguments>
+
+    <arguments id="placeDetailsArgs">
+        <argument name="placeId" type="string" required="true"/>
+    </arguments>
+
     <destination id="start"
                  fxml="com/triplify/ui/pages/start/StartPageView.fxml"
                  singleTop="true"/>
