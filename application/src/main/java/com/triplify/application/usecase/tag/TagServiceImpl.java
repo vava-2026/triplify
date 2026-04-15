@@ -51,9 +51,14 @@ public class TagServiceImpl implements TagService {
     public Result<TagResponse> updateTag(UpdateTagRequest request) {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
         try {
-            var existing = tagRepository.findByUserIdAndName(user.userId().toString(), request.name());
-            if (existing.isEmpty()) {
+            var existing = tagRepository.findById(request.id());
+            if (existing.isEmpty() || !existing.get().getUserId().equals(user.userId())) {
                 return Result.fail(new TagError.NotFound(request.id()));
+            }
+
+            var tagWithSameName = tagRepository.findByUserIdAndName(user.userId().toString(), request.name());
+            if (tagWithSameName.isPresent() && !tagWithSameName.get().getId().equals(existing.get().getId())) {
+                return Result.fail(new TagError.AlreadyExists(request.name()));
             }
 
             Tag updatedTag = new Tag(existing.get().getId(), user.userId(), request.name(), toDomainColor(request.color()));
