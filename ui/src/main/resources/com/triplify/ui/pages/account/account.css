@@ -1,6 +1,6 @@
 /* Header */
 .section-header { -fx-padding: 1 0 4 0;}
-.section-header .label{ -fx-font: -font-family-base; -fx-font-size: 20px; -fx-font-weight: 700; -fx-text-fill: -color-ink; }
+.section-header .label{ -fx-font-family: -font-family-base; -fx-font-size: 20px; -fx-font-weight: 700; -fx-text-fill: -color-ink; }
 .header-icon    { -fx-icon-color: -color-primary-dark;}
 
 /* Main cards */
@@ -56,7 +56,7 @@
 
 .badges-grid {
     -fx-padding: 10;
-    -fx-hgap: 15;
-    -fx-vgap: 15;
+    -fx-hgap: 20;
+    -fx-vgap: 20;
     -fx-alignment: center;
 }

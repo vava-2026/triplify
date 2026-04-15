@@ -3,16 +3,19 @@ package com.triplify.ui.pages.account;
 import com.google.inject.Inject;
 import com.triplify.application.usecase.auth.AuthService;
 import com.triplify.application.usecase.auth.dto.SignUpRequest;
+import com.triplify.application.usecase.badge.BadgeService;
+import com.triplify.application.usecase.badge.dto.BadgeResponse;
+import com.triplify.application.usecase.badge.dto.GetBadgesRequest;
+import com.triplify.application.usecase.image.dto.ImageResponse;
 import com.triplify.application.usecase.session.SessionUser;
 import com.triplify.application.usecase.session.UserSessionContext;
 import com.triplify.domain.model.enums.RoleEnum;
 import com.triplify.domain.result.Result;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
+import com.triplify.ui.routing.GuardedNavigator;
 import com.triplify.ui.routing.RouteIds;
-import com.triplify.ui.routing.TriplifyRouterContext;
-import com.triplify.ui.shared.component.badge.model.Badge;
-import com.triplify.ui.shared.component.badge.model.BadgeGroup;
+import com.triplify.ui.shared.component.badge.viewmodel.BadgeViewModel;
 import com.triplify.ui.shared.component.badge.view.BadgeView;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.input_item.PasswordItem;
@@ -27,19 +30,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 
+import java.net.URL;
+import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 
 public class AccountController extends SimpleLifecycleAwareController {
 
     private static final Logger log = LoggerFactory.getLogger(AccountController.class);
+    private static final int BADGE_COLUMNS = 5;
 
     @FXML private VBox editFormContainer;
     @FXML private GridPane badgesGrid;
 
     @Inject private ToastService toast;
     @Inject private AuthService authService;
+    @Inject private BadgeService badgeService;
     @Inject private UserSessionContext userSessionContext;
     @Inject private ErrorHandler errorHandler;
+    @Inject private GuardedNavigator guardedNavigator;
 
     private InputItem usernameInput;
     private InputItem emailInput;
@@ -48,15 +57,83 @@ public class AccountController extends SimpleLifecycleAwareController {
     @FXML
     public void initialize() {
         render();
-
-        BadgeView badgeView = new BadgeView();
-        badgeView.update(new Badge("Super Traveler", "Awarded for completing 10 trips", null, BadgeGroup.RED, 1, 10, 5, false));
-        BadgeView badgeView2 = new BadgeView();
-        badgeView2.update(new Badge("Super Traveler2", "Awarded for completing 10 trips", null, BadgeGroup.RED, 1, 10, 6, true));
-        badgesGrid.add(badgeView, 0, 0);
-        badgesGrid.add(badgeView2, 1, 0);
+        loadBadges();
     }
-  
+
+    @Override
+    public void onLifecycleShow() {
+        loadBadges();
+    }
+
+    private void loadBadges() {
+        badgesGrid.getChildren().clear();
+        try {
+            Result<List<BadgeResponse>> result = badgeService.getBadges(new GetBadgesRequest(null));
+            result.onSuccess(this::renderBadges);
+            result.onFailure(error -> {
+                log.warn("Failed to load badges for account page: {}", error.message());
+                errorHandler.handle(error);
+            });
+        } catch (Exception ex) {
+            log.error("Unexpected error while loading badges for account page", ex);
+        }
+    }
+
+    private void renderBadges(List<BadgeResponse> badges) {
+        badgesGrid.getChildren().clear();
+
+        for (int i = 0; i < badges.size(); i++) {
+            BadgeResponse response = badges.get(i);
+            BadgeView badgeView = new BadgeView();
+            badgeView.update(toUiBadge(response));
+
+            int col = i % BADGE_COLUMNS;
+            int row = i / BADGE_COLUMNS;
+            badgesGrid.add(badgeView, col, row);
+        }
+    }
+
+    private BadgeViewModel toUiBadge(BadgeResponse response) {
+        int requiredValue = response.requiredValue();
+        int currentValue = 100;
+        boolean unlocked = requiredValue <= 100;
+
+        return new BadgeViewModel(
+                response.name(),
+                response.nameSk(),
+                response.description(),
+                response.descriptionSk(),
+                resolveImageUrl(response.image()),
+                response.group(),
+                response.level(),
+                requiredValue,
+                currentValue,
+                unlocked
+        );
+    }
+
+
+    private String resolveImageUrl(ImageResponse image) {
+        if (image == null || image.url() == null) {
+            return null;
+        }
+
+        String rawPath = image.url().toString().replace("\\", "/");
+        String fileName = rawPath.substring(rawPath.lastIndexOf('/') + 1);
+
+        URL classpathUrl = getClass().getResource("/com/triplify/ui/shared/component/badge/images/" + fileName);
+        if (classpathUrl != null) {
+            return classpathUrl.toExternalForm();
+        }
+
+        Path path = image.url();
+        if (path.isAbsolute()) {
+            return path.toUri().toString();
+        }
+
+        return rawPath;
+    }
+
     private void render() {
         editFormContainer.getChildren().clear();
         if (userSessionContext.isLoggedIn()) {
@@ -66,9 +143,7 @@ public class AccountController extends SimpleLifecycleAwareController {
             logOffButton.setOnAction(e -> {
                 authService.logout();
                 toast.success("Logged off successfully");
-                TriplifyRouterContext context = (TriplifyRouterContext) getRouter().getContext();
-                context.setSelectedMenuItem(null);
-                getRouter().moveto(RouteIds.START);
+                guardedNavigator.goTo(getRouter(), RouteIds.START);
                 render();
             });
             editFormContainer.getChildren().addAll(usernameLabel, logOffButton);
@@ -83,6 +158,11 @@ public class AccountController extends SimpleLifecycleAwareController {
 
     @FXML
     private void onSave() {
+        if (usernameInput == null || emailInput == null || passwordInput == null) {
+            log.warn("Ignoring save action because account edit inputs are not initialized for current state");
+            return;
+        }
+
         clearErrors();
 
         String rawPassword = passwordInput.getText();
@@ -114,8 +194,14 @@ public class AccountController extends SimpleLifecycleAwareController {
     }
 
     private void clearErrors() {
-        usernameInput.clearError();
-        emailInput.clearError();
-        passwordInput.clearError();
+        if (usernameInput != null) {
+            usernameInput.clearError();
+        }
+        if (emailInput != null) {
+            emailInput.clearError();
+        }
+        if (passwordInput != null) {
+            passwordInput.clearError();
+        }
     }
 }

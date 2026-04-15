@@ -2,6 +2,7 @@ package com.triplify.ui.pages.start;
 
 import com.google.inject.Inject;
 import com.triplify.ui.i18n.I18n;
+import com.triplify.ui.routing.GuardedNavigator;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.component.button.model.ButtonVariant;
@@ -25,6 +26,7 @@ public class StartPageController extends SimpleLifecycleAwareController implemen
     private static final Logger log = LoggerFactory.getLogger(StartPageController.class);
 
     @Inject private FxmlLoaderHelper fxmlLoader;
+    @Inject private GuardedNavigator guardedNavigator;
 
     @FXML private Label heroTitleLine1;
     @FXML private Label heroTitleLine2;
@@ -47,7 +49,7 @@ public class StartPageController extends SimpleLifecycleAwareController implemen
                 .labelBinding(Bindings.createStringBinding(() -> I18n.t("start.login"), I18n.bundleProperty()))
                 .onAction(() -> {
                     log.debug("Log In clicked");
-                    getRouter().moveto(RouteIds.LOGIN);
+                    guardedNavigator.goTo(getRouter(), RouteIds.LOGIN);
                 })
                 .build();
 
@@ -56,7 +58,7 @@ public class StartPageController extends SimpleLifecycleAwareController implemen
                 .labelBinding(Bindings.createStringBinding(() -> I18n.t("start.signUp"), I18n.bundleProperty()))
                 .onAction(() -> {
                     log.debug("Sign Up clicked");
-                    getRouter().moveto(RouteIds.SIGN_UP);
+                    guardedNavigator.goTo(getRouter(), RouteIds.SIGN_UP);
                 })
                 .build();
 

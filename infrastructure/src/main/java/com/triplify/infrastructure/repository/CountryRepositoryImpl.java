@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -23,7 +24,7 @@ public class CountryRepositoryImpl implements CountryRepository {
     private static final Logger log = LoggerFactory.getLogger(CountryRepositoryImpl.class);
 
     @Override
-    public java.util.Optional<com.triplify.domain.model.Country> findById(String id) {
+    public Optional<Country> findById(String id) {
         String sql = "SELECT id, created_by, name, name_sk, emoji_unicode, is_available " +
                 "FROM countries WHERE id = ? LIMIT 1";
 
@@ -43,12 +44,16 @@ public class CountryRepositoryImpl implements CountryRepository {
         return Optional.empty();
     }
 
+    @Override
     public Page<Country> findList(PageRequest page, CountryFilter filter) {
+        String nameFilter = filter.name() == null ? null : filter.name().trim();
+        boolean hasNameFilter = nameFilter != null && !nameFilter.isBlank();
+
         String sql = "SELECT id, created_by, name, name_sk, emoji_unicode, is_available " +
                 "FROM countries " +
                 "WHERE 1=1 ";
 
-        if  (filter.name() != null) {
+        if (hasNameFilter) {
             sql += "AND (name LIKE ? OR name_sk LIKE ?) ";
         }
 
@@ -66,13 +71,13 @@ public class CountryRepositoryImpl implements CountryRepository {
              PreparedStatement ps = conn.prepareStatement(sql)) {
             int paramIndex = 1;
 
-            if (filter.name() != null) {
-                // TODO: do we want it here, or should the user specify '%' themselves?
-                ps.setString(paramIndex++, filter.name() + "%");
-                ps.setString(paramIndex++, filter.name() + "%");
+            if (hasNameFilter) {
+                ps.setString(paramIndex++, nameFilter + "%");
+                ps.setString(paramIndex++, nameFilter + "%");
             }
 
-            ps.setInt(paramIndex++, page.size());
+            int fetchLimit = page.size() + 1;
+            ps.setInt(paramIndex++, fetchLimit);
             ps.setInt(paramIndex++, page.offset());
 
             try (ResultSet rs = ps.executeQuery()) {
@@ -80,11 +85,15 @@ public class CountryRepositoryImpl implements CountryRepository {
                 while (rs.next()) {
                     countries.add(mapRow(rs));
                 }
-                return Page.of(countries, page, countries.size());
+                boolean hasNext = countries.size() > page.size();
+                if (hasNext) {
+                    countries.remove(countries.size() - 1);
+                }
+                return Page.of(countries, page, hasNext);
             }
 
         }
-        catch (Exception e) {
+        catch (SQLException e) {
             log.error("Failed to find countries with filter name='{}'", filter.name(), e);
             throw new RuntimeException("Database error while finding countries", e);
         }
@@ -133,7 +142,11 @@ public class CountryRepositoryImpl implements CountryRepository {
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, country.getId().toString());
-            ps.setString(2, country.getCreatedById().toString());
+            if (country.getCreatedById() == null) {
+                ps.setNull(2, Types.VARCHAR);
+            } else {
+                ps.setString(2, country.getCreatedById().toString());
+            }
             ps.setString(3, country.getName());
             ps.setString(4, country.getNameSk());
             ps.setString(5, country.getEmojiUnicode());
@@ -157,7 +170,11 @@ public class CountryRepositoryImpl implements CountryRepository {
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, country.getCreatedById().toString());
+            if (country.getCreatedById() == null) {
+                ps.setNull(1, Types.VARCHAR);
+            } else {
+                ps.setString(1, country.getCreatedById().toString());
+            }
             ps.setString(2, country.getName());
             ps.setString(3, country.getNameSk());
             ps.setString(4, country.getEmojiUnicode());
@@ -176,7 +193,8 @@ public class CountryRepositoryImpl implements CountryRepository {
 
     private Country mapRow(ResultSet rs) throws SQLException {
         UUID id = UUID.fromString(rs.getString("id"));
-        UUID createdById = UUID.fromString(rs.getString("created_by"));
+        String createdByRaw = rs.getString("created_by");
+        UUID createdById = createdByRaw == null ? null : UUID.fromString(createdByRaw);
         String name = rs.getString("name");
         String nameSk = rs.getString("name_sk");
         String emojiUnicode = rs.getString("emoji_unicode");

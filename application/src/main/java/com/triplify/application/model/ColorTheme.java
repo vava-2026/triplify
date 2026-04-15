@@ -4,12 +4,24 @@ import com.triplify.domain.model.enums.ColorEnum;
 
 public enum ColorTheme {
 
+    GRAY("app-theme-gray"),
+    RED_DARK("app-theme-red-dark"),
     RED("app-theme-red"),
+    ROSE("app-theme-rose"),
     ORANGE("app-theme-orange"),
+    AMBER("app-theme-amber"),
     YELLOW("app-theme-yellow"),
+    GOLDEN_BROWN("app-theme-golden-brown"),
+    LIME("app-theme-lime"),
     GREEN("app-theme-green"),
+    INDIGO("app-theme-indigo"),
+    VIOLET("app-theme-violet"),
+    STEEL_BLUE("app-theme-steel-blue"),
     TEAL("app-theme-teal"),
     BLUE("app-theme-blue"),
+    CYAN("app-theme-cyan"),
+    SAGE("app-theme-sage"),
+    BROWN("app-theme-brown"),
     PURPLE("app-theme-purple"),
     PINK("app-theme-pink");
 
@@ -24,16 +36,11 @@ public enum ColorTheme {
     }
 
     public static ColorTheme from(ColorEnum color) {
-        return switch (color) {
-            case RED -> RED;
-            case ORANGE -> ORANGE;
-            case YELLOW -> YELLOW;
-            case GREEN -> GREEN;
-            case TEAL -> TEAL;
-            case BLUE -> BLUE;
-            case PURPLE -> PURPLE;
-            case PINK -> PINK;
-        };
+        return color == null ? GRAY : ColorTheme.valueOf(color.name());
+    }
+
+    public ColorEnum toColorEnum() {
+        return ColorEnum.valueOf(name());
     }
 }
 

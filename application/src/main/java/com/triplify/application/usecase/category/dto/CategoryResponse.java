@@ -1,5 +1,7 @@
 package com.triplify.application.usecase.category.dto;
 
+import com.triplify.application.localization.LocalizedDescription;
+import com.triplify.application.localization.LocalizedName;
 import com.triplify.application.model.ColorTheme;
 
 public record CategoryResponse(
@@ -11,5 +13,5 @@ public record CategoryResponse(
         String descriptionSk,
         String emojiUnicode,
         ColorTheme color
-) {
+) implements LocalizedName, LocalizedDescription {
 }

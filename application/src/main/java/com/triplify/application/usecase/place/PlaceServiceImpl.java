@@ -8,6 +8,7 @@ import com.triplify.application.usecase.country.dto.CountryResponse;
 import com.triplify.application.usecase.country.dto.GetCountryByIdRequest;
 import com.triplify.application.usecase.image.ImageService;
 import com.triplify.application.usecase.image.dto.AddImageRequest;
+import com.triplify.application.usecase.image.dto.DeleteImageRequest;
 import com.triplify.application.usecase.image.dto.GetImageByIdRequest;
 import com.triplify.application.usecase.image.dto.ImageResponse;
 import com.triplify.application.usecase.place.dto.AddPlaceRequest;
@@ -51,14 +52,14 @@ public class PlaceServiceImpl implements PlaceService {
     public Result<PlaceResponse> addPlace(AddPlaceRequest request) {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
 
-        CountryResponse country = countryService.getCountryById(new GetCountryByIdRequest(request.countryId())).getValue();
+        CountryResponse countryResponse = countryService.getCountryById(new GetCountryByIdRequest(request.countryId())).orThrow();
         ImageResponse image = null;
         if (request.coverImage() != null) {
-            image = imageService.addImage(new AddImageRequest(request.coverImage(), DEFAULT_IMAGE_DESCRIPTION + request.title())).getValue();
+            image = imageService.addImage(new AddImageRequest(request.coverImage(), DEFAULT_IMAGE_DESCRIPTION + request.title())).orThrow();
         }
 
         UUID imageId = image != null ? UUID.fromString(image.id()) : null;
-        Place place = new Place(user.userId(), UUID.fromString(country.id()), imageId, request.title(), request.description(), request.latitude(), request.longitude());
+        Place place = new Place(user.userId(), UUID.fromString(countryResponse.id()), imageId, request.title(), request.description(), request.latitude(), request.longitude());
         placeRepository.create(place);
         log.info("Added new place with id='{}', title='{}' by userId='{}'", place.getId(), place.getTitle(), user.userId());
 
@@ -69,26 +70,33 @@ public class PlaceServiceImpl implements PlaceService {
     public Result<PlaceResponse> updatePlace(UpdatePlaceRequest request) {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
 
-        CountryResponse country = countryService.getCountryById(new GetCountryByIdRequest(request.countryId())).getValue();
-        ImageResponse image = null;
-        if (request.coverImage() != null) {
-            image = imageService.addImage(new AddImageRequest(request.coverImage(), DEFAULT_IMAGE_DESCRIPTION + request.title())).getValue();
-        }
-
         var oldRes = placeRepository.findById(request.id());
         if (oldRes.isEmpty()) {
             log.warn("Attempt to update non-existing place with id='{}' by userId='{}'", request.id(), user.userId());
             return Result.fail(new PlaceError.NotFound("Place with id '{}" + request.id() + "' not found"));
         }
-
         Place old = oldRes.get();
+
         if (!old.getUserId().equals(user.userId())) {
             log.warn("Attempted to update place not created by userId='{}' by userId='{}', placeTitle='{}'", old.getUserId(), user.userId(), old.getTitle());
             return Result.fail(new PlaceError.NotOwner("Place with id '" + request.id() + "' is not owned by user"));
         }
 
-        UUID imageId = image != null ? UUID.fromString(image.id()) : null;
-        Place place = new Place(UUID.fromString(request.id()), user.userId(), UUID.fromString(country.id()), imageId, request.title(), request.description(), request.latitude(), request.longitude());
+        CountryResponse countryResponse = countryService.getCountryById(new GetCountryByIdRequest(request.countryId())).orThrow();
+        UUID imageId = null;
+        if (old.getCoverImage() != null && !old.getCoverImage().getUrl().equals(request.coverImage())){
+            imageService.deleteImage(new DeleteImageRequest(old.getCoverImage().getId().toString())).orThrow();
+
+            if (request.coverImage() != null) {
+                var imageResult = imageService.addImage(new AddImageRequest(request.coverImage(), DEFAULT_IMAGE_DESCRIPTION + request.title()));
+                imageId = UUID.fromString(imageResult.orThrow().id());
+            }
+            else {
+                imageId = old.getCoverImage().getId();
+            }
+        }
+
+        Place place = new Place(UUID.fromString(request.id()), user.userId(), UUID.fromString(countryResponse.id()), imageId, request.title(), request.description(), request.latitude(), request.longitude());
         placeRepository.update(place);
 
         log.info("Updated new place with id='{}', title='{}' by userId='{}'", place.getId(), place.getTitle(), user.userId());
@@ -122,29 +130,13 @@ public class PlaceServiceImpl implements PlaceService {
             log.warn("Attempt to get non-existing place with id='{}'", request.id());
             return Result.fail(new PlaceError.NotFound("Place with id '" + request.id() + "' not found"));
         }
-        Place place = placeRes.get();
-
-        CountryResponse country = CountryResponse.from(place.getCountry());
-        ImageResponse image = null;
-        if (place.getCoverImageId() != null) {
-            image = ImageResponse.from(place.getCoverImage());
-        }
-        return Result.ok(PlaceResponse.from(place));
+        return Result.ok(PlaceResponse.from(placeRes.get()));
     }
 
     @Override
     public Result<Page<PlaceResponse>> getPlaces(GetPlacesRequest request) {
         Page<Place> placesPage = placeRepository.findList(request.pageRequest(), request.filter());
-
-        Page<PlaceResponse> responsePage = placesPage.map(place -> {
-            CountryResponse country = CountryResponse.from(place.getCountry());
-            ImageResponse image = null;
-            if (place.getCoverImageId() != null) {
-                image = ImageResponse.from(place.getCoverImage());
-            }
-            return PlaceResponse.from(place);
-        });
-
+        Page<PlaceResponse> responsePage = placesPage.map(PlaceResponse::from);
         return Result.ok(responsePage);
     }
 }

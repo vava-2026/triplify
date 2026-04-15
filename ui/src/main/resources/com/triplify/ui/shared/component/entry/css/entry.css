@@ -3,6 +3,7 @@
     -fx-max-width: Infinity;
     -fx-max-height: Infinity;
     -fx-pref-width: 0;
+    -app-entry-theme-fg: -color-primary;
 }
 
 .app-entry-emoji {
@@ -11,68 +12,32 @@
 }
 
 .app-entry-label {
-    -fx-text-fill: -color-primary;
+    -fx-text-fill: -app-entry-theme-fg;
 }
 
 .app-entry-icon {
     -fx-icon-size: 14;
-    -fx-icon-color: -color-primary;
+    -fx-icon-color: -app-entry-theme-fg;
 }
 
-
-.app-theme-red .app-entry-label {
-    -fx-text-fill: -color-theme-red;
-}
-.app-theme-red .app-entry-icon {
-    -fx-icon-color: -color-theme-red;
-}
-
-.app-theme-orange .app-entry-label {
-    -fx-text-fill: -color-theme-orange;
-}
-.app-theme-orange .app-entry-icon {
-    -fx-icon-color: -color-theme-orange;
-}
-
-.app-theme-yellow .app-entry-label {
-    -fx-text-fill: -color-theme-yellow;
-}
-.app-theme-yellow .app-entry-icon {
-    -fx-icon-color: -color-theme-yellow;
-}
-
-.app-theme-green .app-entry-label {
-    -fx-text-fill: -color-theme-green;
-}
-.app-theme-green .app-entry-icon {
-    -fx-icon-color: -color-theme-green;
-}
-
-.app-theme-teal .app-entry-label {
-    -fx-text-fill: -color-theme-teal;
-}
-.app-theme-teal .app-entry-icon {
-    -fx-icon-color: -color-theme-teal;
-}
-
-.app-theme-blue .app-entry-label {
-    -fx-text-fill: -color-theme-blue;
-}
-.app-theme-blue .app-entry-icon {
-    -fx-icon-color: -color-theme-blue;
-}
-
-.app-theme-purple .app-entry-label {
-    -fx-text-fill: -color-theme-purple;
-}
-.app-theme-purple .app-entry-icon {
-    -fx-icon-color: -color-theme-purple;
-}
-
-.app-theme-pink .app-entry-label {
-    -fx-text-fill: -color-theme-pink;
-}
-.app-theme-pink .app-entry-icon {
-    -fx-icon-color: -color-theme-pink;
-}
+.app-entry.app-theme-red-dark { -app-entry-theme-fg: -color-theme-red-dark-fg; }
+.app-entry.app-theme-red { -app-entry-theme-fg: -color-theme-red-fg; }
+.app-entry.app-theme-rose { -app-entry-theme-fg: -color-theme-rose-fg; }
+.app-entry.app-theme-orange { -app-entry-theme-fg: -color-theme-orange-fg; }
+.app-entry.app-theme-amber { -app-entry-theme-fg: -color-theme-amber-fg; }
+.app-entry.app-theme-yellow { -app-entry-theme-fg: -color-theme-yellow-fg; }
+.app-entry.app-theme-golden-brown { -app-entry-theme-fg: -color-theme-golden-brown-fg; }
+.app-entry.app-theme-lime { -app-entry-theme-fg: -color-theme-lime-fg; }
+.app-entry.app-theme-indigo { -app-entry-theme-fg: -color-theme-indigo-fg; }
+.app-entry.app-theme-violet { -app-entry-theme-fg: -color-theme-violet-fg; }
+.app-entry.app-theme-steel-blue { -app-entry-theme-fg: -color-theme-steel-blue-fg; }
+.app-entry.app-theme-blue { -app-entry-theme-fg: -color-theme-blue-fg; }
+.app-entry.app-theme-cyan { -app-entry-theme-fg: -color-theme-cyan-fg; }
+.app-entry.app-theme-green { -app-entry-theme-fg: -color-theme-green-fg; }
+.app-entry.app-theme-teal { -app-entry-theme-fg: -color-theme-teal-fg; }
+.app-entry.app-theme-sage { -app-entry-theme-fg: -color-theme-sage-fg; }
+.app-entry.app-theme-brown { -app-entry-theme-fg: -color-theme-brown-fg; }
+.app-entry.app-theme-gray { -app-entry-theme-fg: -color-theme-gray-fg; }
+.app-entry.app-theme-purple { -app-entry-theme-fg: -color-theme-violet-fg; }
+.app-entry.app-theme-pink { -app-entry-theme-fg: -color-theme-rose-fg; }
 

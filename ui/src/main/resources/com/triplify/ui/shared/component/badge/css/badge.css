@@ -6,9 +6,15 @@
 
 .badge-card {
     -fx-background-color: -color-surface;
-    -fx-background-radius: 12;
+    -fx-background-radius: 10;
     -fx-border-width: 0;
-    -fx-padding: 16 12 16 12;
+    -fx-padding: 10 30 10 30;
+    -fx-min-width: 160;
+    -fx-pref-width: 160;
+    -fx-max-width: 160;
+    -fx-min-height: 180;
+    -fx-pref-height: 180;
+    -fx-max-height: 180;
 }
 
 .badge-card.badge-locked {
@@ -17,8 +23,8 @@
 }
 
 .badge-image {
-    -fx-fit-width: 80px;
-    -fx-fit-height: 80px;
+    -fx-fit-width: 100px;
+    -fx-fit-height: 100px;
     -fx-background-color: transparent;
 }
 
@@ -32,7 +38,9 @@
     -fx-font-family: "Plus Jakarta Sans";
     -fx-font-weight: bold;
     -fx-font-size: 14px;
-    -fx-line-height: 20px;
+    -fx-min-height: 20px;
+    -fx-max-height: 40px;
+    -fx-line-spacing: 0;
     -fx-text-alignment: center;
     -fx-alignment: center;
 }
@@ -46,7 +54,10 @@
     -fx-font-family: "Plus Jakarta Sans";
     -fx-font-weight: normal;
     -fx-font-size: 10px;
-    -fx-line-height: 20px;
+    -fx-min-height: 20px;
+    -fx-pref-height: 20px;
+    -fx-max-height: 20px;
+    -fx-line-spacing: 0;
     -fx-text-alignment: center;
     -fx-alignment: center;
 }

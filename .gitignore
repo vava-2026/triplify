@@ -6,6 +6,7 @@ build/
 .kotlin
 *.log
 **/logs/**
+*.env
 ### IntelliJ IDEA ###
 .idea/workspace.xml
 .idea/modules.xml

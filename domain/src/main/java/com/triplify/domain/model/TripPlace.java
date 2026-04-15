@@ -1,5 +1,6 @@
 package com.triplify.domain.model;
 
+import com.triplify.domain.model.enums.TripPlaceSourceType;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,6 +28,16 @@ public class TripPlace {
     @Setter(AccessLevel.PRIVATE)
     private Place place;
 
+    @NonNull
+    @Setter(AccessLevel.PRIVATE)
+    private TripPlaceSourceType sourceType;
+
+    @Setter(AccessLevel.PRIVATE)
+    private UUID tripRouteId;
+
+    @Setter(AccessLevel.PRIVATE)
+    private UUID routePlaceId;
+
     @Setter(AccessLevel.PRIVATE)
     private Instant visitDate;
 
@@ -41,6 +52,18 @@ public class TripPlace {
         this.id = UUID.randomUUID();
         this.tripId = tripId;
         this.placeId = placeId;
+        this.sourceType = TripPlaceSourceType.MANUAL;
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
+    }
+
+    public TripPlace(@NonNull UUID tripId, @NonNull UUID placeId, @NonNull UUID tripRouteId, @NonNull UUID routePlaceId) {
+        this.id = UUID.randomUUID();
+        this.tripId = tripId;
+        this.placeId = placeId;
+        this.sourceType = TripPlaceSourceType.ROUTE;
+        this.tripRouteId = tripRouteId;
+        this.routePlaceId = routePlaceId;
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
     }
@@ -62,5 +85,13 @@ public class TripPlace {
             throw new IllegalArgumentException("place id mismatch. Expected: " + placeId + ", got: " + place.getId());
         }
         setPlace(place);
+    }
+
+    public boolean isManual() {
+        return sourceType == TripPlaceSourceType.MANUAL;
+    }
+
+    public boolean isRouteDerived() {
+        return sourceType == TripPlaceSourceType.ROUTE;
     }
 }

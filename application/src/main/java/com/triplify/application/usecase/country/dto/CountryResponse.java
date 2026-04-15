@@ -1,5 +1,6 @@
 package com.triplify.application.usecase.country.dto;
 
+import com.triplify.application.localization.LocalizedName;
 import com.triplify.domain.model.Country;
 
 public record CountryResponse(
@@ -9,11 +10,11 @@ public record CountryResponse(
         String nameSk,
         String emojiUnicode,
         boolean isAvailable
-) {
+) implements LocalizedName {
     public static CountryResponse from(Country country) {
         return new CountryResponse(
                 country.getId().toString(),
-                country.getCreatedById().toString(),
+                country.getCreatedById() == null ? null : country.getCreatedById().toString(),
                 country.getName(),
                 country.getNameSk(),
                 country.getEmojiUnicode(),

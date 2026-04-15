@@ -3,8 +3,13 @@
 <router xmlns="https://github.com/rahulstech/javafx-routing"
         home="start">
 
-    <arguments id="tripDetailsArgs">
-        <argument name="tripId" type="int" required="true"/>
+    <arguments id="addTripArgs">
+        <argument name="tripId" type="string" required="true"/>
+        <argument name="tripName" type="string" required="true"/>
+    </arguments>
+
+    <arguments id="addPlaceArgs">
+        <argument name="tripId" type="string" required="true"/>
         <argument name="tripName" type="string" required="true"/>
     </arguments>
 
@@ -24,22 +29,70 @@
                  fxml="com/triplify/ui/pages/map/MapView.fxml"
                  singleTop="true"/>
 
+    <destination id="my_places"
+                 fxml="com/triplify/ui/pages/placeholder/PlaceholderPageView.fxml"
+                 singleTop="true"/>
+
+    <destination id="my_routes"
+                 fxml="com/triplify/ui/pages/placeholder/PlaceholderPageView.fxml"
+                 singleTop="true"/>
+
     <destination id="my_trips"
                  fxml="com/triplify/ui/pages/trips/MyTripsView.fxml"
                  singleTop="true"/>
 
+    <destination id="my_badges"
+                 fxml="com/triplify/ui/pages/placeholder/PlaceholderPageView.fxml"
+                 singleTop="true"/>
+
+    <destination id="my_statistics"
+                 fxml="com/triplify/ui/pages/account/StatisticsView.fxml"
+                 singleTop="true"/>
+
     <destination id="trip_details"
-                 fxml="com/triplify/ui/pages/trips/TripDetailsView.fxml"
-                 arguments="tripDetailsArgs"
+                 fxml="com/triplify/ui/pages/placeholder/PlaceholderPageView.fxml"
+                 singleTop="true"/>
+    <destination id="add_trip"
+                 fxml="com/triplify/ui/pages/trips/AddTripView.fxml"
+                 arguments="addTripArgs"
                  singleTop="true"/>
 
     <destination id="add_place"
                  fxml="com/triplify/ui/pages/places/AddPlaceView.fxml"
-                 arguments="tripDetailsArgs"
+                 arguments="addPlaceArgs"
+                 singleTop="true"/>
+
+    <destination id="add_route"
+                 fxml="com/triplify/ui/pages/routes/AddRouteView.fxml"
+                 arguments="addTripArgs"
                  singleTop="true"/>
 
     <destination id="calendar"
                  fxml="com/triplify/ui/pages/calendar/CalendarView.fxml"
+                 singleTop="true"/>
+
+    <destination id="admin_dashboard"
+                 fxml="com/triplify/ui/pages/placeholder/PlaceholderPageView.fxml"
+                 singleTop="true"/>
+
+    <destination id="countries"
+                 fxml="com/triplify/ui/pages/placeholder/PlaceholderPageView.fxml"
+                 singleTop="true"/>
+
+    <destination id="categories"
+                 fxml="com/triplify/ui/pages/placeholder/PlaceholderPageView.fxml"
+                 singleTop="true"/>
+
+    <destination id="emotions"
+                 fxml="com/triplify/ui/pages/placeholder/PlaceholderPageView.fxml"
+                 singleTop="true"/>
+
+    <destination id="badge_groups"
+                 fxml="com/triplify/ui/pages/placeholder/PlaceholderPageView.fxml"
+                 singleTop="true"/>
+
+    <destination id="badges"
+                 fxml="com/triplify/ui/pages/placeholder/PlaceholderPageView.fxml"
                  singleTop="true"/>
 
     <destination id="settings"

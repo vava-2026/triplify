@@ -10,6 +10,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -39,6 +40,9 @@ public final class EmojiUtil {
 
     private static Image load(String emoji, int size) {
         String codepoints = toCodepoints(emoji);
+        if (codepoints.isBlank()) {
+            return null;
+        }
 
         URL bundled = EmojiUtil.class.getResource(RESOURCES_BASE + codepoints + ".png");
         if (bundled != null) {
@@ -68,6 +72,27 @@ public final class EmojiUtil {
     }
 
     private static String toCodepoints(String emoji) {
+        if (emoji == null) {
+            return "";
+        }
+
+        String normalized = emoji.trim();
+        if (normalized.isEmpty()) {
+            return "";
+        }
+
+        // Supports stored formats like "U+1F1FA U+1F1F8" or "1F1FA-1F1F8".
+        String tokenized = normalized
+                .toUpperCase(Locale.ROOT)
+                .replace("U+", "")
+                .replace('_', '-')
+                .replace(' ', '-')
+                .replaceAll("[^0-9A-F-]", "");
+
+        if (tokenized.matches("[0-9A-F]+(?:-[0-9A-F]+)*")) {
+            return tokenized.toLowerCase(Locale.ROOT);
+        }
+
         return emoji.codePoints()
                 .filter(cp -> cp != 0xFE0F)
                 .mapToObj(Integer::toHexString)
