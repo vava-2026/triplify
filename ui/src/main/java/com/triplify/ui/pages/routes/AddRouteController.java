@@ -7,8 +7,11 @@ import com.triplify.application.usecase.place.dto.PlaceResponse;
 import com.triplify.application.usecase.route.RouteService;
 import com.triplify.application.usecase.route.dto.AddPlaceToRouteRequest;
 import com.triplify.application.usecase.route.dto.AddRouteRequest;
+import com.triplify.application.usecase.route.dto.DeletePlaceFromRouteRequest;
 import com.triplify.application.usecase.route.dto.GetRouteByIdRequest;
+import com.triplify.application.usecase.route.dto.RearrangePlacesInRouteRequest;
 import com.triplify.application.usecase.route.dto.RouteResponse;
+import com.triplify.application.usecase.route.dto.UpdateRouteRequest;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.routing.RouteIds;
@@ -100,8 +103,9 @@ public class AddRouteController extends SimpleLifecycleAwareController {
     private final List<RoutePlaceItem> availablePlaceItems = new ArrayList<>();
     private final List<RoutePlaceItem> placeItems = new ArrayList<>();
 
-    private String tripId;
+    private Integer tripId;
     private String tripName;
+    private String routeId;
     private String returnTarget;
     private String coverImagePath;
     private InputItem titleInput;
@@ -183,13 +187,16 @@ public class AddRouteController extends SimpleLifecycleAwareController {
     @Override
     public void onLifecycleInitialize() {
         RouterArgument data = getRouter().getCurrentData();
-        tripId = data == null ? null : data.getValue("tripId");
+        tripId = data == null ? null : parseIntegerArgument(data.getValue("tripId"));
         tripName = data == null ? null : data.getValue("tripName");
+        routeId = data == null ? null : normalizeKey(data.getValue("routeId"));
         returnTarget = data == null ? null : data.getValue("editorReturnTarget");
 
         EditorDraftStorage.RouteDraft draft = EditorDraftStorage.consumeRouteDraft();
         if (matchesDraftContext(draft)) {
             applyDraft(draft);
+        } else if (routeId != null && !routeId.isBlank()) {
+            loadRouteForEdit(routeId);
         }
     }
 
@@ -216,18 +223,38 @@ public class AddRouteController extends SimpleLifecycleAwareController {
     private void onSave() {
         clearFieldErrors();
 
-        AddRouteRequest request = new AddRouteRequest(
-                coverImagePath == null ? null : Path.of(coverImagePath),
-                normalize(titleInput.getText()),
-                normalizeNullable(descriptionInput.getText()),
-                calculateRouteLength()
-        );
+        Path coverImage = coverImagePath == null || coverImagePath.isBlank() ? null : Path.of(coverImagePath);
+        String title = normalize(titleInput.getText());
+        String description = normalizeNullable(descriptionInput.getText());
+        double length = calculateRouteLength();
 
         Map<String, Consumer<String>> fieldHandlers = Map.of(
                 "title", message -> titleInput.showError(message)
         );
 
-        var result = routeService.addRoute(request);
+        if (routeId != null && !routeId.isBlank()) {
+            var result = routeService.updateRoute(new UpdateRouteRequest(routeId, coverImage, title, description, length));
+            result.onSuccess(route -> {
+                boolean syncedAllPlaces = syncPlacesForRoute(route.id());
+                RouteResponse savedRoute = loadSavedRoute(route.id(), route);
+                EditorDraftStorage.clearRouteDraft();
+                EditorDraftStorage.savePendingRoute(returnTarget, savedRoute);
+                String routeTitle = titleInput.getText().trim();
+                String message = tripName == null || tripName.isBlank()
+                        ? formatMessage("route.add.toast.ready", routeTitle)
+                        : formatMessage("route.add.toast.addedToTrip", routeTitle, tripName);
+
+                toast.success(I18n.t("route.add.toast.saved.title"), message);
+                if (!syncedAllPlaces) {
+                    toast.warning(I18n.t("route.add.toast.place.link.failed"));
+                }
+                getRouter().popBackStack();
+            });
+            result.onFailure(error -> errorHandler.handle(error, fieldHandlers));
+            return;
+        }
+
+        var result = routeService.addRoute(new AddRouteRequest(coverImage, title, description, length));
         result.onSuccess(route -> {
             boolean linkedAllPlaces = linkPlacesToRoute(route.id());
             RouteResponse savedRoute = loadSavedRoute(route.id(), route);
@@ -736,6 +763,7 @@ public class AddRouteController extends SimpleLifecycleAwareController {
 
     private EditorDraftStorage.RouteDraft captureDraft() {
         return new EditorDraftStorage.RouteDraft(
+                routeId,
                 tripId == null ? null : tripId.toString(),
                 tripName,
                 normalize(titleInput.getText()),
@@ -762,7 +790,8 @@ public class AddRouteController extends SimpleLifecycleAwareController {
         }
 
         String currentTripKey = tripId == null ? null : tripId.toString();
-        return normalizeKey(currentTripKey).equals(normalizeKey(draft.tripId()));
+        return normalizeKey(routeId).equals(normalizeKey(draft.routeId()))
+                && normalizeKey(currentTripKey).equals(normalizeKey(draft.tripId()));
     }
 
     private void applyDraft(EditorDraftStorage.RouteDraft draft) {
@@ -818,6 +847,58 @@ public class AddRouteController extends SimpleLifecycleAwareController {
         addExistingPlace(toRoutePlaceItem(place));
     }
 
+    private void loadRouteForEdit(String routeId) {
+        var result = routeService.getRouteById(new GetRouteByIdRequest(routeId));
+        if (result.isFailure()) {
+            errorHandler.handle(result.getError());
+            getRouter().popBackStack();
+            return;
+        }
+
+        RouteResponse route = result.getValue();
+        titleInput.setText(route.title() == null ? "" : route.title());
+        descriptionInput.setText(route.description() == null ? "" : route.description());
+        coverImagePath = route.coverImage() == null || route.coverImage().url() == null
+                ? null
+                : route.coverImage().url().toString();
+
+        if (coverImagePath == null || coverImagePath.isBlank()) {
+            selectedImageLabel.setVisible(false);
+            selectedImageLabel.setManaged(false);
+            selectedImageLabel.setText("");
+            coverPreview.setImage(null);
+            coverPreview.setVisible(false);
+            coverPreview.setManaged(false);
+            uploadPlaceholder.setVisible(true);
+            uploadPlaceholder.setManaged(true);
+        } else {
+            selectedImageLabel.setText(new File(coverImagePath).getName());
+            selectedImageLabel.setVisible(true);
+            selectedImageLabel.setManaged(true);
+            if (isVectorImage(new File(coverImagePath))) {
+                coverPreview.setImage(null);
+                coverPreview.setVisible(false);
+                coverPreview.setManaged(false);
+                uploadPlaceholder.setVisible(true);
+                uploadPlaceholder.setManaged(true);
+            } else {
+                setCoverPreviewImage(loadImage(coverImagePath));
+                coverPreview.setVisible(true);
+                coverPreview.setManaged(false);
+                uploadPlaceholder.setVisible(false);
+                uploadPlaceholder.setManaged(false);
+            }
+        }
+
+        placeItems.clear();
+        if (route.places() != null) {
+            route.places().stream()
+                    .map(this::toRoutePlaceItem)
+                    .forEach(placeItems::add);
+        }
+        renderPlaces();
+    }
+
     private RouteResponse loadSavedRoute(String routeId, RouteResponse fallback) {
         var result = routeService.getRouteById(new GetRouteByIdRequest(routeId));
         if (result.isFailure()) {
@@ -826,11 +907,79 @@ public class AddRouteController extends SimpleLifecycleAwareController {
         return result.getValue();
     }
 
+    private boolean syncPlacesForRoute(String routeId) {
+        RouteResponse currentRoute = loadSavedRoute(routeId, null);
+        if (currentRoute == null) {
+            return false;
+        }
+
+        List<String> currentPlaceIds = currentRoute.places() == null
+                ? List.of()
+                : currentRoute.places().stream().map(PlaceResponse::id).toList();
+        List<String> targetPlaceIds = placeItems.stream().map(RoutePlaceItem::id).toList();
+
+        for (String existingPlaceId : currentPlaceIds) {
+            if (targetPlaceIds.contains(existingPlaceId)) {
+                continue;
+            }
+
+            var deleteResult = routeService.deletePlaceFromRoute(new DeletePlaceFromRouteRequest(routeId, existingPlaceId));
+            if (deleteResult.isFailure()) {
+                errorHandler.handle(deleteResult.getError());
+                return false;
+            }
+        }
+
+        for (String targetPlaceId : targetPlaceIds) {
+            if (currentPlaceIds.contains(targetPlaceId)) {
+                continue;
+            }
+
+            var addResult = routeService.addPlaceToRoute(new AddPlaceToRouteRequest(routeId, targetPlaceId));
+            if (addResult.isFailure()) {
+                errorHandler.handle(addResult.getError());
+                return false;
+            }
+        }
+
+        var rearrangeResult = routeService.rearrangePlacesInRoute(new RearrangePlacesInRouteRequest(routeId, targetPlaceIds));
+        if (rearrangeResult.isFailure()) {
+            errorHandler.handle(rearrangeResult.getError());
+            return false;
+        }
+
+        return true;
+    }
+
     private String normalizeKey(String value) {
         if (value == null || value.isBlank() || "0".equals(value.trim())) {
             return "";
         }
         return value.trim();
+    }
+
+    private Integer parseIntegerArgument(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Integer integerValue) {
+            return integerValue;
+        }
+        if (value instanceof Number numericValue) {
+            return numericValue.intValue();
+        }
+        if (value instanceof String stringValue) {
+            String normalized = stringValue.trim();
+            if (normalized.isBlank()) {
+                return null;
+            }
+            try {
+                return Integer.valueOf(normalized);
+            } catch (NumberFormatException ignored) {
+                return null;
+            }
+        }
+        return null;
     }
 
     private void clearFieldErrors() {

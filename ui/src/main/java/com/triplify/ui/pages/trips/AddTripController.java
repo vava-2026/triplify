@@ -66,12 +66,14 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.DragEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
@@ -727,6 +729,17 @@ public class AddTripController extends SimpleLifecycleAwareController {
         card.setTitle(item.title());
         card.setSubtitle(item.subtitle());
         card.setRemoveVisible(item.isManual());
+        card.setCursor(Cursor.HAND);
+        card.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
+            if (isClickOnButton(event.getTarget()) || item.id() == null || item.id().isBlank()) {
+                return;
+            }
+
+            RouterArgument args = new RouterArgument();
+            args.addArgument("placeId", item.id());
+            getRouter().moveto(RouteIds.PLACE_DETAILS, args);
+            event.consume();
+        });
         if (item.isManual()) {
             card.setOnRemove(() -> {
                 placeItems.removeIf(existing -> item.id().equals(existing.id()));
@@ -735,6 +748,21 @@ public class AddTripController extends SimpleLifecycleAwareController {
             });
         }
         return card;
+    }
+
+    private boolean isClickOnButton(Object target) {
+        if (!(target instanceof Node node)) {
+            return false;
+        }
+
+        Node current = node;
+        while (current != null) {
+            if (current instanceof Button) {
+                return true;
+            }
+            current = current.getParent();
+        }
+        return false;
     }
 
     private Region createEmptyState(String text) {

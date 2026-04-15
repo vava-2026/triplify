@@ -117,6 +117,7 @@ public final class EditorDraftStorage {
     }
 
     public record RouteDraft(
+            String routeId,
             String tripId,
             String tripName,
             String title,
