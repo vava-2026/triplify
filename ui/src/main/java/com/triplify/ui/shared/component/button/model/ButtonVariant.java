@@ -14,6 +14,8 @@ public enum ButtonVariant {
 
     SIGN_UP("app-btn-sign-up"),
 
+    PRO("app-btn-pro"),
+
     USER("app-btn-user");
 
 

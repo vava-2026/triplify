@@ -24,13 +24,20 @@
     -color-primary-light: #ecf3f9;
     -color-primary-hover: #2a5a80;
     -color-primary-pressed: #24506f;
+    -color-primary-hover-strong: #225379;
 
     -color-danger: #c0392b;
     -color-danger-hover: #a83224;
     -color-danger-pressed: #95291e;
 
+    -color-pro: #e53935;
+    -color-pro-hover: #B41D19;
+    -color-on-pro: #ecf3f9;
+
     -color-on-primary: #ecf3f9;
     -color-on-surface: white;
+    -color-ink-muted-soft: #9d9d9d;
+    -color-shadow-ink-soft: rgba(12, 12, 13, 0.05);
 
     -color-start-bg: #06070e;
 
