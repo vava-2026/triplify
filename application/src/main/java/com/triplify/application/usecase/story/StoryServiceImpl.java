@@ -47,18 +47,18 @@ public class StoryServiceImpl implements StoryService {
 
     @Inject
     public StoryServiceImpl(StoryRepository storyRepository,
-                             ImageRepository imageRepository,
-                             UserSessionContext sessionContext) {
+                            ImageRepository imageRepository,
+                            UserSessionContext sessionContext) {
         this.storyRepository = storyRepository;
         this.imageRepository = imageRepository;
-        this.sessionContext  = sessionContext;
+        this.sessionContext = sessionContext;
     }
 
     @Override
     public Result<StoryResponse> addStory(AddStoryRequest request) {
         SessionUser user = sessionContext.getCurrent().orElseThrow();
 
-        UUID tripId      = parseUuid(request.tripId());
+        UUID tripId = parseUuid(request.tripId());
         UUID tripRouteId = parseUuid(request.tripRouteId());
         UUID tripPlaceId = parseUuid(request.tripPlaceId());
 
@@ -67,23 +67,17 @@ public class StoryServiceImpl implements StoryService {
                     "Story must be linked to at least one of: tripId, tripRouteId, tripPlaceId."));
         }
 
-        Story story;
-        try {
-            story = new Story(
-                    user.userId(),
-                    tripId,
-                    tripRouteId,
-                    tripPlaceId,
-                    parseUuid(request.emotionId()),
-                    request.title(),
-                    request.description(),
-                    request.storyTime()
-            );
-        } catch (IllegalArgumentException ex) {
-            return Result.fail(new ApplicationError.Unexpected(ex.getMessage()));
-        }
+        Story story = new Story(
+                user.userId(),
+                tripId,
+                tripRouteId,
+                tripPlaceId,
+                parseUuid(request.emotionId()),
+                request.title(),
+                request.description(),
+                request.storyTime()
+        );
 
-        // Attach requested tags — tags must belong to the current user.
         if (request.tagIds() != null) {
             request.tagIds().forEach(tagId -> story.addTag(UUID.fromString(tagId)));
         }
@@ -100,8 +94,7 @@ public class StoryServiceImpl implements StoryService {
 
         Optional<Story> existing = storyRepository.findById(request.id());
         if (existing.isEmpty()) {
-            log.warn("Attempt to update non-existing story id='{}' by userId='{}'",
-                    request.id(), user.userId());
+            log.warn("Attempt to update non-existing story id='{}' by userId='{}'", request.id(), user.userId());
             return Result.fail(new StoryError.NotFound(request.id()));
         }
 
@@ -112,16 +105,11 @@ public class StoryServiceImpl implements StoryService {
             return Result.fail(new StoryError.NotOwner(request.id()));
         }
 
-        try {
-            story.updateTitle(request.title());
-            story.updateDescription(request.description());
-            story.updateStoryTime(request.storyTime());
-            story.updateEmotion(parseUuid(request.emotionId()));
-        } catch (IllegalArgumentException ex) {
-            return Result.fail(new ApplicationError.Unexpected(ex.getMessage()));
-        }
+        story.updateTitle(request.title());
+        story.updateDescription(request.description());
+        story.updateStoryTime(request.storyTime());
+        story.updateEmotion(parseUuid(request.emotionId()));
 
-        // Replace all tags with the new set: snapshot current ids first to avoid modification during iteration.
         Set<UUID> existingTagIds = new LinkedHashSet<>(story.getTagIds());
         existingTagIds.forEach(story::removeTag);
         if (request.tagIds() != null) {
@@ -140,8 +128,7 @@ public class StoryServiceImpl implements StoryService {
 
         Optional<Story> existing = storyRepository.findById(request.id());
         if (existing.isEmpty()) {
-            log.warn("Attempt to delete non-existing story id='{}' by userId='{}'",
-                    request.id(), user.userId());
+            log.warn("Attempt to delete non-existing story id='{}' by userId='{}'", request.id(), user.userId());
             return Result.fail(new StoryError.NotFound(request.id()));
         }
 
@@ -163,14 +150,12 @@ public class StoryServiceImpl implements StoryService {
 
         Optional<Story> existing = storyRepository.findById(request.id());
         if (existing.isEmpty()) {
-            log.warn("Attempt to get non-existing story id='{}' by userId='{}'",
-                    request.id(), user.userId());
+            log.warn("Attempt to get non-existing story id='{}' by userId='{}'", request.id(), user.userId());
             return Result.fail(new StoryError.NotFound(request.id()));
         }
 
         Story story = existing.get();
         if (!story.getUserId().equals(user.userId())) {
-            // Return NotFound rather than NotOwner to avoid exposing that the story exists.
             return Result.fail(new StoryError.NotFound(request.id()));
         }
 
@@ -199,8 +184,6 @@ public class StoryServiceImpl implements StoryService {
         Page<Story> page = storyRepository.findList(request.pageRequest(), filter);
         return Result.ok(page.map(this::toResponse));
     }
-
-    // ── Private helpers ────────────────────────────────────────────────────────
 
     private StoryResponse toResponse(Story story) {
         EmotionResponse emotionResponse = null;
