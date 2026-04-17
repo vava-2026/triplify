@@ -1,4 +1,4 @@
-package com.triplify.application.usecase.place.details.dto;
+package com.triplify.application.usecase.place.dto;
 
 import com.triplify.application.error.ValidationMessage;
 import jakarta.validation.constraints.NotBlank;

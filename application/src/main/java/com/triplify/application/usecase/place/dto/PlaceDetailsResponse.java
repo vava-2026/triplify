@@ -1,6 +1,5 @@
-package com.triplify.application.usecase.place.details.dto;
+package com.triplify.application.usecase.place.dto;
 
-import com.triplify.application.usecase.place.dto.PlaceResponse;
 import com.triplify.application.usecase.route.dto.RouteResponse;
 import com.triplify.application.usecase.story.dto.StoryResponse;
 import com.triplify.application.usecase.trip.dto.TripResponse;

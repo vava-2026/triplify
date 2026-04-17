@@ -2,9 +2,8 @@ package com.triplify.ui.pages.places;
 
 import com.google.inject.Inject;
 import com.triplify.application.response.TripStatus;
-import com.triplify.application.usecase.place.details.PlaceDetailsService;
-import com.triplify.application.usecase.place.details.dto.GetPlaceDetailsRequest;
-import com.triplify.application.usecase.place.details.dto.PlaceDetailsResponse;
+import com.triplify.application.usecase.place.dto.GetPlaceDetailsRequest;
+import com.triplify.application.usecase.place.dto.PlaceDetailsResponse;
 import com.triplify.application.usecase.place.PlaceService;
 import com.triplify.application.usecase.place.dto.DeletePlaceRequest;
 import com.triplify.application.usecase.place.dto.PlaceResponse;
@@ -67,7 +66,6 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
     @FXML private FlowPane associatedStoriesFlow;
     @FXML private FlowPane associatedRoutesFlow;
 
-    @Inject private PlaceDetailsService placeDetailsService;
     @Inject private PlaceService placeService;
     @Inject private ToastService toast;
     @Inject private ErrorHandler errorHandler;
@@ -156,7 +154,7 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
             return;
         }
 
-        var result = placeDetailsService.getPlaceDetails(new GetPlaceDetailsRequest(placeId));
+        var result = placeService.getPlaceDetails(new GetPlaceDetailsRequest(placeId));
         if (result.isFailure()) {
             errorHandler.handle(result.getError());
             getRouter().popBackStack();
