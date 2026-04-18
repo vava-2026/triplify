@@ -69,7 +69,7 @@
 .profile-avatar-image {
     -fx-fit-width: 150;
     -fx-fit-height: 150;
-    -fx-preserve-ratio: false;
+    -fx-preserve-ratio: true;
 }
 
 .profile-avatar-initial {

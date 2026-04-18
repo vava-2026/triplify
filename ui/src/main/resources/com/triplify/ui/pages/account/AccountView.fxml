@@ -30,7 +30,7 @@
                         <StackPane styleClass="profile-avatar-circle">
                             <ImageView fx:id="profileAvatarImage" styleClass="profile-avatar-image" managed="false" visible="false"/>
                             <Label fx:id="profileAvatarInitial" styleClass="profile-avatar-initial" text="?"/>
-                            <Button styleClass="profile-avatar-edit-btn" focusTraversable="false">
+                            <Button fx:id="profileAvatarEditBtn" styleClass="profile-avatar-edit-btn" focusTraversable="false">
                                 <graphic>
                                     <FontIcon iconLiteral="fth-edit-2" iconSize="11" styleClass="profile-avatar-edit-icon"/>
                                 </graphic>
@@ -40,7 +40,7 @@
                             </Button>
                         </StackPane>
 
-                        <VBox spacing="20" prefWidth="266">
+                        <VBox spacing="20" prefWidth="360">
                             <VBox spacing="8">
                                 <HBox alignment="CENTER_LEFT" spacing="7">
                                     <Label fx:id="profileNameLabel" styleClass="profile-name" text="Moises Bryant"/>

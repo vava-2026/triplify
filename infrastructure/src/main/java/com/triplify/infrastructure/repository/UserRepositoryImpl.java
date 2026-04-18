@@ -102,6 +102,30 @@ public class UserRepositoryImpl implements UserRepository {
         }
     }
 
+    @Override
+    public void update(User user) {
+        String sql = "UPDATE users SET username = ?, email = ?, password_hash = ?, role = ?, avatar_image_id = ?, updated_at = ? " +
+                "WHERE id = ?";
+
+        try (Connection conn = SQLiteConnectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, user.getUsername());
+            ps.setString(2, user.getEmail());
+            ps.setString(3, user.getPasswordHash());
+            ps.setString(4, user.getRole().getValue());
+            ps.setString(5, user.getAvatarImageId() != null ? user.getAvatarImageId().toString() : null);
+            ps.setString(6, user.getUpdatedAt().toString());
+            ps.setString(7, user.getId().toString());
+            ps.executeUpdate();
+
+            log.debug("User updated: id={}, username={}", user.getId(), user.getUsername());
+        } catch (SQLException e) {
+            log.error("Failed to update user id='{}'", user.getId(), e);
+            throw new RuntimeException("Database error while updating user", e);
+        }
+    }
+
     private User mapRow(ResultSet rs) throws SQLException {
         UUID id = UUID.fromString(rs.getString("user_id"));
         String username = rs.getString("username");

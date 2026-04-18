@@ -10,6 +10,9 @@ import com.triplify.application.usecase.image.dto.GetImageByIdRequest;
 import com.triplify.application.usecase.image.dto.ImageResponse;
 import com.triplify.application.usecase.session.SessionUser;
 import com.triplify.application.usecase.session.UserSessionContext;
+import com.triplify.application.usecase.user.UserService;
+import com.triplify.application.usecase.user.dto.UpdateUserAvatarRequest;
+import com.triplify.application.usecase.user.dto.UserResponse;
 import com.triplify.domain.model.enums.RoleEnum;
 import com.triplify.domain.result.Result;
 import com.triplify.ui.error.ErrorHandler;
@@ -33,10 +36,12 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Circle;
+import javafx.stage.FileChooser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 
+import java.io.File;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.List;
@@ -45,6 +50,7 @@ public class AccountController extends SimpleLifecycleAwareController {
 
     private static final Logger log = LoggerFactory.getLogger(AccountController.class);
     private static final int BADGE_COLUMNS = 5;
+    private static final double PROFILE_AVATAR_SIZE = 150;
 
     @FXML private GridPane badgesGrid;
     @FXML private Label profileNameLabel;
@@ -54,11 +60,13 @@ public class AccountController extends SimpleLifecycleAwareController {
     @FXML private ImageView profileAvatarImage;
     @FXML private StackPane upgradeButtonContainer;
     @FXML private StackPane logoutButtonContainer;
+    @FXML private Button profileAvatarEditBtn;
 
     @Inject private ToastService toast;
     @Inject private AuthService authService;
     @Inject private BadgeService badgeService;
     @Inject private ImageService imageService;
+    @Inject private UserService userService;
     @Inject private UserSessionContext userSessionContext;
     @Inject private ErrorHandler errorHandler;
     @Inject private GuardedNavigator guardedNavigator;
@@ -67,9 +75,17 @@ public class AccountController extends SimpleLifecycleAwareController {
 
     @FXML
     public void initialize() {
+        setupAvatarButton();
         setupLogoutButton();
         refreshProfileHero();
         loadBadges();
+    }
+
+    private void setupAvatarButton() {
+        if (profileAvatarEditBtn != null) {
+            profileAvatarEditBtn.setOnAction(event -> onChangeAvatar());
+            profileAvatarEditBtn.setFocusTraversable(false);
+        }
     }
 
     private void setupLogoutButton() {
@@ -229,7 +245,7 @@ public class AccountController extends SimpleLifecycleAwareController {
             return;
         }
 
-        profileAvatarImage.setImage(image);
+        AvatarImageHelper.applyCoverSquare(profileAvatarImage, image, PROFILE_AVATAR_SIZE);
         profileAvatarImage.setManaged(true);
         profileAvatarImage.setVisible(true);
         profileAvatarInitial.setManaged(false);
@@ -244,6 +260,61 @@ public class AccountController extends SimpleLifecycleAwareController {
         profileAvatarInitial.setVisible(true);
     }
 
+    private void onChangeAvatar() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle(I18n.t("account.avatar.dialog.title"));
+        chooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter(I18n.t("account.avatar.dialog.filter"), "*.png", "*.jpg", "*.jpeg", "*.svg")
+        );
+
+        File file = chooser.showOpenDialog(profileAvatarEditBtn.getScene() == null ? null : profileAvatarEditBtn.getScene().getWindow());
+        if (file != null) {
+            handleAvatarChange(file);
+        }
+    }
+
+    private void handleAvatarChange(File file) {
+        if (!isSupportedImageFile(file)) {
+            toast.warning(I18n.t("account.avatar.toast.unsupported"));
+            return;
+        }
+
+        Result<UserResponse> result = userService.updateUserAvatar(new UpdateUserAvatarRequest(file.toPath()));
+        result.onSuccess(userResponse -> {
+            SessionUser currentUser = userSessionContext.getCurrent().orElseThrow();
+
+            java.util.UUID avatarId = null;
+            if (userResponse.avatar() != null && userResponse.avatar().id() != null && !userResponse.avatar().id().isBlank()) {
+                try {
+                    avatarId = java.util.UUID.fromString(userResponse.avatar().id());
+                } catch (IllegalArgumentException e) {
+                    log.warn("Invalid avatar ID in response: {}", userResponse.avatar().id(), e);
+                }
+            }
+
+            SessionUser updatedUser = new SessionUser(
+                    currentUser.userId(),
+                    currentUser.username(),
+                    currentUser.email(),
+                    currentUser.role(),
+                    avatarId
+            );
+            userSessionContext.set(updatedUser);
+            userSessionContext.save();
+
+            toast.success(I18n.t("account.avatar.toast.updated"));
+            refreshProfileHero();
+        });
+        result.onFailure(error -> {
+            log.warn("Failed to update avatar: {}", error.message());
+            errorHandler.handle(error);
+        });
+    }
+
+    private boolean isSupportedImageFile(File file) {
+        String name = file.getName().toLowerCase();
+        return name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".svg");
+    }
 
     private void onLogOut() {
         authService.logout();

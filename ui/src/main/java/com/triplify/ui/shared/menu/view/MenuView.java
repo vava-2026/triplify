@@ -35,6 +35,7 @@ public class MenuView implements Initializable {
 
     public static final double SIDEBAR_WIDTH = 260;
     private static final double SIDEBAR_COLLAPSED_WIDTH = 0;
+    private static final double SIDEBAR_AVATAR_SIZE = 38;
 
     @FXML private StackPane sidebarRoot;
     @FXML private VBox mainPageInner;
@@ -74,6 +75,8 @@ public class MenuView implements Initializable {
         sidebarRoot.setMaxHeight(Double.MAX_VALUE);
         mainPageInner.setMaxHeight(Double.MAX_VALUE);
         refreshAccountSection();
+
+        userSessionContext.addSessionChangeListener(sessionUser -> refreshAccountSection());
 
         viewModel.activePrimaryPageProperty().addListener(
                 (obs, oldVal, newVal) -> refreshActiveState(newVal));
@@ -172,7 +175,7 @@ public class MenuView implements Initializable {
             return;
         }
 
-        avatarImageView.setImage(image);
+        AvatarImageHelper.applyCoverSquare(avatarImageView, image, SIDEBAR_AVATAR_SIZE);
         avatarImageView.setManaged(true);
         avatarImageView.setVisible(true);
         avatarLabel.setManaged(false);
