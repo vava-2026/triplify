@@ -20,7 +20,7 @@ public record BadgeGroupResponse(
                 group.getNameSk(),
                 group.getDescription(),
                 group.getDescriptionSk(),
-                group.getCreatedById().toString()
+                group.getCreatedById() == null ? null : group.getCreatedById().toString()
         );
     }
 }
