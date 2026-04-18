@@ -1,0 +1,152 @@
+.countries-root {
+	-fx-padding: 24px 28px;
+}
+
+.countries-content {
+	-fx-spacing: 14px;
+}
+
+.countries-layout {
+	-fx-spacing: 16px;
+	-fx-alignment: top-left;
+}
+
+.countries-form-card {
+	-fx-pref-width: 370px;
+	-fx-min-width: 330px;
+	-fx-max-width: 410px;
+}
+
+.countries-list-card {
+	-fx-min-width: 520px;
+}
+
+.countries-list-scroll {
+	-fx-background-color: transparent;
+	-fx-border-color: transparent;
+	-fx-padding: 0;
+}
+
+.countries-list-scroll > .viewport {
+	-fx-background-color: transparent;
+}
+
+.countries-list-scroll > .corner {
+	-fx-background-color: transparent;
+}
+
+.countries-card-header {
+	-fx-alignment: center-left;
+}
+
+.countries-section-title {
+	-fx-text-fill: -color-ink;
+	-fx-font-size: 16px;
+	-fx-font-weight: bold;
+}
+
+.countries-mode-badge {
+	-fx-background-color: -color-primary-light;
+	-fx-text-fill: -color-primary-dark;
+	-fx-background-radius: 999px;
+	-fx-padding: 4px 10px;
+	-fx-font-size: 12px;
+	-fx-font-weight: bold;
+}
+
+.countries-form-group {
+	-fx-spacing: 6px;
+}
+
+.countries-actions-row {
+	-fx-alignment: center-left;
+}
+
+.countries-grow-btn {
+	-fx-max-width: Infinity;
+}
+
+.countries-search-row {
+	-fx-alignment: center-left;
+}
+
+.countries-search-input {
+	-fx-background-color: -color-surface;
+	-fx-border-color: -color-border-muted;
+	-fx-border-width: 1.2;
+	-fx-border-radius: 10;
+	-fx-background-radius: 10;
+	-fx-padding: 0 12 0 12;
+	-fx-pref-height: 40;
+	-fx-text-fill: -color-primary-dark;
+	-fx-prompt-text-fill: -color-ink-muted;
+}
+
+.countries-list {
+	-fx-padding: 2px 0 2px 0;
+}
+
+.countries-item {
+	-fx-background-color: -color-surface;
+	-fx-border-color: -color-border-muted;
+	-fx-border-width: 1;
+	-fx-border-radius: 12;
+	-fx-background-radius: 12;
+	-fx-padding: 10 12 10 12;
+	-fx-cursor: hand;
+}
+
+.countries-item:hover {
+	-fx-background-color: -color-primary-light;
+}
+
+.countries-item-selected {
+	-fx-border-color: -color-primary;
+	-fx-border-width: 1.5;
+	-fx-background-color: -color-primary-light;
+}
+
+.countries-item-header {
+	-fx-alignment: center-left;
+}
+
+.countries-item-emoji {
+	-fx-font-size: 20px;
+}
+
+.countries-item-text {
+	-fx-alignment: center-left;
+}
+
+.countries-item-title {
+	-fx-text-fill: -color-ink;
+	-fx-font-size: 14px;
+	-fx-font-weight: bold;
+}
+
+.countries-item-subtitle {
+	-fx-text-fill: -color-ink-muted;
+	-fx-font-size: 12px;
+}
+
+.countries-item-status {
+	-fx-font-size: 11px;
+	-fx-font-weight: bold;
+	-fx-padding: 4px 9px;
+	-fx-background-radius: 999px;
+}
+
+.countries-item-status-active {
+	-fx-background-color: -color-status-visited-bg;
+	-fx-text-fill: -color-status-visited-fg;
+}
+
+.countries-item-status-banned {
+	-fx-background-color: -color-status-rejected-bg;
+	-fx-text-fill: -color-status-rejected-fg;
+}
+
+.countries-empty {
+	-fx-text-fill: -color-ink-muted;
+	-fx-font-size: 13px;
+}

@@ -76,11 +76,11 @@
                  singleTop="true"/>
 
     <destination id="countries"
-                 fxml="com/triplify/ui/pages/placeholder/PlaceholderPageView.fxml"
+                 fxml="com/triplify/ui/pages/countries/CountriesView.fxml"
                  singleTop="true"/>
 
     <destination id="categories"
-                 fxml="com/triplify/ui/pages/placeholder/PlaceholderPageView.fxml"
+                 fxml="com/triplify/ui/pages/categories/CategoriesView.fxml"
                  singleTop="true"/>
 
     <destination id="emotions"
