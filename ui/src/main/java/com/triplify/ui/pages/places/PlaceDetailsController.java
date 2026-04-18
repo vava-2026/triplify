@@ -42,6 +42,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 public class PlaceDetailsController extends SimpleLifecycleAwareController {
 
@@ -125,7 +126,7 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         }
 
         RouterArgument args = new RouterArgument();
-        args.addArgument("tripId", 0);
+        args.addArgument("tripId", UUID.randomUUID().toString());
         args.addArgument("tripName", "");
         args.addArgument("placeId", placeId);
         getRouter().moveto(RouteIds.ADD_PLACE, args);
@@ -264,7 +265,7 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         }
 
         RouterArgument args = new RouterArgument();
-        args.addArgument("tripId", "0");
+        args.addArgument("tripId", UUID.randomUUID().toString());
         args.addArgument("tripName", route.title() == null ? "" : route.title());
         args.addArgument("routeId", route.id());
         getRouter().moveto(RouteIds.ADD_ROUTE, args);

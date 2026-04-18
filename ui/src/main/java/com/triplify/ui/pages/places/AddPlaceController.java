@@ -87,7 +87,6 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     @Inject private ToastService toast;
     @Inject private ErrorHandler errorHandler;
 
-    private Integer tripId;
     private String tripName;
     private String returnTarget;
     private String placeId;
@@ -150,7 +149,6 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     @Override
     public void onLifecycleInitialize() {
         RouterArgument data = getRouter().getCurrentData();
-        tripId = data == null ? null : parseIntegerArgument(data.getValue("tripId"));
         tripName = data == null ? null : data.getValue("tripName");
         returnTarget = data == null ? null : data.getValue("editorReturnTarget");
         placeId = data == null ? null : data.getValue("placeId");
@@ -523,30 +521,6 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     private String normalizeNullable(String value) {
         String normalized = normalize(value);
         return normalized == null || normalized.isBlank() ? null : normalized;
-    }
-
-    private Integer parseIntegerArgument(Object value) {
-        if (value == null) {
-            return null;
-        }
-        if (value instanceof Integer integerValue) {
-            return integerValue;
-        }
-        if (value instanceof Number numericValue) {
-            return numericValue.intValue();
-        }
-        if (value instanceof String stringValue) {
-            String normalized = stringValue.trim();
-            if (normalized.isBlank()) {
-                return null;
-            }
-            try {
-                return Integer.valueOf(normalized);
-            } catch (NumberFormatException ignored) {
-                return null;
-            }
-        }
-        return null;
     }
 
     private double clamp(double value, double min, double max) {

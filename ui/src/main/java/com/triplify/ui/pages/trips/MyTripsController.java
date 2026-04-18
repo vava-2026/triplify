@@ -41,12 +41,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 
 public class MyTripsController extends SimpleLifecycleAwareController {
 
@@ -91,7 +86,7 @@ public class MyTripsController extends SimpleLifecycleAwareController {
     @FXML
     public void onCreateTrip() {
         RouterArgument args = new RouterArgument();
-        args.addArgument("tripId", "0");
+        args.addArgument("tripId", UUID.randomUUID().toString());
         args.addArgument("tripName", "Create Trip");
         args.addArgument("tripStatus", TripStatus.DRAFTED);
         getRouter().moveto(RouteIds.ADD_TRIP, args);

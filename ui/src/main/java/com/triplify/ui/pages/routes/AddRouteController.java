@@ -61,11 +61,7 @@ import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 import java.io.File;
 import java.nio.file.Path;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class AddRouteController extends SimpleLifecycleAwareController {
@@ -103,7 +99,7 @@ public class AddRouteController extends SimpleLifecycleAwareController {
     private final List<RoutePlaceItem> availablePlaceItems = new ArrayList<>();
     private final List<RoutePlaceItem> placeItems = new ArrayList<>();
 
-    private Integer tripId;
+    private String tripId;
     private String tripName;
     private String routeId;
     private String returnTarget;
@@ -187,7 +183,7 @@ public class AddRouteController extends SimpleLifecycleAwareController {
     @Override
     public void onLifecycleInitialize() {
         RouterArgument data = getRouter().getCurrentData();
-        tripId = data == null ? null : parseIntegerArgument(data.getValue("tripId"));
+        tripId = data == null ? null : normalizeKey(data.getValue("tripId"));
         tripName = data == null ? null : data.getValue("tripName");
         routeId = data == null ? null : normalizeKey(data.getValue("routeId"));
         returnTarget = data == null ? null : data.getValue("editorReturnTarget");
@@ -291,7 +287,7 @@ public class AddRouteController extends SimpleLifecycleAwareController {
         setPlacePickerVisible(false);
         EditorDraftStorage.saveRouteDraft(captureDraft());
         RouterArgument args = new RouterArgument();
-        args.addArgument("tripId", tripId == null ? 0 : tripId);
+        args.addArgument("tripId", tripId == null || tripId.isBlank() ? UUID.randomUUID().toString() : tripId);
         args.addArgument("tripName", tripName == null || tripName.isBlank() ? I18n.t("trip.add.default.name") : tripName);
         args.addArgument("editorReturnTarget", EditorDraftStorage.TARGET_ROUTE);
         getRouter().moveto(RouteIds.ADD_PLACE, args);
@@ -764,7 +760,7 @@ public class AddRouteController extends SimpleLifecycleAwareController {
     private EditorDraftStorage.RouteDraft captureDraft() {
         return new EditorDraftStorage.RouteDraft(
                 routeId,
-                tripId == null ? null : tripId.toString(),
+                tripId,
                 tripName,
                 normalize(titleInput.getText()),
                 normalizeNullable(descriptionInput.getText()),
@@ -789,9 +785,8 @@ public class AddRouteController extends SimpleLifecycleAwareController {
             return false;
         }
 
-        String currentTripKey = tripId == null ? null : tripId.toString();
         return normalizeKey(routeId).equals(normalizeKey(draft.routeId()))
-                && normalizeKey(currentTripKey).equals(normalizeKey(draft.tripId()));
+                && normalizeKey(tripId).equals(normalizeKey(draft.tripId()));
     }
 
     private void applyDraft(EditorDraftStorage.RouteDraft draft) {
@@ -956,30 +951,6 @@ public class AddRouteController extends SimpleLifecycleAwareController {
             return "";
         }
         return value.trim();
-    }
-
-    private Integer parseIntegerArgument(Object value) {
-        if (value == null) {
-            return null;
-        }
-        if (value instanceof Integer integerValue) {
-            return integerValue;
-        }
-        if (value instanceof Number numericValue) {
-            return numericValue.intValue();
-        }
-        if (value instanceof String stringValue) {
-            String normalized = stringValue.trim();
-            if (normalized.isBlank()) {
-                return null;
-            }
-            try {
-                return Integer.valueOf(normalized);
-            } catch (NumberFormatException ignored) {
-                return null;
-            }
-        }
-        return null;
     }
 
     private void clearFieldErrors() {
