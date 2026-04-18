@@ -140,7 +140,7 @@ public class TagRepositoryImpl implements TagRepository {
 
                 boolean hasNext = tags.size() > pageRequest.size();
                 if (hasNext) {
-                    tags.remove(tags.size() - 1);
+                    tags.removeLast();
                 }
 
                 return Page.of(tags, pageRequest, hasNext);
@@ -168,6 +168,50 @@ public class TagRepositoryImpl implements TagRepository {
         } catch (SQLException e) {
             log.error("Failed to create tag id='{}'", tag.getId(), e);
             throw new RuntimeException("Database error while creating tag", e);
+        }
+    }
+
+    @Override
+    public void delete(String id) {
+        String sql = "DELETE FROM tags WHERE id = ?";
+
+        try (Connection conn = SQLiteConnectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, id);
+            int rows = ps.executeUpdate();
+            if (rows == 0) {
+                log.warn("Delete affected 0 rows for tag id='{}'", id);
+            } else {
+                log.debug("Tag deleted: id={}", id);
+            }
+        } catch (SQLException e) {
+            log.error("Failed to delete tag id='{}'", id, e);
+            throw new RuntimeException("Database error while deleting tag", e);
+        }
+    }
+
+    @Override
+    public void update(Tag tag) {
+        String sql = """
+            UPDATE tags
+            SET name = ?, color = ?
+            WHERE id = ?
+            """;
+
+        try (Connection conn = SQLiteConnectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, tag.getName());
+            ps.setString(2, tag.getColor().getValue());
+            ps.setString(3, tag.getId().toString());
+            int rows = ps.executeUpdate();
+            if (rows == 0) {
+                log.warn("Update affected 0 rows for tag id='{}'", tag.getId());
+            } else {
+                log.debug("Tag updated: id={}", tag.getId());
+            }
+        } catch (SQLException e) {
+            log.error("Failed to update tag id='{}'", tag.getId(), e);
+            throw new RuntimeException("Database error while updating tag", e);
         }
     }
 
