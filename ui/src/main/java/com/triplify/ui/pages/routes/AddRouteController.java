@@ -7,8 +7,11 @@ import com.triplify.application.usecase.place.dto.PlaceResponse;
 import com.triplify.application.usecase.route.RouteService;
 import com.triplify.application.usecase.route.dto.AddPlaceToRouteRequest;
 import com.triplify.application.usecase.route.dto.AddRouteRequest;
+import com.triplify.application.usecase.route.dto.DeletePlaceFromRouteRequest;
 import com.triplify.application.usecase.route.dto.GetRouteByIdRequest;
+import com.triplify.application.usecase.route.dto.RearrangePlacesInRouteRequest;
 import com.triplify.application.usecase.route.dto.RouteResponse;
+import com.triplify.application.usecase.route.dto.UpdateRouteRequest;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.routing.RouteIds;
@@ -60,9 +63,11 @@ import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public class AddRouteController extends SimpleLifecycleAwareController {
@@ -103,6 +108,8 @@ public class AddRouteController extends SimpleLifecycleAwareController {
     private String tripId;
     private String tripName;
     private String returnTarget;
+    private String routeId;
+    private boolean editMode;
     private String coverImagePath;
     private InputItem titleInput;
     private TextAreaItem descriptionInput;
@@ -186,10 +193,14 @@ public class AddRouteController extends SimpleLifecycleAwareController {
         tripId = data == null ? null : data.getValue("tripId");
         tripName = data == null ? null : data.getValue("tripName");
         returnTarget = data == null ? null : data.getValue("editorReturnTarget");
+        routeId = data == null ? null : data.getValue("routeId");
+        editMode = routeId != null && !routeId.isBlank() && !"0".equals(routeId);
 
         EditorDraftStorage.RouteDraft draft = EditorDraftStorage.consumeRouteDraft();
         if (matchesDraftContext(draft)) {
             applyDraft(draft);
+        } else if (editMode) {
+            loadExistingRoute();
         }
     }
 
@@ -216,32 +227,44 @@ public class AddRouteController extends SimpleLifecycleAwareController {
     private void onSave() {
         clearFieldErrors();
 
-        AddRouteRequest request = new AddRouteRequest(
-                coverImagePath == null ? null : Path.of(coverImagePath),
-                normalize(titleInput.getText()),
-                normalizeNullable(descriptionInput.getText()),
-                calculateRouteLength()
-        );
-
         Map<String, Consumer<String>> fieldHandlers = Map.of(
                 "title", message -> titleInput.showError(message)
         );
 
-        var result = routeService.addRoute(request);
+        var result = editMode
+                ? routeService.updateRoute(new UpdateRouteRequest(
+                        routeId,
+                        coverImagePath == null ? null : Path.of(coverImagePath),
+                        normalize(titleInput.getText()),
+                        normalizeNullable(descriptionInput.getText()),
+                        calculateRouteLength()
+                ))
+                : routeService.addRoute(new AddRouteRequest(
+                        coverImagePath == null ? null : Path.of(coverImagePath),
+                        normalize(titleInput.getText()),
+                        normalizeNullable(descriptionInput.getText()),
+                        calculateRouteLength()
+                ));
         result.onSuccess(route -> {
-            boolean linkedAllPlaces = linkPlacesToRoute(route.id());
-            RouteResponse savedRoute = loadSavedRoute(route.id(), route);
+            RouteResponse savedRoute = editMode
+                    ? syncEditedRoutePlaces(route.id(), route)
+                    : saveNewRoutePlaces(route);
+            if (savedRoute == null) {
+                return;
+            }
+
             EditorDraftStorage.clearRouteDraft();
-            EditorDraftStorage.savePendingRoute(returnTarget, savedRoute);
+            if (returnTarget != null && !returnTarget.isBlank()) {
+                EditorDraftStorage.savePendingRoute(returnTarget, savedRoute);
+            }
             String routeTitle = titleInput.getText().trim();
-            String message = tripName == null || tripName.isBlank()
+            String message = editMode
+                    ? formatMessage("route.add.toast.updated", routeTitle)
+                    : tripName == null || tripName.isBlank()
                     ? formatMessage("route.add.toast.ready", routeTitle)
                     : formatMessage("route.add.toast.addedToTrip", routeTitle, tripName);
 
             toast.success(I18n.t("route.add.toast.saved.title"), message);
-            if (!linkedAllPlaces) {
-                toast.warning(I18n.t("route.add.toast.place.link.failed"));
-            }
             getRouter().popBackStack();
         });
         result.onFailure(error -> errorHandler.handle(error, fieldHandlers));
@@ -266,6 +289,7 @@ public class AddRouteController extends SimpleLifecycleAwareController {
         RouterArgument args = new RouterArgument();
         args.addArgument("tripId", tripId == null ? 0 : tripId);
         args.addArgument("tripName", tripName == null || tripName.isBlank() ? I18n.t("trip.add.default.name") : tripName);
+        args.addArgument("routeId", routeId);
         args.addArgument("editorReturnTarget", EditorDraftStorage.TARGET_ROUTE);
         getRouter().moveto(RouteIds.ADD_PLACE, args);
     }
@@ -690,7 +714,6 @@ public class AddRouteController extends SimpleLifecycleAwareController {
     }
 
     private void bindLocalizedText() {
-        Localization.bindText(routePageTitleLabel.textProperty(), "route.add.page.title");
         Localization.bindText(generalSectionHeader.titleProperty(), "route.add.section.general");
         Localization.bindText(routeTitleLabel.textProperty(), "route.add.field.title");
         Localization.bindText(descriptionLabel.textProperty(), "route.add.field.description");
@@ -703,6 +726,7 @@ public class AddRouteController extends SimpleLifecycleAwareController {
     }
 
     private void refreshLocalizedUi() {
+        routePageTitleLabel.setText(I18n.t(editMode ? "route.add.page.title.edit" : "route.add.page.title"));
         renderPlaces();
     }
 
@@ -818,12 +842,116 @@ public class AddRouteController extends SimpleLifecycleAwareController {
         addExistingPlace(toRoutePlaceItem(place));
     }
 
+    private void loadExistingRoute() {
+        var result = routeService.getRouteById(new GetRouteByIdRequest(routeId));
+        result.onSuccess(this::applyExistingRoute);
+        result.onFailure(error -> {
+            errorHandler.handle(error);
+            getRouter().popBackStack();
+        });
+    }
+
+    private void applyExistingRoute(RouteResponse route) {
+        titleInput.setText(route.title() == null ? "" : route.title());
+        descriptionInput.setText(route.description() == null ? "" : route.description());
+        placeItems.clear();
+        if (route.places() != null) {
+            route.places().stream()
+                    .map(this::toRoutePlaceItem)
+                    .forEach(placeItems::add);
+        }
+
+        coverImagePath = imagePath(route);
+        if (coverImagePath == null || coverImagePath.isBlank()) {
+            selectedImageLabel.setVisible(false);
+            selectedImageLabel.setManaged(false);
+            selectedImageLabel.setText("");
+            coverPreview.setImage(null);
+            coverPreview.setVisible(false);
+            coverPreview.setManaged(false);
+            uploadPlaceholder.setVisible(true);
+            uploadPlaceholder.setManaged(true);
+        } else {
+            selectedImageLabel.setText(new File(coverImagePath).getName());
+            selectedImageLabel.setVisible(true);
+            selectedImageLabel.setManaged(true);
+            if (isVectorImage(new File(coverImagePath))) {
+                coverPreview.setImage(null);
+                coverPreview.setVisible(false);
+                coverPreview.setManaged(false);
+                uploadPlaceholder.setVisible(true);
+                uploadPlaceholder.setManaged(true);
+            } else {
+                setCoverPreviewImage(loadImage(coverImagePath));
+                coverPreview.setVisible(true);
+                coverPreview.setManaged(true);
+                uploadPlaceholder.setVisible(false);
+                uploadPlaceholder.setManaged(false);
+            }
+        }
+
+        refreshLocalizedUi();
+    }
+
     private RouteResponse loadSavedRoute(String routeId, RouteResponse fallback) {
         var result = routeService.getRouteById(new GetRouteByIdRequest(routeId));
         if (result.isFailure()) {
             return fallback;
         }
         return result.getValue();
+    }
+
+    private RouteResponse saveNewRoutePlaces(RouteResponse route) {
+        boolean linkedAllPlaces = linkPlacesToRoute(route.id());
+        RouteResponse savedRoute = loadSavedRoute(route.id(), route);
+        if (!linkedAllPlaces) {
+            toast.warning(I18n.t("route.add.toast.place.link.failed"));
+        }
+        return savedRoute;
+    }
+
+    private RouteResponse syncEditedRoutePlaces(String targetRouteId, RouteResponse fallback) {
+        RouteResponse currentRoute = loadSavedRoute(targetRouteId, fallback);
+        Set<String> currentPlaceIds = new LinkedHashSet<>();
+        if (currentRoute.places() != null) {
+            currentRoute.places().forEach(place -> currentPlaceIds.add(place.id()));
+        }
+
+        List<String> desiredPlaceIds = placeItems.stream()
+                .map(RoutePlaceItem::id)
+                .toList();
+        Set<String> desiredPlaceIdSet = new LinkedHashSet<>(desiredPlaceIds);
+
+        for (String currentPlaceId : currentPlaceIds) {
+            if (desiredPlaceIdSet.contains(currentPlaceId)) {
+                continue;
+            }
+            var deleteResult = routeService.deletePlaceFromRoute(new DeletePlaceFromRouteRequest(targetRouteId, currentPlaceId));
+            if (deleteResult.isFailure()) {
+                errorHandler.handle(deleteResult.getError());
+                return null;
+            }
+        }
+
+        for (String desiredPlaceId : desiredPlaceIds) {
+            if (currentPlaceIds.contains(desiredPlaceId)) {
+                continue;
+            }
+            var addResult = routeService.addPlaceToRoute(new AddPlaceToRouteRequest(targetRouteId, desiredPlaceId));
+            if (addResult.isFailure()) {
+                errorHandler.handle(addResult.getError());
+                return null;
+            }
+        }
+
+        var reorderResult = routeService.rearrangePlacesInRoute(
+                new RearrangePlacesInRouteRequest(targetRouteId, desiredPlaceIds)
+        );
+        if (reorderResult.isFailure()) {
+            errorHandler.handle(reorderResult.getError());
+            return null;
+        }
+        return reorderResult.getValue();
     }
 
     private String normalizeKey(String value) {
@@ -903,6 +1031,12 @@ public class AddRouteController extends SimpleLifecycleAwareController {
                 response.latitude(),
                 response.longitude()
         );
+    }
+
+    private String imagePath(RouteResponse route) {
+        return route == null || route.coverImage() == null || route.coverImage().url() == null
+                ? null
+                : route.coverImage().url().toString();
     }
 
     private double calculateDistanceKm(RoutePlaceItem from, RoutePlaceItem to) {

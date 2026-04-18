@@ -711,6 +711,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
         card.setPreviewImage(loadImage(item.imagePath()));
         card.setTitle(item.title());
         card.setSubtitle(item.subtitle());
+        card.setOnOpen(() -> openRoute(item));
         card.setOnRemove(() -> {
             routeItems.remove(item);
             renderRoutes();
@@ -979,6 +980,16 @@ public class AddTripController extends SimpleLifecycleAwareController {
         args.addArgument("tripName", targetTripName == null || targetTripName.isBlank() ? "New Trip" : targetTripName);
         args.addArgument("editorReturnTarget", EditorDraftStorage.TARGET_TRIP);
         getRouter().moveto(RouteIds.ADD_ROUTE, args);
+    }
+
+    private void openRoute(RouteItem route) {
+        if (route == null || route.id() == null || route.id().isBlank()) {
+            return;
+        }
+
+        RouterArgument args = new RouterArgument();
+        args.addArgument("routeId", route.id());
+        getRouter().moveto(RouteIds.ROUTE_DETAILS, args);
     }
 
     private void openCreatePlace() {

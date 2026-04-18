@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import com.triplify.ui.shared.component.detail_actions.view.DetailActionButtonsView?>
+<?import com.triplify.ui.shared.component.section_header.view.SectionHeaderView?>
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<ScrollPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.triplify.ui.pages.routes.RouteDetailsController"
+            fitToWidth="true"
+            hbarPolicy="NEVER"
+            vbarPolicy="AS_NEEDED"
+            styleClass="page-scroll">
+    <stylesheets>
+        <String fx:value="/com/triplify/ui/pages/routes/route_details.css"/>
+        <String fx:value="/com/triplify/ui/pages/trips/css/trips.css"/>
+        <String fx:value="/com/triplify/ui/shared/component/route/css/route.css"/>
+        <String fx:value="/com/triplify/ui/shared/component/button/css/button.css"/>
+    </stylesheets>
+    <content>
+        <StackPane styleClass="page-root,route-details-root">
+            <VBox styleClass="route-details-content" spacing="20">
+                <StackPane fx:id="heroContainer" styleClass="route-details-hero">
+                    <ImageView fx:id="heroImageView"
+                               fitWidth="1120"
+                               fitHeight="320"
+                               pickOnBounds="true"
+                               preserveRatio="false"
+                               styleClass="route-details-hero-image"/>
+
+                    <VBox styleClass="route-details-hero-overlay" spacing="0">
+                        <HBox alignment="TOP_LEFT">
+                            <Button fx:id="backButton"
+                                    onAction="#onBack"
+                                    text="Back"
+                                    styleClass="route-details-back-button"/>
+                        </HBox>
+                        <VBox styleClass="route-details-hero-copy" spacing="8">
+                            <Label fx:id="routeTitleLabel" styleClass="route-details-title"/>
+                            <Label fx:id="routeMetaLabel" styleClass="route-details-meta"/>
+                        </VBox>
+                    </VBox>
+                </StackPane>
+
+                <VBox styleClass="route-details-sections" spacing="20">
+                    <FlowPane styleClass="route-details-top-row" prefWrapLength="1000">
+                        <VBox styleClass="route-details-main-column" spacing="20">
+                            <VBox styleClass="page-card,route-details-card,route-details-description-card" spacing="12">
+                                <Label fx:id="descriptionTitleLabel" styleClass="route-details-card-title" text="Description"/>
+                                <Label fx:id="descriptionValueLabel" styleClass="route-details-description" wrapText="true"/>
+                            </VBox>
+
+                            <VBox styleClass="page-card,route-details-card" spacing="14">
+                                <SectionHeaderView fx:id="placesHeader"
+                                                   iconLiteral="fth-map-pin"
+                                                   title="Places on this Route"/>
+                                <VBox fx:id="placesListContainer" styleClass="route-details-places-list" spacing="12"/>
+                            </VBox>
+                        </VBox>
+
+                        <VBox styleClass="route-details-side-column" spacing="14">
+                            <VBox styleClass="page-card,route-details-card,route-details-summary-card" spacing="14">
+                                <StackPane styleClass="route-details-preview-shell">
+                                    <Canvas fx:id="routePreviewCanvas"
+                                            width="328"
+                                            height="192"/>
+                                </StackPane>
+                                <VBox spacing="12">
+                                    <VBox spacing="2">
+                                        <Label fx:id="summaryDistanceValueLabel" styleClass="route-details-summary-value"/>
+                                        <Label fx:id="summaryDistanceCaptionLabel" styleClass="route-details-summary-caption" text="kilometers"/>
+                                    </VBox>
+                                    <VBox spacing="2">
+                                        <Label fx:id="summaryPlacesValueLabel" styleClass="route-details-summary-secondary-value"/>
+                                        <Label fx:id="summaryPlacesCaptionLabel" styleClass="route-details-summary-caption" text="places in route"/>
+                                    </VBox>
+                                </VBox>
+                            </VBox>
+
+                            <DetailActionButtonsView fx:id="actionButtonsView"/>
+                        </VBox>
+                    </FlowPane>
+
+                    <VBox styleClass="route-details-associated-sections" spacing="20">
+                        <VBox styleClass="route-details-trips-section" spacing="12">
+                            <SectionHeaderView fx:id="associatedTripsHeader"
+                                               iconLiteral="fth-briefcase"
+                                               title="Associated Trips"/>
+                            <FlowPane fx:id="associatedTripsFlow" styleClass="route-details-grid"/>
+                        </VBox>
+
+                        <VBox styleClass="page-card,route-details-card" spacing="16">
+                            <SectionHeaderView fx:id="associatedStoriesHeader"
+                                               iconLiteral="fth-book-open"
+                                               title="Associated Stories"/>
+                            <FlowPane fx:id="associatedStoriesFlow" styleClass="route-details-grid"/>
+                        </VBox>
+                    </VBox>
+                </VBox>
+            </VBox>
+        </StackPane>
+    </content>
+</ScrollPane>

@@ -1,0 +1,8 @@
+.detail-action-group {
+    -fx-padding: 0;
+    -fx-spacing: 12px;
+}
+
+.detail-action-button {
+    -fx-max-width: Infinity;
+}

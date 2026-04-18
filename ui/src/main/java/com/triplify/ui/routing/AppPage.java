@@ -123,6 +123,20 @@ public enum AppPage {
             EnumSet.noneOf(RoleEnum.class),
             false
     ),
+    ROUTE_DETAILS(
+            RouteIds.ROUTE_DETAILS,
+            "page.routeDetails",
+            "fth-navigation",
+            EnumSet.of(RoleEnum.USER, RoleEnum.PRO_USER),
+            true,
+            false,
+            false,
+            false,
+            false,
+            RouteIds.MY_ROUTES,
+            EnumSet.noneOf(RoleEnum.class),
+            false
+    ),
     ADD_PLACE(
             RouteIds.ADD_PLACE,
             "page.addPlace",

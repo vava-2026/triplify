@@ -1,0 +1,201 @@
+.route-details-root {
+    -fx-padding: 20px 24px 28px;
+}
+
+.route-details-content {
+    -fx-max-width: 1120px;
+    -fx-pref-width: 1120px;
+    -fx-spacing: 20px;
+}
+
+.route-details-hero {
+    -fx-min-height: 320px;
+    -fx-pref-height: 320px;
+    -fx-max-height: 320px;
+    -fx-background-radius: 28px;
+}
+
+.route-details-hero-image {
+    -fx-smooth: true;
+}
+
+.route-details-hero-overlay {
+    -fx-padding: 18px;
+    -fx-background-color: linear-gradient(to top, rgba(10, 9, 12, 0.58), rgba(10, 9, 12, 0.08));
+    -fx-background-radius: 28px;
+    -fx-alignment: top-left;
+}
+
+.route-details-hero-copy {
+    -fx-alignment: bottom-left;
+    -fx-max-width: 560px;
+    -fx-padding: 192px 0 0;
+}
+
+.route-details-back-button {
+    -fx-background-color: -color-on-surface;
+    -fx-background-radius: 999px;
+    -fx-text-fill: -color-primary-dark;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-padding: 8px 14px;
+    -fx-cursor: hand;
+}
+
+.route-details-back-icon {
+    -fx-icon-color: -color-primary-dark;
+}
+
+.route-details-title {
+    -fx-font-size: 30px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -color-on-surface;
+}
+
+.route-details-meta {
+    -fx-font-size: 15px;
+    -fx-text-fill: rgba(255, 255, 255, 0.88);
+}
+
+.route-details-sections {
+    -fx-spacing: 20px;
+}
+
+.route-details-top-row {
+    -fx-hgap: 20px;
+    -fx-vgap: 20px;
+}
+
+.route-details-main-column {
+    -fx-pref-width: 704px;
+    -fx-max-width: 704px;
+}
+
+.route-details-side-column {
+    -fx-pref-width: 396px;
+    -fx-max-width: 396px;
+}
+
+.route-details-associated-sections {
+    -fx-spacing: 20px;
+}
+
+.route-details-trips-section {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+    -fx-effect: none;
+}
+
+.route-details-card {
+    -fx-background-color: -color-on-surface;
+    -fx-background-radius: 22px;
+    -fx-padding: 18px 18px 20px 18px;
+    -fx-effect: dropshadow(gaussian, rgba(12, 12, 13, 0.06), 16, 0, 0, 4);
+}
+
+.route-details-description-card {
+    -fx-padding: 22px 22px 24px 22px;
+}
+
+.route-details-card-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -color-primary-dark;
+}
+
+.route-details-description {
+    -fx-font-size: 13px;
+    -fx-line-spacing: 4px;
+    -fx-text-fill: -color-ink;
+}
+
+.route-details-preview-shell {
+    -fx-background-color: #eef3ea;
+    -fx-background-radius: 20px;
+}
+
+.route-details-summary-value {
+    -fx-font-size: 36px;
+    -fx-font-weight: 900;
+    -fx-text-fill: -color-primary-dark;
+}
+
+.route-details-summary-secondary-value {
+    -fx-font-size: 24px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -color-primary-dark;
+}
+
+.route-details-summary-caption {
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-text-fill: -color-ink-muted;
+}
+
+.route-details-places-list {
+    -fx-spacing: 12px;
+}
+
+.route-details-place-row {
+    -fx-background-color: #f8fbfe;
+    -fx-background-radius: 16px;
+    -fx-padding: 10px 12px;
+}
+
+.route-details-place-index {
+    -fx-min-width: 30px;
+    -fx-pref-width: 30px;
+    -fx-alignment: center;
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -color-ink-muted;
+}
+
+.route-details-place-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -color-ink;
+}
+
+.route-details-place-subtitle {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-ink-muted;
+}
+
+.route-details-grid {
+    -fx-hgap: 16px;
+    -fx-vgap: 16px;
+}
+
+.route-details-story-card {
+    -fx-pref-width: 244px;
+    -fx-background-color: #f8fbfe;
+    -fx-background-radius: 16px;
+    -fx-padding: 10px;
+    -fx-spacing: 8px;
+}
+
+.route-details-story-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -color-ink;
+}
+
+.route-details-story-meta {
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-text-fill: -color-ink-muted;
+}
+
+.route-details-story-description {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-ink-muted;
+}
+
+.route-details-side-column .detail-action-group {
+    -fx-spacing: 12px;
+}
+
+.route-details-side-column .detail-action-button {
+    -fx-pref-height: 44px;
+}

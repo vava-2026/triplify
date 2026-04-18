@@ -37,6 +37,11 @@ class EditorPagesFxmlSmokeTest {
     }
 
     @Test
+    void routeDetailsViewLoads() throws Exception {
+        assertLoads("/com/triplify/ui/pages/routes/RouteDetailsView.fxml");
+    }
+
+    @Test
     void addPlaceViewLoads() throws Exception {
         assertLoads("/com/triplify/ui/pages/places/AddPlaceView.fxml");
     }

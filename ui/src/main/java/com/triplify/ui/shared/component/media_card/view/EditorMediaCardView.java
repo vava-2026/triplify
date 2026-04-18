@@ -2,10 +2,13 @@ package com.triplify.ui.shared.component.media_card.view;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Cursor;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.layout.VBox;
 
@@ -26,6 +29,8 @@ public class EditorMediaCardView extends VBox {
     @FXML private Label subtitleLabel;
     @FXML private Button removeButton;
 
+    private Runnable onOpen;
+
     public EditorMediaCardView() {
         FXMLLoader loader = new FXMLLoader(FXML_URL);
         loader.setRoot(this);
@@ -45,6 +50,17 @@ public class EditorMediaCardView extends VBox {
         clip.setArcWidth(16);
         clip.setArcHeight(16);
         previewImageView.setClip(clip);
+
+        addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+            if (onOpen == null) {
+                return;
+            }
+            if (isDescendantOf(event.getPickResult().getIntersectedNode(), removeButton)) {
+                return;
+            }
+            onOpen.run();
+            event.consume();
+        });
     }
 
     public void setTitle(String title) {
@@ -66,5 +82,21 @@ public class EditorMediaCardView extends VBox {
     public void setRemoveVisible(boolean visible) {
         removeButton.setVisible(visible);
         removeButton.setManaged(visible);
+    }
+
+    public void setOnOpen(Runnable action) {
+        onOpen = action;
+        setCursor(action == null ? Cursor.DEFAULT : Cursor.HAND);
+    }
+
+    private boolean isDescendantOf(Node node, Node ancestor) {
+        Node current = node;
+        while (current != null) {
+            if (current == ancestor) {
+                return true;
+            }
+            current = current.getParent();
+        }
+        return false;
     }
 }

@@ -11,6 +11,19 @@
     <arguments id="addPlaceArgs">
         <argument name="tripId" type="string" required="true"/>
         <argument name="tripName" type="string" required="true"/>
+        <argument name="placeId" type="string" required="false"/>
+        <argument name="editorReturnTarget" type="string" required="false"/>
+    </arguments>
+
+    <arguments id="addRouteArgs">
+        <argument name="tripId" type="string" required="true"/>
+        <argument name="tripName" type="string" required="true"/>
+        <argument name="routeId" type="string" required="false"/>
+        <argument name="editorReturnTarget" type="string" required="false"/>
+    </arguments>
+
+    <arguments id="routeDetailsArgs">
+        <argument name="routeId" type="string" required="true"/>
     </arguments>
 
     <destination id="start"
@@ -52,6 +65,12 @@
     <destination id="trip_details"
                  fxml="com/triplify/ui/pages/placeholder/PlaceholderPageView.fxml"
                  singleTop="true"/>
+
+    <destination id="route_details"
+                 fxml="com/triplify/ui/pages/routes/RouteDetailsView.fxml"
+                 arguments="routeDetailsArgs"
+                 singleTop="true"/>
+
     <destination id="add_trip"
                  fxml="com/triplify/ui/pages/trips/AddTripView.fxml"
                  arguments="addTripArgs"
@@ -64,7 +83,7 @@
 
     <destination id="add_route"
                  fxml="com/triplify/ui/pages/routes/AddRouteView.fxml"
-                 arguments="addTripArgs"
+                 arguments="addRouteArgs"
                  singleTop="true"/>
 
     <destination id="calendar"
