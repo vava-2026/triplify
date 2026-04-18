@@ -92,7 +92,7 @@
                  singleTop="true"/>
 
     <destination id="badges"
-                 fxml="com/triplify/ui/pages/placeholder/PlaceholderPageView.fxml"
+                 fxml="com/triplify/ui/pages/badges/BadgesView.fxml"
                  singleTop="true"/>
 
     <destination id="settings"

@@ -302,6 +302,7 @@ public class CategoriesController extends SimpleLifecycleAwareController {
 
         Label colorTag = new Label(prettifyColor(category.color()));
         colorTag.getStyleClass().add("categories-item-color");
+        colorTag.getStyleClass().add(resolveColorStyleClass(category.color()));
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -410,6 +411,10 @@ public class CategoriesController extends SimpleLifecycleAwareController {
             return "Gray";
         }
         return colorTheme.name().toLowerCase(Locale.ROOT).replace('_', ' ');
+    }
+
+    private String resolveColorStyleClass(ColorTheme colorTheme) {
+        return (colorTheme == null ? ColorTheme.GRAY : colorTheme).getStyleClass();
     }
 
     private Select<ColorTheme> createColorSelectModel() {

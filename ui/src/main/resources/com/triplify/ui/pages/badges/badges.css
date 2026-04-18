@@ -1,0 +1,136 @@
+.badges-root {
+    -fx-padding: 24px 28px;
+}
+
+.badges-content {
+    -fx-spacing: 14px;
+}
+
+.badges-layout {
+    -fx-hgap: 16px;
+    -fx-vgap: 0;
+    -fx-alignment: top-left;
+}
+
+.badges-form-card {
+    -fx-pref-width: 400px;
+    -fx-min-width: 360px;
+    -fx-max-width: 440px;
+}
+
+.badges-list-card {
+    -fx-min-width: 520px;
+}
+
+.badges-list-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.badges-list-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.badges-list-scroll > .corner {
+    -fx-background-color: transparent;
+}
+
+.badges-card-header {
+    -fx-alignment: center-left;
+}
+
+.badges-section-title {
+    -fx-text-fill: -color-ink;
+    -fx-font-size: 20px;
+    -fx-padding: 10px 0 10px 0;
+    -fx-font-weight: bold;
+}
+
+.badges-mode-badge {
+    -fx-background-color: -color-primary-light;
+    -fx-text-fill: -color-primary-dark;
+    -fx-background-radius: 999px;
+    -fx-padding: 4px 10px;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.badges-form-group {
+    -fx-spacing: 6px;
+}
+
+.badges-actions-row {
+    -fx-alignment: center-left;
+}
+
+.badges-grow-btn {
+    -fx-max-width: Infinity;
+}
+
+.badges-group-select {
+    -fx-pref-height: 40;
+    -fx-background-radius: 10;
+}
+
+.badges-search-row {
+    -fx-alignment: center-left;
+}
+
+.badges-list {
+    -fx-padding: 2px 0 2px 0;
+}
+
+.badges-item {
+    -fx-background-color: -color-surface;
+    -fx-border-color: -color-border-muted;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 10 12 10 12;
+    -fx-cursor: hand;
+}
+
+.badges-item:hover {
+    -fx-background-color: -color-primary-light;
+}
+
+.badges-item-selected {
+    -fx-border-color: -color-primary;
+    -fx-border-width: 1.5;
+    -fx-background-color: -color-primary-light;
+}
+
+.badges-item-header {
+    -fx-alignment: center-left;
+}
+
+.badges-item-text {
+    -fx-alignment: center-left;
+    -fx-spacing: 6;
+}
+
+.badges-item-title {
+    -fx-text-fill: -color-ink;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.badges-item-subtitle {
+    -fx-text-fill: -color-ink-muted;
+    -fx-font-size: 12px;
+}
+
+.badges-item-group {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 4px 9px;
+    -fx-background-radius: 999px;
+    -fx-background-color: -color-primary-light;
+    -fx-text-fill: -color-primary-dark;
+}
+
+.badges-empty {
+    -fx-text-fill: -color-ink-muted;
+    -fx-font-size: 13px;
+}

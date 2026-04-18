@@ -5,8 +5,11 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
@@ -19,8 +22,16 @@
 	</stylesheets>
 
 	<VBox spacing="14" maxWidth="1120" styleClass="countries-content">
-		<HBox spacing="16" styleClass="countries-layout">
-			<VBox spacing="14" styleClass="page-card,countries-form-card">
+		<GridPane styleClass="countries-layout">
+			<columnConstraints>
+				<ColumnConstraints minWidth="330" prefWidth="330" maxWidth="330" hgrow="NEVER"/>
+				<ColumnConstraints minWidth="520" hgrow="ALWAYS"/>
+			</columnConstraints>
+			<rowConstraints>
+				<RowConstraints vgrow="ALWAYS"/>
+			</rowConstraints>
+
+			<VBox spacing="14" styleClass="page-card,countries-form-card" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.vgrow="ALWAYS">
 				<HBox styleClass="countries-card-header">
 					<Label fx:id="formSectionTitleLabel" text="Country Details" styleClass="countries-section-title"/>
 					<Region HBox.hgrow="ALWAYS"/>
@@ -67,7 +78,7 @@
 				</HBox>
             </VBox>
 
-            <VBox spacing="14" styleClass="page-card,countries-list-card" HBox.hgrow="ALWAYS">
+			<VBox spacing="14" styleClass="page-card,countries-list-card" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS">
 				<HBox styleClass="countries-card-header">
 					<Label fx:id="listSectionTitleLabel" text="Country Directory" styleClass="countries-section-title"/>
 					<Region HBox.hgrow="ALWAYS"/>
@@ -98,6 +109,6 @@
 					</content>
 				</ScrollPane>
 			</VBox>
-		</HBox>
+		</GridPane>
 	</VBox>
 </StackPane>

@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.triplify.ui.pages.badges.BadgesController"
+           styleClass="page-root,badges-root">
+    <stylesheets>
+        <String fx:value="/com/triplify/ui/pages/badges/badges.css"/>
+    </stylesheets>
+
+    <VBox spacing="14" maxWidth="1120" styleClass="badges-content">
+        <GridPane styleClass="badges-layout">
+            <columnConstraints>
+                <ColumnConstraints minWidth="360" prefWidth="360" maxWidth="360" hgrow="NEVER"/>
+                <ColumnConstraints minWidth="520" hgrow="ALWAYS"/>
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints vgrow="ALWAYS"/>
+            </rowConstraints>
+
+            <VBox spacing="14" styleClass="page-card,badges-form-card" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.vgrow="ALWAYS">
+                <HBox styleClass="badges-card-header">
+                    <Label fx:id="formSectionTitleLabel" text="Badge Details" styleClass="badges-section-title"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="modeBadgeLabel" text="Create mode" styleClass="badges-mode-badge"/>
+                </HBox>
+
+                <VBox spacing="6" styleClass="badges-form-group">
+                    <Label fx:id="nameLabel" text="English Name *" styleClass="form-label"/>
+                    <VBox fx:id="nameInputContainer"/>
+                </VBox>
+
+                <VBox spacing="6" styleClass="badges-form-group">
+                    <Label fx:id="nameSkLabel" text="Slovak Name *" styleClass="form-label"/>
+                    <VBox fx:id="nameSkInputContainer"/>
+                </VBox>
+
+                <VBox spacing="6" styleClass="badges-form-group">
+                    <Label fx:id="descriptionLabel" text="Description" styleClass="form-label"/>
+                    <VBox fx:id="descriptionInputContainer"/>
+                </VBox>
+
+                <VBox spacing="6" styleClass="badges-form-group">
+                    <Label fx:id="descriptionSkLabel" text="Description (SK)" styleClass="form-label"/>
+                    <VBox fx:id="descriptionSkInputContainer"/>
+                </VBox>
+
+                <VBox spacing="6" styleClass="badges-form-group">
+                    <Label fx:id="groupLabel" text="Badge Group *" styleClass="form-label"/>
+                    <VBox fx:id="groupSelectContainer"/>
+                </VBox>
+
+                <HBox spacing="10">
+                    <VBox spacing="6" styleClass="badges-form-group" HBox.hgrow="ALWAYS">
+                        <Label fx:id="levelLabel" text="Level *" styleClass="form-label"/>
+                        <VBox fx:id="levelInputContainer"/>
+                    </VBox>
+                    <VBox spacing="6" styleClass="badges-form-group" HBox.hgrow="ALWAYS">
+                        <Label fx:id="requiredValueLabel" text="Required Value *" styleClass="form-label"/>
+                        <VBox fx:id="requiredValueInputContainer"/>
+                    </VBox>
+                </HBox>
+
+                <VBox spacing="6" styleClass="badges-form-group">
+                    <Label fx:id="imagePathLabel" text="Image Path (optional)" styleClass="form-label"/>
+                    <VBox fx:id="imagePathInputContainer"/>
+                </VBox>
+
+
+
+                <HBox spacing="10" styleClass="badges-actions-row">
+                    <Button fx:id="saveButton"
+                            text="Create"
+                            onAction="#onSaveBadge"
+                            styleClass="app-btn,app-btn-primary,badges-grow-btn"
+                            HBox.hgrow="ALWAYS"/>
+
+                    <Button fx:id="clearFormButton"
+                            text="Clear"
+                            onAction="#onClearForm"
+                            styleClass="app-btn,app-btn-secondary"/>
+                </HBox>
+
+                <HBox spacing="10" styleClass="badges-actions-row">
+                    <Button fx:id="deleteButton"
+                            text="Delete"
+                            onAction="#onDeleteBadge"
+                            styleClass="app-btn,app-btn-danger-outline,badges-grow-btn"
+                            HBox.hgrow="ALWAYS"/>
+                </HBox>
+            </VBox>
+
+            <VBox spacing="14" styleClass="page-card,badges-list-card" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS">
+                <HBox styleClass="badges-card-header">
+                    <Label text="Badge Directory" styleClass="badges-section-title"/>
+                </HBox>
+
+                <HBox spacing="10" styleClass="badges-search-row">
+                    <HBox fx:id="searchContainer" spacing="10" HBox.hgrow="ALWAYS"/>
+                </HBox>
+
+                <ScrollPane fitToWidth="true"
+                            hbarPolicy="NEVER"
+                            vbarPolicy="AS_NEEDED"
+                            VBox.vgrow="ALWAYS"
+                            styleClass="badges-list-scroll">
+                    <content>
+                        <VBox spacing="10">
+                            <VBox fx:id="badgesListContainer" spacing="10" styleClass="badges-list"/>
+
+                            <Label fx:id="emptyStateLabel"
+                                   text="No badges found."
+                                   styleClass="badges-empty"
+                                   visible="false"
+                                   managed="false"/>
+                        </VBox>
+                    </content>
+                </ScrollPane>
+            </VBox>
+        </GridPane>
+    </VBox>
+</StackPane>
