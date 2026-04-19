@@ -4,7 +4,7 @@ import com.google.inject.Inject;
 import com.triplify.application.usecase.category.CategoryService;
 import com.triplify.application.usecase.category.dto.CategoryResponse;
 import com.triplify.application.usecase.country.CountryService;
-import com.triplify.application.response.TripStatus;
+import com.triplify.application.usecase.trip.dto.TripStatus;
 import com.triplify.application.usecase.tag.TagService;
 import com.triplify.application.usecase.tag.dto.CreateTagRequest;
 import com.triplify.application.usecase.tag.dto.GetTagsRequest;
@@ -64,7 +64,6 @@ import com.triplify.ui.shared.util.Localization;
 import com.triplify.application.model.ColorTheme;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
@@ -76,7 +75,6 @@ import javafx.scene.input.DragEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -1713,9 +1711,8 @@ public class AddTripController extends SimpleLifecycleAwareController {
         categorySelectModel.setSelectedItem(findEntry(categorySelectModel, categoryId));
 
         String coverPath = null;
-        if (trip.images() != null && !trip.images().isEmpty()) {
-            var image = trip.images().iterator().next();
-            coverPath = image.url() == null ? null : image.url().toString();
+        if (trip.coverImage() != null) {
+            coverPath = trip.coverImage().url() == null ? null : trip.coverImage().url().toString();
         }
         coverImageDirty = false;
         showCoverImage(coverPath, trip.title());

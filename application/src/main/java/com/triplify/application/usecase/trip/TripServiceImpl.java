@@ -8,8 +8,7 @@ import com.triplify.application.usecase.country.dto.CountryResponse;
 import com.triplify.application.usecase.image.ImageService;
 import com.triplify.application.usecase.image.dto.AddImageRequest;
 import com.triplify.application.usecase.image.dto.DeleteImageRequest;
-import com.triplify.application.usecase.image.dto.GetImagesRequest;
-import com.triplify.application.usecase.image.dto.ImageOwnerType;
+import com.triplify.application.usecase.image.dto.GetImageByIdRequest;
 import com.triplify.application.usecase.image.dto.ImageResponse;
 import com.triplify.application.usecase.session.SessionUser;
 import com.triplify.application.usecase.session.UserSessionContext;
@@ -57,7 +56,6 @@ public class TripServiceImpl implements TripService {
 
     private static final Logger log = LoggerFactory.getLogger(TripServiceImpl.class);
     private static final String DEFAULT_IMAGE_DESCRIPTION = "Trip image ";
-    private static final int IMAGE_PAGE_SIZE = 100;
 
     private final TripRepository tripRepository;
     private final CategoryRepository categoryRepository;
@@ -101,6 +99,8 @@ public class TripServiceImpl implements TripService {
                 user.userId(),
                 relations.category().getId(),
                 relations.category(),
+                null,
+                null,
                 request.title(),
                 normalizeDescription(request.description()),
                 request.status(),
@@ -118,7 +118,7 @@ public class TripServiceImpl implements TripService {
         tripRepository.replaceTagIds(trip.getId().toString(), idsOfTags(relations.tags()));
         tripRepository.replaceCountryIds(trip.getId().toString(), idsOfCountries(relations.countries()));
 
-        replaceTripImages(trip.getId().toString(), request.images(), false).orThrow();
+        updateTripCoverImage(trip.getId().toString(), request.images(), null).orThrow();
 
         log.info("Added trip id='{}', title='{}' by userId='{}'", trip.getId(), trip.getTitle(), user.userId());
         return getTripById(new GetTripByIdRequest(trip.getId().toString()));
@@ -143,6 +143,8 @@ public class TripServiceImpl implements TripService {
                 existing.getUserId(),
                 relations.category().getId(),
                 relations.category(),
+                existing.getCoverImageId(),
+                existing.getCoverImage(),
                 request.title(),
                 normalizeDescription(request.description()),
                 request.status(),
@@ -160,9 +162,11 @@ public class TripServiceImpl implements TripService {
         tripRepository.replaceTagIds(updatedTrip.getId().toString(), idsOfTags(relations.tags()));
         tripRepository.replaceCountryIds(updatedTrip.getId().toString(), idsOfCountries(relations.countries()));
 
-        if (request.images() != null) {
-            replaceTripImages(updatedTrip.getId().toString(), request.images(), true).orThrow();
-        }
+        updateTripCoverImage(
+                updatedTrip.getId().toString(),
+                request.images(),
+                existing.getCoverImageId() == null ? null : existing.getCoverImageId().toString()
+        ).orThrow();
 
         log.info("Updated trip id='{}' by userId='{}'", updatedTrip.getId(), user.userId());
         return getTripById(new GetTripByIdRequest(updatedTrip.getId().toString()));
@@ -173,10 +177,11 @@ public class TripServiceImpl implements TripService {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
         Trip existing = requireOwnedTrip(request.id(), user.userId()).orThrow();
 
-        Set<ImageResponse> images = loadTripImages(request.id()).orThrow();
-
-        for (ImageResponse image : images) {
-            imageService.deleteImage(new DeleteImageRequest(image.id())).orThrow();
+        if (existing.getCoverImageId() != null) {
+            var coverResult = imageService.getImageById(new GetImageByIdRequest(existing.getCoverImageId().toString()));
+            if (coverResult.isSuccess()) {
+                imageService.deleteImage(new DeleteImageRequest(coverResult.getValue().id())).orThrow();
+            }
         }
 
         tripRepository.delete(existing);
@@ -199,6 +204,8 @@ public class TripServiceImpl implements TripService {
                 existing.getUserId(),
                 existing.getCategoryId(),
                 existing.getCategory(),
+                existing.getCoverImageId(),
+                existing.getCoverImage(),
                 existing.getTitle(),
                 existing.getDescription(),
                 request.status(),
@@ -323,65 +330,45 @@ public class TripServiceImpl implements TripService {
         return Result.ok();
     }
 
-    private Result<Void> replaceTripImages(String tripId, Set<Path> requestedImages, boolean removeExistingImages) {
+    private Result<Void> updateTripCoverImage(String tripId, Set<Path> requestedImages, String existingCoverImageId) {
         if (requestedImages == null) {
             return Result.ok();
         }
 
-        Set<ImageResponse> existingImages = loadTripImages(tripId).orThrow();
+        Path newCoverPath = requestedImages.stream()
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
 
-        LinkedHashSet<String> uploadedImageIds = new LinkedHashSet<>();
-        for (Path imagePath : requestedImages) {
-            Result<ImageResponse> imageResult = imageService.addImage(new AddImageRequest(imagePath, DEFAULT_IMAGE_DESCRIPTION + tripId));
-            if (imageResult.isFailure()) {
-                cleanupImages(uploadedImageIds);
-                return Result.fail(imageResult.getError());
+        if (newCoverPath == null) {
+            tripRepository.updateCoverImageId(tripId, null);
+            if (existingCoverImageId != null && !existingCoverImageId.isBlank()) {
+                imageService.deleteImage(new DeleteImageRequest(existingCoverImageId)).orThrow();
             }
-            uploadedImageIds.add(imageResult.getValue().id());
+            return Result.ok();
         }
 
-        if (removeExistingImages) {
-            for (ImageResponse existingImage : existingImages) {
-                Result<Void> deleteResult = imageService.deleteImage(new DeleteImageRequest(existingImage.id()));
-                if (deleteResult.isFailure()) {
-                    cleanupImages(uploadedImageIds);
-                    return Result.fail(deleteResult.getError());
-                }
-            }
+        Result<ImageResponse> imageResult = imageService.addImage(new AddImageRequest(newCoverPath, DEFAULT_IMAGE_DESCRIPTION + tripId));
+        if (imageResult.isFailure()) {
+            return Result.fail(imageResult.getError());
         }
 
-        tripRepository.replaceImageIds(tripId, uploadedImageIds);
+        String newCoverImageId = imageResult.getValue().id();
+        tripRepository.updateCoverImageId(tripId, newCoverImageId);
+
+        if (existingCoverImageId != null
+                && !existingCoverImageId.isBlank()
+                && !existingCoverImageId.equals(newCoverImageId)) {
+            var deleteResult = imageService.deleteImage(new DeleteImageRequest(existingCoverImageId));
+            if (deleteResult.isFailure()) {
+                return Result.fail(deleteResult.getError());
+            }
+        }
         return Result.ok();
     }
 
-    private void cleanupImages(Set<String> imageIds) {
-        for (String imageId : imageIds) {
-            imageService.deleteImage(new DeleteImageRequest(imageId));
-        }
-    }
-
-    private Result<Set<ImageResponse>> loadTripImages(String tripId) {
-        LinkedHashSet<ImageResponse> images = new LinkedHashSet<>();
-        PageRequest pageRequest = new PageRequest(0, IMAGE_PAGE_SIZE);
-
-        while (true) {
-            Page<ImageResponse> page = imageService.getImages(new GetImagesRequest(
-                    pageRequest,
-                    new GetImagesRequest.Filter(tripId, ImageOwnerType.TRIP, null, null),
-                    new GetImagesRequest.OrderBy(true)
-            )).orThrow();
-            images.addAll(page.items());
-            if (!page.hasNext()) {
-                break;
-            }
-            pageRequest = pageRequest.next();
-        }
-
-        return Result.ok(images);
-    }
-
     private Result<TripResponse> toResponse(Trip trip) {
-        Set<ImageResponse> images = loadTripImages(trip.getId().toString()).orThrow();
+        ImageResponse coverImage = trip.getCoverImage() == null ? null : ImageResponse.from(trip.getCoverImage());
 
         Category category = trip.getCategory();
         CategoryResponse categoryResponse = category == null ? null : new CategoryResponse(
@@ -420,7 +407,7 @@ public class TripServiceImpl implements TripService {
                 trip.getCreatedAt(),
                 trip.getUpdatedAt(),
                 tagResponses,
-                images,
+                coverImage,
                 countryResponses
         ));
     }

@@ -16,5 +16,5 @@ public interface TripRepository {
     void delete(Trip trip);
     void replaceTagIds(String tripId, Set<String> tagIds);
     void replaceCountryIds(String tripId, Set<String> countryIds);
-    void replaceImageIds(String tripId, Set<String> imageIds);
+    void updateCoverImageId(String tripId, String coverImageId);
 }

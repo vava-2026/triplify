@@ -3,16 +3,15 @@ package com.triplify.ui.pages.trips;
 import com.google.inject.Inject;
 import com.triplify.application.pagination.Pagination;
 import com.triplify.application.request.TripSort;
-import com.triplify.application.response.TripResponse;
-import com.triplify.application.response.TripStatus;
+import com.triplify.application.usecase.trip.dto.TripStatus;
 import com.triplify.application.usecase.category.CategoryService;
 import com.triplify.application.usecase.category.dto.CategoryResponse;
 import com.triplify.application.usecase.country.CountryService;
-import com.triplify.application.usecase.image.dto.ImageResponse;
 import com.triplify.application.usecase.tag.TagService;
 import com.triplify.application.usecase.tag.dto.GetTagsRequest;
 import com.triplify.application.usecase.tag.dto.TagResponse;
 import com.triplify.application.usecase.trip.TripService;
+import com.triplify.application.usecase.trip.dto.TripResponse;
 import com.triplify.domain.model.enums.StatusEnum;
 import com.triplify.domain.pagination.PageRequest;
 import com.triplify.ui.routing.RouteIds;
@@ -193,7 +192,6 @@ public class MyTripsController extends SimpleLifecycleAwareController {
         }
 
         List<TripResponse> trips = result.getValue().items().stream()
-                .map(this::toLegacyTrip)
                 .filter(trip -> matchesTag(trip.tags(), normalizeFilter(selectedValue(tagSelectModel))))
                 .sorted(resolveComparator(sortSelect.getValue()))
                 .toList();
@@ -203,7 +201,7 @@ public class MyTripsController extends SimpleLifecycleAwareController {
     }
 
     private Node buildTripCard(TripResponse trip) {
-        String dateRange = formatDateRange(trip.startDate(), trip.endDate());
+        String dateRange = formatDateRange(toLocalDate(trip.startedAt()), toLocalDate(trip.endedAt()));
         TripCardView card = TripCardView.create(trip, dateRange, () -> openTrip(trip, dateRange));
         return card.getRoot();
     }
@@ -232,31 +230,16 @@ public class MyTripsController extends SimpleLifecycleAwareController {
     private void openTrip(TripResponse trip, String dateRange) {
         RouterArgument args = new RouterArgument();
         args.addArgument("tripId", trip.id());
-        args.addArgument("tripName", trip.name());
-        args.addArgument("tripCountry", trip.country());
-        args.addArgument("tripCategory", trip.category());
-        args.addArgument("tripStatus", trip.status());
+        args.addArgument("tripName", trip.title());
+        args.addArgument("tripCountry", deriveCountryLabel(trip.countries()));
+        args.addArgument("tripCategory", trip.category() == null ? "" : trip.category().name());
+        args.addArgument("tripStatus", toLegacyStatus(trip.status()));
         args.addArgument("tripDates", dateRange);
-        args.addArgument("tripStartDate", trip.startDate() == null ? null : trip.startDate().toString());
-        args.addArgument("tripEndDate", trip.endDate() == null ? null : trip.endDate().toString());
-        args.addArgument("tripCoverUrl", trip.coverUrl());
-        args.addArgument("tripTags", trip.tags() == null ? "" : String.join(",", trip.tags()));
+        args.addArgument("tripStartDate", trip.startedAt() == null ? null : toLocalDate(trip.startedAt()).toString());
+        args.addArgument("tripEndDate", trip.endedAt() == null ? null : toLocalDate(trip.endedAt()).toString());
+        args.addArgument("tripCoverUrl", deriveCoverUrl(trip.coverImage()));
+        args.addArgument("tripTags", trip.tags() == null ? "" : String.join(",", trip.tags().stream().map(TagResponse::name).toList()));
         getRouter().moveto(RouteIds.ADD_TRIP, args);
-    }
-
-    private TripResponse toLegacyTrip(com.triplify.application.usecase.trip.dto.TripResponse trip) {
-        return new TripResponse(
-                trip.id(),
-                trip.title(),
-                deriveCountryLabel(trip.countries()),
-                trip.category() == null ? "" : trip.category().name(),
-                toLegacyStatus(trip.status()),
-                toLocalDate(trip.startedAt()),
-                toLocalDate(trip.endedAt()),
-                null,
-                deriveCoverUrl(trip.images()),
-                trip.tags() == null ? List.of() : trip.tags().stream().map(TagResponse::name).toList()
-        );
     }
 
     private String deriveCountryLabel(java.util.Set<com.triplify.application.usecase.country.dto.CountryResponse> countries) {
@@ -269,11 +252,11 @@ public class MyTripsController extends SimpleLifecycleAwareController {
         return countries.iterator().next().name() + " +" + (countries.size() - 1);
     }
 
-    private String deriveCoverUrl(java.util.Set<ImageResponse> images) {
-        if (images == null || images.isEmpty()) {
+    private String deriveCoverUrl(com.triplify.application.usecase.image.dto.ImageResponse coverImage) {
+        if (coverImage == null || coverImage.url() == null) {
             return null;
         }
-        return images.iterator().next().url().toUri().toString();
+        return coverImage.url().toUri().toString();
     }
 
     private LocalDate toLocalDate(Instant value) {
@@ -309,18 +292,21 @@ public class MyTripsController extends SimpleLifecycleAwareController {
         return actual.toLowerCase(Locale.ROOT).contains(expected.toLowerCase(Locale.ROOT));
     }
 
-    private boolean matchesTag(List<String> tags, String expected) {
+    private boolean matchesTag(java.util.Set<TagResponse> tags, String expected) {
         if (expected == null || expected.isBlank()) return true;
         if (tags == null || tags.isEmpty()) return false;
         String normalized = expected.toLowerCase(Locale.ROOT);
-        return tags.stream().anyMatch(tag -> tag != null && tag.toLowerCase(Locale.ROOT).contains(normalized));
+        return tags.stream()
+                .map(TagResponse::name)
+                .filter(Objects::nonNull)
+                .anyMatch(tag -> tag.toLowerCase(Locale.ROOT).contains(normalized));
     }
 
     private Comparator<TripResponse> resolveComparator(TripSort sort) {
         return switch (sort) {
-            case NAME_ASC -> Comparator.comparing(TripResponse::name, String.CASE_INSENSITIVE_ORDER);
-            case OLDEST_FIRST -> Comparator.comparing(TripResponse::startDate, Comparator.nullsLast(Comparator.naturalOrder()));
-            case NEWEST_FIRST -> Comparator.comparing(TripResponse::startDate, Comparator.nullsLast(Comparator.reverseOrder()));
+            case NAME_ASC -> Comparator.comparing(TripResponse::title, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+            case OLDEST_FIRST -> Comparator.comparing(TripResponse::startedAt, Comparator.nullsLast(Comparator.naturalOrder()));
+            case NEWEST_FIRST -> Comparator.comparing(TripResponse::startedAt, Comparator.nullsLast(Comparator.reverseOrder()));
         };
     }
 

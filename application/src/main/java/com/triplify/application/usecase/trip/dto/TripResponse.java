@@ -21,7 +21,7 @@ public record TripResponse(
         Instant createdAt,
         Instant updatedAt,
         Set<TagResponse> tags,
-        Set<ImageResponse> images,
+        ImageResponse coverImage,
         Set<CountryResponse> countries
 ) {
 }

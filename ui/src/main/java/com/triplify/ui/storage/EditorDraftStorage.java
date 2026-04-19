@@ -1,6 +1,6 @@
 package com.triplify.ui.storage;
 
-import com.triplify.application.response.TripStatus;
+import com.triplify.application.usecase.trip.dto.TripStatus;
 import com.triplify.application.usecase.place.dto.PlaceResponse;
 import com.triplify.application.usecase.route.dto.RouteResponse;
 import com.triplify.domain.model.enums.TripPlaceSourceType;

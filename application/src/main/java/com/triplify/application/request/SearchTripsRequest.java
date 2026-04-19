@@ -1,7 +1,7 @@
 package com.triplify.application.request;
 
 import com.triplify.application.pagination.Pagination;
-import com.triplify.application.response.TripStatus;
+import com.triplify.application.usecase.trip.dto.TripStatus;
 
 public record SearchTripsRequest(
         String country,

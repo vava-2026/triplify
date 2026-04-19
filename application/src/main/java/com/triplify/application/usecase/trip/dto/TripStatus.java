@@ -1,4 +1,4 @@
-package com.triplify.application.response;
+package com.triplify.application.usecase.trip.dto;
 
 public enum TripStatus {
     VISITED("Visited", "trip-status-visited"),

@@ -1,13 +1,12 @@
 package com.triplify.ui.pages.places;
 
 import com.google.inject.Inject;
-import com.triplify.application.response.TripStatus;
+import com.triplify.application.usecase.trip.dto.TripStatus;
 import com.triplify.application.usecase.place.dto.GetPlaceDetailsRequest;
 import com.triplify.application.usecase.place.dto.PlaceDetailsResponse;
 import com.triplify.application.usecase.place.PlaceService;
 import com.triplify.application.usecase.place.dto.DeletePlaceRequest;
 import com.triplify.application.usecase.place.dto.PlaceResponse;
-import com.triplify.application.usecase.image.dto.ImageResponse;
 import com.triplify.application.usecase.route.dto.RouteResponse;
 import com.triplify.application.usecase.story.dto.StoryResponse;
 import com.triplify.application.usecase.tag.dto.TagResponse;
@@ -191,7 +190,7 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         for (com.triplify.application.usecase.trip.dto.TripResponse trip : trips) {
             String dateRange = formatDateRange(toLocalDate(trip.startedAt()), toLocalDate(trip.endedAt()));
             TripCardView card = TripCardView.createForDetails(
-                    toLegacyTrip(trip),
+                    trip,
                     dateRange,
                     () -> openTrip(trip, dateRange)
             );
@@ -254,7 +253,7 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         args.addArgument("tripDates", dateRange);
         args.addArgument("tripStartDate", trip.startedAt() == null ? null : toLocalDate(trip.startedAt()).toString());
         args.addArgument("tripEndDate", trip.endedAt() == null ? null : toLocalDate(trip.endedAt()).toString());
-        args.addArgument("tripCoverUrl", deriveCoverUrl(trip.images()));
+        args.addArgument("tripCoverUrl", deriveCoverUrl(trip.coverImage()));
         args.addArgument("tripTags", trip.tags() == null ? "" : String.join(",", trip.tags().stream().map(TagResponse::name).toList()));
         getRouter().moveto(RouteIds.ADD_TRIP, args);
     }
@@ -281,22 +280,6 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         return value == null || value.isBlank() ? fallback : value;
     }
 
-    private com.triplify.application.response.TripResponse toLegacyTrip(
-            com.triplify.application.usecase.trip.dto.TripResponse trip
-    ) {
-        return new com.triplify.application.response.TripResponse(
-                trip.id(),
-                safeText(trip.title(), I18n.t("trip.add.fallback.trip")),
-                deriveCountryLabel(trip.countries()),
-                trip.category() == null ? "" : trip.category().name(),
-                toLegacyStatus(trip.status()),
-                toLocalDate(trip.startedAt()),
-                toLocalDate(trip.endedAt()),
-                null,
-                deriveCoverUrl(trip.images()),
-                trip.tags() == null ? java.util.List.of() : trip.tags().stream().map(TagResponse::name).toList()
-        );
-    }
 
     private String deriveCountryLabel(java.util.Set<com.triplify.application.usecase.country.dto.CountryResponse> countries) {
         if (countries == null || countries.isEmpty()) {
@@ -308,16 +291,11 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         return countries.iterator().next().name() + " +" + (countries.size() - 1);
     }
 
-    private String deriveCoverUrl(java.util.Set<ImageResponse> images) {
-        if (images == null || images.isEmpty()) {
+    private String deriveCoverUrl(com.triplify.application.usecase.image.dto.ImageResponse coverImage) {
+        if (coverImage == null || coverImage.url() == null) {
             return null;
         }
-
-        return images.stream()
-                .filter(image -> image.url() != null)
-                .map(image -> image.url().toUri().toString())
-                .findFirst()
-                .orElse(null);
+        return coverImage.url().toUri().toString();
     }
 
     private LocalDate toLocalDate(Instant value) {

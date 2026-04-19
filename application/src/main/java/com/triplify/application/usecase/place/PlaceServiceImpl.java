@@ -22,6 +22,7 @@ import com.triplify.application.usecase.session.SessionUser;
 import com.triplify.application.usecase.session.UserSessionContext;
 import com.triplify.application.usecase.trip.TripService;
 import com.triplify.application.usecase.trip.dto.GetTripByIdRequest;
+import com.triplify.application.usecase.trip.dto.TripResponse;
 import com.triplify.domain.error.PlaceError;
 import com.triplify.domain.model.Place;
 import com.triplify.domain.model.Route;
@@ -185,7 +186,7 @@ public class PlaceServiceImpl implements PlaceService {
         return Result.ok(responsePage);
     }
 
-    private List<com.triplify.application.usecase.trip.dto.TripResponse> loadAssociatedTrips(String placeId) {
+    private List<TripResponse> loadAssociatedTrips(String placeId) {
         List<TripPlace> relatedTripPlaces = tripPlaceRepository.findByPlaceId(placeId);
         if (relatedTripPlaces.isEmpty()) {
             return List.of();

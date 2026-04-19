@@ -1,6 +1,10 @@
 package com.triplify.ui.shared.component.trip.view;
 
-import com.triplify.application.response.TripResponse;
+import com.triplify.application.usecase.trip.dto.TripResponse;
+import com.triplify.domain.model.enums.StatusEnum;
+import com.triplify.ui.i18n.I18n;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.WeakChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -47,6 +51,9 @@ public class TripCardView implements Initializable {
     @FXML private Label dateLabel;
 
     private Runnable onOpen;
+    private StatusEnum currentStatus;
+    private final ChangeListener<ResourceBundle> i18nBundleListener = (obs, oldBundle, newBundle) -> applyStatus(currentStatus);
+    private final WeakChangeListener<ResourceBundle> weakI18nBundleListener = new WeakChangeListener<>(i18nBundleListener);
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -68,6 +75,8 @@ public class TripCardView implements Initializable {
                 onOpen.run();
             }
         });
+
+        I18n.bundleProperty().addListener(weakI18nBundleListener);
     }
 
     public Node getRoot() {
@@ -80,15 +89,16 @@ public class TripCardView implements Initializable {
 
     public void setTrip(TripResponse trip, String dateRange) {
         if (trip == null) return;
-        titleLabel.setText(trip.name());
-        categoryLabel.setText(trip.category());
+        titleLabel.setText(trip.title());
+        categoryLabel.setText(trip.category() == null ? "" : trip.category().name());
         dateLabel.setText(dateRange);
 
         media.getStyleClass().removeIf(style -> style.startsWith("trip-cover-"));
 
+        String coverUrl = resolveCoverUrl(trip);
         boolean imageApplied = false;
-        if (trip.coverUrl() != null && !trip.coverUrl().isBlank()) {
-            Image image = resolveImage(trip.coverUrl());
+        if (coverUrl != null && !coverUrl.isBlank()) {
+            Image image = resolveImage(coverUrl);
             if (image != null && !image.isError()) {
                 imageApplied = true;
                 BackgroundImage bg = new BackgroundImage(
@@ -105,18 +115,51 @@ public class TripCardView implements Initializable {
         if (!imageApplied) {
             media.setBackground(null);
             media.setStyle(null);
-            if (trip.coverKey() != null && !trip.coverKey().isBlank()) {
-                media.getStyleClass().add("trip-cover-" + trip.coverKey());
-            } else {
-                media.getStyleClass().add("trip-cover-default");
-            }
+            media.getStyleClass().add("trip-cover-default");
         }
 
-        statusLabel.setText(trip.status() == null ? "Unknown" : trip.status().getLabel());
+        currentStatus = trip.status();
+        applyStatus(currentStatus);
+    }
+
+    private void applyStatus(StatusEnum status) {
+        statusLabel.setText(resolveStatusLabel(status));
         statusLabel.getStyleClass().removeIf(style -> style.startsWith("trip-status-"));
-        if (trip.status() != null) {
-            statusLabel.getStyleClass().add(trip.status().getCssClass());
+        String statusClass = resolveStatusCssClass(status);
+        if (statusClass != null) {
+            statusLabel.getStyleClass().add(statusClass);
         }
+    }
+
+    private String resolveCoverUrl(TripResponse trip) {
+        if (trip.coverImage() == null || trip.coverImage().url() == null) {
+            return null;
+        }
+        return trip.coverImage().url().toUri().toString();
+    }
+
+    private String resolveStatusLabel(StatusEnum status) {
+        if (status == null) {
+            return I18n.t("trip.status.unknown");
+        }
+
+        return switch (status) {
+            case VISITED -> I18n.t("trip.status.visited");
+            case ONGOING -> I18n.t("trip.status.ongoing");
+            case PLANNED, CANCELED -> I18n.t("trip.status.planned");
+        };
+    }
+
+    private String resolveStatusCssClass(StatusEnum status) {
+        if (status == null) {
+            return null;
+        }
+
+        return switch (status) {
+            case VISITED -> "trip-status-visited";
+            case ONGOING -> "trip-status-ongoing";
+            case PLANNED, CANCELED -> "trip-status-planned";
+        };
     }
 
     private Image resolveImage(String coverUrl) {
