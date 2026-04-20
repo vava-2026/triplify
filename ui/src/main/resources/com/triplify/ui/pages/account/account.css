@@ -106,14 +106,40 @@
     -fx-font-size: 32px;
     -fx-font-weight: 700;
     -fx-text-fill: -color-ink;
-    -fx-translate-y: 15;
 }
 
 .profile-edit-name-btn {
     -fx-background-color: transparent;
     -fx-padding: 2;
     -fx-cursor: hand;
-    -fx-translate-y: 15;
+}
+
+.profile-name-display-row,
+.profile-name-editor-row {
+    -fx-min-height: 40;
+    -fx-pref-height: 40;
+    -fx-max-height: 40;
+    -fx-alignment: center-left;
+}
+
+.profile-name-editor-row {
+    -fx-wrap-text: false;
+}
+
+.profile-name-input .input-item {
+    -fx-pref-width: 300;
+    -fx-min-width: 300;
+    -fx-max-width: 300;
+    -fx-pref-height: 40;
+    -fx-min-height: 40;
+    -fx-max-height: 40;
+}
+
+.profile-name-save-btn {
+    -fx-pref-height: 40;
+    -fx-min-height: 40;
+    -fx-max-height: 40;
+    -fx-padding: 0 20 0 20;
 }
 
 .profile-edit-name-icon {
@@ -126,7 +152,6 @@
 
 .profile-email-icon {
     -fx-icon-color: -color-ink-muted-soft;
-    -fx-translate-y: 5;
 }
 
 .profile-email {
@@ -134,7 +159,6 @@
     -fx-font-size: 16px;
     -fx-font-weight: 500;
     -fx-text-fill: -color-ink-muted;
-    -fx-translate-y: 5;
 }
 
 .profile-role-pill {

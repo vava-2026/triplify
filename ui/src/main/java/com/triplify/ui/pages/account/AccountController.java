@@ -12,7 +12,9 @@ import com.triplify.application.usecase.session.SessionUser;
 import com.triplify.application.usecase.session.UserSessionContext;
 import com.triplify.application.usecase.user.UserService;
 import com.triplify.application.usecase.user.dto.UpdateUserAvatarRequest;
+import com.triplify.application.usecase.user.dto.UpdateUserProfileRequest;
 import com.triplify.application.usecase.user.dto.UserResponse;
+import com.triplify.domain.error.ValidationError;
 import com.triplify.domain.model.enums.RoleEnum;
 import com.triplify.domain.result.Result;
 import com.triplify.ui.error.ErrorHandler;
@@ -24,6 +26,7 @@ import com.triplify.ui.shared.component.button.model.ButtonVariant;
 import com.triplify.ui.shared.component.button.view.AppButtonView;
 import com.triplify.ui.shared.component.badge.viewmodel.BadgeViewModel;
 import com.triplify.ui.shared.component.badge.view.BadgeView;
+import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.toast.ToastService;
 import com.triplify.ui.shared.util.AvatarImageHelper;
 import com.triplify.ui.shared.util.FxmlLoaderHelper;
@@ -34,6 +37,7 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
@@ -45,6 +49,7 @@ import java.io.File;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.UUID;
 
 public class AccountController extends SimpleLifecycleAwareController {
 
@@ -58,9 +63,14 @@ public class AccountController extends SimpleLifecycleAwareController {
     @FXML private Label profileRolePill;
     @FXML private Label profileAvatarInitial;
     @FXML private ImageView profileAvatarImage;
+    @FXML private HBox profileNameDisplayRow;
     @FXML private StackPane upgradeButtonContainer;
     @FXML private StackPane logoutButtonContainer;
     @FXML private Button profileAvatarEditBtn;
+    @FXML private Button profileEditNameBtn;
+    @FXML private HBox profileNameEditorRow;
+    @FXML private StackPane profileNameInputContainer;
+    @FXML private StackPane profileNameSaveButtonContainer;
 
     @Inject private ToastService toast;
     @Inject private AuthService authService;
@@ -73,10 +83,13 @@ public class AccountController extends SimpleLifecycleAwareController {
     @Inject private PageAccessService pageAccessService;
     @Inject private FxmlLoaderHelper fxmlLoader;
 
+    private InputItem profileNameInput;
+
     @FXML
     public void initialize() {
         setupAvatarButton();
         setupLogoutButton();
+        setupProfileNameEditor();
         refreshProfileHero();
         loadBadges();
     }
@@ -99,6 +112,27 @@ public class AccountController extends SimpleLifecycleAwareController {
         logoutButton.setFocusTraversable(false);
         logoutButton.getStyleClass().add("profile-logout-btn");
         logoutButtonContainer.getChildren().setAll(logoutButton);
+    }
+
+    private void setupProfileNameEditor() {
+        profileNameInput = new InputItem("input.placeholder.username");
+        profileNameInput.getStyleClass().add("profile-name-input");
+        profileNameInputContainer.getChildren().setAll(profileNameInput);
+
+        Button saveNameButton = AppButtonView.builder(fxmlLoader)
+                .variant(ButtonVariant.PRIMARY)
+                .labelBinding(Bindings.createStringBinding(() -> I18n.t("account.profile.save"), I18n.bundleProperty()))
+                .icon("fth-check")
+                .onAction(this::onSaveProfileName)
+                .build();
+        saveNameButton.setFocusTraversable(false);
+        saveNameButton.getStyleClass().add("profile-name-save-btn");
+        profileNameSaveButtonContainer.getChildren().setAll(saveNameButton);
+
+        if (profileEditNameBtn != null) {
+            profileEditNameBtn.setOnAction(ignored -> onEditName());
+            profileEditNameBtn.setFocusTraversable(false);
+        }
     }
 
     @Override
@@ -196,6 +230,10 @@ public class AccountController extends SimpleLifecycleAwareController {
             I18n.bundleProperty()));
 
         profileAvatarInitial.setText(AvatarImageHelper.extractInitial(user.username()));
+        if (profileNameInput != null) {
+            profileNameInput.setText(user.username());
+            profileNameInput.clearError();
+        }
         profileAvatarImage.setClip(new Circle(75, 75, 75));
         applyAvatarImage(null);
         renderUpgradeSection(user.role());
@@ -231,8 +269,89 @@ public class AccountController extends SimpleLifecycleAwareController {
         profileEmailLabel.setText("-");
         profileRolePill.setText(I18n.t("account.role"));
         profileAvatarInitial.setText("?");
+        hideNameEditor();
         upgradeButtonContainer.getChildren().clear();
         showInitialAvatar();
+    }
+
+    private void onEditName() {
+        if (!userSessionContext.isLoggedIn() || profileNameInput == null) {
+            return;
+        }
+
+        SessionUser currentUser = userSessionContext.getCurrent().orElseThrow();
+        profileNameInput.setText(currentUser.username());
+        profileNameInput.clearError();
+
+        if (profileNameDisplayRow != null) {
+            profileNameDisplayRow.setManaged(false);
+            profileNameDisplayRow.setVisible(false);
+        }
+        profileNameEditorRow.setManaged(true);
+        profileNameEditorRow.setVisible(true);
+    }
+
+    private void hideNameEditor() {
+        if (profileNameEditorRow == null) {
+            return;
+        }
+
+        if (profileNameDisplayRow != null) {
+            profileNameDisplayRow.setManaged(true);
+            profileNameDisplayRow.setVisible(true);
+        }
+        profileNameEditorRow.setManaged(false);
+        profileNameEditorRow.setVisible(false);
+
+        if (profileNameInput != null) {
+            profileNameInput.clearError();
+        }
+    }
+
+    private void onSaveProfileName() {
+        if (profileNameInput == null || !userSessionContext.isLoggedIn()) {
+            return;
+        }
+
+        SessionUser currentUser = userSessionContext.getCurrent().orElseThrow();
+        String username = profileNameInput.getText() == null ? "" : profileNameInput.getText().trim();
+        profileNameInput.setText(username);
+        profileNameInput.clearError();
+
+        if (username.equals(currentUser.username())) {
+            hideNameEditor();
+            return;
+        }
+
+        Result<UserResponse> result = userService.updateUserProfile(new UpdateUserProfileRequest(username));
+        result.onSuccess(this::onProfileUpdated);
+        result.onFailure(error -> {
+            if (error instanceof ValidationError validationError) {
+                boolean usernameViolation = validationError.violations().stream()
+                        .anyMatch(violation -> "username".equals(violation.field()));
+                if (usernameViolation) {
+                    profileNameInput.showErrorHighlightOnly();
+                }
+            }
+            errorHandler.handle(error);
+        });
+    }
+
+    private void onProfileUpdated(UserResponse userResponse) {
+        SessionUser currentUser = userSessionContext.getCurrent().orElseThrow();
+        SessionUser updatedUser = new SessionUser(
+                currentUser.userId(),
+                userResponse.username(),
+                userResponse.email(),
+                userResponse.role(),
+                currentUser.avatarImageId()
+        );
+        userSessionContext.set(updatedUser);
+        userSessionContext.save();
+
+        toast.success(I18n.t("account.profile.saved"));
+        hideNameEditor();
+        refreshProfileHero();
     }
 
     private void applyAvatarImage(Path imagePath) {
@@ -283,10 +402,10 @@ public class AccountController extends SimpleLifecycleAwareController {
         result.onSuccess(userResponse -> {
             SessionUser currentUser = userSessionContext.getCurrent().orElseThrow();
 
-            java.util.UUID avatarId = null;
+            UUID avatarId = null;
             if (userResponse.avatar() != null && userResponse.avatar().id() != null && !userResponse.avatar().id().isBlank()) {
                 try {
-                    avatarId = java.util.UUID.fromString(userResponse.avatar().id());
+                    avatarId = UUID.fromString(userResponse.avatar().id());
                 } catch (IllegalArgumentException e) {
                     log.warn("Invalid avatar ID in response: {}", userResponse.avatar().id(), e);
                 }

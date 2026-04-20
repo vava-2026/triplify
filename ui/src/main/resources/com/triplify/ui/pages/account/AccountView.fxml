@@ -25,8 +25,8 @@
     <ScrollPane fitToWidth="true" fitToHeight="true" hbarPolicy="NEVER" vbarPolicy="NEVER" styleClass="page-scroll">
             <StackPane styleClass="account-scroll-content">
             <VBox spacing="14" styleClass="account-page-content" maxWidth="1060">
-                <HBox styleClass="profile-hero-card">
-                    <HBox alignment="CENTER_LEFT" spacing="35">
+                <HBox styleClass="profile-hero-card" fillHeight="false">
+                    <HBox alignment="CENTER_LEFT" spacing="35" fillHeight="false">
                         <StackPane styleClass="profile-avatar-circle">
                             <ImageView fx:id="profileAvatarImage" styleClass="profile-avatar-image" managed="false" visible="false"/>
                             <Label fx:id="profileAvatarInitial" styleClass="profile-avatar-initial" text="?"/>
@@ -40,15 +40,20 @@
                             </Button>
                         </StackPane>
 
-                        <VBox spacing="20" prefWidth="360">
-                            <VBox spacing="8">
-                                <HBox alignment="CENTER_LEFT" spacing="7">
+                        <VBox spacing="20" prefWidth="430" alignment="CENTER_LEFT">
+                            <VBox spacing="8" alignment="CENTER_LEFT">
+                                <HBox fx:id="profileNameDisplayRow" alignment="CENTER_LEFT" spacing="7" styleClass="profile-name-display-row">
                                     <Label fx:id="profileNameLabel" styleClass="profile-name" text="Moises Bryant"/>
-                                    <Button styleClass="profile-edit-name-btn" focusTraversable="false">
+                                    <Button fx:id="profileEditNameBtn" styleClass="profile-edit-name-btn" focusTraversable="false">
                                         <graphic>
                                             <FontIcon iconLiteral="fth-edit-2" iconSize="14" styleClass="profile-edit-name-icon"/>
                                         </graphic>
                                     </Button>
+                                </HBox>
+
+                                <HBox fx:id="profileNameEditorRow" alignment="CENTER_LEFT" spacing="20" managed="false" visible="false" styleClass="profile-name-editor-row">
+                                    <StackPane fx:id="profileNameInputContainer" HBox.hgrow="ALWAYS"/>
+                                    <StackPane fx:id="profileNameSaveButtonContainer" alignment="TOP_LEFT"/>
                                 </HBox>
 
                                 <HBox alignment="CENTER_LEFT" spacing="8">
