@@ -1,9 +1,7 @@
 package com.triplify.ui.shared.component.badge.view;
 
-import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.component.badge.viewmodel.BadgeViewModel;
 import com.triplify.ui.shared.util.Localization;
-import javafx.beans.binding.Bindings;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -56,12 +54,11 @@ public class BadgeView extends VBox {
         Localization.bindLocalizedText(badgeName.textProperty(), badge);
 
         badgeStat.textProperty().bind(
-                Bindings.createStringBinding(() -> I18n.t("badge.countriesVisited")
-                        + ": "
-                        + badge.getCurrentValue()
-                        + "/"
-                        + badge.getRequiredValue()
-                        , I18n.bundleProperty())
+                Localization.textBinding("badge.countriesVisited")
+                        .concat(": ")
+                        .concat(badge.getCurrentValue())
+                        .concat("/")
+                        .concat(badge.getRequiredValue())
         );
         badgeImage.setImage(resolveBadgeImage(badge.getImage()));
 

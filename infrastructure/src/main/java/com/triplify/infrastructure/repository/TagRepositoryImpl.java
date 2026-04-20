@@ -172,12 +172,12 @@ public class TagRepositoryImpl implements TagRepository {
     }
 
     @Override
-    public void delete(String id) {
+    public void delete(UUID id) {
         String sql = "DELETE FROM tags WHERE id = ?";
 
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, id);
+            ps.setString(1, id.toString());
             int rows = ps.executeUpdate();
             if (rows == 0) {
                 log.warn("Delete affected 0 rows for tag id='{}'", id);
