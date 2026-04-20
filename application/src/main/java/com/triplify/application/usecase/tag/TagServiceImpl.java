@@ -32,7 +32,7 @@ public class TagServiceImpl implements TagService {
     @Override
     public Result<TagResponse> createTag(CreateTagRequest request) {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
-        var existing = tagRepository.findByUserIdAndName(user.userId().toString(), request.name());
+        var existing = tagRepository.findByUserIdAndName(user.userId(), request.name());
         if (existing.isPresent()) {
             return Result.fail(new TagError.AlreadyExists(request.name()));
         }
@@ -47,10 +47,10 @@ public class TagServiceImpl implements TagService {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
         var existing = tagRepository.findById(request.id());
         if (existing.isEmpty() || !existing.get().getUserId().equals(user.userId())) {
-            return Result.fail(new TagError.NotFound(request.id()));
+            return Result.fail(new TagError.NotFound(request.id().toString()));
         }
 
-        var tagWithSameName = tagRepository.findByUserIdAndName(user.userId().toString(), request.name());
+        var tagWithSameName = tagRepository.findByUserIdAndName(user.userId(), request.name());
         if (tagWithSameName.isPresent() && !tagWithSameName.get().getId().equals(existing.get().getId())) {
             return Result.fail(new TagError.AlreadyExists(request.name()));
         }
@@ -65,7 +65,7 @@ public class TagServiceImpl implements TagService {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
         var existing = tagRepository.findById(request.id());
         if (existing.isEmpty() || !existing.get().getUserId().equals(user.userId())) {
-            return Result.fail(new TagError.NotFound(request.id()));
+            return Result.fail(new TagError.NotFound(request.id().toString()));
         }
         tagRepository.delete(request.id());
         return Result.ok();

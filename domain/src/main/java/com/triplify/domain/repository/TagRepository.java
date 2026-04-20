@@ -15,6 +15,6 @@ public interface TagRepository {
     List<Tag> findByIds(Set<UUID> ids);
     Page<Tag> findList(PageRequest pageRequest, String name);
     void create(Tag tag);
-    void delete(String id);
+    void delete(UUID id);
     void update(Tag tag);
 }

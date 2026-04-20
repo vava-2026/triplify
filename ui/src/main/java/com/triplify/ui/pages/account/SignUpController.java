@@ -19,7 +19,7 @@ import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.input_item.PasswordItem;
 import com.triplify.ui.shared.toast.ToastService;
 import com.triplify.ui.shared.util.FxmlLoaderHelper;
-import javafx.beans.binding.Bindings;
+import com.triplify.ui.shared.util.Localization;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -83,14 +83,14 @@ public class SignUpController extends SimpleLifecycleAwareController {
             });
         }
 
-        titleLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("signup.title"), I18n.bundleProperty()));
-        subtitleLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("signup.subtitle"), I18n.bundleProperty()));
-        usernameLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("signup.field.username"), I18n.bundleProperty()));
-        emailLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("signup.field.email"), I18n.bundleProperty()));
-        passwordLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("signup.field.password"), I18n.bundleProperty()));
-        roleLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("signup.field.role"), I18n.bundleProperty()));
-        haveAccountLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("signup.haveAccount"), I18n.bundleProperty()));
-        goToLoginLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("signup.goToLogin"), I18n.bundleProperty()));
+        Localization.bindText(titleLabel.textProperty(), "signup.title");
+        Localization.bindText(subtitleLabel.textProperty(), "signup.subtitle");
+        Localization.bindText(usernameLabel.textProperty(), "signup.field.username");
+        Localization.bindText(emailLabel.textProperty(), "signup.field.email");
+        Localization.bindText(passwordLabel.textProperty(), "signup.field.password");
+        Localization.bindText(roleLabel.textProperty(), "signup.field.role");
+        Localization.bindText(haveAccountLabel.textProperty(), "signup.haveAccount");
+        Localization.bindText(goToLoginLabel.textProperty(), "signup.goToLogin");
         goToLoginLabel.setOnMouseClicked(ignored -> guardedNavigator.goTo(getRouter(), RouteIds.LOGIN));
 
         usernameInput = new InputItem("signup.placeholder.username");
@@ -102,14 +102,14 @@ public class SignUpController extends SimpleLifecycleAwareController {
 
         regularUserButton = AppButtonView.builder(fxmlLoader)
                 .variant(ButtonVariant.USER)
-                .labelBinding(Bindings.createStringBinding(() -> I18n.t("signup.role.regular"), I18n.bundleProperty()))
+                .labelBinding(Localization.textBinding("signup.role.regular"))
                 .onAction(this::selectRegularUserRole)
                 .build();
         regularUserButton.getStyleClass().add("signup-role-button");
 
         configManagerButton = AppButtonView.builder(fxmlLoader)
                 .variant(ButtonVariant.USER)
-                .labelBinding(Bindings.createStringBinding(() -> I18n.t("signup.role.configurationManager"), I18n.bundleProperty()))
+                .labelBinding(Localization.textBinding("signup.role.configurationManager"))
                 .onAction(this::selectConfigurationManagerRole)
                 .build();
         configManagerButton.getStyleClass().add("signup-role-button");
@@ -123,7 +123,7 @@ public class SignUpController extends SimpleLifecycleAwareController {
 
         termsCheckbox = new CheckboxItem("");
         termsCheckbox.getStyleClass().add("signup-terms-checkbox");
-        termsCheckbox.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("signup.terms"), I18n.bundleProperty()));
+        Localization.bindText(termsCheckbox.textProperty(), "signup.terms");
         termsCheckbox.selectedProperty().addListener((ignoredObs, ignoredWasSelected, isSelected) -> {
             if (isSelected) {
                 clearTermsError();
@@ -133,7 +133,7 @@ public class SignUpController extends SimpleLifecycleAwareController {
 
         var signUpButton = AppButtonView.builder(fxmlLoader)
                 .variant(ButtonVariant.LOGIN)
-                .labelBinding(Bindings.createStringBinding(() -> I18n.t("signup.signUp"), I18n.bundleProperty()))
+                .labelBinding(Localization.textBinding("signup.signUp"))
                 .onAction(this::onSignUp)
                 .build();
         signUpButton.getStyleClass().add("login-submit-button");
