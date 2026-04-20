@@ -21,21 +21,21 @@ public class BadgeRepositoryImpl implements BadgeRepository {
     private static final Logger log = LoggerFactory.getLogger(BadgeRepositoryImpl.class);
 
     @Override
-    public List<Badge> findAll(String groupId, String createdById) {
+    public List<Badge> findAll(UUID groupId, UUID createdById) {
         StringBuilder sql = new StringBuilder(
                 "SELECT id, created_by, group_id, image_id, name, name_sk, description, description_sk, level, required_value " +
                         "FROM badges WHERE 1=1"
         );
         List<String> params = new ArrayList<>();
 
-        if (groupId != null && !groupId.isBlank()) {
+        if (groupId != null) {
             sql.append(" AND group_id = ?");
-            params.add(groupId);
+            params.add(groupId.toString());
         }
 
-        if (createdById != null && !createdById.isBlank()) {
+        if (createdById != null) {
             sql.append(" AND created_by = ?");
-            params.add(createdById);
+            params.add(createdById.toString());
         }
 
         sql.append(" ORDER BY group_id, level, name");
@@ -61,13 +61,13 @@ public class BadgeRepositoryImpl implements BadgeRepository {
     }
 
     @Override
-    public Optional<Badge> findById(String id) {
+    public Optional<Badge> findById(UUID id) {
         String sql = "SELECT id, created_by, group_id, image_id, name, name_sk, description, description_sk, level, required_value " +
                 "FROM badges WHERE id = ? LIMIT 1";
 
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, id);
+            ps.setString(1, id.toString());
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return Optional.of(mapRow(rs));
@@ -82,12 +82,12 @@ public class BadgeRepositoryImpl implements BadgeRepository {
     }
 
     @Override
-    public boolean existsByNameAndLevel(String groupId, String name, int level) {
+    public boolean existsByNameAndLevel(UUID groupId, String name, int level) {
         String sql = "SELECT COUNT(*) FROM badges WHERE group_id = ? AND name = ? AND level = ?";
 
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, groupId);
+            ps.setString(1, groupId.toString());
             ps.setString(2, name);
             ps.setInt(3, level);
             try (ResultSet rs = ps.executeQuery()) {
@@ -100,15 +100,15 @@ public class BadgeRepositoryImpl implements BadgeRepository {
     }
 
     @Override
-    public boolean existsByNameAndLevelExcludingId(String groupId, String name, int level, String excludedId) {
+    public boolean existsByNameAndLevelExcludingId(UUID groupId, String name, int level, UUID excludedId) {
         String sql = "SELECT COUNT(*) FROM badges WHERE group_id = ? AND name = ? AND level = ? AND id <> ?";
 
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, groupId);
+            ps.setString(1, groupId.toString());
             ps.setString(2, name);
             ps.setInt(3, level);
-            ps.setString(4, excludedId);
+            ps.setString(4, excludedId.toString());
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next() && rs.getInt(1) > 0;
             }

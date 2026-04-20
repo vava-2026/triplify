@@ -30,6 +30,8 @@ import com.triplify.domain.repository.TripPlaceRepository;
 import com.triplify.domain.repository.TripRepository;
 import com.triplify.domain.repository.TripRouteRepository;
 import com.triplify.domain.result.Result;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -74,20 +76,20 @@ public class TripPlaceServiceImpl implements TripPlaceService {
         requireOwnedTrip(request.tripId(), user.userId()).orThrow();
 
         if (placeRepository.findById(request.placeId()).isEmpty()) {
-            return Result.fail(new PlaceError.NotFound(request.placeId()));
+            return Result.fail(new PlaceError.NotFound(request.placeId().toString()));
         }
 
         var existing = tripPlaceRepository.findByTripIdAndPlaceId(request.tripId(), request.placeId());
         if (existing.isPresent()) {
-            return getTripPlaceById(new GetTripPlaceByIdRequest(existing.get().getId().toString()));
+            return getTripPlaceById(new GetTripPlaceByIdRequest(existing.get().getId()));
         }
 
         RouteSourceRefs routeSourceRefs = validateRouteSource(request).orThrow();
         TripPlace tripPlace = routeSourceRefs == null
-                ? new TripPlace(UUID.fromString(request.tripId()), UUID.fromString(request.placeId()))
+                ? new TripPlace(request.tripId(), request.placeId())
                 : new TripPlace(
-                        UUID.fromString(request.tripId()),
-                        UUID.fromString(request.placeId()),
+                        request.tripId(),
+                        request.placeId(),
                         routeSourceRefs.tripRouteId(),
                         routeSourceRefs.routePlaceId()
                 );
@@ -97,14 +99,14 @@ public class TripPlaceServiceImpl implements TripPlaceService {
         }
 
         tripPlaceRepository.create(tripPlace);
-        return getTripPlaceById(new GetTripPlaceByIdRequest(tripPlace.getId().toString()));
+        return getTripPlaceById(new GetTripPlaceByIdRequest(tripPlace.getId()));
     }
 
     @Override
     public Result<TripPlaceResponse> updateTripPlace(UpdateTripPlaceRequest request) {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
         TripPlace existing = requireTripPlace(request.id()).orThrow();
-        requireOwnedTrip(existing.getTripId().toString(), user.userId()).orThrow();
+        requireOwnedTrip(existing.getTripId(), user.userId()).orThrow();
 
         TripPlace updated = new TripPlace(
                 existing.getId(),
@@ -119,14 +121,14 @@ public class TripPlaceServiceImpl implements TripPlaceService {
                 Instant.now()
         );
         tripPlaceRepository.update(updated);
-        return getTripPlaceById(new GetTripPlaceByIdRequest(updated.getId().toString()));
+        return getTripPlaceById(new GetTripPlaceByIdRequest(updated.getId()));
     }
 
     @Override
     public Result<Void> deleteTripPlace(DeleteTripPlaceRequest request) {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
         TripPlace existing = requireTripPlace(request.id()).orThrow();
-        requireOwnedTrip(existing.getTripId().toString(), user.userId()).orThrow();
+        requireOwnedTrip(existing.getTripId(), user.userId()).orThrow();
 
         tripPlaceRepository.delete(existing);
         return Result.ok();
@@ -161,34 +163,34 @@ public class TripPlaceServiceImpl implements TripPlaceService {
         return Result.ok(new Page<>(responses, page.page(), page.size(), page.hasNext()));
     }
 
-    private Result<Trip> requireOwnedTrip(String tripId, UUID userId) {
+    private Result<Trip> requireOwnedTrip(UUID tripId, UUID userId) {
         var tripRes = tripRepository.findById(tripId);
         if (tripRes.isEmpty()) {
-            return Result.fail(new TripError.NotFound(tripId));
+            return Result.fail(new TripError.NotFound(tripId.toString()));
         }
 
         Trip trip = tripRes.get();
         if (!Objects.equals(trip.getUserId(), userId)) {
-            return Result.fail(new TripError.NotOwner(tripId));
+            return Result.fail(new TripError.NotOwner(tripId.toString()));
         }
 
         return Result.ok(trip);
     }
 
-    private Result<TripPlace> requireTripPlace(String tripPlaceId) {
+    private Result<TripPlace> requireTripPlace(UUID tripPlaceId) {
         return tripPlaceRepository.findById(tripPlaceId)
                 .<Result<TripPlace>>map(Result::ok)
-                .orElseGet(() -> Result.fail(new TripPlaceError.NotFound(tripPlaceId)));
+                .orElseGet(() -> Result.fail(new TripPlaceError.NotFound(tripPlaceId.toString())));
     }
 
     private Result<RouteSourceRefs> validateRouteSource(AddTripPlaceRequest request) {
         if (request.sourceType() != TripPlaceSourceType.ROUTE) {
             return Result.ok(null);
         }
-        if (request.tripRouteId() == null || request.tripRouteId().isBlank()) {
+        if (request.tripRouteId() == null) {
             return Result.fail(new ApplicationError.Unexpected("Trip route id is required for route-derived trip places"));
         }
-        if (request.routePlaceId() == null || request.routePlaceId().isBlank()) {
+        if (request.routePlaceId() == null) {
             return Result.fail(new ApplicationError.Unexpected("Route place id is required for route-derived trip places"));
         }
 
@@ -198,19 +200,19 @@ public class TripPlaceServiceImpl implements TripPlaceService {
         }
 
         TripRoute tripRoute = tripRouteRes.get();
-        if (!tripRoute.getTripId().toString().equals(request.tripId())) {
+        if (!tripRoute.getTripId().equals(request.tripId())) {
             return Result.fail(new ApplicationError.Unexpected("Trip route does not belong to trip '%s'".formatted(request.tripId())));
         }
 
-        List<RoutePlace> routePlaces = routePlaceRepository.findByRouteId(tripRoute.getRouteId().toString());
+        List<RoutePlace> routePlaces = routePlaceRepository.findByRouteId(tripRoute.getRouteId());
         RoutePlace routePlace = routePlaces.stream()
-                .filter(item -> item.getId().toString().equals(request.routePlaceId()))
+                .filter(item -> item.getId().equals(request.routePlaceId()))
                 .findFirst()
                 .orElse(null);
         if (routePlace == null) {
             return Result.fail(new ApplicationError.Unexpected("Route place '%s' not found".formatted(request.routePlaceId())));
         }
-        if (!routePlace.getPlaceId().toString().equals(request.placeId())) {
+        if (!routePlace.getPlaceId().equals(request.placeId())) {
             return Result.fail(new ApplicationError.Unexpected("Route place does not match place '%s'".formatted(request.placeId())));
         }
 
@@ -219,16 +221,16 @@ public class TripPlaceServiceImpl implements TripPlaceService {
 
     private Result<TripPlaceResponse> toResponse(TripPlace tripPlace) {
         PlaceResponse place = placeService.getPlaceById(
-                new GetPlaceByIdRequest(tripPlace.getPlaceId().toString())
+                new GetPlaceByIdRequest(tripPlace.getPlaceId())
         ).orThrow();
 
         return Result.ok(new TripPlaceResponse(
-                tripPlace.getId().toString(),
-                tripPlace.getTripId().toString(),
+                tripPlace.getId(),
+                tripPlace.getTripId(),
                 place,
                 tripPlace.getSourceType(),
-                tripPlace.getTripRouteId() == null ? null : tripPlace.getTripRouteId().toString(),
-                tripPlace.getRoutePlaceId() == null ? null : tripPlace.getRoutePlaceId().toString(),
+                tripPlace.getTripRouteId(),
+                tripPlace.getRoutePlaceId(),
                 tripPlace.getVisitDate(),
                 tripPlace.getCreatedAt(),
                 tripPlace.getUpdatedAt(),

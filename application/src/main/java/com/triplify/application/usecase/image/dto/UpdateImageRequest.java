@@ -2,14 +2,15 @@ package com.triplify.application.usecase.image.dto;
 
 import com.triplify.application.error.ValidationMessage;
 import com.triplify.application.usecase.dto.DtoConstraints;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.nio.file.Path;
+import java.util.UUID;
 
 public record UpdateImageRequest(
-        @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String id,
+        @NotNull(message = ValidationMessage.Constants.REQUIRED)
+        UUID id,
 
         Path image,
 

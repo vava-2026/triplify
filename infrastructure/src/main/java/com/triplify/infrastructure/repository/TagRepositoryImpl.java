@@ -25,7 +25,7 @@ public class TagRepositoryImpl implements TagRepository {
     private static final Logger log = LoggerFactory.getLogger(TagRepositoryImpl.class);
 
     @Override
-    public Optional<Tag> findById(String id) {
+    public Optional<Tag> findById(UUID id) {
         String sql = """
             SELECT id, user_id, name, color
             FROM tags
@@ -35,7 +35,7 @@ public class TagRepositoryImpl implements TagRepository {
 
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, id);
+            ps.setString(1, id.toString());
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return Optional.of(mapRow(rs));
@@ -50,7 +50,7 @@ public class TagRepositoryImpl implements TagRepository {
     }
 
     @Override
-    public Optional<Tag> findByUserIdAndName(String userId, String name) {
+    public Optional<Tag> findByUserIdAndName(UUID userId, String name) {
         String sql = """
             SELECT id, user_id, name, color
             FROM tags
@@ -60,7 +60,7 @@ public class TagRepositoryImpl implements TagRepository {
 
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, userId);
+            ps.setString(1, userId.toString());
             ps.setString(2, name);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -76,7 +76,7 @@ public class TagRepositoryImpl implements TagRepository {
     }
 
     @Override
-    public List<Tag> findByIds(Set<String> ids) {
+    public List<Tag> findByIds(Set<UUID> ids) {
         if (ids == null || ids.isEmpty()) {
             return List.of();
         }
@@ -91,8 +91,8 @@ public class TagRepositoryImpl implements TagRepository {
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             int index = 1;
-            for (String id : ids) {
-                ps.setString(index++, id);
+            for (UUID id : ids) {
+                ps.setString(index++, id.toString());
             }
 
             try (ResultSet rs = ps.executeQuery()) {

@@ -6,9 +6,11 @@ import com.triplify.application.usecase.badgegroup.dto.BadgeGroupType;
 import com.triplify.application.usecase.image.dto.ImageResponse;
 import com.triplify.domain.model.Badge;
 
+import java.util.UUID;
+
 public record BadgeResponse(
-        String id,
-        String createdById,
+        UUID id,
+        UUID createdById,
         BadgeGroupType group,
         ImageResponse image,
         String name,
@@ -21,8 +23,8 @@ public record BadgeResponse(
 
     public static BadgeResponse from(Badge badge, ImageResponse image) {
         return new BadgeResponse(
-                badge.getId().toString(),
-                badge.getCreatedById() == null ? null : badge.getCreatedById().toString(),
+                badge.getId(),
+                badge.getCreatedById(),
                 BadgeGroupType.fromIdOrThrow(badge.getGroupId().toString()),
                 image,
                 badge.getName(),

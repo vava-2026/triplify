@@ -104,7 +104,7 @@ public class Countries {
             var result = countryService.getCountries(request);
             result.onSuccess(page -> {
                 for (var country : page.items()) {
-                    entries.add(Entry.<String>builder(country.id(), country.name()).emoji(country.emojiUnicode()).build());
+                    entries.add(Entry.<String>builder(country.id().toString(), country.name()).emoji(country.emojiUnicode()).build());
                 }
             });
             result.onFailure(error -> {
@@ -167,7 +167,7 @@ public class Countries {
             String normalizedName = normalizeCountryName(country.name());
             String normalizedNameSk = normalizeCountryName(country.nameSk());
             if (normalizedCandidates.contains(normalizedName) || normalizedCandidates.contains(normalizedNameSk)) {
-                return Entry.<String>builder(country.id(), country.name()).emoji(country.emojiUnicode()).build();
+                return Entry.<String>builder(country.id().toString(), country.name()).emoji(country.emojiUnicode()).build();
             }
         }
 

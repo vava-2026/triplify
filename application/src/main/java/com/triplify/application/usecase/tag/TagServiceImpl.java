@@ -80,8 +80,8 @@ public class TagServiceImpl implements TagService {
 
     private TagResponse toResponse(Tag tag) {
         return new TagResponse(
-                tag.getId().toString(),
-                tag.getUserId().toString(),
+                tag.getId(),
+                tag.getUserId(),
                 tag.getName(),
                 tag.getColor() == null ? null : ColorTheme.from(tag.getColor())
         );
