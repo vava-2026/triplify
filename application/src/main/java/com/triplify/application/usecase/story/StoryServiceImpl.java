@@ -2,10 +2,7 @@ package com.triplify.application.usecase.story;
 
 import com.google.inject.Inject;
 import com.triplify.application.error.ApplicationError;
-import com.triplify.application.model.ColorTheme;
 import com.triplify.application.security.Authenticated;
-import com.triplify.application.usecase.emotion.dto.EmotionResponse;
-import com.triplify.application.usecase.image.dto.ImageResponse;
 import com.triplify.application.usecase.session.SessionUser;
 import com.triplify.application.usecase.session.UserSessionContext;
 import com.triplify.application.usecase.story.dto.AddStoryRequest;
@@ -14,18 +11,23 @@ import com.triplify.application.usecase.story.dto.GetStoriesRequest;
 import com.triplify.application.usecase.story.dto.GetStoryByIdRequest;
 import com.triplify.application.usecase.story.dto.StoryResponse;
 import com.triplify.application.usecase.story.dto.UpdateStoryRequest;
-import com.triplify.application.usecase.tag.dto.TagResponse;
 import com.triplify.domain.error.StoryError;
+import com.triplify.domain.error.TripError;
+import com.triplify.domain.error.TripPlaceError;
+import com.triplify.domain.error.TripRouteError;
 import com.triplify.domain.filter.StoryFilter;
 import com.triplify.domain.model.Emotion;
 import com.triplify.domain.model.Image;
 import com.triplify.domain.model.Story;
-import com.triplify.domain.model.Tag;
 import com.triplify.domain.model.enums.RoleEnum;
 import com.triplify.domain.pagination.Page;
 import com.triplify.domain.pagination.PageRequest;
+import com.triplify.domain.repository.EmotionRepository;
 import com.triplify.domain.repository.ImageRepository;
 import com.triplify.domain.repository.StoryRepository;
+import com.triplify.domain.repository.TripPlaceRepository;
+import com.triplify.domain.repository.TripRepository;
+import com.triplify.domain.repository.TripRouteRepository;
 import com.triplify.domain.result.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +36,6 @@ import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Authenticated(roles = {RoleEnum.PRO_USER})
 public class StoryServiceImpl implements StoryService {
@@ -43,20 +44,37 @@ public class StoryServiceImpl implements StoryService {
 
     private final StoryRepository storyRepository;
     private final ImageRepository imageRepository;
+    private final EmotionRepository emotionRepository;
     private final UserSessionContext sessionContext;
+    private final TripRepository tripRepository;
+    private final TripRouteRepository tripRouteRepository;
+    private final TripPlaceRepository tripPlaceRepository;
 
     @Inject
     public StoryServiceImpl(StoryRepository storyRepository,
                             ImageRepository imageRepository,
+                            EmotionRepository emotionRepository,
+                            TripRepository tripRepository,
+                            TripPlaceRepository tripPlaceRepository,
+                            TripRouteRepository  tripRouteRepository,
                             UserSessionContext sessionContext) {
         this.storyRepository = storyRepository;
         this.imageRepository = imageRepository;
+        this.tripRepository = tripRepository;
+        this.tripPlaceRepository = tripPlaceRepository;
+        this.tripRouteRepository = tripRouteRepository;
         this.sessionContext = sessionContext;
+        this.emotionRepository = emotionRepository;
     }
 
     @Override
     public Result<StoryResponse> addStory(AddStoryRequest request) {
         SessionUser user = sessionContext.getCurrent().orElseThrow();
+
+        if (user.role().equals(RoleEnum.USER)) {
+            log.warn("Attempt to create story by userId='{}' with insufficient role='{}'", user.userId(), user.role());
+            return Result.fail(new StoryError.PremiumRequired());
+        }
 
         UUID tripId = parseUuid(request.tripId());
         UUID tripRouteId = parseUuid(request.tripRouteId());
@@ -65,6 +83,31 @@ public class StoryServiceImpl implements StoryService {
         if (tripId == null && tripRouteId == null && tripPlaceId == null) {
             return Result.fail(new ApplicationError.Unexpected(
                     "Story must be linked to at least one of: tripId, tripRouteId, tripPlaceId."));
+        }
+
+        if (tripId != null) {
+            if (tripRepository.findById(tripId.toString()).isEmpty()) {
+                return Result.fail(new TripError.NotFound(tripId.toString()));
+            }
+        }
+
+        if (tripRouteId != null) {
+            if (tripRouteRepository.findById(tripRouteId.toString()).isEmpty()) {
+                return Result.fail(new TripRouteError.NotFound(tripRouteId.toString()));
+            }
+        }
+
+        if (tripPlaceId != null) {
+            if (tripPlaceRepository.findById(tripPlaceId.toString()).isEmpty()) {
+                return Result.fail(new TripPlaceError.NotFound(tripPlaceId.toString()));
+            }
+        }
+
+        if (request.emotionId() != null) {
+            Optional<Emotion> opt = emotionRepository.findById(request.emotionId());
+            if (opt.isEmpty()) {
+                return Result.fail(new ApplicationError.Unexpected("Emotion does not exist by the provided emotionId."));
+            }
         }
 
         Story story = new Story(
@@ -167,17 +210,15 @@ public class StoryServiceImpl implements StoryService {
         SessionUser user = sessionContext.getCurrent().orElseThrow();
 
         GetStoriesRequest.Filter f = request.filter();
-        boolean asc = request.orderBy() != null && request.orderBy().storyTimeAsc();
-
         StoryFilter filter = new StoryFilter(
                 user.userId(),
-                f != null ? f.tripId() : null,
-                f != null ? f.tripRouteId() : null,
-                f != null ? f.tripPlaceId() : null,
-                f != null ? f.title() : null,
-                f != null ? f.storyTimeFrom() : null,
-                f != null ? f.storyTimeTo() : null,
-                asc
+                f.tripId(),
+                f.tripRouteId(),
+                f.tripPlaceId(),
+                f.title(),
+                f.storyTimeFrom(),
+                f.storyTimeTo(),
+                request.orderBy().storyTimeAsc()
         );
 
         log.debug("Getting stories for userId='{}'", user.userId());
@@ -186,63 +227,17 @@ public class StoryServiceImpl implements StoryService {
     }
 
     private StoryResponse toResponse(Story story) {
-        EmotionResponse emotionResponse = null;
-        Emotion emotion = story.getEmotion();
-        if (emotion != null) {
-            emotionResponse = new EmotionResponse(
-                    emotion.getId().toString(),
-                    emotion.getCreatedById().toString(),
-                    emotion.getName(),
-                    emotion.getNameSk(),
-                    emotion.getEmojiUnicode()
-            );
-        }
-
-        Set<TagResponse> tagResponses = story.getTags().stream()
-                .map(this::tagToResponse)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-
-        // Load images linked to this story. We use a large page to retrieve all of them.
         Page<Image> imagesPage = imageRepository.findAll(
                 new PageRequest(0, 200),
                 story.getId().toString(),
                 "STORY",
                 null, null, true
         );
-        Set<ImageResponse> imageResponses = imagesPage.items().stream()
-                .map(ImageResponse::from)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
 
-        return new StoryResponse(
-                story.getId().toString(),
-                story.getUserId().toString(),
-                uuidStr(story.getTripId()),
-                uuidStr(story.getTripRouteId()),
-                uuidStr(story.getTripPlaceId()),
-                emotionResponse,
-                story.getTitle(),
-                story.getDescription(),
-                story.getStoryTime(),
-                story.getCreatedAt(),
-                tagResponses,
-                imageResponses
-        );
-    }
-
-    private TagResponse tagToResponse(Tag tag) {
-        return new TagResponse(
-                tag.getId().toString(),
-                tag.getUserId().toString(),
-                tag.getName(),
-                ColorTheme.from(tag.getColor())
-        );
+        return StoryResponse.from(story, imagesPage);
     }
 
     private static UUID parseUuid(String value) {
         return value == null || value.isBlank() ? null : UUID.fromString(value);
-    }
-
-    private static String uuidStr(UUID uuid) {
-        return uuid == null ? null : uuid.toString();
     }
 }

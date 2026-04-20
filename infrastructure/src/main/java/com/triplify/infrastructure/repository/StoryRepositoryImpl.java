@@ -9,6 +9,7 @@ import com.triplify.domain.pagination.Page;
 import com.triplify.domain.pagination.PageRequest;
 import com.triplify.domain.repository.StoryRepository;
 import com.triplify.infrastructure.repository.persistence.SQLiteConnectionFactory;
+import com.triplify.infrastructure.repository.utils.RepositoryUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,14 +22,12 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 public class StoryRepositoryImpl implements StoryRepository {
 
     private static final Logger log = LoggerFactory.getLogger(StoryRepositoryImpl.class);
 
-    // Base SELECT — LEFT JOINs emotions so the emotion columns are available (NULL when no emotion set).
     private static final String SELECT_STORY =
             "SELECT s.id, s.user_id, s.trip_id, s.trip_route_id, s.trip_place_id, " +
             "s.emotion_id, s.title, s.description, s.story_time, s.created_at, " +
@@ -98,7 +97,7 @@ public class StoryRepositoryImpl implements StoryRepository {
 
             List<Story> stories = new ArrayList<>();
             try (PreparedStatement ps = conn.prepareStatement(dataSql)) {
-                bindParams(ps, params, 1);
+                RepositoryUtils.bindParams(ps, params, 1);
                 ps.setInt(params.size() + 1, pageRequest.size());
                 ps.setInt(params.size() + 2, pageRequest.offset());
                 try (ResultSet rs = ps.executeQuery()) {
@@ -110,7 +109,10 @@ public class StoryRepositoryImpl implements StoryRepository {
             for (Story story : stories) {
                 loadTags(conn, story);
             }
-            return Page.of(stories, pageRequest, total);
+
+            // Check if the total count of Stories exceeds the offset + actual size of list returned
+            boolean hasNext = total > pageRequest.offset() + stories.size();
+            return Page.of(stories, pageRequest, hasNext);
         } catch (SQLException e) {
             log.error("Failed to find stories for userId='{}'", filter.userId(), e);
             throw new RuntimeException("Database error while finding stories", e);
@@ -127,10 +129,10 @@ public class StoryRepositoryImpl implements StoryRepository {
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 ps.setString(1,  story.getId().toString());
                 ps.setString(2,  story.getUserId().toString());
-                ps.setString(3,  uuidOrNull(story.getTripId()));
-                ps.setString(4,  uuidOrNull(story.getTripRouteId()));
-                ps.setString(5,  uuidOrNull(story.getTripPlaceId()));
-                ps.setString(6,  uuidOrNull(story.getEmotionId()));
+                ps.setString(3,  RepositoryUtils.uuidOrNull(story.getTripId()));
+                ps.setString(4,  RepositoryUtils.uuidOrNull(story.getTripRouteId()));
+                ps.setString(5,  RepositoryUtils.uuidOrNull(story.getTripPlaceId()));
+                ps.setString(6,  RepositoryUtils.uuidOrNull(story.getEmotionId()));
                 ps.setString(7,  story.getTitle());
                 ps.setString(8,  story.getDescription());
                 ps.setString(9,  story.getStoryTime().toString());
@@ -156,7 +158,7 @@ public class StoryRepositoryImpl implements StoryRepository {
                 ps.setString(1, story.getTitle());
                 ps.setString(2, story.getDescription());
                 ps.setString(3, story.getStoryTime().toString());
-                ps.setString(4, uuidOrNull(story.getEmotionId()));
+                ps.setString(4, RepositoryUtils.uuidOrNull(story.getEmotionId()));
                 ps.setString(5, story.getId().toString());
                 ps.executeUpdate();
             }
@@ -184,34 +186,34 @@ public class StoryRepositoryImpl implements StoryRepository {
         }
     }
 
-    // ── Private helpers ────────────────────────────────────────────────────────
-
     private Story mapRow(ResultSet rs) throws SQLException {
-        UUID id          = UUID.fromString(rs.getString("id"));
-        UUID userId      = UUID.fromString(rs.getString("user_id"));
-        UUID tripId      = parseUuid(rs.getString("trip_id"));
-        UUID tripRouteId = parseUuid(rs.getString("trip_route_id"));
-        UUID tripPlaceId = parseUuid(rs.getString("trip_place_id"));
-        UUID emotionId   = parseUuid(rs.getString("emotion_id"));
-        String title       = rs.getString("title");
-        String description = rs.getString("description");
-        Instant storyTime  = Instant.parse(rs.getString("story_time"));
-        Instant createdAt  = Instant.parse(rs.getString("created_at"));
-
         Emotion emotion = null;
+        String emotionId = rs.getString("e_id");
         if (emotionId != null) {
-            UUID eId        = UUID.fromString(rs.getString("e_id"));
-            UUID eCreatedBy = UUID.fromString(rs.getString("e_created_by"));
-            String eName      = rs.getString("e_name");
-            String eNameSk    = rs.getString("e_name_sk");
-            String eEmoji     = rs.getString("e_emoji_unicode");
-            emotion = new Emotion(eId, eCreatedBy, eName, eNameSk, eEmoji);
+            emotion = new Emotion(
+                    UUID.fromString(rs.getString("e_id")),
+                    UUID.fromString(rs.getString("e_created_by")),
+                    rs.getString("e_name"),
+                    rs.getString("e_name_sk"),
+                    rs.getString("e_emoji_unicode")
+            );
         }
 
-        // Tags are populated after construction via loadTags().
-        return new Story(id, userId, tripId, tripRouteId, tripPlaceId,
-                emotionId, emotion, title, description, storyTime, createdAt,
-                new LinkedHashSet<>(), new LinkedHashSet<>());
+        return new Story(
+                UUID.fromString(rs.getString("id")),
+                UUID.fromString(rs.getString("user_id")),
+                RepositoryUtils.parseUuid(rs.getString("trip_id")),
+                RepositoryUtils.parseUuid(rs.getString("trip_route_id")),
+                RepositoryUtils.parseUuid(rs.getString("trip_place_id")),
+                RepositoryUtils.parseUuid(rs.getString("emotion_id")),
+                emotion,
+                rs.getString("title"),
+                rs.getString("description"),
+                Instant.parse(rs.getString("story_time")),
+                Instant.parse(rs.getString("created_at")),
+                new LinkedHashSet<>(),
+                new LinkedHashSet<>()
+        );
     }
 
     private void loadTags(Connection conn, Story story) throws SQLException {
@@ -226,7 +228,7 @@ public class StoryRepositoryImpl implements StoryRepository {
                     UUID tagId    = UUID.fromString(rs.getString("id"));
                     UUID tagUserId = UUID.fromString(rs.getString("user_id"));
                     String tagName = rs.getString("name");
-                    ColorEnum color = sqlToColor(rs.getString("color"));
+                    ColorEnum color = RepositoryUtils.sqlToColor(rs.getString("color"));
                     story.addTag(new Tag(tagId, tagUserId, tagName, color));
                 }
             }
@@ -255,39 +257,10 @@ public class StoryRepositoryImpl implements StoryRepository {
 
     private long countRows(Connection conn, String sql, List<Object> params) throws SQLException {
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            bindParams(ps, params, 1);
+            RepositoryUtils.bindParams(ps, params, 1);
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next() ? rs.getLong(1) : 0L;
             }
         }
-    }
-
-    private void bindParams(PreparedStatement ps, List<Object> params, int startIdx) throws SQLException {
-        int idx = startIdx;
-        for (Object p : params) {
-            ps.setString(idx++, p == null ? null : p.toString());
-        }
-    }
-
-    private static UUID parseUuid(String value) {
-        return value == null ? null : UUID.fromString(value);
-    }
-
-    private static String uuidOrNull(UUID uuid) {
-        return uuid == null ? null : uuid.toString();
-    }
-
-    private static ColorEnum sqlToColor(String color) {
-        if (color == null) return ColorEnum.BLUE;
-        return switch (color) {
-            case "red"    -> ColorEnum.RED;
-            case "orange" -> ColorEnum.ORANGE;
-            case "yellow" -> ColorEnum.YELLOW;
-            case "green"  -> ColorEnum.GREEN;
-            case "blue"   -> ColorEnum.BLUE;
-            case "purple" -> ColorEnum.PURPLE;
-            case "pink"   -> ColorEnum.PINK;
-            default       -> ColorEnum.BLUE;
-        };
     }
 }

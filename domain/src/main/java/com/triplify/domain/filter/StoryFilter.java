@@ -14,7 +14,6 @@ public record StoryFilter(
         boolean storyTimeAsc
 ) {
     public StoryFilter {
-        if (userId == null) throw new IllegalArgumentException("userId must not be null");
         tripId      = tripId      == null ? null : tripId.trim();
         tripRouteId = tripRouteId == null ? null : tripRouteId.trim();
         tripPlaceId = tripPlaceId == null ? null : tripPlaceId.trim();
