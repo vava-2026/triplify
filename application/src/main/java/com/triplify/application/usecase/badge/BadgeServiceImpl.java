@@ -61,7 +61,7 @@ public class BadgeServiceImpl implements BadgeService {
         Optional<BadgeGroup> groupRes = badgeGroupRepository.findById(request.groupId());
         if (groupRes.isEmpty()) {
             log.warn("Attempt to add badge for non-existing groupId='{}' by userId='{}'", request.groupId(), user.userId());
-            return Result.fail(new BadgeGroupError.NotFound(request.groupId()));
+            return Result.fail(new BadgeGroupError.NotFound(request.groupId().toString()));
         }
 
         if (badgeRepository.existsByNameAndLevel(request.groupId(), request.name(), request.level())) {
@@ -71,7 +71,7 @@ public class BadgeServiceImpl implements BadgeService {
         }
 
         Badge badge;
-        badge = new Badge(user.userId(), UUID.fromString(request.groupId()), request.name(), request.nameSk(), request.level());
+        badge = new Badge(user.userId(), request.groupId(), request.name(), request.nameSk(), request.level());
         badge.updateDescription(request.description());
         badge.updateDescriptionSk(request.descriptionSk());
         badge.updateRequiredValue(request.requiredValue());
@@ -79,7 +79,7 @@ public class BadgeServiceImpl implements BadgeService {
         ImageResponse image = null;
         if (request.image() != null) {
             image = imageService.addImage(new AddImageRequest(request.image(), DEFAULT_IMAGE_DESCRIPTION + request.name())).orThrow();
-            badge.updateImage(UUID.fromString(image.id()));
+            badge.updateImage(image.id());
         }
 
         badgeRepository.create(badge);
@@ -95,11 +95,11 @@ public class BadgeServiceImpl implements BadgeService {
         Optional<Badge> oldRes = badgeRepository.findById(request.id());
         if (oldRes.isEmpty()) {
             log.warn("Attempt to update non-existing badge with id='{}' by userId='{}'", request.id(), user.userId());
-            return Result.fail(new BadgeError.NotFound(request.id()));
+            return Result.fail(new BadgeError.NotFound(request.id().toString()));
         }
 
         Badge old = oldRes.get();
-        String groupId = old.getGroupId().toString();
+        UUID groupId = old.getGroupId();
 
         if (badgeRepository.existsByNameAndLevelExcludingId(groupId, request.name(), request.level(), request.id())) {
             log.warn("Attempted to update badge to duplicate name='{}', level='{}', groupId='{}' by userId='{}'",
@@ -133,7 +133,7 @@ public class BadgeServiceImpl implements BadgeService {
             Result<ImageResponse> imageResult;
             if (old.getImageId() != null) {
                 imageResult = imageService.updateImage(new UpdateImageRequest(
-                        old.getImageId().toString(),
+                        old.getImageId(),
                         request.image(),
                         DEFAULT_IMAGE_DESCRIPTION + request.name()
                 ));
@@ -142,7 +142,7 @@ public class BadgeServiceImpl implements BadgeService {
             }
 
             image = imageResult.orThrow();
-            badge.updateImage(UUID.fromString(image.id()));
+            badge.updateImage(image.id());
         } else if (old.getImageId() != null) {
             image = resolveImage(old.getImageId());
         }
@@ -160,14 +160,14 @@ public class BadgeServiceImpl implements BadgeService {
         Optional<Badge> oldRes = badgeRepository.findById(request.id());
         if (oldRes.isEmpty()) {
             log.warn("Attempt to delete non-existing badge with id='{}' by userId='{}'", request.id(), user.userId());
-            return Result.fail(new BadgeError.NotFound(request.id()));
+            return Result.fail(new BadgeError.NotFound(request.id().toString()));
         }
 
         Badge badge = oldRes.get();
         badgeRepository.delete(badge);
 
         if (badge.getImageId() != null) {
-            Result<Void> imageDelete = imageService.deleteImage(new DeleteImageRequest(badge.getImageId().toString()));
+            Result<Void> imageDelete = imageService.deleteImage(new DeleteImageRequest(badge.getImageId()));
             if (imageDelete.isFailure()) {
                 log.warn("Badge id='{}' deleted but linked image id='{}' could not be deleted", badge.getId(), badge.getImageId());
             }
@@ -180,8 +180,8 @@ public class BadgeServiceImpl implements BadgeService {
     @Override
     public Result<List<BadgeResponse>> getBadges(GetBadgesRequest request) {
         GetBadgesRequest.Filter filter = request != null ? request.filter() : null;
-        String groupId = filter != null ? filter.groupId() : null;
-        String createdById = filter != null ? filter.createdById() : null;
+        UUID groupId = filter != null ? filter.groupId() : null;
+        UUID createdById = filter != null ? filter.createdById() : null;
 
         try {
             List<BadgeResponse> badges = badgeRepository.findAll(groupId, createdById).stream()
@@ -202,7 +202,7 @@ public class BadgeServiceImpl implements BadgeService {
             return null;
         }
 
-        Result<ImageResponse> imageResult = imageService.getImageById(new GetImageByIdRequest(imageId.toString()));
+        Result<ImageResponse> imageResult = imageService.getImageById(new GetImageByIdRequest(imageId));
         return imageResult.isSuccess() ? imageResult.getValue() : null;
     }
 }

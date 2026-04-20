@@ -5,17 +5,19 @@ import com.triplify.application.usecase.dto.DtoConstraints;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.nio.file.Path;
+import java.util.UUID;
 
 public record UpdatePlaceRequest(
 
-        @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String id,
+        @NotNull(message = ValidationMessage.Constants.REQUIRED)
+        UUID id,
 
-        @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String countryId,
+        @NotNull(message = ValidationMessage.Constants.REQUIRED)
+        UUID countryId,
 
         Path coverImage,
 

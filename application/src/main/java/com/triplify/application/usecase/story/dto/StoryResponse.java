@@ -6,13 +6,14 @@ import com.triplify.application.usecase.tag.dto.TagResponse;
 
 import java.time.Instant;
 import java.util.Set;
+import java.util.UUID;
 
 public record StoryResponse(
-        String id,
-        String userId,
-        String tripId,
-        String tripRouteId,
-        String tripPlaceId,
+        UUID id,
+        UUID userId,
+        UUID tripId,
+        UUID tripRouteId,
+        UUID tripPlaceId,
         EmotionResponse emotion,
         String title,
         String description,

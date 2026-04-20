@@ -8,10 +8,11 @@ import com.triplify.domain.model.enums.StatusEnum;
 
 import java.time.Instant;
 import java.util.Set;
+import java.util.UUID;
 
 public record TripResponse(
-        String id,
-        String userId,
+        UUID id,
+        UUID userId,
         CategoryResponse category,
         String title,
         String description,

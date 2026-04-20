@@ -4,7 +4,6 @@ import com.google.inject.Inject;
 import com.triplify.application.usecase.category.CategoryService;
 import com.triplify.application.usecase.category.dto.CategoryResponse;
 import com.triplify.application.usecase.country.CountryService;
-import com.triplify.application.usecase.trip.dto.TripStatus;
 import com.triplify.application.usecase.tag.TagService;
 import com.triplify.application.usecase.tag.dto.CreateTagRequest;
 import com.triplify.application.usecase.tag.dto.GetTagsRequest;
@@ -60,11 +59,15 @@ import com.triplify.ui.shared.component.upload_panel.view.ImageUploadPanelView;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.storage.EditorDraftStorage;
 import com.triplify.ui.shared.toast.ToastService;
+import com.triplify.ui.shared.util.EditorUtils;
 import com.triplify.ui.shared.util.Localization;
+
+import static com.triplify.ui.shared.util.EditorUtils.*;
+import static com.triplify.ui.shared.util.DisplayUtils.*;
+
 import com.triplify.application.model.ColorTheme;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
@@ -88,18 +91,15 @@ import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 public class AddTripController extends SimpleLifecycleAwareController {
 
@@ -169,7 +169,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
     private TextAreaItem descriptionInput;
     private String tripId;
     private boolean createMode;
-    private TripStatus tripStatus;
+    private StatusEnum tripStatus;
     private String coverImagePath;
     private String currentTripDisplayName = "New Trip";
     private DatePickerItem startDateInput;
@@ -239,42 +239,17 @@ public class AddTripController extends SimpleLifecycleAwareController {
         createMode = tripId == null || tripId.isBlank() || "0".equals(tripId);
         tripStatus = data == null ? null : data.getValue("tripStatus");
 
-        String tripName = data == null ? null : data.getValue("tripName");
-        String tripCountry = data == null ? null : data.getValue("tripCountry");
-        String tripCategory = data == null ? null : data.getValue("tripCategory");
-        String tripCoverUrl = data == null ? null : data.getValue("tripCoverUrl");
-        String tripTags = data == null ? null : data.getValue("tripTags");
-        String tripDates = data == null ? null : data.getValue("tripDates");
-        String tripStartDate = data == null ? null : data.getValue("tripStartDate");
-        String tripEndDate = data == null ? null : data.getValue("tripEndDate");
-
         EditorDraftStorage.TripDraft draft = EditorDraftStorage.consumeTripDraft();
         if (matchesTripDraft(draft)) {
             applyTripDraft(draft);
         } else if (createMode) {
-            populateHeader(tripName, tripDates);
-            populateForm(tripName, tripCountry, tripCategory, tripTags, tripStartDate, tripEndDate);
-            routeItems.clear();
-            placeItems.clear();
-            renderRoutes();
-            renderPlaces();
-            coverImageDirty = false;
-            showCoverImage(tripCoverUrl, tripName);
+            currentTripDisplayName = I18n.t("trip.add.default.name");
         } else {
-            loadExistingTrip(
-                    tripName,
-                    tripCountry,
-                    tripCategory,
-                    tripTags,
-                    tripStartDate,
-                    tripEndDate,
-                    tripCoverUrl,
-                    tripDates
-            );
+            loadExistingTrip();
         }
 
         consumeReturnedEditorResults();
-        log.info("Trip editor opened: id={}, name={}, createMode={}", tripId, tripName, createMode);
+        log.info("Trip editor opened: id={}, createMode={}", tripId, createMode);
     }
 
     @Override
@@ -383,7 +358,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
         }
 
         String tripTitle = titleInput.getText().trim();
-        StatusEnum status = mapTripStatus(tripStatus);
+        StatusEnum status = tripStatus != null ? tripStatus : StatusEnum.PLANNED;
         Instant startedAt = toInstant(startDateInput.getValue());
         Instant endedAt = toInstant(endDateInput.getValue());
         Result<Set<String>> tagIdsResult = ensureSelectedTagsPersisted();
@@ -398,31 +373,31 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
         var result = createMode
                 ? tripService.addTrip(new AddTripRequest(
-                        categoryId,
+                        UUID.fromString(categoryId),
                         tripTitle,
                         normalizeNullable(descriptionInput.getText()),
                         status,
                         startedAt,
                         endedAt,
-                        tagIdsResult.getValue(),
+                        tagIdsResult.getValue().stream().map(UUID::fromString).collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new)),
                         images,
-                        new LinkedHashSet<>(selectedCountryIds)
+                        selectedCountryIds.stream().map(UUID::fromString).collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new))
                 ))
                 : tripService.updateTrip(new UpdateTripRequest(
-                        tripId,
-                        categoryId,
+                        UUID.fromString(tripId),
+                        UUID.fromString(categoryId),
                         tripTitle,
                         normalizeNullable(descriptionInput.getText()),
                         status,
                         startedAt,
                         endedAt,
-                        tagIdsResult.getValue(),
+                        tagIdsResult.getValue().stream().map(UUID::fromString).collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new)),
                         coverImageDirty ? images : null,
-                        new LinkedHashSet<>(selectedCountryIds)
+                        selectedCountryIds.stream().map(UUID::fromString).collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new))
                 ));
 
         result.onSuccess(savedTrip -> {
-            var relationsResult = syncTripRelations(savedTrip.id());
+            var relationsResult = syncTripRelations(savedTrip.id().toString());
             if (relationsResult.isFailure()) {
                 toast.error(I18n.t("trip.add.toast.title.saved"), relationsResult.getError().message());
                 return;
@@ -456,14 +431,14 @@ public class AddTripController extends SimpleLifecycleAwareController {
     private void onUploadDragOver(DragEvent event) {
         if (event.getDragboard().hasFiles() && isSupportedImageFile(event.getDragboard().getFiles().getFirst())) {
             event.acceptTransferModes(TransferMode.COPY);
-            addUploadActiveState(true);
+            toggleStyleClass(uploadArea, "editor-upload-area-active", true);
         }
         event.consume();
     }
 
     @FXML
     private void onUploadDragExited(DragEvent event) {
-        addUploadActiveState(false);
+        toggleStyleClass(uploadArea, "editor-upload-area-active", false);
         event.consume();
     }
 
@@ -478,7 +453,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
             }
         }
 
-        addUploadActiveState(false);
+        toggleStyleClass(uploadArea, "editor-upload-area-active", false);
         event.setDropCompleted(completed);
         event.consume();
     }
@@ -565,7 +540,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
             Page<TagResponse> page = result.getValue();
             page.items().stream()
-                    .map(tag -> new TagOption(tag.id(), safeText(tag.name())))
+                    .map(tag -> new TagOption(tag.id().toString(), safeText(tag.name())))
                     .filter(tag -> tag.id() != null && !tag.id().isBlank() && !tag.label().isBlank())
                     .forEach(items::add);
 
@@ -583,53 +558,6 @@ public class AddTripController extends SimpleLifecycleAwareController {
             return List.of();
         }
         return categoriesComponent.toEntries(availableCategories);
-    }
-
-    private void populateHeader(String tripName, String tripDates) {
-        if (createMode) {
-            currentTripDisplayName = I18n.t("trip.add.default.name");
-            return;
-        }
-        currentTripDisplayName = tripName == null || tripName.isBlank() ? I18n.t("trip.add.default.name") : tripName;
-    }
-
-    private void populateForm(
-            String tripName,
-            String tripCountry,
-            String tripCategory,
-            String tripTagsCsv,
-            String tripStartDate,
-            String tripEndDate
-    ) {
-        titleInput.setText(createMode ? "" : safeText(tripName));
-        descriptionInput.setText(createMode ? "" : buildTripDescription(tripName, tripCountry, tripCategory));
-
-        selectedCountryIds.clear();
-        selectedCountryLabelsById.clear();
-        if (tripCountry != null && !tripCountry.isBlank()) {
-            // Legacy route argument contains country name only; use it as both id and label fallback.
-            selectedCountryIds.add(tripCountry);
-            selectedCountryLabelsById.put(tripCountry, tripCountry);
-        }
-        renderCountryChips();
-
-        selectedTagLabels.clear();
-        selectedTagIds.clear();
-        parseCsv(tripTagsCsv).stream()
-                .filter(tag -> tag != null && !tag.isBlank())
-                .forEach(tag -> {
-                    selectedTagLabels.add(tag);
-                    String tagId = findTagIdByLabel(tag);
-                    if (tagId != null && !tagId.isBlank()) {
-                        selectedTagIds.add(tagId);
-                    }
-                });
-        syncTagPicker();
-
-        categorySelectModel.setSelectedItem(findEntry(categorySelectModel, tripCategory));
-
-        startDateInput.setValue(parseDate(tripStartDate));
-        endDateInput.setValue(parseDate(tripEndDate));
     }
 
     private void renderCountryChips() {
@@ -856,13 +784,6 @@ public class AddTripController extends SimpleLifecycleAwareController {
                 uploadPlaceholder.setManaged(false);
             }
         });
-    }
-
-    private void configureButtonIcon(Button button, String iconLiteral) {
-        FontIcon icon = new FontIcon(iconLiteral);
-        icon.setIconSize(14);
-        icon.getStyleClass().add("app-btn-icon");
-        button.setGraphic(icon);
     }
 
     private void initializeActionPickers() {
@@ -1189,7 +1110,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
         if (draft == null) {
             return false;
         }
-        return normalizeTripKey(tripId).equals(normalizeTripKey(draft.tripId()));
+        return normalizeKey(tripId).equals(normalizeKey(draft.tripId()));
     }
 
     private void applyTripDraft(EditorDraftStorage.TripDraft draft) {
@@ -1266,27 +1187,20 @@ public class AddTripController extends SimpleLifecycleAwareController {
         }
     }
 
-    private String normalizeTripKey(String value) {
-        if (value == null || value.isBlank() || "0".equals(value.trim())) {
-            return "";
-        }
-        return value.trim();
-    }
-
 
     private RouteItem toRouteItem(RouteResponse response) {
         String subtitle = response.description() == null || response.description().isBlank()
                 ? formatMessage("trip.add.route.length", String.format(Locale.US, "%.1f", response.length()))
                 : response.description();
         return new RouteItem(
-                response.id(),
+                response.id().toString(),
                 safeText(response.title()).isBlank() ? I18n.t("trip.add.fallback.route") : response.title(),
                 subtitle,
                 imagePath(response.coverImage() == null ? null : response.coverImage().url()),
                 response.places() == null
                         ? List.of()
                         : response.places().stream()
-                                .map(place -> toRouteDerivedPlaceItem(place, response.id()))
+                                .map(place -> toRouteDerivedPlaceItem(place, response.id().toString()))
                                 .toList()
         );
     }
@@ -1296,7 +1210,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
                 ? response.country().name()
                 : safeText(response.description());
         return new PlaceItem(
-                response.id(),
+                response.id().toString(),
                 safeText(response.title()).isBlank() ? I18n.t("trip.add.fallback.place") : response.title(),
                 subtitle,
                 imagePath(response.coverImage() == null ? null : response.coverImage().url()),
@@ -1310,7 +1224,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
                 ? response.country().name()
                 : safeText(response.description());
         return new PlaceItem(
-                response.id(),
+                response.id().toString(),
                 safeText(response.title()).isBlank() ? I18n.t("trip.add.fallback.place") : response.title(),
                 subtitle,
                 imagePath(response.coverImage() == null ? null : response.coverImage().url()),
@@ -1328,26 +1242,6 @@ public class AddTripController extends SimpleLifecycleAwareController {
         uploadArea.setOnDragOver(this::onUploadDragOver);
         uploadArea.setOnDragExited(this::onUploadDragExited);
         uploadArea.setOnDragDropped(this::onUploadDragDropped);
-    }
-
-    private void addUploadActiveState(boolean active) {
-        if (active) {
-            if (!uploadArea.getStyleClass().contains("editor-upload-area-active")) {
-                uploadArea.getStyleClass().add("editor-upload-area-active");
-            }
-            return;
-        }
-
-        uploadArea.getStyleClass().remove("editor-upload-area-active");
-    }
-
-    private void installRoundedClip(StackPane target, double radius) {
-        Rectangle clip = new Rectangle();
-        clip.setArcWidth(radius * 2);
-        clip.setArcHeight(radius * 2);
-        clip.widthProperty().bind(target.widthProperty());
-        clip.heightProperty().bind(target.heightProperty());
-        target.setClip(clip);
     }
 
     private void updateFullScreenMode(boolean fullScreen) {
@@ -1440,56 +1334,11 @@ public class AddTripController extends SimpleLifecycleAwareController {
     }
 
     private void initializeCoverPreview() {
-        coverPreview.setPreserveRatio(false);
-        coverPreview.fitWidthProperty().bind(uploadArea.widthProperty());
-        coverPreview.fitHeightProperty().bind(uploadArea.heightProperty());
-        uploadArea.widthProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
-        uploadArea.heightProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
-        coverPreview.imageProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
+        EditorUtils.initializeCoverPreview(coverPreview, uploadArea);
     }
 
     private void setCoverPreviewImage(Image image) {
-        coverPreview.setImage(image);
-        updateCoverPreviewViewport();
-        if (image == null) {
-            coverPreview.setViewport(null);
-            return;
-        }
-
-        image.widthProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
-        image.heightProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
-        image.progressProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
-    }
-
-    private void updateCoverPreviewViewport() {
-        Image image = coverPreview.getImage();
-        if (image == null) {
-            coverPreview.setViewport(null);
-            return;
-        }
-
-        double imageWidth = image.getWidth();
-        double imageHeight = image.getHeight();
-        double viewportWidth = uploadArea.getWidth();
-        double viewportHeight = uploadArea.getHeight();
-
-        if (imageWidth <= 0 || imageHeight <= 0 || viewportWidth <= 0 || viewportHeight <= 0) {
-            return;
-        }
-
-        double imageRatio = imageWidth / imageHeight;
-        double viewportRatio = viewportWidth / viewportHeight;
-
-        if (imageRatio > viewportRatio) {
-            double cropWidth = imageHeight * viewportRatio;
-            double x = (imageWidth - cropWidth) / 2.0;
-            coverPreview.setViewport(new Rectangle2D(x, 0, cropWidth, imageHeight));
-            return;
-        }
-
-        double cropHeight = imageWidth / viewportRatio;
-        double y = (imageHeight - cropHeight) / 2.0;
-        coverPreview.setViewport(new Rectangle2D(0, y, imageWidth, cropHeight));
+        EditorUtils.setCoverPreviewImage(coverPreview, uploadArea, image);
     }
 
     private Select<String> createSelectModel(List<Entry<String>> entries, String placeholderKey) {
@@ -1572,99 +1421,12 @@ public class AddTripController extends SimpleLifecycleAwareController {
         return raw == null ? null : raw.toString();
     }
 
-    private LocalDate parseDate(String value) {
-        if (value == null || value.isBlank()) {
-            return null;
-        }
-
-        try {
-            return LocalDate.parse(value);
-        } catch (DateTimeParseException ignored) {
-            return null;
-        }
-    }
-
-    private List<String> parseCsv(String value) {
-        if (value == null || value.isBlank()) {
-            return List.of();
-        }
-        return Arrays.stream(value.split(","))
-                .map(String::trim)
-                .filter(part -> !part.isBlank())
-                .toList();
-    }
-
-    private String buildTripDescription(String tripName, String tripCountry, String tripCategory) {
-        List<String> parts = new ArrayList<>();
-        if (tripName != null && !tripName.isBlank()) {
-            parts.add(tripName);
-        }
-        if (tripCountry != null && !tripCountry.isBlank()) {
-            parts.add("through " + tripCountry);
-        }
-        if (tripCategory != null && !tripCategory.isBlank()) {
-            parts.add("focused on " + tripCategory.toLowerCase(Locale.ROOT));
-        }
-        return String.join(" ", parts);
-    }
-
-    private String safeText(String value) {
-        return value == null ? "" : value;
-    }
-
-    private String normalizeNullable(String value) {
-        if (value == null) {
-            return null;
-        }
-
-        String normalized = value.trim();
-        return normalized.isBlank() ? null : normalized;
-    }
-
-    private void loadExistingTrip(
-            String fallbackTripName,
-            String fallbackTripCountry,
-            String fallbackTripCategory,
-            String fallbackTripTags,
-            String fallbackTripStartDate,
-            String fallbackTripEndDate,
-            String fallbackTripCoverUrl,
-            String fallbackTripDates
-    ) {
-        routeItems.clear();
-        placeItems.clear();
-        renderRoutes();
-        renderPlaces();
-
-        if (tripId == null || tripId.isBlank()) {
-            populateHeader(fallbackTripName, fallbackTripDates);
-            populateForm(
-                    fallbackTripName,
-                    fallbackTripCountry,
-                    fallbackTripCategory,
-                    fallbackTripTags,
-                    fallbackTripStartDate,
-                    fallbackTripEndDate
-            );
-            coverImageDirty = false;
-            showCoverImage(fallbackTripCoverUrl, fallbackTripName);
-            return;
-        }
-
-        var result = tripService.getTripById(new GetTripByIdRequest(tripId));
+    private void loadExistingTrip() {
+        var result = tripService.getTripById(new GetTripByIdRequest(UUID.fromString(tripId)));
         if (result.isFailure()) {
-            logWarnWithError("Failed to load trip '" + tripId + "' from service, using router fallback", result.getError());
-            populateHeader(fallbackTripName, fallbackTripDates);
-            populateForm(
-                    fallbackTripName,
-                    fallbackTripCountry,
-                    fallbackTripCategory,
-                    fallbackTripTags,
-                    fallbackTripStartDate,
-                    fallbackTripEndDate
-            );
-            coverImageDirty = false;
-            showCoverImage(fallbackTripCoverUrl, fallbackTripName);
+            logWarnWithError("Failed to load trip '" + tripId + "'", result.getError());
+            toast.error(I18n.t("trip.add.toast.title.saved"), result.getError().message());
+            Platform.runLater(() -> getRouter().popBackStack());
             return;
         }
 
@@ -1675,7 +1437,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
         currentTripDisplayName = trip.title() == null || trip.title().isBlank()
                 ? I18n.t("trip.add.default.name")
                 : trip.title();
-        tripStatus = toLegacyTripStatus(trip.status());
+        tripStatus = trip.status();
 
         titleInput.setText(safeText(trip.title()));
         descriptionInput.setText(safeText(trip.description()));
@@ -1686,8 +1448,8 @@ public class AddTripController extends SimpleLifecycleAwareController {
         selectedCountryLabelsById.clear();
         if (trip.countries() != null) {
             for (var country : trip.countries()) {
-                selectedCountryIds.add(country.id());
-                selectedCountryLabelsById.put(country.id(), country.name());
+                selectedCountryIds.add(country.id().toString());
+                selectedCountryLabelsById.put(country.id().toString(), country.name());
             }
         }
         renderCountryChips();
@@ -1700,14 +1462,14 @@ public class AddTripController extends SimpleLifecycleAwareController {
                         if (tag.name() != null && !tag.name().isBlank()) {
                             selectedTagLabels.add(tag.name().trim());
                         }
-                        if (tag.id() != null && !tag.id().isBlank()) {
-                            selectedTagIds.add(tag.id());
+                        if (tag.id() != null) {
+                            selectedTagIds.add(tag.id().toString());
                         }
                     });
         }
         syncTagPicker();
 
-        String categoryId = trip.category() == null ? null : trip.category().id();
+        String categoryId = trip.category() == null ? null : trip.category().id().toString();
         categorySelectModel.setSelectedItem(findEntry(categorySelectModel, categoryId));
 
         String coverPath = null;
@@ -1717,8 +1479,8 @@ public class AddTripController extends SimpleLifecycleAwareController {
         coverImageDirty = false;
         showCoverImage(coverPath, trip.title());
 
-        loadTripRoutes(trip.id());
-        loadTripPlaces(trip.id());
+        loadTripRoutes(trip.id().toString());
+        loadTripPlaces(trip.id().toString());
     }
 
     private Result<Void> syncTripRelations(String targetTripId) {
@@ -1756,8 +1518,8 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
             TagResponse created = createResult.getValue();
             availableTags = new ArrayList<>(availableTags);
-            availableTags.add(new TagOption(created.id(), created.name()));
-            resolvedIds.add(created.id());
+            availableTags.add(new TagOption(created.id().toString(), created.name()));
+            resolvedIds.add(created.id().toString());
         }
 
         selectedTagIds.clear();
@@ -1785,7 +1547,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
         for (int i = 0; i < routeItems.size(); i++) {
             RouteItem item = routeItems.get(i);
-            var addResult = tripRouteService.addTripRoute(new AddTripRouteRequest(targetTripId, item.id(), i));
+            var addResult = tripRouteService.addTripRoute(new AddTripRouteRequest(UUID.fromString(targetTripId), UUID.fromString(item.id()), i));
             if (addResult.isFailure()) {
                 return Result.fail(addResult.getError());
             }
@@ -1813,8 +1575,8 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
         for (PlaceItem item : placeItems) {
             var addResult = tripPlaceService.addTripPlace(new AddTripPlaceRequest(
-                    targetTripId,
-                    item.id(),
+                    UUID.fromString(targetTripId),
+                    UUID.fromString(item.id()),
                     null,
                     TripPlaceSourceType.MANUAL,
                     null,
@@ -1875,7 +1637,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
         while (true) {
             var result = tripRouteService.getTripRoutes(new GetTripRoutesRequest(
                     pageRequest,
-                    new GetTripRoutesRequest.Filter(targetTripId, null)
+                    new GetTripRoutesRequest.Filter(UUID.fromString(targetTripId), null)
             ));
             if (result.isFailure()) {
                 return Result.fail(result.getError());
@@ -1905,7 +1667,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
         while (true) {
             var result = tripPlaceService.getTripPlaces(new GetTripPlacesRequest(
                     pageRequest,
-                    new GetTripPlacesRequest.Filter(targetTripId, sourceType, null, null, null, null),
+                    new GetTripPlacesRequest.Filter(UUID.fromString(targetTripId), sourceType, null, null, null, null),
                     new GetTripPlacesRequest.OrderBy(true)
             ));
             if (result.isFailure()) {
@@ -1929,8 +1691,8 @@ public class AddTripController extends SimpleLifecycleAwareController {
 
         if (availableCategories != null) {
             for (CategoryResponse category : availableCategories) {
-                if (selected.equals(category.id()) || selected.equals(category.name())) {
-                    return category.id();
+                if (selected.equals(category.id().toString()) || selected.equals(category.name())) {
+                    return category.id().toString();
                 }
             }
         }
@@ -1938,73 +1700,8 @@ public class AddTripController extends SimpleLifecycleAwareController {
         return selected;
     }
 
-    private StatusEnum mapTripStatus(TripStatus status) {
-        if (status == null) {
-            return StatusEnum.PLANNED;
-        }
-
-        return switch (status) {
-            case VISITED -> StatusEnum.VISITED;
-            case ONGOING -> StatusEnum.ONGOING;
-            case PLANNED, DRAFTED, REJECTED -> StatusEnum.PLANNED;
-        };
-    }
-
-    private Instant toInstant(LocalDate value) {
-        return value == null ? null : value.atStartOfDay().toInstant(ZoneOffset.UTC);
-    }
-
-    private TripStatus toLegacyTripStatus(StatusEnum status) {
-        if (status == null) {
-            return TripStatus.PLANNED;
-        }
-        return switch (status) {
-            case VISITED -> TripStatus.VISITED;
-            case ONGOING -> TripStatus.ONGOING;
-            case PLANNED, CANCELED -> TripStatus.PLANNED;
-        };
-    }
-
-    private LocalDate toLocalDate(Instant value) {
-        return value == null ? null : value.atZone(ZoneOffset.UTC).toLocalDate();
-    }
-
-    private String formatMessage(String key, Object... args) {
-        return MessageFormat.format(I18n.t(key), args);
-    }
-
     private Image loadImage(String imagePath) {
-        String resolvedPath = imagePath == null || imagePath.isBlank() ? DEFAULT_IMAGE : imagePath;
-        if (resolvedPath.startsWith("/")) {
-            var resource = getClass().getResource(resolvedPath);
-            if (resource != null) {
-                return new Image(resource.toExternalForm(), true);
-            }
-        }
-
-        File file = new File(resolvedPath);
-        if (file.exists()) {
-            return new Image(file.toURI().toString(), true);
-        }
-
-        var fallback = getClass().getResource(DEFAULT_IMAGE);
-        return new Image(fallback.toExternalForm(), true);
-    }
-
-    private boolean isSupportedImageFile(File file) {
-        String lowerName = file.getName().toLowerCase(Locale.ROOT);
-        return lowerName.endsWith(".png")
-                || lowerName.endsWith(".jpg")
-                || lowerName.endsWith(".jpeg")
-                || lowerName.endsWith(".svg");
-    }
-
-    private boolean isVectorImage(File file) {
-        return file.getName().toLowerCase(Locale.ROOT).endsWith(".svg");
-    }
-
-    private boolean isVectorImagePath(String imagePath) {
-        return imagePath != null && imagePath.toLowerCase(Locale.ROOT).endsWith(".svg");
+        return EditorUtils.loadImage(imagePath, DEFAULT_IMAGE, getClass());
     }
 
     private String extractImageName(String imagePath, String tripName) {

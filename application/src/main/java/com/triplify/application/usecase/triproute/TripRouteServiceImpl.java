@@ -82,29 +82,29 @@ public class TripRouteServiceImpl implements TripRouteService {
         requireOwnedTrip(request.tripId(), user.userId()).orThrow();
 
         if (routeRepository.findById(request.routeId()).isEmpty()) {
-            return Result.fail(new RouteError.NotFound(request.routeId()));
+            return Result.fail(new RouteError.NotFound(request.routeId().toString()));
         }
 
         var existing = tripRouteRepository.findByTripIdAndRouteId(request.tripId(), request.routeId());
         if (existing.isPresent()) {
-            return getTripRouteById(new GetTripRouteByIdRequest(existing.get().getId().toString()));
+            return getTripRouteById(new GetTripRouteByIdRequest(existing.get().getId()));
         }
 
         TripRoute tripRoute = new TripRoute(
-                UUID.fromString(request.tripId()),
-                UUID.fromString(request.routeId()),
+                request.tripId(),
+                request.routeId(),
                 request.order()
         );
         tripRouteRepository.create(tripRoute);
-        syncRouteDerivedPlaces(tripRoute.getTripId().toString());
-        return getTripRouteById(new GetTripRouteByIdRequest(tripRoute.getId().toString()));
+        syncRouteDerivedPlaces(tripRoute.getTripId());
+        return getTripRouteById(new GetTripRouteByIdRequest(tripRoute.getId()));
     }
 
     @Override
     public Result<TripRouteResponse> updateTripRoute(UpdateTripRouteRequest request) {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
         TripRoute existing = requireTripRoute(request.id()).orThrow();
-        requireOwnedTrip(existing.getTripId().toString(), user.userId()).orThrow();
+        requireOwnedTrip(existing.getTripId(), user.userId()).orThrow();
 
         TripRoute updated = new TripRoute(
                 existing.getId(),
@@ -119,16 +119,16 @@ public class TripRouteServiceImpl implements TripRouteService {
                 Instant.now()
         );
         tripRouteRepository.update(updated);
-        return getTripRouteById(new GetTripRouteByIdRequest(updated.getId().toString()));
+        return getTripRouteById(new GetTripRouteByIdRequest(updated.getId()));
     }
 
     @Override
     public Result<Void> deleteTripRoute(DeleteTripRouteRequest request) {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
         TripRoute existing = requireTripRoute(request.id()).orThrow();
-        requireOwnedTrip(existing.getTripId().toString(), user.userId()).orThrow();
+        requireOwnedTrip(existing.getTripId(), user.userId()).orThrow();
 
-        String tripId = existing.getTripId().toString();
+        UUID tripId = existing.getTripId();
         tripRouteRepository.delete(existing);
         resequenceTripRoutes(tripId);
         syncRouteDerivedPlaces(tripId);
@@ -145,23 +145,23 @@ public class TripRouteServiceImpl implements TripRouteService {
 
         Page<TripRoute> currentPage = tripRouteRepository.findList(new PageRequest(0, 512), request.id(), null);
         List<TripRoute> currentRoutes = currentPage.items();
-        List<String> requestedRouteIds = new ArrayList<>(request.routesIdsInOrder());
+        List<UUID> requestedRouteIds = new ArrayList<>(request.routesIdsInOrder());
 
         if (requestedRouteIds.size() != currentRoutes.size()) {
             return Result.fail(new ApplicationError.Unexpected("Trip route order does not match current routes"));
         }
 
-        Set<String> currentRouteIds = currentRoutes.stream()
-                .map(tripRoute -> tripRoute.getRouteId().toString())
+        Set<UUID> currentRouteIds = currentRoutes.stream()
+                .map(TripRoute::getRouteId)
                 .collect(java.util.stream.Collectors.toCollection(HashSet::new));
         if (!currentRouteIds.equals(new HashSet<>(requestedRouteIds))) {
             return Result.fail(new ApplicationError.Unexpected("Trip route order does not match current routes"));
         }
 
         for (int i = 0; i < requestedRouteIds.size(); i++) {
-            String routeId = requestedRouteIds.get(i);
+            UUID routeId = requestedRouteIds.get(i);
             TripRoute tripRoute = currentRoutes.stream()
-                    .filter(item -> routeId.equals(item.getRouteId().toString()))
+                    .filter(item -> routeId.equals(item.getRouteId()))
                     .findFirst()
                     .orElse(null);
             if (tripRoute == null || tripRoute.getOrder() == i) {
@@ -189,16 +189,16 @@ public class TripRouteServiceImpl implements TripRouteService {
 
         var reordered = tripRouteRepository.findByTripIdAndRouteId(request.id(), requestedRouteIds.get(0));
         if (reordered.isEmpty()) {
-            return Result.fail(new TripRouteError.NotFound(request.id()));
+            return Result.fail(new TripRouteError.NotFound(request.id().toString()));
         }
-        return getTripRouteById(new GetTripRouteByIdRequest(reordered.get().getId().toString()));
+        return getTripRouteById(new GetTripRouteByIdRequest(reordered.get().getId()));
     }
 
     @Override
     public Result<TripRouteResponse> updateStatus(UpdateTripRouteStatusRequest request) {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
         TripRoute existing = requireTripRoute(request.id()).orThrow();
-        requireOwnedTrip(existing.getTripId().toString(), user.userId()).orThrow();
+        requireOwnedTrip(existing.getTripId(), user.userId()).orThrow();
 
         validateStatusTransition(existing.getStatus(), request.status()).orThrow();
 
@@ -219,7 +219,7 @@ public class TripRouteServiceImpl implements TripRouteService {
                 Instant.now()
         );
         tripRouteRepository.update(updated);
-        return getTripRouteById(new GetTripRouteByIdRequest(updated.getId().toString()));
+        return getTripRouteById(new GetTripRouteByIdRequest(updated.getId()));
     }
 
     @Override
@@ -244,24 +244,24 @@ public class TripRouteServiceImpl implements TripRouteService {
         return Result.ok(new Page<>(responses, page.page(), page.size(), page.hasNext()));
     }
 
-    private Result<Trip> requireOwnedTrip(String tripId, UUID userId) {
+    private Result<Trip> requireOwnedTrip(UUID tripId, UUID userId) {
         var tripRes = tripRepository.findById(tripId);
         if (tripRes.isEmpty()) {
-            return Result.fail(new TripError.NotFound(tripId));
+            return Result.fail(new TripError.NotFound(tripId.toString()));
         }
 
         Trip trip = tripRes.get();
         if (!Objects.equals(trip.getUserId(), userId)) {
-            return Result.fail(new TripError.NotOwner(tripId));
+            return Result.fail(new TripError.NotOwner(tripId.toString()));
         }
 
         return Result.ok(trip);
     }
 
-    private Result<TripRoute> requireTripRoute(String tripRouteId) {
+    private Result<TripRoute> requireTripRoute(UUID tripRouteId) {
         return tripRouteRepository.findById(tripRouteId)
                 .<Result<TripRoute>>map(Result::ok)
-                .orElseGet(() -> Result.fail(new TripRouteError.NotFound(tripRouteId)));
+                .orElseGet(() -> Result.fail(new TripRouteError.NotFound(tripRouteId.toString())));
     }
 
     private Result<Void> validateStatusTransition(StatusEnum from, StatusEnum to) {
@@ -295,12 +295,12 @@ public class TripRouteServiceImpl implements TripRouteService {
 
     private Result<TripRouteResponse> toResponse(TripRoute tripRoute) {
         RouteResponse route = routeService.getRouteById(
-                new GetRouteByIdRequest(tripRoute.getRouteId().toString())
+                new GetRouteByIdRequest(tripRoute.getRouteId())
         ).orThrow();
 
         return Result.ok(new TripRouteResponse(
-                tripRoute.getId().toString(),
-                tripRoute.getTripId().toString(),
+                tripRoute.getId(),
+                tripRoute.getTripId(),
                 route,
                 tripRoute.getOrder(),
                 tripRoute.getStatus(),
@@ -312,7 +312,7 @@ public class TripRouteServiceImpl implements TripRouteService {
         ));
     }
 
-    private void resequenceTripRoutes(String tripId) {
+    private void resequenceTripRoutes(UUID tripId) {
         List<TripRoute> remaining = tripRouteRepository.findList(new PageRequest(0, 512), tripId, null).items();
         for (int i = 0; i < remaining.size(); i++) {
             TripRoute item = remaining.get(i);
@@ -336,14 +336,14 @@ public class TripRouteServiceImpl implements TripRouteService {
         }
     }
 
-    private void syncRouteDerivedPlaces(String tripId) {
+    private void syncRouteDerivedPlaces(UUID tripId) {
         removeExistingRouteDerivedPlaces(tripId);
 
         List<TripRoute> tripRoutes = tripRouteRepository.findList(new PageRequest(0, 512), tripId, null).items();
         for (TripRoute tripRoute : tripRoutes) {
-            List<RoutePlace> routePlaces = routePlaceRepository.findByRouteId(tripRoute.getRouteId().toString());
+            List<RoutePlace> routePlaces = routePlaceRepository.findByRouteId(tripRoute.getRouteId());
             for (RoutePlace routePlace : routePlaces) {
-                if (tripPlaceRepository.findByTripIdAndPlaceId(tripId, routePlace.getPlaceId().toString()).isPresent()) {
+                if (tripPlaceRepository.findByTripIdAndPlaceId(tripId, routePlace.getPlaceId()).isPresent()) {
                     continue;
                 }
                 tripPlaceRepository.create(new TripPlace(
@@ -356,7 +356,7 @@ public class TripRouteServiceImpl implements TripRouteService {
         }
     }
 
-    private void removeExistingRouteDerivedPlaces(String tripId) {
+    private void removeExistingRouteDerivedPlaces(UUID tripId) {
         PageRequest pageRequest = new PageRequest(0, 512);
         while (true) {
             Page<TripPlace> page = tripPlaceRepository.findList(

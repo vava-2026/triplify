@@ -71,12 +71,12 @@ public class TripRepositoryImpl implements TripRepository {
         """;
 
     @Override
-    public Optional<Trip> findById(String id) {
+    public Optional<Trip> findById(UUID id) {
         String sql = TRIP_WITH_CATEGORY_SELECT + " WHERE t.id = ? LIMIT 1";
 
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, id);
+            ps.setString(1, id.toString());
             try (ResultSet rs = ps.executeQuery()) {
                 if (!rs.next()) {
                     return Optional.empty();
@@ -235,28 +235,28 @@ public class TripRepositoryImpl implements TripRepository {
     }
 
     @Override
-    public void replaceTagIds(String tripId, Set<String> tagIds) {
+    public void replaceTagIds(UUID tripId, Set<UUID> tagIds) {
         replaceRelationIds("trip_tags", "tag_id", "trip_id", tripId, tagIds);
     }
 
     @Override
-    public void replaceCountryIds(String tripId, Set<String> countryIds) {
+    public void replaceCountryIds(UUID tripId, Set<UUID> countryIds) {
         replaceRelationIds("trip_countries", "country_id", "trip_id", tripId, countryIds);
     }
 
     @Override
-    public void updateCoverImageId(String tripId, String coverImageId) {
+    public void updateCoverImageId(UUID tripId, UUID coverImageId) {
         String sql = "UPDATE trips SET cover_image_id = ?, updated_at = ? WHERE id = ?";
 
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            if (coverImageId == null || coverImageId.isBlank()) {
+            if (coverImageId == null) {
                 ps.setNull(1, Types.VARCHAR);
             } else {
-                ps.setString(1, coverImageId);
+                ps.setString(1, coverImageId.toString());
             }
             ps.setString(2, Instant.now().toString());
-            ps.setString(3, tripId);
+            ps.setString(3, tripId.toString());
             ps.executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to update cover image for trip id='{}'", tripId, e);
@@ -393,13 +393,13 @@ public class TripRepositoryImpl implements TripRepository {
         return result;
     }
 
-    private void replaceRelationIds(String tableName, String relationColumn, String ownerColumn, String ownerId, Set<String> relationIds) {
+    private void replaceRelationIds(String tableName, String relationColumn, String ownerColumn, UUID ownerId, Set<UUID> relationIds) {
         String deleteSql = "DELETE FROM %s WHERE %s = ?".formatted(tableName, ownerColumn);
         String insertSql = "INSERT INTO %s (%s, %s) VALUES (?, ?)".formatted(tableName, ownerColumn, relationColumn);
 
         try (Connection conn = SQLiteConnectionFactory.getConnection()) {
             try (PreparedStatement deleteStatement = conn.prepareStatement(deleteSql)) {
-                deleteStatement.setString(1, ownerId);
+                deleteStatement.setString(1, ownerId.toString());
                 deleteStatement.executeUpdate();
             }
 
@@ -408,9 +408,9 @@ public class TripRepositoryImpl implements TripRepository {
             }
 
             try (PreparedStatement insertStatement = conn.prepareStatement(insertSql)) {
-                for (String relationId : relationIds) {
-                    insertStatement.setString(1, ownerId);
-                    insertStatement.setString(2, relationId);
+                for (UUID relationId : relationIds) {
+                    insertStatement.setString(1, ownerId.toString());
+                    insertStatement.setString(2, relationId.toString());
                     insertStatement.addBatch();
                 }
                 insertStatement.executeBatch();

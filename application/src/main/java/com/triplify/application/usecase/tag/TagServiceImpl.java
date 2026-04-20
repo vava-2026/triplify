@@ -34,7 +34,7 @@ public class TagServiceImpl implements TagService {
     public Result<TagResponse> createTag(CreateTagRequest request) {
         try {
             SessionUser user = userSessionContext.getCurrent().orElseThrow();
-            var existing = tagRepository.findByUserIdAndName(user.userId().toString(), request.name());
+            var existing = tagRepository.findByUserIdAndName(user.userId(), request.name());
             if (existing.isPresent()) {
                 return Result.fail(new TagError.AlreadyExists(request.name()));
             }
@@ -72,8 +72,8 @@ public class TagServiceImpl implements TagService {
 
     private TagResponse toResponse(Tag tag) {
         return new TagResponse(
-                tag.getId().toString(),
-                tag.getUserId().toString(),
+                tag.getId(),
+                tag.getUserId(),
                 tag.getName(),
                 tag.getColor() == null ? null : ColorTheme.from(tag.getColor())
         );

@@ -10,11 +10,12 @@ import jakarta.validation.constraints.Size;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Set;
+import java.util.UUID;
 
 public record AddTripRequest(
 
-        @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String categoryId,
+        @NotNull(message = ValidationMessage.Constants.REQUIRED)
+        UUID categoryId,
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
         @Size(max = DtoConstraints.TITLE_MAX_LENGTH, message = ValidationMessage.Constants.TITLE_TOO_LONG)
@@ -26,8 +27,8 @@ public record AddTripRequest(
         StatusEnum status,
         Instant startedAt,
         Instant endedAt,
-        Set<String> tagIds,
+        Set<UUID> tagIds,
         Set<Path> images,
-        Set<String> countryIds
+        Set<UUID> countryIds
 ) {
 }

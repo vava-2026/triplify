@@ -1,6 +1,6 @@
 package com.triplify.ui.storage;
 
-import com.triplify.application.usecase.trip.dto.TripStatus;
+import com.triplify.domain.model.enums.StatusEnum;
 import com.triplify.application.usecase.place.dto.PlaceResponse;
 import com.triplify.application.usecase.route.dto.RouteResponse;
 import com.triplify.domain.model.enums.TripPlaceSourceType;
@@ -90,7 +90,7 @@ public final class EditorDraftStorage {
             String title,
             String description,
             String currentTripDisplayName,
-            TripStatus tripStatus,
+            StatusEnum tripStatus,
             LocalDate startDate,
             LocalDate endDate,
             String categoryValue,

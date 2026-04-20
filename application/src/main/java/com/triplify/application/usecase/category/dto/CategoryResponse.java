@@ -4,9 +4,11 @@ import com.triplify.application.localization.LocalizedDescription;
 import com.triplify.application.localization.LocalizedName;
 import com.triplify.application.model.ColorTheme;
 
+import java.util.UUID;
+
 public record CategoryResponse(
-        String id,
-        String createdById,
+        UUID id,
+        UUID createdById,
         String name,
         String nameSk,
         String description,

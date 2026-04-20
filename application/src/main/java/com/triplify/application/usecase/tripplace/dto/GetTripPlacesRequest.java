@@ -4,6 +4,7 @@ import com.triplify.domain.model.enums.TripPlaceSourceType;
 import com.triplify.domain.pagination.PageRequest;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public record GetTripPlacesRequest(
         PageRequest pageRequest,
@@ -16,19 +17,13 @@ public record GetTripPlacesRequest(
     }
 
     public record Filter(
-            String tripId,
+            UUID tripId,
             TripPlaceSourceType sourceType,
-            String tripRouteId,
-            String routePlaceId,
+            UUID tripRouteId,
+            UUID routePlaceId,
             Instant visitFrom,
             Instant visitTo
     ) {
-
-        public Filter {
-            tripId = tripId == null ? null : tripId.trim();
-            tripRouteId = tripRouteId == null ? null : tripRouteId.trim();
-            routePlaceId = routePlaceId == null ? null : routePlaceId.trim();
-        }
     }
 
     public record OrderBy(

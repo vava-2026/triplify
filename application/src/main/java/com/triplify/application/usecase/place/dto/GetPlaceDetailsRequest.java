@@ -1,10 +1,12 @@
 package com.triplify.application.usecase.place.dto;
 
 import com.triplify.application.error.ValidationMessage;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+import java.util.UUID;
 
 public record GetPlaceDetailsRequest(
-        @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String placeId
+        @NotNull(message = ValidationMessage.Constants.REQUIRED)
+        UUID placeId
 ) {
 }

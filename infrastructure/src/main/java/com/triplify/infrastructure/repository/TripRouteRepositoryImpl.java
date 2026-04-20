@@ -25,7 +25,7 @@ public class TripRouteRepositoryImpl implements TripRouteRepository {
     private static final Logger log = LoggerFactory.getLogger(TripRouteRepositoryImpl.class);
 
     @Override
-    public Optional<TripRoute> findById(String id) {
+    public Optional<TripRoute> findById(UUID id) {
         String sql = """
             SELECT id, trip_id, route_id, "order", status, started_at, ended_at, created_at, updated_at
             FROM trip_routes
@@ -35,7 +35,7 @@ public class TripRouteRepositoryImpl implements TripRouteRepository {
 
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, id);
+            ps.setString(1, id.toString());
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return Optional.of(mapRow(rs));
@@ -50,7 +50,7 @@ public class TripRouteRepositoryImpl implements TripRouteRepository {
     }
 
     @Override
-    public Optional<TripRoute> findByTripIdAndRouteId(String tripId, String routeId) {
+    public Optional<TripRoute> findByTripIdAndRouteId(UUID tripId, UUID routeId) {
         String sql = """
             SELECT id, trip_id, route_id, "order", status, started_at, ended_at, created_at, updated_at
             FROM trip_routes
@@ -60,8 +60,8 @@ public class TripRouteRepositoryImpl implements TripRouteRepository {
 
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, tripId);
-            ps.setString(2, routeId);
+            ps.setString(1, tripId.toString());
+            ps.setString(2, routeId.toString());
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return Optional.of(mapRow(rs));
@@ -76,7 +76,7 @@ public class TripRouteRepositoryImpl implements TripRouteRepository {
     }
 
     @Override
-    public Page<TripRoute> findList(PageRequest pageRequest, String tripId, StatusEnum status) {
+    public Page<TripRoute> findList(PageRequest pageRequest, UUID tripId, StatusEnum status) {
         StringBuilder sql = new StringBuilder("""
             SELECT id, trip_id, route_id, "order", status, started_at, ended_at, created_at, updated_at
             FROM trip_routes
@@ -84,9 +84,9 @@ public class TripRouteRepositoryImpl implements TripRouteRepository {
             """);
         List<Object> params = new ArrayList<>();
 
-        if (tripId != null && !tripId.isBlank()) {
+        if (tripId != null) {
             sql.append(" AND trip_id = ? ");
-            params.add(tripId);
+            params.add(tripId.toString());
         }
         if (status != null) {
             sql.append(" AND status = ? ");

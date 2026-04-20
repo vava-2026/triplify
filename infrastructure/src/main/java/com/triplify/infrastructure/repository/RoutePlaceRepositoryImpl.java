@@ -62,7 +62,7 @@ public class RoutePlaceRepositoryImpl implements RoutePlaceRepository {
         """;
 
     @Override
-    public Optional<RoutePlace> findByRouteIdAndPlaceId(String routeId, String placeId) {
+    public Optional<RoutePlace> findByRouteIdAndPlaceId(UUID routeId, UUID placeId) {
         String sql = ROUTE_PLACE_WITH_RELATIONS_SELECT + """
              WHERE rp.route_id = ? AND rp.place_id = ?
              ORDER BY rp."order" ASC
@@ -71,8 +71,8 @@ public class RoutePlaceRepositoryImpl implements RoutePlaceRepository {
 
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, routeId);
-            ps.setString(2, placeId);
+            ps.setString(1, routeId.toString());
+            ps.setString(2, placeId.toString());
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -88,7 +88,7 @@ public class RoutePlaceRepositoryImpl implements RoutePlaceRepository {
     }
 
     @Override
-    public List<RoutePlace> findByRouteId(String routeId) {
+    public List<RoutePlace> findByRouteId(UUID routeId) {
         String sql = ROUTE_PLACE_WITH_RELATIONS_SELECT + """
              WHERE rp.route_id = ?
              ORDER BY rp."order" ASC
@@ -96,7 +96,7 @@ public class RoutePlaceRepositoryImpl implements RoutePlaceRepository {
 
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, routeId);
+            ps.setString(1, routeId.toString());
 
             try (ResultSet rs = ps.executeQuery()) {
                 List<RoutePlace> routePlaces = new ArrayList<>();
@@ -112,7 +112,7 @@ public class RoutePlaceRepositoryImpl implements RoutePlaceRepository {
     }
 
     @Override
-    public List<RoutePlace> findByPlaceId(String placeId) {
+    public List<RoutePlace> findByPlaceId(UUID placeId) {
         String sql = ROUTE_PLACE_WITH_RELATIONS_SELECT + """
              WHERE rp.place_id = ?
              ORDER BY rp.updated_at DESC, rp.created_at DESC
@@ -120,7 +120,7 @@ public class RoutePlaceRepositoryImpl implements RoutePlaceRepository {
 
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, placeId);
+            ps.setString(1, placeId.toString());
 
             try (ResultSet rs = ps.executeQuery()) {
                 List<RoutePlace> routePlaces = new ArrayList<>();

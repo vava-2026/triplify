@@ -13,10 +13,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.UUID;
 
 public record RouteResponse(
-        String id,
-        String userId,
+        UUID id,
+        UUID userId,
         ImageResponse coverImage,
         String title,
         String description,
@@ -45,8 +46,8 @@ public record RouteResponse(
         }
 
         return new RouteResponse(
-                route.getId().toString(),
-                route.getUserID().toString(),
+                route.getId(),
+                route.getUserID(),
                 route.getCoverImage() != null ? ImageResponse.from(route.getCoverImage()) : null,
                 route.getTitle(),
                 route.getDescription(),

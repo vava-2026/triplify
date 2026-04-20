@@ -4,8 +4,7 @@
         home="start">
 
     <arguments id="addTripArgs">
-        <argument name="tripId" type="string" required="true"/>
-        <argument name="tripName" type="string" required="true"/>
+        <argument name="tripId" type="string" required="false"/>
     </arguments>
 
     <arguments id="addPlaceArgs">

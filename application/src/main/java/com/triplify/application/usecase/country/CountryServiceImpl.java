@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Authenticated
 public class CountryServiceImpl implements CountryService {
@@ -53,13 +54,13 @@ public class CountryServiceImpl implements CountryService {
         Optional<Country> oldRes = countryRepository.findById(request.id());
         if (oldRes.isEmpty()) {
             log.warn("Attempt to update non-existing country with name='{}' by userId='{}'", request.name(), user.userId());
-            return Result.fail(new CountryError.NotFound(request.id()));
+            return Result.fail(new CountryError.NotFound(request.id().toString()));
         }
 
         Country old = oldRes.get();
         if (old.getCreatedById() != null && !old.getCreatedById().equals(user.userId())) {
             log.warn("Attempted to update country not created by userId='{}' by userId='{}', countryName='{}'", old.getCreatedById(), user.userId(), old.getName());
-            return Result.fail(new CountryError.NotFound(request.id()));
+            return Result.fail(new CountryError.NotFound(request.id().toString()));
         }
 
         Country updated = new Country(old.getId(), user.userId(), request.name(), request.nameSk(), request.emojiUnicode(), old.isAvailable());
@@ -76,13 +77,13 @@ public class CountryServiceImpl implements CountryService {
         Optional<Country> oldRes = countryRepository.findById(request.id());
         if (oldRes.isEmpty()) {
             log.warn("Attempt to delete non-existing country with id='{}' by userId='{}'", request.id(), user.userId());
-            return Result.fail(new CountryError.NotFound(request.id()));
+            return Result.fail(new CountryError.NotFound(request.id().toString()));
         }
 
         Country old = oldRes.get();
         if (old.getCreatedById() != null && !old.getCreatedById().equals(user.userId())) {
             log.warn("Attempted to delete country not created by userId='{}' by userId='{}', countryName='{}'", old.getCreatedById(), user.userId(), old.getName());
-            return Result.fail(new CountryError.NotFound(request.id()));
+            return Result.fail(new CountryError.NotFound(request.id().toString()));
         }
 
         countryRepository.delete(old);
@@ -107,7 +108,7 @@ public class CountryServiceImpl implements CountryService {
         Optional<Country> countryRes = countryRepository.findById(request.id());
         if (countryRes.isEmpty()) {
             log.warn("Attempt to get non-existing country with id='{}'", request.id());
-            return Result.fail(new CountryError.NotFound(request.id()));
+            return Result.fail(new CountryError.NotFound(request.id().toString()));
         }
 
         return Result.ok(CountryResponse.from(countryRes.get()));
@@ -119,20 +120,20 @@ public class CountryServiceImpl implements CountryService {
         return Result.ok(countryPage.map(CountryResponse::from));
     }
 
-    private Result<CountryResponse> changeAvailable(@NonNull String countryId, boolean available) {
+    private Result<CountryResponse> changeAvailable(@NonNull UUID countryId, boolean available) {
         String logAction = available ? "unban" : "ban";
         SessionUser user = sessionContext.getCurrent().orElseThrow();
 
         Optional<Country> oldRes = countryRepository.findById(countryId);
         if (oldRes.isEmpty()) {
             log.warn("Attempt to {} non-existing country with id='{}' by userId='{}'", logAction, countryId, user.userId());
-            return Result.fail(new CountryError.NotFound(countryId));
+            return Result.fail(new CountryError.NotFound(countryId.toString()));
         }
 
         Country old = oldRes.get();
         if (old.getCreatedById() != null && !old.getCreatedById().equals(user.userId())) {
             log.warn("Attempted to {} country not created by userId='{}' by userId='{}', countryName='{}'", logAction, old.getCreatedById(), user.userId(), old.getName());
-            return Result.fail(new CountryError.NotFound(countryId));
+            return Result.fail(new CountryError.NotFound(countryId.toString()));
         }
 
         // Legacy rows can have null owner; normalize ownership after first management action.

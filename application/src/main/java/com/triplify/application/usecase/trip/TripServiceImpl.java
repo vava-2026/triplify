@@ -87,8 +87,8 @@ public class TripServiceImpl implements TripService {
 
         ResolvedTripRelations relations = resolveRelations(
                 request.categoryId(),
-                normalizeStringSet(request.countryIds()),
-                normalizeStringSet(request.tagIds())
+                request.countryIds() == null ? Set.of() : request.countryIds(),
+                request.tagIds() == null ? Set.of() : request.tagIds()
         ).orThrow();
 
         validateDates(request.startedAt(), request.endedAt()).orThrow();
@@ -115,13 +115,13 @@ public class TripServiceImpl implements TripService {
         );
 
         tripRepository.create(trip);
-        tripRepository.replaceTagIds(trip.getId().toString(), idsOfTags(relations.tags()));
-        tripRepository.replaceCountryIds(trip.getId().toString(), idsOfCountries(relations.countries()));
+        tripRepository.replaceTagIds(trip.getId(), toIdSet(relations.tags()));
+        tripRepository.replaceCountryIds(trip.getId(), toIdSet(relations.countries()));
 
-        updateTripCoverImage(trip.getId().toString(), request.images(), null).orThrow();
+        updateTripCoverImage(trip.getId(), request.images(), null).orThrow();
 
         log.info("Added trip id='{}', title='{}' by userId='{}'", trip.getId(), trip.getTitle(), user.userId());
-        return getTripById(new GetTripByIdRequest(trip.getId().toString()));
+        return getTripById(new GetTripByIdRequest(trip.getId()));
     }
 
     @Override
@@ -135,8 +135,8 @@ public class TripServiceImpl implements TripService {
 
         ResolvedTripRelations relations = resolveRelations(
                 request.categoryId(),
-                normalizeStringSet(request.countryIds()),
-                normalizeStringSet(request.tagIds())
+                request.countryIds() == null ? Set.of() : request.countryIds(),
+                request.tagIds() == null ? Set.of() : request.tagIds()
         ).orThrow();
         Trip updatedTrip = new Trip(
                 existing.getId(),
@@ -159,17 +159,17 @@ public class TripServiceImpl implements TripService {
         );
 
         tripRepository.update(updatedTrip);
-        tripRepository.replaceTagIds(updatedTrip.getId().toString(), idsOfTags(relations.tags()));
-        tripRepository.replaceCountryIds(updatedTrip.getId().toString(), idsOfCountries(relations.countries()));
+        tripRepository.replaceTagIds(updatedTrip.getId(), toIdSet(relations.tags()));
+        tripRepository.replaceCountryIds(updatedTrip.getId(), toIdSet(relations.countries()));
 
         updateTripCoverImage(
-                updatedTrip.getId().toString(),
+                updatedTrip.getId(),
                 request.images(),
-                existing.getCoverImageId() == null ? null : existing.getCoverImageId().toString()
+                existing.getCoverImageId()
         ).orThrow();
 
         log.info("Updated trip id='{}' by userId='{}'", updatedTrip.getId(), user.userId());
-        return getTripById(new GetTripByIdRequest(updatedTrip.getId().toString()));
+        return getTripById(new GetTripByIdRequest(updatedTrip.getId()));
     }
 
     @Override
@@ -178,7 +178,7 @@ public class TripServiceImpl implements TripService {
         Trip existing = requireOwnedTrip(request.id(), user.userId()).orThrow();
 
         if (existing.getCoverImageId() != null) {
-            var coverResult = imageService.getImageById(new GetImageByIdRequest(existing.getCoverImageId().toString()));
+            var coverResult = imageService.getImageById(new GetImageByIdRequest(existing.getCoverImageId()));
             if (coverResult.isSuccess()) {
                 imageService.deleteImage(new DeleteImageRequest(coverResult.getValue().id())).orThrow();
             }
@@ -228,7 +228,7 @@ public class TripServiceImpl implements TripService {
     public Result<TripResponse> getTripById(GetTripByIdRequest request) {
         return tripRepository.findById(request.id())
                 .<Result<TripResponse>>map(this::toResponse)
-                .orElseGet(() -> Result.fail(new TripError.NotFound(request.id())));
+                .orElseGet(() -> Result.fail(new TripError.NotFound(request.id().toString())));
     }
 
     @Override
@@ -255,43 +255,43 @@ public class TripServiceImpl implements TripService {
         return Result.ok(new Page<>(responses, tripsPage.page(), tripsPage.size(), tripsPage.hasNext()));
     }
 
-    private Result<Trip> requireOwnedTrip(String tripId, UUID userId) {
+    private Result<Trip> requireOwnedTrip(UUID tripId, UUID userId) {
         var tripRes = tripRepository.findById(tripId);
         if (tripRes.isEmpty()) {
-            return Result.fail(new TripError.NotFound(tripId));
+            return Result.fail(new TripError.NotFound(tripId.toString()));
         }
 
         Trip trip = tripRes.get();
         if (!Objects.equals(trip.getUserId(), userId)) {
-            return Result.fail(new TripError.NotOwner(tripId));
+            return Result.fail(new TripError.NotOwner(tripId.toString()));
         }
 
         return Result.ok(trip);
     }
 
-    private Result<ResolvedTripRelations> resolveRelations(String categoryId, Set<String> countryIds, Set<String> tagIds) {
+    private Result<ResolvedTripRelations> resolveRelations(UUID categoryId, Set<UUID> countryIds, Set<UUID> tagIds) {
         var category = categoryRepository.findById(categoryId);
         if (category.isEmpty()) {
-            return Result.fail(new CategoryError.NotFound(categoryId));
+            return Result.fail(new CategoryError.NotFound(categoryId.toString()));
         }
 
         LinkedHashSet<Country> countries = new LinkedHashSet<>();
-        for (String countryId : countryIds) {
+        for (UUID countryId : countryIds) {
             var country = countryRepository.findById(countryId);
             if (country.isEmpty()) {
-                return Result.fail(new CountryError.NotFound(countryId));
+                return Result.fail(new CountryError.NotFound(countryId.toString()));
             }
             countries.add(country.get());
         }
 
         List<Tag> foundTags = tagRepository.findByIds(tagIds);
         if (foundTags.size() != tagIds.size()) {
-            Set<String> foundTagIds = foundTags.stream()
-                    .map(tag -> tag.getId().toString())
+            Set<UUID> foundTagIds = foundTags.stream()
+                    .map(Tag::getId)
                     .collect(Collectors.toSet());
-            for (String tagId : tagIds) {
+            for (UUID tagId : tagIds) {
                 if (!foundTagIds.contains(tagId)) {
-                    return Result.fail(new TagError.NotFound(tagId));
+                    return Result.fail(new TagError.NotFound(tagId.toString()));
                 }
             }
         }
@@ -330,7 +330,7 @@ public class TripServiceImpl implements TripService {
         return Result.ok();
     }
 
-    private Result<Void> updateTripCoverImage(String tripId, Set<Path> requestedImages, String existingCoverImageId) {
+    private Result<Void> updateTripCoverImage(UUID tripId, Set<Path> requestedImages, UUID existingCoverImageId) {
         if (requestedImages == null) {
             return Result.ok();
         }
@@ -342,7 +342,7 @@ public class TripServiceImpl implements TripService {
 
         if (newCoverPath == null) {
             tripRepository.updateCoverImageId(tripId, null);
-            if (existingCoverImageId != null && !existingCoverImageId.isBlank()) {
+            if (existingCoverImageId != null) {
                 imageService.deleteImage(new DeleteImageRequest(existingCoverImageId)).orThrow();
             }
             return Result.ok();
@@ -353,11 +353,10 @@ public class TripServiceImpl implements TripService {
             return Result.fail(imageResult.getError());
         }
 
-        String newCoverImageId = imageResult.getValue().id();
+        UUID newCoverImageId = imageResult.getValue().id();
         tripRepository.updateCoverImageId(tripId, newCoverImageId);
 
         if (existingCoverImageId != null
-                && !existingCoverImageId.isBlank()
                 && !existingCoverImageId.equals(newCoverImageId)) {
             var deleteResult = imageService.deleteImage(new DeleteImageRequest(existingCoverImageId));
             if (deleteResult.isFailure()) {
@@ -372,8 +371,8 @@ public class TripServiceImpl implements TripService {
 
         Category category = trip.getCategory();
         CategoryResponse categoryResponse = category == null ? null : new CategoryResponse(
-                category.getId().toString(),
-                category.getCreatedById() == null ? null : category.getCreatedById().toString(),
+                category.getId(),
+                category.getCreatedById(),
                 category.getName(),
                 category.getNameSk(),
                 category.getDescription(),
@@ -384,8 +383,8 @@ public class TripServiceImpl implements TripService {
 
         Set<TagResponse> tagResponses = trip.getTags().stream()
                 .map(tag -> new TagResponse(
-                        tag.getId().toString(),
-                        tag.getUserId().toString(),
+                        tag.getId(),
+                        tag.getUserId(),
                         tag.getName(),
                         tag.getColor() == null ? null : ColorTheme.from(tag.getColor())
                 ))
@@ -396,8 +395,8 @@ public class TripServiceImpl implements TripService {
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
         return Result.ok(new TripResponse(
-                trip.getId().toString(),
-                trip.getUserId().toString(),
+                trip.getId(),
+                trip.getUserId(),
                 categoryResponse,
                 trip.getTitle(),
                 trip.getDescription(),
@@ -412,32 +411,8 @@ public class TripServiceImpl implements TripService {
         ));
     }
 
-    private Set<String> normalizeStringSet(Set<String> values) {
-        if (values == null || values.isEmpty()) {
-            return Set.of();
-        }
-
-        return values.stream()
-                .filter(Objects::nonNull)
-                .map(String::trim)
-                .filter(value -> !value.isBlank())
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-    }
-
     private String normalizeDescription(String description) {
         return description == null ? "" : description;
-    }
-
-    private LinkedHashSet<String> idsOfTags(Set<Tag> tags) {
-        return tags.stream()
-                .map(tag -> tag.getId().toString())
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-    }
-
-    private LinkedHashSet<String> idsOfCountries(Set<Country> countries) {
-        return countries.stream()
-                .map(country -> country.getId().toString())
-                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     private <T> LinkedHashSet<UUID> toIdSet(Set<T> items) {

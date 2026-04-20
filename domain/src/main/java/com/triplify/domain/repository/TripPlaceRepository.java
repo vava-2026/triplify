@@ -8,21 +8,21 @@ import com.triplify.domain.pagination.PageRequest;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface TripPlaceRepository {
-    Optional<TripPlace> findById(String id);
-    Optional<TripPlace> findByTripIdAndPlaceId(String tripId, String placeId);
-    List<TripPlace> findByPlaceId(String placeId);
+    Optional<TripPlace> findById(UUID id);
+    Optional<TripPlace> findByTripIdAndPlaceId(UUID tripId, UUID placeId);
+    List<TripPlace> findByPlaceId(UUID placeId);
     Page<TripPlace> findList(
             PageRequest pageRequest,
-            String tripId,
+            UUID tripId,
             TripPlaceSourceType sourceType,
-            String tripRouteId,
-            String routePlaceId,
+            UUID tripRouteId,
+            UUID routePlaceId,
             Instant visitFrom,
             Instant visitTo,
-            boolean visitTimeAsc
-    );
+            boolean visitTimeAsc);
     void create(TripPlace tripPlace);
     void update(TripPlace tripPlace);
     void delete(TripPlace tripPlace);

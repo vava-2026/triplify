@@ -26,11 +26,11 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
     private static final String BASE_COLUMNS = "id, trip_id, place_id, visit_date, created_at, updated_at";
 
     @Override
-    public Optional<TripPlace> findById(String id) {
+    public Optional<TripPlace> findById(UUID id) {
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(selectSql(conn, " WHERE id = ? LIMIT 1"))) {
             ColumnState columns = tripPlaceColumns(conn);
-            ps.setString(1, id);
+            ps.setString(1, id.toString());
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return Optional.of(mapRow(rs, columns));
@@ -45,12 +45,12 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
     }
 
     @Override
-    public Optional<TripPlace> findByTripIdAndPlaceId(String tripId, String placeId) {
+    public Optional<TripPlace> findByTripIdAndPlaceId(UUID tripId, UUID placeId) {
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(selectSql(conn, " WHERE trip_id = ? AND place_id = ? LIMIT 1"))) {
             ColumnState columns = tripPlaceColumns(conn);
-            ps.setString(1, tripId);
-            ps.setString(2, placeId);
+            ps.setString(1, tripId.toString());
+            ps.setString(2, placeId.toString());
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return Optional.of(mapRow(rs, columns));
@@ -65,11 +65,11 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
     }
 
     @Override
-    public List<TripPlace> findByPlaceId(String placeId) {
+    public List<TripPlace> findByPlaceId(UUID placeId) {
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(selectSql(conn, " WHERE place_id = ? ORDER BY created_at DESC"))) {
             ColumnState columns = tripPlaceColumns(conn);
-            ps.setString(1, placeId);
+            ps.setString(1, placeId.toString());
             try (ResultSet rs = ps.executeQuery()) {
                 List<TripPlace> items = new ArrayList<>();
                 while (rs.next()) {
@@ -86,10 +86,10 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
     @Override
     public Page<TripPlace> findList(
             PageRequest pageRequest,
-            String tripId,
+            UUID tripId,
             TripPlaceSourceType sourceType,
-            String tripRouteId,
-            String routePlaceId,
+            UUID tripRouteId,
+            UUID routePlaceId,
             Instant visitFrom,
             Instant visitTo,
             boolean visitTimeAsc
@@ -226,10 +226,10 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
 
     private String buildFindListSql(
             Connection conn,
-            String tripId,
+            UUID tripId,
             TripPlaceSourceType sourceType,
-            String tripRouteId,
-            String routePlaceId,
+            UUID tripRouteId,
+            UUID routePlaceId,
             Instant visitFrom,
             Instant visitTo,
             boolean visitTimeAsc
@@ -237,16 +237,16 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
         ColumnState columns = tripPlaceColumns(conn);
         StringBuilder sql = new StringBuilder(selectSql(conn, " WHERE 1=1"));
 
-        if (tripId != null && !tripId.isBlank()) {
+        if (tripId != null) {
             sql.append(" AND trip_id = ? ");
         }
         if (columns.hasSourceType() && sourceType != null) {
             sql.append(" AND source_type = ? ");
         }
-        if (columns.hasTripRouteId() && tripRouteId != null && !tripRouteId.isBlank()) {
+        if (columns.hasTripRouteId() && tripRouteId != null) {
             sql.append(" AND trip_route_id = ? ");
         }
-        if (columns.hasRoutePlaceId() && routePlaceId != null && !routePlaceId.isBlank()) {
+        if (columns.hasRoutePlaceId() && routePlaceId != null) {
             sql.append(" AND route_place_id = ? ");
         }
         if (visitFrom != null) {
@@ -264,10 +264,10 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
 
     private List<Object> buildFindListParams(
             Connection conn,
-            String tripId,
+            UUID tripId,
             TripPlaceSourceType sourceType,
-            String tripRouteId,
-            String routePlaceId,
+            UUID tripRouteId,
+            UUID routePlaceId,
             Instant visitFrom,
             Instant visitTo,
             PageRequest pageRequest
@@ -275,17 +275,17 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
         ColumnState columns = tripPlaceColumns(conn);
         List<Object> params = new ArrayList<>();
 
-        if (tripId != null && !tripId.isBlank()) {
-            params.add(tripId);
+        if (tripId != null) {
+            params.add(tripId.toString());
         }
         if (columns.hasSourceType() && sourceType != null) {
             params.add(sourceType.getValue());
         }
-        if (columns.hasTripRouteId() && tripRouteId != null && !tripRouteId.isBlank()) {
-            params.add(tripRouteId);
+        if (columns.hasTripRouteId() && tripRouteId != null) {
+            params.add(tripRouteId.toString());
         }
-        if (columns.hasRoutePlaceId() && routePlaceId != null && !routePlaceId.isBlank()) {
-            params.add(routePlaceId);
+        if (columns.hasRoutePlaceId() && routePlaceId != null) {
+            params.add(routePlaceId.toString());
         }
         if (visitFrom != null) {
             params.add(visitFrom.toString());

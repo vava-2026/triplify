@@ -92,8 +92,8 @@ public class PlaceServiceImpl implements PlaceService {
             image = imageService.addImage(new AddImageRequest(request.coverImage(), DEFAULT_IMAGE_DESCRIPTION + request.title())).orThrow();
         }
 
-        UUID imageId = image != null ? UUID.fromString(image.id()) : null;
-        Place place = new Place(user.userId(), UUID.fromString(countryResponse.id()), imageId, request.title(), request.description(), request.latitude(), request.longitude());
+        UUID imageId = image != null ? image.id() : null;
+        Place place = new Place(user.userId(), countryResponse.id(), imageId, request.title(), request.description(), request.latitude(), request.longitude());
         placeRepository.create(place);
         log.info("Added new place with id='{}', title='{}' by userId='{}'", place.getId(), place.getTitle(), user.userId());
 
@@ -119,18 +119,18 @@ public class PlaceServiceImpl implements PlaceService {
         CountryResponse countryResponse = countryService.getCountryById(new GetCountryByIdRequest(request.countryId())).orThrow();
         UUID imageId = null;
         if (old.getCoverImage() != null && !old.getCoverImage().getUrl().equals(request.coverImage())){
-            imageService.deleteImage(new DeleteImageRequest(old.getCoverImage().getId().toString())).orThrow();
+            imageService.deleteImage(new DeleteImageRequest(old.getCoverImage().getId())).orThrow();
 
             if (request.coverImage() != null) {
                 var imageResult = imageService.addImage(new AddImageRequest(request.coverImage(), DEFAULT_IMAGE_DESCRIPTION + request.title()));
-                imageId = UUID.fromString(imageResult.orThrow().id());
+                imageId = imageResult.orThrow().id();
             }
             else {
                 imageId = old.getCoverImage().getId();
             }
         }
 
-        Place place = new Place(UUID.fromString(request.id()), user.userId(), UUID.fromString(countryResponse.id()), imageId, request.title(), request.description(), request.latitude(), request.longitude());
+        Place place = new Place(request.id(), user.userId(), countryResponse.id(), imageId, request.title(), request.description(), request.latitude(), request.longitude());
         placeRepository.update(place);
 
         log.info("Updated new place with id='{}', title='{}' by userId='{}'", place.getId(), place.getTitle(), user.userId());
@@ -186,19 +186,19 @@ public class PlaceServiceImpl implements PlaceService {
         return Result.ok(responsePage);
     }
 
-    private List<TripResponse> loadAssociatedTrips(String placeId) {
+    private List<TripResponse> loadAssociatedTrips(UUID placeId) {
         List<TripPlace> relatedTripPlaces = tripPlaceRepository.findByPlaceId(placeId);
         if (relatedTripPlaces.isEmpty()) {
             return List.of();
         }
 
-        Set<String> tripIds = new LinkedHashSet<>();
+        Set<UUID> tripIds = new LinkedHashSet<>();
         for (TripPlace tripPlace : relatedTripPlaces) {
-            tripIds.add(tripPlace.getTripId().toString());
+            tripIds.add(tripPlace.getTripId());
         }
 
         List<com.triplify.application.usecase.trip.dto.TripResponse> trips = new ArrayList<>();
-        for (String tripId : tripIds) {
+        for (UUID tripId : tripIds) {
             var result = tripService.getTripById(new GetTripByIdRequest(tripId));
             if (result.isFailure()) {
                 continue;
@@ -215,19 +215,19 @@ public class PlaceServiceImpl implements PlaceService {
                 .toList();
     }
 
-    private List<RouteResponse> loadAssociatedRoutes(String placeId) {
+    private List<RouteResponse> loadAssociatedRoutes(UUID placeId) {
         List<RoutePlace> relatedRoutePlaces = routePlaceRepository.findByPlaceId(placeId);
         if (relatedRoutePlaces.isEmpty()) {
             return List.of();
         }
 
-        Set<String> routeIds = new LinkedHashSet<>();
+        Set<UUID> routeIds = new LinkedHashSet<>();
         for (RoutePlace routePlace : relatedRoutePlaces) {
-            routeIds.add(routePlace.getRouteId().toString());
+            routeIds.add(routePlace.getRouteId());
         }
 
         List<RouteResponse> routes = new ArrayList<>();
-        for (String routeId : routeIds) {
+        for (UUID routeId : routeIds) {
             Route route = routeRepository.findById(routeId).orElse(null);
             if (route == null) {
                 continue;

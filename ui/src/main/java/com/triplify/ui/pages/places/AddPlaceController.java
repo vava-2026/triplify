@@ -21,10 +21,13 @@ import com.triplify.ui.shared.component.input_item.TextAreaItem;
 import com.triplify.ui.shared.component.upload_panel.view.ImageUploadPanelView;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.toast.ToastService;
+import com.triplify.ui.shared.util.EditorUtils;
 import com.triplify.ui.shared.util.Localization;
+
+import static com.triplify.ui.shared.util.EditorUtils.*;
+
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
-import javafx.geometry.Rectangle2D;
 import javafx.application.Platform;
 import javafx.scene.Cursor;
 import javafx.scene.control.Button;
@@ -50,10 +53,10 @@ import rahulstech.jfx.routing.element.RouterArgument;
 import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 
 import java.io.File;
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 public class AddPlaceController extends SimpleLifecycleAwareController {
@@ -132,8 +135,8 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         initializeCoverPreview();
         bindUploadPanelHandlers();
 
-        configureButtonIcon(actionButtonsView.getPrimaryButton(), "fth-save");
-        configureButtonIcon(actionButtonsView.getSecondaryButton(), "fth-trash-2");
+        configureButtonIcon(actionButtonsView.getPrimaryButton(), "fth-save", 15, "app-btn-icon");
+        configureButtonIcon(actionButtonsView.getSecondaryButton(), "fth-trash-2", 15, "app-btn-icon");
         actionButtonsView.getPrimaryButton().setOnAction(event -> onSave());
         actionButtonsView.getSecondaryButton().setOnAction(event -> onDiscard());
 
@@ -191,8 +194,8 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
 
         var result = editMode
                 ? placeService.updatePlace(new UpdatePlaceRequest(
-                        placeId,
-                        countryId,
+                        UUID.fromString(placeId),
+                        UUID.fromString(countryId),
                         coverImage,
                         title,
                         description,
@@ -200,7 +203,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
                         selectedLongitude
                 ))
                 : placeService.addPlace(new AddPlaceRequest(
-                        countryId,
+                        UUID.fromString(countryId),
                         coverImage,
                         title,
                         description,
@@ -245,14 +248,14 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     private void onUploadDragOver(DragEvent event) {
         if (event.getDragboard().hasFiles() && isSupportedImageFile(event.getDragboard().getFiles().getFirst())) {
             event.acceptTransferModes(TransferMode.COPY);
-            addUploadActiveState(true);
+            toggleStyleClass(uploadArea, "editor-upload-area-active", true);
         }
         event.consume();
     }
 
     @FXML
     private void onUploadDragExited(DragEvent event) {
-        addUploadActiveState(false);
+        toggleStyleClass(uploadArea, "editor-upload-area-active", false);
         event.consume();
     }
 
@@ -267,7 +270,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
             }
         }
 
-        addUploadActiveState(false);
+        toggleStyleClass(uploadArea, "editor-upload-area-active", false);
         event.setDropCompleted(completed);
         event.consume();
     }
@@ -324,56 +327,11 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     }
 
     private void initializeCoverPreview() {
-        coverPreview.setPreserveRatio(false);
-        coverPreview.fitWidthProperty().bind(uploadArea.widthProperty());
-        coverPreview.fitHeightProperty().bind(uploadArea.heightProperty());
-        uploadArea.widthProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
-        uploadArea.heightProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
-        coverPreview.imageProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
+        EditorUtils.initializeCoverPreview(coverPreview, uploadArea);
     }
 
     private void setCoverPreviewImage(Image image) {
-        coverPreview.setImage(image);
-        updateCoverPreviewViewport();
-        if (image == null) {
-            coverPreview.setViewport(null);
-            return;
-        }
-
-        image.widthProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
-        image.heightProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
-        image.progressProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
-    }
-
-    private void updateCoverPreviewViewport() {
-        Image image = coverPreview.getImage();
-        if (image == null) {
-            coverPreview.setViewport(null);
-            return;
-        }
-
-        double imageWidth = image.getWidth();
-        double imageHeight = image.getHeight();
-        double viewportWidth = uploadArea.getWidth();
-        double viewportHeight = uploadArea.getHeight();
-
-        if (imageWidth <= 0 || imageHeight <= 0 || viewportWidth <= 0 || viewportHeight <= 0) {
-            return;
-        }
-
-        double imageRatio = imageWidth / imageHeight;
-        double viewportRatio = viewportWidth / viewportHeight;
-
-        if (imageRatio > viewportRatio) {
-            double cropWidth = imageHeight * viewportRatio;
-            double x = (imageWidth - cropWidth) / 2.0;
-            coverPreview.setViewport(new Rectangle2D(x, 0, cropWidth, imageHeight));
-            return;
-        }
-
-        double cropHeight = imageWidth / viewportRatio;
-        double y = (imageHeight - cropHeight) / 2.0;
-        coverPreview.setViewport(new Rectangle2D(0, y, imageWidth, cropHeight));
+        EditorUtils.setCoverPreviewImage(coverPreview, uploadArea, image);
     }
 
     private void initializeMap() {
@@ -395,7 +353,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     }
 
     private void loadPlaceForEdit() {
-        var result = placeService.getPlaceById(new GetPlaceByIdRequest(placeId));
+        var result = placeService.getPlaceById(new GetPlaceByIdRequest(UUID.fromString(placeId)));
         if (result.isFailure()) {
             errorHandler.handle(result.getError());
             getRouter().popBackStack();
@@ -459,16 +417,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         Localization.bindText(actionButtonsView.secondaryTextProperty(), "place.add.action.discard");
     }
 
-    private String formatMessage(String key, Object... args) {
-        return MessageFormat.format(I18n.t(key), args);
-    }
 
-    private void configureButtonIcon(Button button, String iconLiteral) {
-        FontIcon icon = new FontIcon(iconLiteral);
-        icon.setIconSize(15);
-        icon.getStyleClass().add("app-btn-icon");
-        button.setGraphic(icon);
-    }
 
     private void bindUploadPanelHandlers() {
         uploadArea.setOnMouseClicked(event -> onChooseCoverImage());
@@ -477,50 +426,15 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         uploadArea.setOnDragDropped(this::onUploadDragDropped);
     }
 
-    private void addUploadActiveState(boolean active) {
-        if (active) {
-            if (!uploadArea.getStyleClass().contains("editor-upload-area-active")) {
-                uploadArea.getStyleClass().add("editor-upload-area-active");
-            }
-            return;
-        }
 
-        uploadArea.getStyleClass().remove("editor-upload-area-active");
-    }
-
-    private void installRoundedClip(StackPane target, double radius) {
-        Rectangle clip = new Rectangle();
-        clip.setArcWidth(radius * 2);
-        clip.setArcHeight(radius * 2);
-        clip.widthProperty().bind(target.widthProperty());
-        clip.heightProperty().bind(target.heightProperty());
-        target.setClip(clip);
-    }
 
     private void updateFullScreenMode(boolean fullScreen) {
         TriplifyRouterContext context = (TriplifyRouterContext) getRouter().getContext();
         context.setFullScreenContent(fullScreen);
     }
 
-    private boolean isSupportedImageFile(File file) {
-        String lowerName = file.getName().toLowerCase();
-        return lowerName.endsWith(".png")
-                || lowerName.endsWith(".jpg")
-                || lowerName.endsWith(".jpeg")
-                || lowerName.endsWith(".svg");
-    }
-
-    private boolean isVectorImage(File file) {
-        return file.getName().toLowerCase().endsWith(".svg");
-    }
-
     private String normalize(String value) {
         return value == null ? null : value.trim();
-    }
-
-    private String normalizeNullable(String value) {
-        String normalized = normalize(value);
-        return normalized == null || normalized.isBlank() ? null : normalized;
     }
 
     private double clamp(double value, double min, double max) {

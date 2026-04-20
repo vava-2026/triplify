@@ -29,10 +29,13 @@ import com.triplify.ui.shared.component.upload_panel.view.ImageUploadPanelView;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.storage.EditorDraftStorage;
 import com.triplify.ui.shared.toast.ToastService;
+import com.triplify.ui.shared.util.EditorUtils;
 import com.triplify.ui.shared.util.Localization;
+
+import static com.triplify.ui.shared.util.EditorUtils.*;
+
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.Cursor;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Button;
@@ -60,7 +63,6 @@ import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.text.MessageFormat;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -229,10 +231,10 @@ public class AddRouteController extends SimpleLifecycleAwareController {
         );
 
         if (routeId != null && !routeId.isBlank()) {
-            var result = routeService.updateRoute(new UpdateRouteRequest(routeId, coverImage, title, description, length));
+            var result = routeService.updateRoute(new UpdateRouteRequest(UUID.fromString(routeId), coverImage, title, description, length));
             result.onSuccess(route -> {
-                boolean syncedAllPlaces = syncPlacesForRoute(route.id());
-                RouteResponse savedRoute = loadSavedRoute(route.id(), route);
+                boolean syncedAllPlaces = syncPlacesForRoute(route.id().toString());
+                RouteResponse savedRoute = loadSavedRoute(route.id().toString(), route);
                 EditorDraftStorage.clearRouteDraft();
                 EditorDraftStorage.savePendingRoute(returnTarget, savedRoute);
                 String routeTitle = titleInput.getText().trim();
@@ -252,8 +254,8 @@ public class AddRouteController extends SimpleLifecycleAwareController {
 
         var result = routeService.addRoute(new AddRouteRequest(coverImage, title, description, length));
         result.onSuccess(route -> {
-            boolean linkedAllPlaces = linkPlacesToRoute(route.id());
-            RouteResponse savedRoute = loadSavedRoute(route.id(), route);
+            boolean linkedAllPlaces = linkPlacesToRoute(route.id().toString());
+            RouteResponse savedRoute = loadSavedRoute(route.id().toString(), route);
             EditorDraftStorage.clearRouteDraft();
             EditorDraftStorage.savePendingRoute(returnTarget, savedRoute);
             String routeTitle = titleInput.getText().trim();
@@ -311,14 +313,14 @@ public class AddRouteController extends SimpleLifecycleAwareController {
     private void onUploadDragOver(DragEvent event) {
         if (event.getDragboard().hasFiles() && isSupportedImageFile(event.getDragboard().getFiles().getFirst())) {
             event.acceptTransferModes(TransferMode.COPY);
-            addUploadActiveState(true);
+            toggleStyleClass(uploadArea, "editor-upload-area-active", true);
         }
         event.consume();
     }
 
     @FXML
     private void onUploadDragExited(DragEvent event) {
-        addUploadActiveState(false);
+        toggleStyleClass(uploadArea, "editor-upload-area-active", false);
         event.consume();
     }
 
@@ -333,7 +335,7 @@ public class AddRouteController extends SimpleLifecycleAwareController {
             }
         }
 
-        addUploadActiveState(false);
+        toggleStyleClass(uploadArea, "editor-upload-area-active", false);
         event.setDropCompleted(completed);
         event.consume();
     }
@@ -621,63 +623,11 @@ public class AddRouteController extends SimpleLifecycleAwareController {
     }
 
     private void initializeCoverPreview() {
-        coverPreview.setPreserveRatio(false);
-        coverPreview.fitWidthProperty().bind(uploadArea.widthProperty());
-        coverPreview.fitHeightProperty().bind(uploadArea.heightProperty());
-        uploadArea.widthProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
-        uploadArea.heightProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
-        coverPreview.imageProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
+        EditorUtils.initializeCoverPreview(coverPreview, uploadArea);
     }
 
     private void setCoverPreviewImage(Image image) {
-        coverPreview.setImage(image);
-        updateCoverPreviewViewport();
-        if (image == null) {
-            coverPreview.setViewport(null);
-            return;
-        }
-
-        image.widthProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
-        image.heightProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
-        image.progressProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
-    }
-
-    private void updateCoverPreviewViewport() {
-        Image image = coverPreview.getImage();
-        if (image == null) {
-            coverPreview.setViewport(null);
-            return;
-        }
-
-        double imageWidth = image.getWidth();
-        double imageHeight = image.getHeight();
-        double viewportWidth = uploadArea.getWidth();
-        double viewportHeight = uploadArea.getHeight();
-
-        if (imageWidth <= 0 || imageHeight <= 0 || viewportWidth <= 0 || viewportHeight <= 0) {
-            return;
-        }
-
-        double imageRatio = imageWidth / imageHeight;
-        double viewportRatio = viewportWidth / viewportHeight;
-
-        if (imageRatio > viewportRatio) {
-            double cropWidth = imageHeight * viewportRatio;
-            double x = (imageWidth - cropWidth) / 2.0;
-            coverPreview.setViewport(new Rectangle2D(x, 0, cropWidth, imageHeight));
-            return;
-        }
-
-        double cropHeight = imageWidth / viewportRatio;
-        double y = (imageHeight - cropHeight) / 2.0;
-        coverPreview.setViewport(new Rectangle2D(0, y, imageWidth, cropHeight));
-    }
-
-    private void configureButtonIcon(Button button, String iconLiteral) {
-        FontIcon icon = new FontIcon(iconLiteral);
-        icon.setIconSize(14);
-        icon.getStyleClass().add("app-btn-icon");
-        button.setGraphic(icon);
+        EditorUtils.setCoverPreviewImage(coverPreview, uploadArea, image);
     }
 
     private void bindUploadPanelHandlers() {
@@ -685,26 +635,6 @@ public class AddRouteController extends SimpleLifecycleAwareController {
         uploadArea.setOnDragOver(this::onUploadDragOver);
         uploadArea.setOnDragExited(this::onUploadDragExited);
         uploadArea.setOnDragDropped(this::onUploadDragDropped);
-    }
-
-    private void addUploadActiveState(boolean active) {
-        if (active) {
-            if (!uploadArea.getStyleClass().contains("editor-upload-area-active")) {
-                uploadArea.getStyleClass().add("editor-upload-area-active");
-            }
-            return;
-        }
-
-        uploadArea.getStyleClass().remove("editor-upload-area-active");
-    }
-
-    private void installRoundedClip(StackPane target, double radius) {
-        Rectangle clip = new Rectangle();
-        clip.setArcWidth(radius * 2);
-        clip.setArcHeight(radius * 2);
-        clip.widthProperty().bind(target.widthProperty());
-        clip.heightProperty().bind(target.heightProperty());
-        target.setClip(clip);
     }
 
     private void updateFullScreenMode(boolean fullScreen) {
@@ -843,7 +773,7 @@ public class AddRouteController extends SimpleLifecycleAwareController {
     }
 
     private void loadRouteForEdit(String routeId) {
-        var result = routeService.getRouteById(new GetRouteByIdRequest(routeId));
+        var result = routeService.getRouteById(new GetRouteByIdRequest(UUID.fromString(routeId)));
         if (result.isFailure()) {
             errorHandler.handle(result.getError());
             getRouter().popBackStack();
@@ -895,7 +825,7 @@ public class AddRouteController extends SimpleLifecycleAwareController {
     }
 
     private RouteResponse loadSavedRoute(String routeId, RouteResponse fallback) {
-        var result = routeService.getRouteById(new GetRouteByIdRequest(routeId));
+        var result = routeService.getRouteById(new GetRouteByIdRequest(UUID.fromString(routeId)));
         if (result.isFailure()) {
             return fallback;
         }
@@ -910,7 +840,7 @@ public class AddRouteController extends SimpleLifecycleAwareController {
 
         List<String> currentPlaceIds = currentRoute.places() == null
                 ? List.of()
-                : currentRoute.places().stream().map(PlaceResponse::id).toList();
+                : currentRoute.places().stream().map(p -> p.id().toString()).toList();
         List<String> targetPlaceIds = placeItems.stream().map(RoutePlaceItem::id).toList();
 
         for (String existingPlaceId : currentPlaceIds) {
@@ -918,7 +848,7 @@ public class AddRouteController extends SimpleLifecycleAwareController {
                 continue;
             }
 
-            var deleteResult = routeService.deletePlaceFromRoute(new DeletePlaceFromRouteRequest(routeId, existingPlaceId));
+            var deleteResult = routeService.deletePlaceFromRoute(new DeletePlaceFromRouteRequest(UUID.fromString(routeId), UUID.fromString(existingPlaceId)));
             if (deleteResult.isFailure()) {
                 errorHandler.handle(deleteResult.getError());
                 return false;
@@ -930,14 +860,14 @@ public class AddRouteController extends SimpleLifecycleAwareController {
                 continue;
             }
 
-            var addResult = routeService.addPlaceToRoute(new AddPlaceToRouteRequest(routeId, targetPlaceId));
+            var addResult = routeService.addPlaceToRoute(new AddPlaceToRouteRequest(UUID.fromString(routeId), UUID.fromString(targetPlaceId)));
             if (addResult.isFailure()) {
                 errorHandler.handle(addResult.getError());
                 return false;
             }
         }
 
-        var rearrangeResult = routeService.rearrangePlacesInRoute(new RearrangePlacesInRouteRequest(routeId, targetPlaceIds));
+        var rearrangeResult = routeService.rearrangePlacesInRoute(new RearrangePlacesInRouteRequest(UUID.fromString(routeId), targetPlaceIds.stream().map(UUID::fromString).toList()));
         if (rearrangeResult.isFailure()) {
             errorHandler.handle(rearrangeResult.getError());
             return false;
@@ -946,20 +876,13 @@ public class AddRouteController extends SimpleLifecycleAwareController {
         return true;
     }
 
-    private String normalizeKey(String value) {
-        if (value == null || value.isBlank() || "0".equals(value.trim())) {
-            return "";
-        }
-        return value.trim();
-    }
-
     private void clearFieldErrors() {
         titleInput.clearError();
     }
 
     private boolean linkPlacesToRoute(String routeId) {
         for (RoutePlaceItem item : placeItems) {
-            var linkResult = routeService.addPlaceToRoute(new AddPlaceToRouteRequest(routeId, item.id()));
+            var linkResult = routeService.addPlaceToRoute(new AddPlaceToRouteRequest(UUID.fromString(routeId), UUID.fromString(item.id())));
             if (linkResult.isFailure()) {
                 errorHandler.handle(linkResult.getError());
                 return false;
@@ -986,29 +909,8 @@ public class AddRouteController extends SimpleLifecycleAwareController {
         return totalDistanceKm;
     }
 
-    private String formatMessage(String key, Object... args) {
-        return MessageFormat.format(I18n.t(key), args);
-    }
-
-    private boolean isSupportedImageFile(File file) {
-        String lowerName = file.getName().toLowerCase(Locale.ROOT);
-        return lowerName.endsWith(".png")
-                || lowerName.endsWith(".jpg")
-                || lowerName.endsWith(".jpeg")
-                || lowerName.endsWith(".svg");
-    }
-
-    private boolean isVectorImage(File file) {
-        return file.getName().toLowerCase(Locale.ROOT).endsWith(".svg");
-    }
-
     private String normalize(String value) {
         return value == null ? null : value.trim();
-    }
-
-    private String normalizeNullable(String value) {
-        String normalized = normalize(value);
-        return normalized == null || normalized.isBlank() ? null : normalized;
     }
 
     private RoutePlaceItem toRoutePlaceItem(PlaceResponse response) {
@@ -1016,7 +918,7 @@ public class AddRouteController extends SimpleLifecycleAwareController {
                 ? response.country().name()
                 : response.description();
         return new RoutePlaceItem(
-                response.id(),
+                response.id().toString(),
                 response.title(),
                 subtitle,
                 response.coverImage() == null || response.coverImage().url() == null ? DEFAULT_IMAGE : response.coverImage().url().toString(),
@@ -1056,21 +958,7 @@ public class AddRouteController extends SimpleLifecycleAwareController {
     }
 
     private Image loadImage(String imagePath) {
-        String resolvedPath = imagePath == null || imagePath.isBlank() ? DEFAULT_IMAGE : imagePath;
-        if (resolvedPath.startsWith("/")) {
-            var resource = getClass().getResource(resolvedPath);
-            if (resource != null) {
-                return new Image(resource.toExternalForm(), true);
-            }
-        }
-
-        File file = new File(resolvedPath);
-        if (file.exists()) {
-            return new Image(file.toURI().toString(), true);
-        }
-
-        var fallback = getClass().getResource(DEFAULT_IMAGE);
-        return new Image(fallback.toExternalForm(), true);
+        return EditorUtils.loadImage(imagePath, DEFAULT_IMAGE, getClass());
     }
 
     private record RoutePlaceItem(

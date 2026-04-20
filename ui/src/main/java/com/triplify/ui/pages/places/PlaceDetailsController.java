@@ -1,7 +1,6 @@
 package com.triplify.ui.pages.places;
 
 import com.google.inject.Inject;
-import com.triplify.application.usecase.trip.dto.TripStatus;
 import com.triplify.application.usecase.place.dto.GetPlaceDetailsRequest;
 import com.triplify.application.usecase.place.dto.PlaceDetailsResponse;
 import com.triplify.application.usecase.place.PlaceService;
@@ -9,7 +8,6 @@ import com.triplify.application.usecase.place.dto.DeletePlaceRequest;
 import com.triplify.application.usecase.place.dto.PlaceResponse;
 import com.triplify.application.usecase.route.dto.RouteResponse;
 import com.triplify.application.usecase.story.dto.StoryResponse;
-import com.triplify.application.usecase.tag.dto.TagResponse;
 import com.triplify.domain.model.enums.StatusEnum;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
@@ -21,7 +19,13 @@ import com.triplify.ui.shared.component.route.view.RouteCardView;
 import com.triplify.ui.shared.component.section_header.view.SectionHeaderView;
 import com.triplify.ui.shared.component.trip.view.TripCardView;
 import com.triplify.ui.shared.toast.ToastService;
+import com.triplify.ui.shared.util.DisplayUtils;
+import com.triplify.ui.shared.util.EditorUtils;
 import com.triplify.ui.shared.util.Localization;
+
+import static com.triplify.ui.shared.util.DisplayUtils.*;
+import static com.triplify.ui.shared.util.EditorUtils.*;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -39,14 +43,11 @@ import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 import java.io.File;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 public class PlaceDetailsController extends SimpleLifecycleAwareController {
 
     private static final String DEFAULT_IMAGE = "/com/triplify/ui/pages/trips/images/one.png";
-    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("MMM d, yyyy");
     @FXML private VBox contentContainer;
     @FXML private StackPane heroContainer;
     @FXML private FlowPane topRowFlow;
@@ -137,7 +138,7 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
             return;
         }
 
-        var result = placeService.deletePlace(new DeletePlaceRequest(placeId));
+        var result = placeService.deletePlace(new DeletePlaceRequest(UUID.fromString(placeId)));
         if (result.isFailure()) {
             errorHandler.handle(result.getError());
             return;
@@ -154,7 +155,7 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
             return;
         }
 
-        var result = placeService.getPlaceDetails(new GetPlaceDetailsRequest(placeId));
+        var result = placeService.getPlaceDetails(new GetPlaceDetailsRequest(UUID.fromString(placeId)));
         if (result.isFailure()) {
             errorHandler.handle(result.getError());
             getRouter().popBackStack();
@@ -192,7 +193,7 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
             TripCardView card = TripCardView.createForDetails(
                     trip,
                     dateRange,
-                    () -> openTrip(trip, dateRange)
+                    () -> openTrip(trip)
             );
             associatedTripsFlow.getChildren().add((Region) card.getRoot());
         }
@@ -243,30 +244,22 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         return card;
     }
 
-    private void openTrip(com.triplify.application.usecase.trip.dto.TripResponse trip, String dateRange) {
+    private void openTrip(com.triplify.application.usecase.trip.dto.TripResponse trip) {
         RouterArgument args = new RouterArgument();
-        args.addArgument("tripId", trip.id());
-        args.addArgument("tripName", trip.title());
-        args.addArgument("tripCountry", deriveCountryLabel(trip.countries()));
-        args.addArgument("tripCategory", trip.category() == null ? "" : trip.category().name());
-        args.addArgument("tripStatus", toLegacyStatus(trip.status()));
-        args.addArgument("tripDates", dateRange);
-        args.addArgument("tripStartDate", trip.startedAt() == null ? null : toLocalDate(trip.startedAt()).toString());
-        args.addArgument("tripEndDate", trip.endedAt() == null ? null : toLocalDate(trip.endedAt()).toString());
-        args.addArgument("tripCoverUrl", deriveCoverUrl(trip.coverImage()));
-        args.addArgument("tripTags", trip.tags() == null ? "" : String.join(",", trip.tags().stream().map(TagResponse::name).toList()));
+        args.addArgument("tripId", trip.id().toString());
+        args.addArgument("tripStatus", trip.status());
         getRouter().moveto(RouteIds.ADD_TRIP, args);
     }
 
     private void openRoute(RouteResponse route) {
-        if (route == null || route.id() == null || route.id().isBlank()) {
+        if (route == null || route.id() == null) {
             return;
         }
 
         RouterArgument args = new RouterArgument();
         args.addArgument("tripId", UUID.randomUUID().toString());
         args.addArgument("tripName", route.title() == null ? "" : route.title());
-        args.addArgument("routeId", route.id());
+        args.addArgument("routeId", route.id().toString());
         getRouter().moveto(RouteIds.ADD_ROUTE, args);
     }
 
@@ -280,61 +273,6 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         return value == null || value.isBlank() ? fallback : value;
     }
 
-
-    private String deriveCountryLabel(java.util.Set<com.triplify.application.usecase.country.dto.CountryResponse> countries) {
-        if (countries == null || countries.isEmpty()) {
-            return "";
-        }
-        if (countries.size() == 1) {
-            return countries.iterator().next().name();
-        }
-        return countries.iterator().next().name() + " +" + (countries.size() - 1);
-    }
-
-    private String deriveCoverUrl(com.triplify.application.usecase.image.dto.ImageResponse coverImage) {
-        if (coverImage == null || coverImage.url() == null) {
-            return null;
-        }
-        return coverImage.url().toUri().toString();
-    }
-
-    private LocalDate toLocalDate(Instant value) {
-        return value == null ? null : value.atZone(ZoneOffset.UTC).toLocalDate();
-    }
-
-    private TripStatus toLegacyStatus(StatusEnum status) {
-        if (status == null) {
-            return TripStatus.PLANNED;
-        }
-        return switch (status) {
-            case VISITED -> TripStatus.VISITED;
-            case ONGOING -> TripStatus.ONGOING;
-            case PLANNED, CANCELED -> TripStatus.PLANNED;
-        };
-    }
-
-    private String formatDateRange(LocalDate start, LocalDate end) {
-        if (start == null && end == null) {
-            return "Dates TBA";
-        }
-        if (start != null && (end == null || start.equals(end))) {
-            return start.format(DATE_FORMAT);
-        }
-        if (start != null && end != null) {
-            if (start.getYear() == end.getYear() && start.getMonth() == end.getMonth()) {
-                return String.format(
-                        "%s %d - %d, %d",
-                        start.getMonth().name().substring(0, 1) + start.getMonth().name().substring(1).toLowerCase(),
-                        start.getDayOfMonth(),
-                        end.getDayOfMonth(),
-                        start.getYear()
-                );
-            }
-            return start.format(DATE_FORMAT) + " - " + end.format(DATE_FORMAT);
-        }
-        return start == null ? end.format(DATE_FORMAT) : start.format(DATE_FORMAT);
-    }
-
     private void configureButtonIcon(Button button, String iconLiteral, String styleClass) {
         FontIcon icon = new FontIcon(iconLiteral);
         icon.setIconSize(15);
@@ -343,21 +281,7 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
     }
 
     private Image loadImage(String imagePath) {
-        String resolvedPath = imagePath == null || imagePath.isBlank() ? DEFAULT_IMAGE : imagePath;
-        if (resolvedPath.startsWith("/")) {
-            var resource = getClass().getResource(resolvedPath);
-            if (resource != null) {
-                return new Image(resource.toExternalForm(), true);
-            }
-        }
-
-        File file = new File(resolvedPath);
-        if (file.exists()) {
-            return new Image(file.toURI().toString(), true);
-        }
-
-        var fallback = getClass().getResource(DEFAULT_IMAGE);
-        return new Image(fallback.toExternalForm(), true);
+        return EditorUtils.loadImage(imagePath, DEFAULT_IMAGE, getClass());
     }
 
     private void installRoundedImageClip(ImageView target, double radius) {
