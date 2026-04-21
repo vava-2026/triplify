@@ -37,12 +37,12 @@ public class StoryRepositoryImpl implements StoryRepository {
             "LEFT JOIN emotions e ON s.emotion_id = e.id ";
 
     @Override
-    public Optional<Story> findById(String id) {
+    public Optional<Story> findById(UUID id) {
         String sql = SELECT_STORY + "WHERE s.id = ? LIMIT 1";
 
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, id);
+            ps.setString(1, id.toString());
             try (ResultSet rs = ps.executeQuery()) {
                 if (!rs.next()) return Optional.empty();
                 Story story = mapRow(rs);
@@ -61,15 +61,15 @@ public class StoryRepositoryImpl implements StoryRepository {
         List<Object> params = new ArrayList<>();
         params.add(filter.userId().toString());
 
-        if (filter.tripId() != null && !filter.tripId().isBlank()) {
+        if (filter.tripId() != null) {
             where.append("AND s.trip_id = ? ");
             params.add(filter.tripId());
         }
-        if (filter.tripRouteId() != null && !filter.tripRouteId().isBlank()) {
+        if (filter.tripRouteId() != null) {
             where.append("AND s.trip_route_id = ? ");
             params.add(filter.tripRouteId());
         }
-        if (filter.tripPlaceId() != null && !filter.tripPlaceId().isBlank()) {
+        if (filter.tripPlaceId() != null) {
             where.append("AND s.trip_place_id = ? ");
             params.add(filter.tripPlaceId());
         }
@@ -149,8 +149,6 @@ public class StoryRepositoryImpl implements StoryRepository {
 
     @Override
     public void update(Story story) {
-        // Trip linkages (tripId, tripRouteId, tripPlaceId) are immutable after creation —
-        // the domain model declares them as final. Only mutable fields are updated here.
         String sql = "UPDATE stories SET title = ?, description = ?, story_time = ?, emotion_id = ? WHERE id = ?";
 
         try (Connection conn = SQLiteConnectionFactory.getConnection()) {

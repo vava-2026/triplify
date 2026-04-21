@@ -6,9 +6,10 @@ import com.triplify.domain.pagination.Page;
 import com.triplify.domain.pagination.PageRequest;
 
 import java.util.Optional;
+import java.util.UUID;
 
 public interface StoryRepository {
-    Optional<Story> findById(String id);
+    Optional<Story> findById(UUID id);
     Page<Story> findList(PageRequest pageRequest, StoryFilter filter);
     void create(Story story);
     void update(Story story);

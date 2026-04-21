@@ -8,11 +8,12 @@ import jakarta.validation.constraints.Size;
 
 import java.time.Instant;
 import java.util.Set;
+import java.util.UUID;
 
 public record UpdateStoryRequest(
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String id,
+        UUID id,
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
         @Size(max = DtoConstraints.TITLE_MAX_LENGTH, message = ValidationMessage.Constants.TITLE_TOO_LONG)
@@ -23,10 +24,10 @@ public record UpdateStoryRequest(
 
         @NotNull(message = ValidationMessage.Constants.REQUIRED)
         Instant storyTime,
-        String tripId,
-        String tripRouteId,
-        String tripPlaceId,
-        String emotionId,
-        Set<String> tagIds
+        UUID tripId,
+        UUID tripRouteId,
+        UUID tripPlaceId,
+        UUID emotionId,
+        Set<UUID> tagIds
 ) {
 }

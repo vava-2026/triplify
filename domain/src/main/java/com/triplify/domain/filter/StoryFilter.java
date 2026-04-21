@@ -14,6 +14,6 @@ public record StoryFilter(
         boolean storyTimeAsc
 ) {
     public StoryFilter {
-        title = title.trim();
+        title = title != null ? title.trim() : null;
     }
 }

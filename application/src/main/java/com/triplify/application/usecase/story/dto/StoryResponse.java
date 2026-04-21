@@ -50,11 +50,11 @@ public record StoryResponse(
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
         return new StoryResponse(
-                story.getId().toString(),
-                story.getUserId().toString(),
-                uuidStr(story.getTripId()),
-                uuidStr(story.getTripRouteId()),
-                uuidStr(story.getTripPlaceId()),
+                story.getId(),
+                story.getUserId(),
+                story.getTripId(),
+                story.getTripRouteId(),
+                story.getTripPlaceId(),
                 emotionResponse,
                 story.getTitle(),
                 story.getDescription(),
@@ -63,9 +63,5 @@ public record StoryResponse(
                 tagResponses,
                 imageResponses
         );
-    }
-
-    private static String uuidStr(UUID uuid) {
-        return uuid == null ? null : uuid.toString();
     }
 }

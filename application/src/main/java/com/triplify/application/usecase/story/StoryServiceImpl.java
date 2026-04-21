@@ -41,6 +41,7 @@ import java.util.UUID;
 public class StoryServiceImpl implements StoryService {
 
     private static final Logger log = LoggerFactory.getLogger(StoryServiceImpl.class);
+    private final int DEFAULT_PAGE_SIZE = 10;
 
     private final StoryRepository storyRepository;
     private final ImageRepository imageRepository;
@@ -71,35 +72,26 @@ public class StoryServiceImpl implements StoryService {
     public Result<StoryResponse> addStory(AddStoryRequest request) {
         SessionUser user = sessionContext.getCurrent().orElseThrow();
 
-        if (user.role().equals(RoleEnum.USER)) {
-            log.warn("Attempt to create story by userId='{}' with insufficient role='{}'", user.userId(), user.role());
-            return Result.fail(new StoryError.PremiumRequired());
-        }
-
-        UUID tripId = parseUuid(request.tripId());
-        UUID tripRouteId = parseUuid(request.tripRouteId());
-        UUID tripPlaceId = parseUuid(request.tripPlaceId());
-
-        if (tripId == null && tripRouteId == null && tripPlaceId == null) {
+        if (request.tripId() == null && request.tripRouteId() == null && request.tripPlaceId() == null) {
             return Result.fail(new ApplicationError.Unexpected(
                     "Story must be linked to at least one of: tripId, tripRouteId, tripPlaceId."));
         }
 
-        if (tripId != null) {
-            if (tripRepository.findById(tripId.toString()).isEmpty()) {
-                return Result.fail(new TripError.NotFound(tripId.toString()));
+        if (request.tripId() != null) {
+            if (tripRepository.findById(request.tripId()).isEmpty()) {
+                return Result.fail(new TripError.NotFound(request.tripId().toString()));
             }
         }
 
-        if (tripRouteId != null) {
-            if (tripRouteRepository.findById(tripRouteId.toString()).isEmpty()) {
-                return Result.fail(new TripRouteError.NotFound(tripRouteId.toString()));
+        if (request.tripRouteId() != null) {
+            if (tripRouteRepository.findById(request.tripRouteId()).isEmpty()) {
+                return Result.fail(new TripRouteError.NotFound(request.tripRouteId().toString()));
             }
         }
 
-        if (tripPlaceId != null) {
-            if (tripPlaceRepository.findById(tripPlaceId.toString()).isEmpty()) {
-                return Result.fail(new TripPlaceError.NotFound(tripPlaceId.toString()));
+        if (request.tripPlaceId() != null) {
+            if (tripPlaceRepository.findById(request.tripPlaceId()).isEmpty()) {
+                return Result.fail(new TripPlaceError.NotFound(request.tripPlaceId().toString()));
             }
         }
 
@@ -112,17 +104,17 @@ public class StoryServiceImpl implements StoryService {
 
         Story story = new Story(
                 user.userId(),
-                tripId,
-                tripRouteId,
-                tripPlaceId,
-                parseUuid(request.emotionId()),
+                request.tripId(),
+                request.tripRouteId(),
+                request.tripPlaceId(),
+                request.emotionId(),
                 request.title(),
                 request.description(),
                 request.storyTime()
         );
 
         if (request.tagIds() != null) {
-            request.tagIds().forEach(tagId -> story.addTag(UUID.fromString(tagId)));
+            request.tagIds().forEach(story::addTag);
         }
 
         storyRepository.create(story);
@@ -138,25 +130,25 @@ public class StoryServiceImpl implements StoryService {
         Optional<Story> existing = storyRepository.findById(request.id());
         if (existing.isEmpty()) {
             log.warn("Attempt to update non-existing story id='{}' by userId='{}'", request.id(), user.userId());
-            return Result.fail(new StoryError.NotFound(request.id()));
+            return Result.fail(new StoryError.NotFound(request.id().toString()));
         }
 
         Story story = existing.get();
         if (!story.getUserId().equals(user.userId())) {
             log.warn("Attempt to update story id='{}' owned by userId='{}' by userId='{}'",
                     request.id(), story.getUserId(), user.userId());
-            return Result.fail(new StoryError.NotOwner(request.id()));
+            return Result.fail(new StoryError.NotOwner(request.id().toString()));
         }
 
         story.updateTitle(request.title());
         story.updateDescription(request.description());
         story.updateStoryTime(request.storyTime());
-        story.updateEmotion(parseUuid(request.emotionId()));
+        story.updateEmotion(request.emotionId());
 
         Set<UUID> existingTagIds = new LinkedHashSet<>(story.getTagIds());
         existingTagIds.forEach(story::removeTag);
         if (request.tagIds() != null) {
-            request.tagIds().forEach(tagId -> story.addTag(UUID.fromString(tagId)));
+            request.tagIds().forEach(story::addTag);
         }
 
         storyRepository.update(story);
@@ -172,14 +164,14 @@ public class StoryServiceImpl implements StoryService {
         Optional<Story> existing = storyRepository.findById(request.id());
         if (existing.isEmpty()) {
             log.warn("Attempt to delete non-existing story id='{}' by userId='{}'", request.id(), user.userId());
-            return Result.fail(new StoryError.NotFound(request.id()));
+            return Result.fail(new StoryError.NotFound(request.id().toString()));
         }
 
         Story story = existing.get();
         if (!story.getUserId().equals(user.userId())) {
             log.warn("Attempt to delete story id='{}' owned by userId='{}' by userId='{}'",
                     request.id(), story.getUserId(), user.userId());
-            return Result.fail(new StoryError.NotOwner(request.id()));
+            return Result.fail(new StoryError.NotOwner(request.id().toString()));
         }
 
         storyRepository.delete(story);
@@ -194,12 +186,12 @@ public class StoryServiceImpl implements StoryService {
         Optional<Story> existing = storyRepository.findById(request.id());
         if (existing.isEmpty()) {
             log.warn("Attempt to get non-existing story id='{}' by userId='{}'", request.id(), user.userId());
-            return Result.fail(new StoryError.NotFound(request.id()));
+            return Result.fail(new StoryError.NotFound(request.id().toString()));
         }
 
         Story story = existing.get();
         if (!story.getUserId().equals(user.userId())) {
-            return Result.fail(new StoryError.NotFound(request.id()));
+            return Result.fail(new StoryError.NotFound(request.id().toString()));
         }
 
         return Result.ok(toResponse(story));
@@ -228,16 +220,12 @@ public class StoryServiceImpl implements StoryService {
 
     private StoryResponse toResponse(Story story) {
         Page<Image> imagesPage = imageRepository.findAll(
-                new PageRequest(0, 200),
+                new PageRequest(0, DEFAULT_PAGE_SIZE),
                 story.getId().toString(),
                 "STORY",
                 null, null, true
         );
 
         return StoryResponse.from(story, imagesPage);
-    }
-
-    private static UUID parseUuid(String value) {
-        return value == null || value.isBlank() ? null : UUID.fromString(value);
     }
 }
