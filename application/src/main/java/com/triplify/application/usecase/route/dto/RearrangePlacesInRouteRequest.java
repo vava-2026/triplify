@@ -1,15 +1,16 @@
 package com.triplify.application.usecase.route.dto;
 
 import com.triplify.application.error.ValidationMessage;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
+import java.util.UUID;
 
 public record RearrangePlacesInRouteRequest(
 
-        @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String id,
+        @NotNull(message = ValidationMessage.Constants.REQUIRED)
+        UUID id,
 
-        List<String> placeIdsInOrder
+        List<UUID> placeIdsInOrder
 ) {
 }

@@ -2,7 +2,7 @@ package com.triplify.ui.shared.component.input_item;
 
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.model.FieldVariant;
-import javafx.beans.binding.Bindings;
+import com.triplify.ui.shared.util.Localization;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -28,8 +28,7 @@ public class InputItem extends VBox {
 
     public InputItem(String placeholderKey, FieldVariant variant) {
         textField = new TextField();
-        textField.promptTextProperty().bind(
-                Bindings.createStringBinding(() -> I18n.t(placeholderKey), I18n.bundleProperty()));
+        textField.promptTextProperty().bind(Localization.textBinding(placeholderKey));
         textField.getStyleClass().addAll("input-item", toStyleClass(variant));
 
         errorLabel = new Label();

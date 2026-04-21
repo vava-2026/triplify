@@ -2,7 +2,7 @@ package com.triplify.ui.shared.component.input_item;
 
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.model.FieldVariant;
-import javafx.beans.binding.Bindings;
+import com.triplify.ui.shared.util.Localization;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.StackPane;
@@ -36,13 +36,13 @@ public class PasswordItem extends VBox {
         toggleIcon.getStyleClass().add("input-action-icon");
 
         passwordField = new PasswordField();
-        passwordField.promptTextProperty().bind(Bindings.createStringBinding(() -> I18n.t(placeholderKey), I18n.bundleProperty()));
+        passwordField.promptTextProperty().bind(Localization.textBinding(placeholderKey));
         passwordField.getStyleClass().addAll("input-item", toStyleClass(variant), "input-item-with-action");
         passwordField.setPrefHeight(FIELD_HEIGHT);
         passwordField.setMaxWidth(Double.MAX_VALUE);
 
         textField = new TextField();
-        textField.promptTextProperty().bind(Bindings.createStringBinding(() -> I18n.t(placeholderKey), I18n.bundleProperty()));
+        textField.promptTextProperty().bind(Localization.textBinding(placeholderKey));
         textField.getStyleClass().addAll("input-item", toStyleClass(variant), "input-item-with-action");
         textField.setPrefHeight(FIELD_HEIGHT);
         textField.setMaxWidth(Double.MAX_VALUE);

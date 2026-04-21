@@ -17,7 +17,7 @@ import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.input_item.PasswordItem;
 import com.triplify.ui.shared.toast.ToastService;
 import com.triplify.ui.shared.util.FxmlLoaderHelper;
-import javafx.beans.binding.Bindings;
+import com.triplify.ui.shared.util.Localization;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
@@ -67,12 +67,12 @@ public class LoginController extends SimpleLifecycleAwareController {
             });
         }
 
-        titleLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("login.title"), I18n.bundleProperty()));
-        subtitleLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("login.subtitle"), I18n.bundleProperty()));
-        emailLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("login.field.email"), I18n.bundleProperty()));
-        passwordLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("login.field.password"), I18n.bundleProperty()));
-        noAccountLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("login.noAccount"), I18n.bundleProperty()));
-        createAccountLabel.textProperty().bind(Bindings.createStringBinding(() -> I18n.t("login.createAccount"), I18n.bundleProperty()));
+        Localization.bindText(titleLabel.textProperty(), "login.title");
+        Localization.bindText(subtitleLabel.textProperty(), "login.subtitle");
+        Localization.bindText(emailLabel.textProperty(), "login.field.email");
+        Localization.bindText(passwordLabel.textProperty(), "login.field.password");
+        Localization.bindText(noAccountLabel.textProperty(), "login.noAccount");
+        Localization.bindText(createAccountLabel.textProperty(), "login.createAccount");
         createAccountLabel.setOnMouseClicked(event -> guardedNavigator.goTo(getRouter(), RouteIds.SIGN_UP));
 
         emailInput = new InputItem("login.placeholder.email");
@@ -82,7 +82,7 @@ public class LoginController extends SimpleLifecycleAwareController {
 
         var loginButton = AppButtonView.builder(fxmlLoader)
                 .variant(ButtonVariant.LOGIN)
-                .labelBinding(Bindings.createStringBinding(() -> I18n.t("login.signIn"), I18n.bundleProperty()))
+                .labelBinding(Localization.textBinding("login.signIn"))
                 .onAction(this::onLogin)
                 .build();
         loginButton.getStyleClass().add("login-submit-button");

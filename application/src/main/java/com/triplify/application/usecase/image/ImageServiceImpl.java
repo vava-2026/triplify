@@ -62,16 +62,11 @@ public class ImageServiceImpl implements ImageService {
 
     @Override
     public Result<ImageResponse> getImageById(GetImageByIdRequest request) {
-        UUID id;
-        try {
-            id = UUID.fromString(request.id());
-        } catch (IllegalArgumentException e) {
-            return Result.fail(new ImageError.NotFound(request.id()));
-        }
+        UUID id = request.id();
 
         return imageRepository.findById(id)
                 .map(image -> Result.ok(toResponse(image)))
-                .orElseGet(() -> Result.fail(new ImageError.NotFound(request.id())));
+                .orElseGet(() -> Result.fail(new ImageError.NotFound(id.toString())));
     }
 
     @Override
@@ -99,16 +94,11 @@ public class ImageServiceImpl implements ImageService {
 
     @Override
     public Result<ImageResponse> updateImage(UpdateImageRequest request) {
-        UUID id;
-        try {
-            id = UUID.fromString(request.id());
-        } catch (IllegalArgumentException e) {
-            return Result.fail(new ImageError.NotFound(request.id()));
-        }
+        UUID id = request.id();
 
         Optional<Image> existing = imageRepository.findById(id);
         if (existing.isEmpty()) {
-            return Result.fail(new ImageError.NotFound(request.id()));
+            return Result.fail(new ImageError.NotFound(id.toString()));
         }
 
         Image image = existing.get();
@@ -164,16 +154,11 @@ public class ImageServiceImpl implements ImageService {
 
     @Override
     public Result<Void> deleteImage(DeleteImageRequest request) {
-        UUID id;
-        try {
-            id = UUID.fromString(request.id());
-        } catch (IllegalArgumentException e) {
-            return Result.fail(new ImageError.NotFound(request.id()));
-        }
+        UUID id = request.id();
 
         Optional<Image> existing = imageRepository.findById(id);
         if (existing.isEmpty()) {
-            return Result.fail(new ImageError.NotFound(request.id()));
+            return Result.fail(new ImageError.NotFound(id.toString()));
         }
 
         Image image = existing.get();
@@ -269,7 +254,7 @@ public class ImageServiceImpl implements ImageService {
 
     private ImageResponse toResponse(Image image) {
         return new ImageResponse(
-                image.getId().toString(),
+                image.getId(),
                 image.getUrl(),
                 image.getDescription(),
                 image.getUploadedAt()

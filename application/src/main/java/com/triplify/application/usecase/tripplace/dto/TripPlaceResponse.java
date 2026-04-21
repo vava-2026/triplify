@@ -6,14 +6,15 @@ import com.triplify.domain.model.enums.TripPlaceSourceType;
 
 import java.time.Instant;
 import java.util.Set;
+import java.util.UUID;
 
 public record TripPlaceResponse(
-        String id,
-        String tripId,
+        UUID id,
+        UUID tripId,
         PlaceResponse place,
         TripPlaceSourceType sourceType,
-        String tripRouteId,
-        String routePlaceId,
+        UUID tripRouteId,
+        UUID routePlaceId,
         Instant visitDate,
         Instant createdAt,
         Instant updatedAt,

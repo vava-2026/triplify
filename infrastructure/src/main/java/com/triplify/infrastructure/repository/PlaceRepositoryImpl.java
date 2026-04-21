@@ -42,12 +42,12 @@ public class PlaceRepositoryImpl implements PlaceRepository {
         LEFT JOIN images i ON p.cover_image_id = i.id """;
 
     @Override
-    public Optional<Place> findById(String id) {
+    public Optional<Place> findById(UUID id) {
         String sql = PLACE_WITH_COUNTRY_AND_IMAGE_SELECT + " WHERE p.id = ? LIMIT 1";
 
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, id);
+            ps.setString(1, id.toString());
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return Optional.of(mapPlaceWithRelations(rs));

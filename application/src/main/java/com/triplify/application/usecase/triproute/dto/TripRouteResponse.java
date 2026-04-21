@@ -6,10 +6,11 @@ import com.triplify.domain.model.enums.StatusEnum;
 
 import java.time.Instant;
 import java.util.Set;
+import java.util.UUID;
 
 public record TripRouteResponse(
-        String id,
-        String tripId,
+        UUID id,
+        UUID tripId,
         RouteResponse route,
         int order,
         StatusEnum status,

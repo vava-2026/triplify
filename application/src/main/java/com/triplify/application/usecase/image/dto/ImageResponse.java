@@ -4,16 +4,17 @@ import com.triplify.domain.model.Image;
 
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.UUID;
 
 public record ImageResponse(
-        String id,
+        UUID id,
         Path url,
         String description,
         Instant uploadedAt
 ) {
     public static ImageResponse from(Image image) {
         return new ImageResponse(
-                image.getId().toString(),
+                image.getId(),
                 image.getUrl(),
                 image.getDescription(),
                 image.getUploadedAt()

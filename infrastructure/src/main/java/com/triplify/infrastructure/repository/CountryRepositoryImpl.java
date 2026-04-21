@@ -24,13 +24,13 @@ public class CountryRepositoryImpl implements CountryRepository {
     private static final Logger log = LoggerFactory.getLogger(CountryRepositoryImpl.class);
 
     @Override
-    public Optional<Country> findById(String id) {
+    public Optional<Country> findById(UUID id) {
         String sql = "SELECT id, created_by, name, name_sk, emoji_unicode, is_available " +
                 "FROM countries WHERE id = ? LIMIT 1";
 
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, id);
+            ps.setString(1, id.toString());
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return Optional.of(mapRow(rs));

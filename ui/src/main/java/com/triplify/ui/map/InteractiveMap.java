@@ -41,6 +41,7 @@ public class InteractiveMap extends StackPane {
     private final Button recenterButton;
     private final Button zoomInButton;
     private final Button zoomOutButton;
+    private final VBox controlsVBox;
 
     private CountryHoverLayer countryHoverLayer;
     private PinLayer pinLayer;
@@ -51,6 +52,7 @@ public class InteractiveMap extends StackPane {
     private double mapDragSceneX;
     private double mapDragSceneY;
     private boolean rightMouseDragging;
+    private boolean selectionEnabled = true;
 
     private final ObjectProperty<MapPoint> selectedPoint = new SimpleObjectProperty<>();
     private final ObjectProperty<String> selectedCountryName = new SimpleObjectProperty<>();
@@ -95,7 +97,7 @@ public class InteractiveMap extends StackPane {
         zoomOutButton.setFocusTraversable(false);
         zoomOutButton.setOnAction(ignore -> handleZoom(-ZOOM_STEP));
 
-        VBox controlsVBox = new VBox();
+        controlsVBox = new VBox();
         controlsVBox.getStyleClass().add("add-place-map-controls");
         controlsVBox.setSpacing(10);
         controlsVBox.setPadding(new Insets(10));
@@ -173,7 +175,7 @@ public class InteractiveMap extends StackPane {
             double dx = event.getSceneX() - mapPressSceneX;
             double dy = event.getSceneY() - mapPressSceneY;
             double dragDistance = Math.hypot(dx, dy);
-            if (dragDistance <= 5) {
+            if (selectionEnabled && dragDistance <= 5) {
                 updateSelectionFromScenePoint(event.getSceneX(), event.getSceneY());
             }
             event.consume();
@@ -218,6 +220,18 @@ public class InteractiveMap extends StackPane {
         selectedPoint.set(new MapPoint(latitude, longitude));
         CountryBoundary countryBoundary = findCountry(latitude, longitude);
         selectedCountryName.set(countryBoundary == null ? null : countryBoundary.name());
+    }
+
+    public void setSelectionEnabled(boolean selectionEnabled) {
+        this.selectionEnabled = selectionEnabled;
+    }
+
+    public void setControlsVisible(boolean controlsVisible) {
+        controlsVBox.setVisible(controlsVisible);
+        controlsVBox.setManaged(controlsVisible);
+        if (!controlsVisible) {
+            clearHoveredCountry();
+        }
     }
 
     private void handleZoom(double zoomDelta) {
