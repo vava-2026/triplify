@@ -80,8 +80,7 @@ public class UserServiceImpl implements UserService {
         }
 
         ImageResponse image = imageResult.getValue();
-
-        user.updateAvatar(java.util.UUID.fromString(image.id()));
+        user.updateAvatar(image.id());
         userRepository.update(user);
 
         log.info("Updated avatar for user id='{}'", user.getId());

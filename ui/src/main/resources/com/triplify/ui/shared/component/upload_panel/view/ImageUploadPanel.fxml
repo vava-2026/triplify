@@ -48,7 +48,7 @@
                                wrapText="true"
                                styleClass="editor-upload-title"/>
                         <Label fx:id="uploadSubtitleLabel"
-                               text="SVG, PNG, JPEG"
+                               text="PNG, JPEG"
                                styleClass="editor-upload-subtitle"/>
                     </children>
                 </VBox>

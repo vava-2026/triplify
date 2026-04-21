@@ -8,6 +8,7 @@ public enum ButtonVariant {
     PRIMARY("app-btn-primary"),
     SECONDARY("app-btn-secondary"),
     DANGER("app-btn-danger"),
+    DANGER_OUTLINE("app-btn-danger-outline"),
     GHOST("app-btn-ghost"),
     PRO("app-btn-pro"),
     WHITE("app-btn-white"),

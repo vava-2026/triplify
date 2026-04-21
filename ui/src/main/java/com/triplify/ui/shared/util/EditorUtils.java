@@ -45,15 +45,7 @@ public final class EditorUtils {
 
     public static boolean isSupportedImageFile(File file) {
         String name = file.getName().toLowerCase(Locale.ROOT);
-        return name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".svg");
-    }
-
-    public static boolean isVectorImage(File file) {
-        return file.getName().toLowerCase(Locale.ROOT).endsWith(".svg");
-    }
-
-    public static boolean isVectorImagePath(String path) {
-        return path != null && path.toLowerCase(Locale.ROOT).endsWith(".svg");
+        return name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg");
     }
 
     public static Image loadImage(String imagePath, String defaultImage, Class<?> resourceContext) {
@@ -158,16 +150,6 @@ public final class EditorUtils {
         selectedImageLabel.setText(file.getName());
         selectedImageLabel.setVisible(true);
         selectedImageLabel.setManaged(true);
-
-        if (isVectorImage(file)) {
-            coverPreview.setImage(null);
-            coverPreview.setViewport(null);
-            coverPreview.setVisible(false);
-            coverPreview.setManaged(false);
-            uploadPlaceholder.setVisible(true);
-            uploadPlaceholder.setManaged(true);
-            return;
-        }
 
         Image image = new Image(file.toURI().toString(), true);
         image.errorProperty().addListener((obs, oldVal, isError) -> {

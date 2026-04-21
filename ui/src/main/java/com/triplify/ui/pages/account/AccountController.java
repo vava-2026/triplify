@@ -242,7 +242,7 @@ public class AccountController extends SimpleLifecycleAwareController {
         renderUpgradeSection(user.role());
 
         if (user.avatarImageId() != null) {
-            var avatarResult = imageService.getImageById(new GetImageByIdRequest(user.avatarImageId().toString()));
+            var avatarResult = imageService.getImageById(new GetImageByIdRequest(user.avatarImageId()));
             avatarResult.onSuccess(image -> applyAvatarImage(image.url()));
             avatarResult.onFailure(error -> {
                 log.debug("Avatar image not available for account hero '{}': {}", user.username(), error.message());
@@ -391,7 +391,7 @@ public class AccountController extends SimpleLifecycleAwareController {
         FileChooser chooser = new FileChooser();
         chooser.setTitle(I18n.t("account.avatar.dialog.title"));
         chooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter(I18n.t("account.avatar.dialog.filter"), "*.png", "*.jpg", "*.jpeg", "*.svg")
+                new FileChooser.ExtensionFilter(I18n.t("account.avatar.dialog.filter"), "*.png", "*.jpg", "*.jpeg")
         );
 
         File file = chooser.showOpenDialog(profileAvatarEditBtn.getScene() == null ? null : profileAvatarEditBtn.getScene().getWindow());
@@ -411,12 +411,8 @@ public class AccountController extends SimpleLifecycleAwareController {
             SessionUser currentUser = userSessionContext.getCurrent().orElseThrow();
 
             UUID avatarId = null;
-            if (userResponse.avatar() != null && userResponse.avatar().id() != null && !userResponse.avatar().id().isBlank()) {
-                try {
-                    avatarId = UUID.fromString(userResponse.avatar().id());
-                } catch (IllegalArgumentException e) {
-                    log.warn("Invalid avatar ID in response: {}", userResponse.avatar().id(), e);
-                }
+            if (userResponse.avatar() != null) {
+                avatarId = userResponse.avatar().id();
             }
 
             SessionUser updatedUser = new SessionUser(
@@ -440,7 +436,7 @@ public class AccountController extends SimpleLifecycleAwareController {
 
     private boolean isSupportedImageFile(File file) {
         String name = file.getName().toLowerCase();
-        return name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".svg");
+        return name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg");
     }
 
     private void onLogOut() {

@@ -4,7 +4,6 @@
 <?import com.triplify.ui.shared.component.section_header.view.SectionHeaderView?>
 <?import com.triplify.ui.shared.component.upload_panel.view.ImageUploadPanelView?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.FlowPane?>
@@ -67,17 +66,10 @@
                                                   sectionIconLiteral="fth-image"
                                                   sectionTitle="Cover Image"
                                                   uploadTitle="Click to upload&#10;or drag and drop"
-                                                  uploadSubtitle="SVG, PNG, JPEG"/>
+                                                  uploadSubtitle="PNG, JPEG"/>
                         </VBox>
 
-                        <VBox styleClass="editor-action-group" spacing="12">
-                            <Button fx:id="saveButton"
-                                    maxWidth="Infinity"
-                                    styleClass="app-btn,app-btn-primary,editor-action-button"/>
-                            <Button fx:id="discardButton"
-                                    maxWidth="Infinity"
-                                    styleClass="app-btn,app-btn-danger-outline,editor-action-button"/>
-                        </VBox>
+                        <VBox fx:id="actionButtonsContainer" spacing="12"/>
                     </VBox>
                 </FlowPane>
             </VBox>

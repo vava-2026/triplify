@@ -121,7 +121,7 @@
                                                   sectionIconLiteral="fth-image"
                                                   sectionTitle="Cover Image"
                                                   uploadTitle="Click to upload&#10;or drag and drop"
-                                                  uploadSubtitle="SVG, PNG, JPEG"/>
+                                                  uploadSubtitle="PNG, JPEG"/>
                         </VBox>
 
                         <VBox styleClass="page-card,trip-editor-card" spacing="18">
@@ -142,14 +142,7 @@
                             </VBox>
                         </VBox>
 
-                        <VBox styleClass="editor-action-group" spacing="12">
-                            <Button fx:id="saveButton"
-                                    maxWidth="Infinity"
-                                    styleClass="app-btn,app-btn-primary,editor-action-button"/>
-                            <Button fx:id="discardButton"
-                                    maxWidth="Infinity"
-                                    styleClass="app-btn,app-btn-danger-outline,editor-action-button"/>
-                        </VBox>
+                        <VBox fx:id="actionButtonsContainer" spacing="12"/>
                     </VBox>
                 </FlowPane>
             </VBox>

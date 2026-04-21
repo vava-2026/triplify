@@ -36,8 +36,8 @@ import com.triplify.domain.pagination.Page;
 import com.triplify.domain.pagination.PageRequest;
 import com.triplify.domain.result.Result;
 import com.triplify.ui.i18n.I18n;
+import com.triplify.ui.pages.WindowedPageController;
 import com.triplify.ui.routing.RouteIds;
-import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.component.categories.model.Categories;
 import com.triplify.ui.shared.component.countries.model.Countries;
 import com.triplify.ui.shared.component.countries.view.CountriesView;
@@ -60,6 +60,9 @@ import com.triplify.ui.storage.EditorDraftStorage;
 import com.triplify.ui.shared.toast.ToastService;
 import com.triplify.ui.shared.util.EditorUtils;
 import com.triplify.ui.shared.util.Localization;
+import com.triplify.ui.shared.component.button.model.ButtonVariant;
+import com.triplify.ui.shared.component.button.view.AppButtonView;
+import com.triplify.ui.shared.util.FxmlLoaderHelper;
 
 import static com.triplify.ui.shared.util.EditorUtils.*;
 import static com.triplify.ui.shared.util.DisplayUtils.*;
@@ -73,9 +76,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.DragEvent;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.input.TransferMode;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
@@ -86,7 +87,6 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rahulstech.jfx.routing.element.RouterArgument;
-import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -100,7 +100,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-public class AddTripController extends SimpleLifecycleAwareController {
+public class AddTripController extends WindowedPageController {
 
     private static final Logger log = LoggerFactory.getLogger(AddTripController.class);
 
@@ -145,8 +145,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
     @FXML private Button addCountryButton;
     @FXML private Button addRouteButton;
     @FXML private Button addPlaceButton;
-    @FXML private Button saveButton;
-    @FXML private Button discardButton;
+    @FXML private VBox actionButtonsContainer;
 
     @Inject private ToastService toast;
     @Inject private TripService tripService;
@@ -157,6 +156,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
     @Inject private TripRouteService tripRouteService;
     @Inject private TripPlaceService tripPlaceService;
     @Inject private CountryService countryService;
+    @Inject private FxmlLoaderHelper fxmlLoader;
 
     private final Set<String> selectedCountryIds = new LinkedHashSet<>();
     private final Map<String, String> selectedCountryLabelsById = new java.util.LinkedHashMap<>();
@@ -212,10 +212,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
         configureButtonIcon(addCountryButton, "fth-plus");
         configureButtonIcon(addRouteButton, "fth-plus");
         configureButtonIcon(addPlaceButton, "fth-plus");
-        configureButtonIcon(saveButton, "fth-save");
-        configureButtonIcon(discardButton, "fth-trash-2");
-        saveButton.setOnAction(event -> onSave());
-        discardButton.setOnAction(event -> onDiscard());
+        createActionButtons();
 
         installRoundedClip(uploadArea, 16);
         bindLocalizedText();
@@ -253,20 +250,9 @@ public class AddTripController extends SimpleLifecycleAwareController {
     }
 
     @Override
-    public void onLifecycleShow() {
-        updateFullScreenMode(false);
+    public void onWindowedShow() {
         EditorDraftStorage.clearTripDraft();
         consumeReturnedEditorResults();
-    }
-
-    @Override
-    public void onLifecycleHide() {
-        updateFullScreenMode(false);
-    }
-
-    @Override
-    public void onLifecycleDestroy() {
-        updateFullScreenMode(false);
     }
 
     @FXML
@@ -418,44 +404,13 @@ public class AddTripController extends SimpleLifecycleAwareController {
         FileChooser chooser = new FileChooser();
         chooser.setTitle(I18n.t("trip.add.dialog.cover.title"));
         chooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter(I18n.t("trip.add.dialog.cover.filter"), "*.png", "*.jpg", "*.jpeg", "*.svg")
+                new FileChooser.ExtensionFilter(I18n.t("trip.add.dialog.cover.filter"), "*.png", "*.jpg", "*.jpeg")
         );
 
         File file = chooser.showOpenDialog(uploadArea.getScene() == null ? null : uploadArea.getScene().getWindow());
         if (file != null) {
             handleCoverImage(file);
         }
-    }
-
-    @FXML
-    private void onUploadDragOver(DragEvent event) {
-        if (event.getDragboard().hasFiles() && isSupportedImageFile(event.getDragboard().getFiles().getFirst())) {
-            event.acceptTransferModes(TransferMode.COPY);
-            toggleStyleClass(uploadArea, "editor-upload-area-active", true);
-        }
-        event.consume();
-    }
-
-    @FXML
-    private void onUploadDragExited(DragEvent event) {
-        toggleStyleClass(uploadArea, "editor-upload-area-active", false);
-        event.consume();
-    }
-
-    @FXML
-    private void onUploadDragDropped(DragEvent event) {
-        boolean completed = false;
-        if (event.getDragboard().hasFiles()) {
-            File file = event.getDragboard().getFiles().getFirst();
-            if (isSupportedImageFile(file)) {
-                handleCoverImage(file);
-                completed = true;
-            }
-        }
-
-        toggleStyleClass(uploadArea, "editor-upload-area-active", false);
-        event.setDropCompleted(completed);
-        event.consume();
     }
 
     private void bindLocalizedText() {
@@ -479,8 +434,28 @@ public class AddTripController extends SimpleLifecycleAwareController {
         Localization.bindText(addPlaceButton.textProperty(), "trip.add.action.addPlace");
         Localization.bindText(routeCreateButton.textProperty(), "trip.add.action.createRoute");
         Localization.bindText(placeCreateButton.textProperty(), "trip.add.action.createPlace");
-        Localization.bindText(saveButton.textProperty(), "trip.add.action.save");
-        Localization.bindText(discardButton.textProperty(), "trip.add.action.discard");
+    }
+
+    private void createActionButtons() {
+        Button saveButton = AppButtonView.builder(fxmlLoader)
+                .labelBinding(Localization.textBinding("trip.add.action.save"))
+                .variant(ButtonVariant.PRIMARY)
+                .icon("fth-save")
+                .onAction(this::onSave)
+                .build();
+        saveButton.getStyleClass().add("editor-action-button");
+        saveButton.setMaxWidth(Double.MAX_VALUE);
+
+        Button discardButton = AppButtonView.builder(fxmlLoader)
+                .labelBinding(Localization.textBinding("trip.add.action.discard"))
+                .variant(ButtonVariant.DANGER_OUTLINE)
+                .icon("fth-trash-2")
+                .onAction(this::onDiscard)
+                .build();
+        discardButton.getStyleClass().add("editor-action-button");
+        discardButton.setMaxWidth(Double.MAX_VALUE);
+
+        actionButtonsContainer.getChildren().setAll(saveButton, discardButton);
     }
 
     private void refreshLocalizedUi() {
@@ -725,16 +700,6 @@ public class AddTripController extends SimpleLifecycleAwareController {
         selectedImageLabel.setVisible(true);
         selectedImageLabel.setManaged(true);
 
-        if (isVectorImagePath(imagePath)) {
-            coverPreview.setImage(null);
-            coverPreview.setViewport(null);
-            coverPreview.setVisible(false);
-            coverPreview.setManaged(false);
-            uploadPlaceholder.setVisible(true);
-            uploadPlaceholder.setManaged(true);
-            return;
-        }
-
         Image image = loadImage(imagePath);
         setCoverPreviewImage(image);
         coverPreview.setVisible(true);
@@ -755,15 +720,6 @@ public class AddTripController extends SimpleLifecycleAwareController {
         selectedImageLabel.setVisible(true);
         selectedImageLabel.setManaged(true);
 
-        if (isVectorImage(file)) {
-            coverPreview.setImage(null);
-            coverPreview.setViewport(null);
-            coverPreview.setVisible(false);
-            coverPreview.setManaged(false);
-            uploadPlaceholder.setVisible(true);
-            uploadPlaceholder.setManaged(true);
-            return;
-        }
 
         Image image = new Image(file.toURI().toString(), true);
         image.errorProperty().addListener((obs, oldVal, isError) -> {
@@ -1240,16 +1196,12 @@ public class AddTripController extends SimpleLifecycleAwareController {
     }
 
     private void bindUploadPanelHandlers() {
-        uploadArea.setOnMouseClicked(event -> onChooseCoverImage());
-        uploadArea.setOnDragOver(this::onUploadDragOver);
-        uploadArea.setOnDragExited(this::onUploadDragExited);
-        uploadArea.setOnDragDropped(this::onUploadDragDropped);
+        imageUploadPanel.setOnUploadClicked(event -> onChooseCoverImage());
+        imageUploadPanel.setOnImageFileSelected(this::handleCoverImage);
+        imageUploadPanel.setOnUnsupportedImageFile(file -> toast.warning(I18n.t("trip.add.toast.image.unsupported")));
+        imageUploadPanel.installDefaultImageDragAndDrop();
     }
 
-    private void updateFullScreenMode(boolean fullScreen) {
-        TriplifyRouterContext context = (TriplifyRouterContext) getRouter().getContext();
-        context.setFullScreenContent(fullScreen);
-    }
 
     private void configureTagPicker() {
         tagPickerInput.setAllowCustomTags(true);
