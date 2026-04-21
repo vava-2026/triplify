@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface CountryRepository {
-    Optional<Country> findById(String id);
+    Optional<Country> findById(UUID id);
     Page<Country> findList(PageRequest page, CountryFilter filter);
     boolean existsByName(String name, String nameSk);
     void delete(Country country);

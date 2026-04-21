@@ -14,10 +14,12 @@ public final class Localization {
 
     private Localization() {}
 
+    public static StringBinding textBinding(String key) {
+        return Bindings.createStringBinding(() -> I18n.t(key), I18n.bundleProperty());
+    }
+
     public static void bindText(StringProperty property, String key) {
-        property.bind(
-                Bindings.createStringBinding(() -> I18n.t(key), I18n.bundleProperty())
-        );
+        property.bind(textBinding(key));
     }
 
     public static String localize(String english, String slovak) {

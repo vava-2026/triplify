@@ -2,30 +2,29 @@ package com.triplify.application.usecase.tripplace.dto;
 
 import com.triplify.application.error.ValidationMessage;
 import com.triplify.domain.model.enums.TripPlaceSourceType;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public record AddTripPlaceRequest(
 
-        @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String tripId,
+        @NotNull(message = ValidationMessage.Constants.REQUIRED)
+        UUID tripId,
 
-        @NotBlank(message = ValidationMessage.Constants.REQUIRED)
-        String placeId,
+        @NotNull(message = ValidationMessage.Constants.REQUIRED)
+        UUID placeId,
 
         Instant visitDate,
 
         TripPlaceSourceType sourceType,
 
-        String tripRouteId,
+        UUID tripRouteId,
 
-        String routePlaceId
+        UUID routePlaceId
 ) {
 
     public AddTripPlaceRequest {
         sourceType = sourceType == null ? TripPlaceSourceType.MANUAL : sourceType;
-        tripRouteId = tripRouteId == null ? null : tripRouteId.trim();
-        routePlaceId = routePlaceId == null ? null : routePlaceId.trim();
     }
 }

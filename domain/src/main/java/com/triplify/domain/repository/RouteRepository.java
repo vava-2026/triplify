@@ -6,9 +6,10 @@ import com.triplify.domain.pagination.Page;
 import com.triplify.domain.pagination.PageRequest;
 
 import java.util.Optional;
+import java.util.UUID;
 
 public interface RouteRepository {
-    Optional<Route> findById(String id);
+    Optional<Route> findById(UUID id);
     Page<Route> findList(PageRequest page, RouteFilter filter);
     void create(Route route);
     void update(Route route);

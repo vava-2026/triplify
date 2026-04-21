@@ -5,10 +5,11 @@ import com.triplify.application.usecase.image.dto.ImageResponse;
 import com.triplify.domain.model.Place;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public record PlaceResponse(
-        String id,
-        String userId,
+        UUID id,
+        UUID userId,
         CountryResponse country,
         ImageResponse coverImage,
         String title,
@@ -20,8 +21,8 @@ public record PlaceResponse(
 ) {
     public static PlaceResponse from(Place place) {
         return new PlaceResponse(
-                place.getId().toString(),
-                place.getUserId().toString(),
+                place.getId(),
+                place.getUserId(),
                 place.getCountry() != null ? CountryResponse.from(place.getCountry()) : null,
                 place.getCoverImage() != null ? ImageResponse.from(place.getCoverImage()) : null,
                 place.getTitle(),

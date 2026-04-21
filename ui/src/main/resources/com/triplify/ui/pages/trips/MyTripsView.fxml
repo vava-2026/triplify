@@ -2,7 +2,6 @@
 
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.ComboBox?>
@@ -23,11 +22,6 @@
                 <VBox fx:id="tagSelectContainer" prefWidth="120"/>
                 <ComboBox fx:id="statusSelect" promptText="Status" styleClass="trips-filter" prefWidth="120"/>
                 <ComboBox fx:id="startTimeSelect" promptText="Start Time" styleClass="trips-filter" prefWidth="140"/>
-            </HBox>
-            <Pane HBox.hgrow="ALWAYS"/>
-            <HBox styleClass="trips-sort">
-                <Label text="Sort by:" styleClass="trips-sort-label"/>
-                <ComboBox fx:id="sortSelect" styleClass="trips-filter" prefWidth="140"/>
             </HBox>
         </HBox>
 

@@ -65,7 +65,7 @@ public class CategoryServiceImpl implements CategoryService {
         if (existing.isEmpty()) {
             log.warn("Attempt to update non-existing category with id='{}' by userId='{}'",
                     request.id(), user.userId());
-            return Result.fail(new CategoryError.NotFound(request.id()));
+            return Result.fail(new CategoryError.NotFound(request.id().toString()));
         }
 
         Category category = existing.get();
@@ -96,7 +96,7 @@ public class CategoryServiceImpl implements CategoryService {
         if (existing.isEmpty()) {
             log.warn("Attempt to delete non-existing category with id='{}' by userId='{}'",
                     request.id(), user.userId());
-            return Result.fail(new CategoryError.NotFound(request.id()));
+            return Result.fail(new CategoryError.NotFound(request.id().toString()));
         }
 
         categoryRepository.delete(existing.get());
@@ -119,8 +119,8 @@ public class CategoryServiceImpl implements CategoryService {
 
     private CategoryResponse toResponse(Category c) {
         return new CategoryResponse(
-                c.getId().toString(),
-                c.getCreatedById() == null ? null : c.getCreatedById().toString(),
+                c.getId(),
+                c.getCreatedById(),
                 c.getName(),
                 c.getNameSk(),
                 c.getDescription(),

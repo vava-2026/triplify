@@ -15,11 +15,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 public record StoryResponse(
-        String id,
-        String userId,
-        String tripId,
-        String tripRouteId,
-        String tripPlaceId,
+        UUID id,
+        UUID userId,
+        UUID tripId,
+        UUID tripRouteId,
+        UUID tripPlaceId,
         EmotionResponse emotion,
         String title,
         String description,

@@ -4,7 +4,9 @@ import com.gluonhq.maps.MapPoint;
 import com.google.inject.Inject;
 import com.triplify.application.usecase.country.CountryService;
 import com.triplify.application.usecase.place.dto.AddPlaceRequest;
+import com.triplify.application.usecase.place.dto.GetPlaceByIdRequest;
 import com.triplify.application.usecase.place.PlaceService;
+import com.triplify.application.usecase.place.dto.UpdatePlaceRequest;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.map.InteractiveMap;
 import com.triplify.ui.error.ErrorHandler;
@@ -19,10 +21,13 @@ import com.triplify.ui.shared.component.input_item.TextAreaItem;
 import com.triplify.ui.shared.component.upload_panel.view.ImageUploadPanelView;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.toast.ToastService;
+import com.triplify.ui.shared.util.EditorUtils;
 import com.triplify.ui.shared.util.Localization;
+
+import static com.triplify.ui.shared.util.EditorUtils.*;
+
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
-import javafx.geometry.Rectangle2D;
 import javafx.application.Platform;
 import javafx.scene.Cursor;
 import javafx.scene.control.Button;
@@ -48,10 +53,10 @@ import rahulstech.jfx.routing.element.RouterArgument;
 import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 
 import java.io.File;
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 public class AddPlaceController extends SimpleLifecycleAwareController {
@@ -85,9 +90,11 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     @Inject private ToastService toast;
     @Inject private ErrorHandler errorHandler;
 
-    private Integer tripId;
     private String tripName;
     private String returnTarget;
+    private String placeId;
+    private boolean editMode;
+    private boolean placeLoaded;
     private Double selectedLatitude = DEFAULT_LATITUDE;
     private Double selectedLongitude = DEFAULT_LONGITUDE;
     private String coverImagePath;
@@ -128,8 +135,8 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         initializeCoverPreview();
         bindUploadPanelHandlers();
 
-        configureButtonIcon(actionButtonsView.getPrimaryButton(), "fth-save");
-        configureButtonIcon(actionButtonsView.getSecondaryButton(), "fth-trash-2");
+        configureButtonIcon(actionButtonsView.getPrimaryButton(), "fth-save", 15, "app-btn-icon");
+        configureButtonIcon(actionButtonsView.getSecondaryButton(), "fth-trash-2", 15, "app-btn-icon");
         actionButtonsView.getPrimaryButton().setOnAction(event -> onSave());
         actionButtonsView.getSecondaryButton().setOnAction(event -> onDiscard());
 
@@ -145,14 +152,18 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     @Override
     public void onLifecycleInitialize() {
         RouterArgument data = getRouter().getCurrentData();
-        tripId = data == null ? null : data.getValue("tripId");
         tripName = data == null ? null : data.getValue("tripName");
         returnTarget = data == null ? null : data.getValue("editorReturnTarget");
+        placeId = data == null ? null : data.getValue("placeId");
+        editMode = placeId != null && !placeId.isBlank();
     }
 
     @Override
     public void onLifecycleShow() {
         updateFullScreenMode(false);
+        if (editMode && !placeLoaded) {
+            loadPlaceForEdit();
+        }
     }
 
     @Override
@@ -169,14 +180,10 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     private void onSave() {
         clearFieldErrors();
 
-        AddPlaceRequest request = new AddPlaceRequest(
-                normalize(countriesView == null ? null : countriesView.getSelectedCountryId()),
-                coverImagePath == null ? null : java.nio.file.Path.of(coverImagePath),
-                normalize(titleInput.getText()),
-                normalizeNullable(descriptionInput.getText()),
-                selectedLatitude,
-                selectedLongitude
-        );
+        String countryId = normalize(countriesView == null ? null : countriesView.getSelectedCountryId());
+        java.nio.file.Path coverImage = coverImagePath == null ? null : java.nio.file.Path.of(coverImagePath);
+        String title = normalize(titleInput.getText());
+        String description = normalizeNullable(descriptionInput.getText());
 
         Map<String, Consumer<String>> fieldHandlers = countriesView == null
                 ? Map.of("title", message -> titleInput.showError(message))
@@ -185,10 +192,31 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
                         "countryId", message -> countriesView.showError(message)
                 );
 
-        var result = placeService.addPlace(request);
+        var result = editMode
+                ? placeService.updatePlace(new UpdatePlaceRequest(
+                        UUID.fromString(placeId),
+                        UUID.fromString(countryId),
+                        coverImage,
+                        title,
+                        description,
+                        selectedLatitude,
+                        selectedLongitude
+                ))
+                : placeService.addPlace(new AddPlaceRequest(
+                        UUID.fromString(countryId),
+                        coverImage,
+                        title,
+                        description,
+                        selectedLatitude,
+                        selectedLongitude
+                ));
         result.onSuccess(place -> {
-            EditorDraftStorage.savePendingPlace(returnTarget, place);
-            String message = tripName == null || tripName.isBlank()
+            if (returnTarget != null && !returnTarget.isBlank()) {
+                EditorDraftStorage.savePendingPlace(returnTarget, place);
+            }
+            String message = editMode
+                    ? I18n.t("place.edit.toast.saved.body")
+                    : tripName == null || tripName.isBlank()
                     ? I18n.t("place.add.toast.saved.body")
                     : formatMessage("place.add.toast.saved.body.trip", tripName);
             toast.success(I18n.t("place.add.toast.saved.title"), message);
@@ -220,14 +248,14 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     private void onUploadDragOver(DragEvent event) {
         if (event.getDragboard().hasFiles() && isSupportedImageFile(event.getDragboard().getFiles().getFirst())) {
             event.acceptTransferModes(TransferMode.COPY);
-            addUploadActiveState(true);
+            toggleStyleClass(uploadArea, "editor-upload-area-active", true);
         }
         event.consume();
     }
 
     @FXML
     private void onUploadDragExited(DragEvent event) {
-        addUploadActiveState(false);
+        toggleStyleClass(uploadArea, "editor-upload-area-active", false);
         event.consume();
     }
 
@@ -242,7 +270,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
             }
         }
 
-        addUploadActiveState(false);
+        toggleStyleClass(uploadArea, "editor-upload-area-active", false);
         event.setDropCompleted(completed);
         event.consume();
     }
@@ -299,56 +327,11 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     }
 
     private void initializeCoverPreview() {
-        coverPreview.setPreserveRatio(false);
-        coverPreview.fitWidthProperty().bind(uploadArea.widthProperty());
-        coverPreview.fitHeightProperty().bind(uploadArea.heightProperty());
-        uploadArea.widthProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
-        uploadArea.heightProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
-        coverPreview.imageProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
+        EditorUtils.initializeCoverPreview(coverPreview, uploadArea);
     }
 
     private void setCoverPreviewImage(Image image) {
-        coverPreview.setImage(image);
-        updateCoverPreviewViewport();
-        if (image == null) {
-            coverPreview.setViewport(null);
-            return;
-        }
-
-        image.widthProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
-        image.heightProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
-        image.progressProperty().addListener((obs, oldVal, newVal) -> updateCoverPreviewViewport());
-    }
-
-    private void updateCoverPreviewViewport() {
-        Image image = coverPreview.getImage();
-        if (image == null) {
-            coverPreview.setViewport(null);
-            return;
-        }
-
-        double imageWidth = image.getWidth();
-        double imageHeight = image.getHeight();
-        double viewportWidth = uploadArea.getWidth();
-        double viewportHeight = uploadArea.getHeight();
-
-        if (imageWidth <= 0 || imageHeight <= 0 || viewportWidth <= 0 || viewportHeight <= 0) {
-            return;
-        }
-
-        double imageRatio = imageWidth / imageHeight;
-        double viewportRatio = viewportWidth / viewportHeight;
-
-        if (imageRatio > viewportRatio) {
-            double cropWidth = imageHeight * viewportRatio;
-            double x = (imageWidth - cropWidth) / 2.0;
-            coverPreview.setViewport(new Rectangle2D(x, 0, cropWidth, imageHeight));
-            return;
-        }
-
-        double cropHeight = imageWidth / viewportRatio;
-        double y = (imageHeight - cropHeight) / 2.0;
-        coverPreview.setViewport(new Rectangle2D(0, y, imageWidth, cropHeight));
+        EditorUtils.setCoverPreviewImage(coverPreview, uploadArea, image);
     }
 
     private void initializeMap() {
@@ -367,6 +350,51 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         
         interactiveMap.setMapCenter(DEFAULT_LATITUDE, DEFAULT_LONGITUDE);
         interactiveMap.setPinPosition(DEFAULT_LATITUDE, DEFAULT_LONGITUDE);
+    }
+
+    private void loadPlaceForEdit() {
+        var result = placeService.getPlaceById(new GetPlaceByIdRequest(UUID.fromString(placeId)));
+        if (result.isFailure()) {
+            errorHandler.handle(result.getError());
+            getRouter().popBackStack();
+            return;
+        }
+
+        var place = result.getValue();
+        titleInput.setText(place.title() == null ? "" : place.title());
+        descriptionInput.setText(place.description() == null ? "" : place.description());
+        if (countriesView != null && place.country() != null && place.country().name() != null) {
+            countriesView.selectCountryByName(place.country().name());
+        }
+
+        selectedLatitude = place.latitude();
+        selectedLongitude = place.longitude();
+        interactiveMap.setMapCenter(selectedLatitude, selectedLongitude);
+        interactiveMap.setPinPosition(selectedLatitude, selectedLongitude);
+        updateSelectedCoordinatesLabel();
+
+        if (place.coverImage() != null && place.coverImage().url() != null) {
+            coverImagePath = place.coverImage().url().toString();
+            selectedImageLabel.setText(new File(coverImagePath).getName());
+            selectedImageLabel.setVisible(true);
+            selectedImageLabel.setManaged(true);
+
+            if (isVectorImage(new File(coverImagePath))) {
+                coverPreview.setImage(null);
+                coverPreview.setVisible(false);
+                coverPreview.setManaged(false);
+                uploadPlaceholder.setVisible(true);
+                uploadPlaceholder.setManaged(true);
+            } else {
+                setCoverPreviewImage(new Image(new File(coverImagePath).toURI().toString(), true));
+                coverPreview.setVisible(true);
+                coverPreview.setManaged(false);
+                uploadPlaceholder.setVisible(false);
+                uploadPlaceholder.setManaged(false);
+            }
+        }
+
+        placeLoaded = true;
     }
 
     private void updateSelectedCoordinatesLabel() {
@@ -389,16 +417,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         Localization.bindText(actionButtonsView.secondaryTextProperty(), "place.add.action.discard");
     }
 
-    private String formatMessage(String key, Object... args) {
-        return MessageFormat.format(I18n.t(key), args);
-    }
 
-    private void configureButtonIcon(Button button, String iconLiteral) {
-        FontIcon icon = new FontIcon(iconLiteral);
-        icon.setIconSize(15);
-        icon.getStyleClass().add("app-btn-icon");
-        button.setGraphic(icon);
-    }
 
     private void bindUploadPanelHandlers() {
         uploadArea.setOnMouseClicked(event -> onChooseCoverImage());
@@ -407,50 +426,15 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         uploadArea.setOnDragDropped(this::onUploadDragDropped);
     }
 
-    private void addUploadActiveState(boolean active) {
-        if (active) {
-            if (!uploadArea.getStyleClass().contains("editor-upload-area-active")) {
-                uploadArea.getStyleClass().add("editor-upload-area-active");
-            }
-            return;
-        }
 
-        uploadArea.getStyleClass().remove("editor-upload-area-active");
-    }
-
-    private void installRoundedClip(StackPane target, double radius) {
-        Rectangle clip = new Rectangle();
-        clip.setArcWidth(radius * 2);
-        clip.setArcHeight(radius * 2);
-        clip.widthProperty().bind(target.widthProperty());
-        clip.heightProperty().bind(target.heightProperty());
-        target.setClip(clip);
-    }
 
     private void updateFullScreenMode(boolean fullScreen) {
         TriplifyRouterContext context = (TriplifyRouterContext) getRouter().getContext();
         context.setFullScreenContent(fullScreen);
     }
 
-    private boolean isSupportedImageFile(File file) {
-        String lowerName = file.getName().toLowerCase();
-        return lowerName.endsWith(".png")
-                || lowerName.endsWith(".jpg")
-                || lowerName.endsWith(".jpeg")
-                || lowerName.endsWith(".svg");
-    }
-
-    private boolean isVectorImage(File file) {
-        return file.getName().toLowerCase().endsWith(".svg");
-    }
-
     private String normalize(String value) {
         return value == null ? null : value.trim();
-    }
-
-    private String normalizeNullable(String value) {
-        String normalized = normalize(value);
-        return normalized == null || normalized.isBlank() ? null : normalized;
     }
 
     private double clamp(double value, double min, double max) {

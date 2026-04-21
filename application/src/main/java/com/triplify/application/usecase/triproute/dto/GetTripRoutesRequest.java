@@ -3,6 +3,8 @@ package com.triplify.application.usecase.triproute.dto;
 import com.triplify.domain.model.enums.StatusEnum;
 import com.triplify.domain.pagination.PageRequest;
 
+import java.util.UUID;
+
 public record GetTripRoutesRequest(
         PageRequest pageRequest,
         Filter filter
@@ -13,12 +15,8 @@ public record GetTripRoutesRequest(
     }
 
     public record Filter(
-            String tripId,
+            UUID tripId,
             StatusEnum status
     ) {
-
-        public Filter {
-            tripId = tripId == null ? null : tripId.trim();
-        }
     }
 }
