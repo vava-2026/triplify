@@ -1,35 +1,32 @@
 CREATE TEMP TABLE tmp_seed_routes (
     route_title_en TEXT NOT NULL,
-    route_title_sk TEXT NOT NULL,
     country_name TEXT NOT NULL,
-    country_name_sk TEXT NOT NULL,
     start_n INTEGER NOT NULL,
     end_n INTEGER NOT NULL,
-    focus_en TEXT NOT NULL,
-    focus_sk TEXT NOT NULL
+    focus_en TEXT NOT NULL
 );
 
-INSERT INTO tmp_seed_routes (route_title_en, route_title_sk, country_name, country_name_sk, start_n, end_n, focus_en, focus_sk) VALUES
-('Portugal Atlantic Towns', 'Portugalské atlantické mestá', 'Portugal', 'Portugalsko', 2, 7, 'coastal neighborhoods and evening viewpoints', 'pobrežné štvrte a večerné vyhliadky'),
-('Portugal Northern Valleys', 'Portugalské severné údolia', 'Portugal', 'Portugalsko', 10, 14, 'heritage streets and local train links', 'historické ulice a regionálne vlakové prepojenia'),
-('Spain Sun and Stone', 'Španielsko slnko a kameň', 'Spain', 'Španielsko', 3, 8, 'historic plazas and classic old towns', 'historické námestia a staré mestá'),
-('Spain Inland Discovery', 'Španielske vnútrozemské objavy', 'Spain', 'Španielsko', 11, 17, 'regional museums and slower urban rhythm', 'regionálne múzeá a pomalšie mestské tempo'),
-('France Heritage Loop', 'Francúzska historická slučka', 'France', 'Francúzsko', 2, 6, 'boulevards, markets, and riverside walks', 'bulváre, trhy a prechádzky pri rieke'),
-('France Southbound Line', 'Francúzska južná línia', 'France', 'Francúzsko', 9, 15, 'southern food culture and compact transfers', 'južná gastronómia a krátke presuny'),
-('Italy Art and Streets', 'Talianske umenie a ulice', 'Italy', 'Taliansko', 2, 9, 'gallery stops and lively evening quarters', 'galérie a živé večerné štvrte'),
-('Italy Lakes to Hills', 'Taliansko od jazier ku kopcom', 'Italy', 'Taliansko', 12, 18, 'lakeside calm and hill town panoramas', 'pokoj pri jazerách a výhľady z kopcov'),
-('Germany River Cities', 'Nemecké riečne mestá', 'Germany', 'Nemecko', 2, 8, 'riverside cores and efficient rail movement', 'mestské nábrežia a efektívne vlakové presuny'),
-('Germany Forest Edge', 'Nemecký lesný okraj', 'Germany', 'Nemecko', 11, 16, 'castle districts and green urban borders', 'hradné oblasti a zelené okraje miest'),
-('Japan Urban Highlights', 'Japonské mestské highlighty', 'Japan', 'Japonsko', 2, 10, 'district variety and late-night food lanes', 'rôznorodé štvrte a večerné ulice s jedlom'),
-('Japan Temple Corridor', 'Japonský chrámový koridor', 'Japan', 'Japonsko', 12, 19, 'temple gardens and traditional shopping streets', 'chrámové záhrady a tradičné nákupné ulice'),
-('Thailand City and Coast', 'Thajsko mesto a pobrežie', 'Thailand', 'Thajsko', 2, 7, 'urban markets and relaxed coastal evenings', 'mestské trhy a pokojné pobrežné večery'),
-('Thailand Northern Culture', 'Thajská severná kultúra', 'Thailand', 'Thajsko', 10, 14, 'temples, crafts, and regional night bazaars', 'chrámy, remeslá a regionálne nočné trhy'),
-('Mexico Central Circuit', 'Mexický centrálny okruh', 'Mexico', 'Mexiko', 2, 8, 'city plazas and practical overland legs', 'mestské námestia a praktické pozemné presuny'),
-('Mexico Colonial Trail', 'Mexická koloniálna trasa', 'Mexico', 'Mexiko', 11, 16, 'colonial facades and hillside viewpoints', 'koloniálne fasády a vyhliadky z kopcov'),
-('US East Corridor', 'Východný koridor USA', 'United States', 'Spojené štáty', 2, 7, 'major landmarks with short intercity hops', 'hlavné pamiatky a krátke medzimestské presuny'),
-('US West Urban Arc', 'Západný mestský oblúk USA', 'United States', 'Spojené štáty', 10, 15, 'coastal districts and flexible day trips', 'pobrežné štvrte a flexibilné denné výlety'),
-('Australia Coastal Days', 'Austrálske pobrežné dni', 'Australia', 'Austrália', 2, 6, 'waterfront parks and easy city flow', 'nábrežné parky a plynulé mestské tempo'),
-('Australia Inland Stretch', 'Austrálsky vnútrozemský úsek', 'Australia', 'Austrália', 9, 13, 'regional galleries and dryland landscapes', 'regionálne galérie a vnútrozemské scenérie');
+INSERT INTO tmp_seed_routes (route_title_en, country_name, start_n, end_n, focus_en) VALUES
+('Portugal Atlantic Heritage Arc', 'Portugal', 2, 7, 'coastal viewpoints and old-town riversides'),
+('Portugal Hills and Vineyards Line', 'Portugal', 10, 14, 'hill towns and vineyard detours'),
+('Spain Gaudi to Gothic Trail', 'Spain', 3, 8, 'architectural icons and historic plazas'),
+('Spain Inland Culture Route', 'Spain', 11, 17, 'museums, fortresses, and slower inland cities'),
+('France River and Boulevard Circuit', 'France', 2, 6, 'riverside walks and market streets'),
+('France Southbound Flavor Route', 'France', 9, 15, 'regional cuisine and compact rail hops'),
+('Italy Art Cities Sequence', 'Italy', 2, 9, 'gallery districts and piazza life'),
+('Italy Lakes to Hilltown Journey', 'Italy', 12, 18, 'lake promenades and panoramic hill routes'),
+('Germany Castle and River Loop', 'Germany', 2, 8, 'riverfront cores and castle viewpoints'),
+('Germany Forest Edge Itinerary', 'Germany', 11, 16, 'green borders and historic quarters'),
+('Japan Neon to Temple Corridor', 'Japan', 2, 10, 'urban contrasts and evening food lanes'),
+('Japan Garden and Shrine Line', 'Japan', 12, 19, 'temple gardens and traditional districts'),
+('Thailand Night Market Route', 'Thailand', 2, 7, 'city bazaars and relaxed evening districts'),
+('Thailand Northern Craft Trail', 'Thailand', 10, 14, 'craft villages and mountain gateways'),
+('Mexico Plaza and Pyramid Circuit', 'Mexico', 2, 8, 'central plazas and archaeological highlights'),
+('Mexico Colonial Highlands Route', 'Mexico', 11, 16, 'colonial facades and hillside overlooks'),
+('United States Coast to Canyon Line', 'United States', 2, 7, 'major landmarks and scenic drives'),
+('United States Urban Skylines Arc', 'United States', 10, 15, 'downtown cores and waterfront neighborhoods'),
+('Australia Surf and Harbor Route', 'Australia', 2, 6, 'beachfronts, harbors, and park edges'),
+('Australia Inland Discovery Line', 'Australia', 9, 13, 'outback textures and regional galleries');
 
 INSERT OR IGNORE INTO routes (id, user_id, cover_image_id, title, description, length)
 SELECT
@@ -42,17 +39,13 @@ SELECT
     ) AS id,
     'f1d1a33f-1e7c-4ea1-bb1d-c8f06efb5b5a' AS user_id,
     NULL AS cover_image_id,
-    printf('%s | %s', ts.route_title_en, ts.route_title_sk),
+    ts.route_title_en,
     printf(
-        'EN: This route in %s is intentionally regional, covering places %d to %d so the journey feels coherent from morning to evening. Its central theme is %s, and every stop is selected to keep transfers realistic, avoid exhausting jumps, and leave room for food breaks, weather changes, and spontaneous discoveries. You can run it as a compact city-focused plan or stretch it across several days with slower pacing and longer cultural visits. The structure favors practical transport links, predictable service availability, and safe evening movement. SK: Táto trasa v krajine %s je zámerne regionálna a prepája miesta %d až %d tak, aby cesta pôsobila logicky od rána do večera. Jej hlavnou témou sú %s a jednotlivé zastávky sú zvolené tak, aby boli presuny realistické, bez únavných skokov, a zároveň ostal čas na jedlo, zmeny podľa počasia aj neplánované objavy. Trasu je možné absolvovať ako kompaktný mestský plán alebo ju rozložiť na viac dní s pomalším tempom a dlhšími kultúrnymi návštevami. Návrh uprednostňuje praktické dopravné väzby, stabilnú dostupnosť služieb a bezpečný pohyb aj vo večerných hodinách.',
+        'This route through %s covers places %d to %d with a practical flow focused on %s. It is designed for realistic transfer times, balanced pacing, and enough flexibility for weather or queue changes.',
         ts.country_name,
         ts.start_n,
         ts.end_n,
-        ts.focus_en,
-        ts.country_name_sk,
-        ts.start_n,
-        ts.end_n,
-        ts.focus_sk
+        ts.focus_en
     ),
     NULL AS length
 FROM tmp_seed_routes ts;
@@ -65,13 +58,12 @@ WITH places_in_routes AS (
     FROM tmp_seed_routes ts
     INNER JOIN routes r
         ON r.user_id = 'f1d1a33f-1e7c-4ea1-bb1d-c8f06efb5b5a'
-       AND r.title = printf('%s | %s', ts.route_title_en, ts.route_title_sk)
+       AND r.title = ts.route_title_en
     INNER JOIN countries c
         ON c.name = ts.country_name
     INNER JOIN places p
         ON p.user_id = 'f1d1a33f-1e7c-4ea1-bb1d-c8f06efb5b5a'
        AND p.country_id = c.id
-       AND p.title GLOB '* Miesto ??'
        AND CAST(substr(p.title, -2) AS INTEGER) BETWEEN ts.start_n AND ts.end_n
 ),
 ordered_places AS (
