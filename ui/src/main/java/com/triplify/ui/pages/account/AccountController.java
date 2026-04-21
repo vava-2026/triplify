@@ -17,10 +17,14 @@ import com.triplify.ui.routing.GuardedNavigator;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.shared.component.badge.viewmodel.BadgeViewModel;
 import com.triplify.ui.shared.component.badge.view.BadgeView;
+import com.triplify.ui.shared.component.button.model.ButtonVariant;
+import com.triplify.ui.shared.component.button.view.AppButtonView;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.input_item.PasswordItem;
+import com.triplify.ui.shared.model.AppComponentSize;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.toast.ToastService;
+import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import javafx.fxml.FXML;
 import javafx.scene.layout.GridPane;
 import javafx.scene.control.Button;
@@ -49,6 +53,7 @@ public class AccountController extends SimpleLifecycleAwareController {
     @Inject private UserSessionContext userSessionContext;
     @Inject private ErrorHandler errorHandler;
     @Inject private GuardedNavigator guardedNavigator;
+    @Inject private FxmlLoaderHelper fxmlLoader;
 
     private InputItem usernameInput;
     private InputItem emailInput;
@@ -139,13 +144,17 @@ public class AccountController extends SimpleLifecycleAwareController {
         if (userSessionContext.isLoggedIn()) {
             SessionUser user = userSessionContext.getCurrent().orElseThrow();
             Label usernameLabel = new Label("Username: " + user.username());
-            Button logOffButton = new Button("Log off");
-            logOffButton.setOnAction(e -> {
-                authService.logout();
-                toast.success("Logged off successfully");
-                guardedNavigator.goTo(getRouter(), RouteIds.START);
-                render();
-            });
+            Button logOffButton = AppButtonView.builder(fxmlLoader)
+                    .label("Log off")
+                    .variant(ButtonVariant.SECONDARY)
+                    .size(AppComponentSize.MIDDLE)
+                    .onAction(() -> {
+                        authService.logout();
+                        toast.success("Logged off successfully");
+                        guardedNavigator.goTo(getRouter(), RouteIds.START);
+                        render();
+                    })
+                    .build();
             editFormContainer.getChildren().addAll(usernameLabel, logOffButton);
         } else {
             usernameInput = new InputItem("input.placeholder.username", FieldVariant.FILLED);

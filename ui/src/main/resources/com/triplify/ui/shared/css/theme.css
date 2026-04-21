@@ -40,6 +40,13 @@
     -color-sign-up: #d9e0e6;
     -color-sign-up-hover: #bbbec1;
     -color-on-sign-up: #000000;
+    -color-btn-white-bg: #d9e0e6;
+    -color-btn-white-hover: #d1d9df;
+    -color-btn-white-pressed: #c5ced6;
+    -color-btn-white-muted-bg: #bbbec1;
+    -color-btn-white-muted-hover: #b2b6ba;
+    -color-btn-white-muted-pressed: #a8adb2;
+    -color-btn-white-text: #111111;
 
     -color-theme-red-dark-bg: #F5C1C1;
     -color-theme-red-dark-fg: #B71C1C;

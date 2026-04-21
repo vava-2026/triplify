@@ -13,6 +13,7 @@ import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.component.button.model.ButtonVariant;
 import com.triplify.ui.shared.component.button.view.AppButtonView;
+import com.triplify.ui.shared.model.AppComponentSize;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.input_item.PasswordItem;
 import com.triplify.ui.shared.toast.ToastService;
@@ -81,11 +82,9 @@ public class LoginController extends SimpleLifecycleAwareController {
         passwordInputContainer.getChildren().setAll(passwordInput);
 
         var loginButton = AppButtonView.builder(fxmlLoader)
-                .variant(ButtonVariant.LOGIN)
                 .labelBinding(Localization.textBinding("login.signIn"))
                 .onAction(this::onLogin)
                 .build();
-        loginButton.getStyleClass().add("login-submit-button");
         loginButton.setMaxWidth(Double.MAX_VALUE);
         loginButtonContainer.getChildren().setAll(loginButton);
     }

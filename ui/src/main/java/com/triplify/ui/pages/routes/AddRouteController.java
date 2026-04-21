@@ -16,11 +16,10 @@ import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.routing.TriplifyRouterContext;
-import com.triplify.ui.shared.component.action_buttons.view.EditorActionButtonsView;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.search.model.Search;
 import com.triplify.ui.shared.component.search.model.SearchDisplayMode;
-import com.triplify.ui.shared.component.search.model.SearchSize;
+import com.triplify.ui.shared.model.AppComponentSize;
 import com.triplify.ui.shared.component.search.view.SearchView;
 import com.triplify.ui.shared.component.select.entry.model.Entry;
 import com.triplify.ui.shared.component.section_header.view.SectionHeaderView;
@@ -91,7 +90,8 @@ public class AddRouteController extends SimpleLifecycleAwareController {
 
     @FXML private Button addPlaceButton;
     @FXML private Button placeCreateButton;
-    @FXML private EditorActionButtonsView actionButtonsView;
+    @FXML private Button saveButton;
+    @FXML private Button discardButton;
 
     @Inject private ToastService toast;
     @Inject private RouteService routeService;
@@ -141,10 +141,10 @@ public class AddRouteController extends SimpleLifecycleAwareController {
 
         configureButtonIcon(addPlaceButton, "fth-plus");
         configureButtonIcon(placeCreateButton, "fth-plus");
-        configureButtonIcon(actionButtonsView.getPrimaryButton(), "fth-save");
-        configureButtonIcon(actionButtonsView.getSecondaryButton(), "fth-trash-2");
-        actionButtonsView.getPrimaryButton().setOnAction(event -> onSave());
-        actionButtonsView.getSecondaryButton().setOnAction(event -> onDiscard());
+        configureButtonIcon(saveButton, "fth-save");
+        configureButtonIcon(discardButton, "fth-trash-2");
+        saveButton.setOnAction(event -> onSave());
+        discardButton.setOnAction(event -> onDiscard());
 
         installRoundedClip(uploadArea, 16);
         setPlacePickerVisible(false);
@@ -162,7 +162,7 @@ public class AddRouteController extends SimpleLifecycleAwareController {
                 .noResultKey("trip.add.menu.place.empty")
                 .variant(FieldVariant.GHOST)
                 .displayMode(SearchDisplayMode.INLINE)
-                .size(SearchSize.MIDDLE)
+                .size(AppComponentSize.MIDDLE)
                 .maxVisibleResults(8)
                 .showOnEmptyQuery(true)
                 .onResultSelected(entry -> addExistingPlace(entry.getValue()))
@@ -650,6 +650,8 @@ public class AddRouteController extends SimpleLifecycleAwareController {
         Localization.bindText(placesSectionHeader.titleProperty(), "route.add.section.places");
         Localization.bindText(addPlaceButton.textProperty(), "route.add.action.addPlace");
         Localization.bindText(placeCreateButton.textProperty(), "route.add.action.createPlace");
+        Localization.bindText(saveButton.textProperty(), "route.add.action.save");
+        Localization.bindText(discardButton.textProperty(), "route.add.action.discard");
         Localization.bindText(imageUploadPanel.sectionTitleProperty(), "route.add.section.cover");
         Localization.bindText(imageUploadPanel.uploadTitleProperty(), "route.add.upload.title");
         Localization.bindText(imageUploadPanel.uploadSubtitleProperty(), "route.add.upload.subtitle");

@@ -38,7 +38,6 @@ import com.triplify.domain.result.Result;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.routing.TriplifyRouterContext;
-import com.triplify.ui.shared.component.action_buttons.view.EditorActionButtonsView;
 import com.triplify.ui.shared.component.categories.model.Categories;
 import com.triplify.ui.shared.component.countries.model.Countries;
 import com.triplify.ui.shared.component.countries.view.CountriesView;
@@ -47,7 +46,7 @@ import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.media_card.view.EditorMediaCardView;
 import com.triplify.ui.shared.component.search.model.Search;
 import com.triplify.ui.shared.component.search.model.SearchDisplayMode;
-import com.triplify.ui.shared.component.search.model.SearchSize;
+import com.triplify.ui.shared.model.AppComponentSize;
 import com.triplify.ui.shared.component.search.view.SearchView;
 import com.triplify.ui.shared.component.tag_picker.TagPickerItem;
 import com.triplify.ui.shared.component.section_header.view.SectionHeaderView;
@@ -146,7 +145,8 @@ public class AddTripController extends SimpleLifecycleAwareController {
     @FXML private Button addCountryButton;
     @FXML private Button addRouteButton;
     @FXML private Button addPlaceButton;
-    @FXML private EditorActionButtonsView actionButtonsView;
+    @FXML private Button saveButton;
+    @FXML private Button discardButton;
 
     @Inject private ToastService toast;
     @Inject private TripService tripService;
@@ -212,10 +212,10 @@ public class AddTripController extends SimpleLifecycleAwareController {
         configureButtonIcon(addCountryButton, "fth-plus");
         configureButtonIcon(addRouteButton, "fth-plus");
         configureButtonIcon(addPlaceButton, "fth-plus");
-        configureButtonIcon(actionButtonsView.getPrimaryButton(), "fth-save");
-        configureButtonIcon(actionButtonsView.getSecondaryButton(), "fth-trash-2");
-        actionButtonsView.getPrimaryButton().setOnAction(event -> onSave());
-        actionButtonsView.getSecondaryButton().setOnAction(event -> onDiscard());
+        configureButtonIcon(saveButton, "fth-save");
+        configureButtonIcon(discardButton, "fth-trash-2");
+        saveButton.setOnAction(event -> onSave());
+        discardButton.setOnAction(event -> onDiscard());
 
         installRoundedClip(uploadArea, 16);
         bindLocalizedText();
@@ -479,6 +479,8 @@ public class AddTripController extends SimpleLifecycleAwareController {
         Localization.bindText(addPlaceButton.textProperty(), "trip.add.action.addPlace");
         Localization.bindText(routeCreateButton.textProperty(), "trip.add.action.createRoute");
         Localization.bindText(placeCreateButton.textProperty(), "trip.add.action.createPlace");
+        Localization.bindText(saveButton.textProperty(), "trip.add.action.save");
+        Localization.bindText(discardButton.textProperty(), "trip.add.action.discard");
     }
 
     private void refreshLocalizedUi() {
@@ -799,7 +801,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
                 .noResultKey("trip.add.menu.route.empty")
                 .variant(FieldVariant.GHOST)
                 .displayMode(SearchDisplayMode.INLINE)
-                .size(SearchSize.MIDDLE)
+                .size(AppComponentSize.MIDDLE)
                 .maxVisibleResults(8)
                 .showOnEmptyQuery(true)
                 .onResultSelected(entry -> addExistingRoute(entry.getValue()))
@@ -813,7 +815,7 @@ public class AddTripController extends SimpleLifecycleAwareController {
                 .noResultKey("trip.add.menu.place.empty")
                 .variant(FieldVariant.GHOST)
                 .displayMode(SearchDisplayMode.INLINE)
-                .size(SearchSize.MIDDLE)
+                .size(AppComponentSize.MIDDLE)
                 .maxVisibleResults(8)
                 .showOnEmptyQuery(true)
                 .onResultSelected(entry -> addExistingPlace(entry.getValue()))

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import com.triplify.ui.shared.component.action_buttons.view.EditorActionButtonsView?>
 <?import com.triplify.ui.shared.component.section_header.view.SectionHeaderView?>
 <?import com.triplify.ui.shared.component.tag_picker.TagPickerItem?>
 <?import com.triplify.ui.shared.component.upload_panel.view.ImageUploadPanelView?>
@@ -143,9 +142,14 @@
                             </VBox>
                         </VBox>
 
-                        <EditorActionButtonsView fx:id="actionButtonsView"
-                                                 primaryTextKey="trip.add.action.save"
-                                                 secondaryTextKey="trip.add.action.discard"/>
+                        <VBox styleClass="editor-action-group" spacing="12">
+                            <Button fx:id="saveButton"
+                                    maxWidth="Infinity"
+                                    styleClass="app-btn,app-btn-primary,editor-action-button"/>
+                            <Button fx:id="discardButton"
+                                    maxWidth="Infinity"
+                                    styleClass="app-btn,app-btn-danger-outline,editor-action-button"/>
+                        </VBox>
                     </VBox>
                 </FlowPane>
             </VBox>

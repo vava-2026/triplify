@@ -14,7 +14,6 @@ import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.component.countries.model.Countries;
 import com.triplify.ui.shared.component.countries.view.CountriesView;
 import com.triplify.ui.storage.EditorDraftStorage;
-import com.triplify.ui.shared.component.action_buttons.view.EditorActionButtonsView;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.section_header.view.SectionHeaderView;
 import com.triplify.ui.shared.component.input_item.TextAreaItem;
@@ -23,8 +22,6 @@ import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.toast.ToastService;
 import com.triplify.ui.shared.util.EditorUtils;
 import com.triplify.ui.shared.util.Localization;
-
-import static com.triplify.ui.shared.util.EditorUtils.*;
 
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
@@ -83,7 +80,8 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     @FXML private InteractiveMap interactiveMap;
     @FXML private Label selectedCoordinatesLabel;
 
-    @FXML private EditorActionButtonsView actionButtonsView;
+    @FXML private Button saveButton;
+    @FXML private Button discardButton;
 
     @Inject private PlaceService placeService;
     @Inject private CountryService countryService;
@@ -109,20 +107,16 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     @FXML
     public void initialize() {
         titleInput = new InputItem("input.placeholder.placeTitle", FieldVariant.GHOST);
-        if (countryService == null) {
-            InputItem placeholderCountryInput = new InputItem("input.placeholder.country", FieldVariant.GHOST);
-            placeholderCountryInput.setDisable(true);
-            countryInputContainer.getChildren().add(placeholderCountryInput);
-        } else {
-            countriesView = new CountriesView(
-                    Countries.builder(countryService)
-                            .variant(FieldVariant.GHOST)
-                            .searchOnTyping(true)
-                            .onLoadFailed(errorHandler::handle)
-                            .build()
-            );
-            countryInputContainer.getChildren().add(countriesView);
-        }
+
+        countriesView = new CountriesView(
+                Countries.builder(countryService)
+                        .variant(FieldVariant.GHOST)
+                        .searchOnTyping(true)
+                        .onLoadFailed(errorHandler::handle)
+                        .build()
+        );
+        countryInputContainer.getChildren().add(countriesView);
+
         descriptionInput = new TextAreaItem("input.placeholder.placeDescription", FieldVariant.GHOST);
         titleInputContainer.getChildren().add(titleInput);
         descriptionInputContainer.getChildren().add(descriptionInput);
@@ -132,16 +126,16 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         selectedImageLabel = imageUploadPanel.getSelectedImageLabel();
 
         contentFlow.prefWrapLengthProperty().bind(contentContainer.widthProperty());
-        initializeCoverPreview();
+        EditorUtils.initializeCoverPreview(coverPreview, uploadArea);
         bindUploadPanelHandlers();
 
-        configureButtonIcon(actionButtonsView.getPrimaryButton(), "fth-save", 15, "app-btn-icon");
-        configureButtonIcon(actionButtonsView.getSecondaryButton(), "fth-trash-2", 15, "app-btn-icon");
-        actionButtonsView.getPrimaryButton().setOnAction(event -> onSave());
-        actionButtonsView.getSecondaryButton().setOnAction(event -> onDiscard());
+        EditorUtils.configureButtonIcon(saveButton, "fth-save", 15, "app-btn-icon");
+        EditorUtils.configureButtonIcon(discardButton, "fth-trash-2", 15, "app-btn-icon");
+        saveButton.setOnAction(event -> onSave());
+        discardButton.setOnAction(event -> onDiscard());
 
-        installRoundedClip(uploadArea, 16);
-        installRoundedClip(interactiveMap, 18);
+        EditorUtils.installRoundedClip(uploadArea, 16);
+        EditorUtils.installRoundedClip(interactiveMap, 18);
 
         bindLocalizedText();
         initializeMap();
@@ -183,7 +177,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         String countryId = normalize(countriesView == null ? null : countriesView.getSelectedCountryId());
         java.nio.file.Path coverImage = coverImagePath == null ? null : java.nio.file.Path.of(coverImagePath);
         String title = normalize(titleInput.getText());
-        String description = normalizeNullable(descriptionInput.getText());
+        String description = descriptionInput.getText();
 
         Map<String, Consumer<String>> fieldHandlers = countriesView == null
                 ? Map.of("title", message -> titleInput.showError(message))
@@ -218,7 +212,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
                     ? I18n.t("place.edit.toast.saved.body")
                     : tripName == null || tripName.isBlank()
                     ? I18n.t("place.add.toast.saved.body")
-                    : formatMessage("place.add.toast.saved.body.trip", tripName);
+                    : EditorUtils.formatMessage("place.add.toast.saved.body.trip", tripName);
             toast.success(I18n.t("place.add.toast.saved.title"), message);
             getRouter().popBackStack();
         });
@@ -246,16 +240,16 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
 
     @FXML
     private void onUploadDragOver(DragEvent event) {
-        if (event.getDragboard().hasFiles() && isSupportedImageFile(event.getDragboard().getFiles().getFirst())) {
+        if (event.getDragboard().hasFiles() && EditorUtils.isSupportedImageFile(event.getDragboard().getFiles().getFirst())) {
             event.acceptTransferModes(TransferMode.COPY);
-            toggleStyleClass(uploadArea, "editor-upload-area-active", true);
+            EditorUtils.toggleStyleClass(uploadArea, "editor-upload-area-active", true);
         }
         event.consume();
     }
 
     @FXML
     private void onUploadDragExited(DragEvent event) {
-        toggleStyleClass(uploadArea, "editor-upload-area-active", false);
+        EditorUtils.toggleStyleClass(uploadArea, "editor-upload-area-active", false);
         event.consume();
     }
 
@@ -326,9 +320,6 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         });
     }
 
-    private void initializeCoverPreview() {
-        EditorUtils.initializeCoverPreview(coverPreview, uploadArea);
-    }
 
     private void setCoverPreviewImage(Image image) {
         EditorUtils.setCoverPreviewImage(coverPreview, uploadArea, image);
@@ -413,8 +404,8 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         Localization.bindText(imageUploadPanel.sectionTitleProperty(), "place.add.section.cover");
         Localization.bindText(imageUploadPanel.uploadTitleProperty(), "place.add.upload.title");
         Localization.bindText(imageUploadPanel.uploadSubtitleProperty(), "place.add.upload.subtitle");
-        Localization.bindText(actionButtonsView.primaryTextProperty(), "place.add.action.save");
-        Localization.bindText(actionButtonsView.secondaryTextProperty(), "place.add.action.discard");
+        Localization.bindText(saveButton.textProperty(), "place.add.action.save");
+        Localization.bindText(discardButton.textProperty(), "place.add.action.discard");
     }
 
 

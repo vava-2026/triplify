@@ -72,8 +72,6 @@ public final class EditorUtils {
         return new Image(fallback.toExternalForm(), true);
     }
 
-    // ── UI helpers ──
-
     public static void configureButtonIcon(Button button, String iconLiteral, int size, String styleClass) {
         FontIcon icon = new FontIcon(iconLiteral);
         icon.setIconSize(size);

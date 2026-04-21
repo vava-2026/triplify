@@ -34,7 +34,7 @@
                     <Label text="Edit Profile" styleClass="account-section-title"/>
                     <VBox fx:id="editFormContainer" spacing="12"/>
                     <HBox styleClass="account-form-actions">
-                        <Button text="Save changes" onAction="#onSave" styleClass="account-save-btn"/>
+                        <Button text="Save changes" onAction="#onSave" styleClass="app-btn,app-btn-primary,app-btn-size-middle"/>
                     </HBox>
                 </VBox>
 
