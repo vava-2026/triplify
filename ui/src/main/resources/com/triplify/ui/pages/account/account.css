@@ -24,20 +24,200 @@
 .icon-purple { -fx-background-color: -color-stats-purple-bg; }
 .icon-pink   { -fx-background-color: -color-stats-pink-bg; }
 
-.account-section-title {
-    -fx-font-size: 15px;
-    -fx-font-weight: bold;
-    -fx-text-fill: -color-ink;
-}
-
-.account-form-actions {
-    -fx-padding: 4 0 0 0;
-}
-
-
 .badges-grid {
     -fx-padding: 10;
     -fx-hgap: 20;
     -fx-vgap: 20;
     -fx-alignment: center;
+}
+
+.account-scroll-content {
+    -fx-padding: 50 60 50 60;
+    -fx-alignment: top-center;
+}
+
+.account-page-content {
+    -fx-fill-width: true;
+    -fx-max-width: 1060;
+}
+
+.page-root {
+    -fx-padding: 0;
+}
+
+.profile-hero-card {
+    -fx-background-color: -color-surface;
+    -fx-background-radius: 20;
+    -fx-padding: 25 50 25 50;
+    -fx-alignment: center-left;
+    -fx-spacing: 0;
+    -fx-effect: dropshadow(gaussian, -color-shadow-ink-soft, 4, 0, 0, 1);
+}
+
+.profile-avatar-circle {
+    -fx-min-width: 150;
+    -fx-pref-width: 150;
+    -fx-min-height: 150;
+    -fx-pref-height: 150;
+    -fx-background-color: -color-primary;
+    -fx-background-radius: 75;
+    -fx-border-color: transparent;
+    -fx-border-width: 0;
+    -fx-border-radius: 75;
+}
+
+.profile-avatar-image {
+    -fx-fit-width: 150;
+    -fx-fit-height: 150;
+    -fx-preserve-ratio: true;
+}
+
+.profile-avatar-initial {
+    -fx-font-family: -font-family-base;
+    -fx-font-size: 48px;
+    -fx-font-weight: 700;
+    -fx-text-fill: -color-on-surface;
+}
+
+.profile-avatar-edit-btn {
+    -fx-min-width: 26;
+    -fx-pref-width: 26;
+    -fx-min-height: 26;
+    -fx-pref-height: 26;
+    -fx-background-color: -color-surface;
+    -fx-background-radius: 13;
+    -fx-border-color: -color-primary;
+    -fx-border-width: 1;
+    -fx-border-radius: 13;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+}
+
+.profile-avatar-edit-btn:hover {
+    -fx-background-color: -color-surface-tint;
+}
+
+.profile-avatar-edit-icon {
+    -fx-icon-color: -color-primary;
+}
+
+.profile-name {
+    -fx-font-family: -font-family-base;
+    -fx-font-size: 32px;
+    -fx-font-weight: 700;
+    -fx-text-fill: -color-ink;
+}
+
+.profile-edit-name-btn {
+    -fx-background-color: transparent;
+    -fx-padding: 2;
+    -fx-cursor: hand;
+}
+
+.profile-name-display-row,
+.profile-name-editor-row {
+    -fx-min-height: 40;
+    -fx-pref-height: 40;
+    -fx-max-height: 40;
+    -fx-alignment: center-left;
+}
+
+.profile-name-editor-row {
+    -fx-wrap-text: false;
+}
+
+.profile-name-input .input-item {
+    -fx-pref-width: 300;
+    -fx-min-width: 300;
+    -fx-max-width: 300;
+    -fx-pref-height: 40;
+    -fx-min-height: 40;
+    -fx-max-height: 40;
+}
+
+.profile-name-save-btn {
+    -fx-pref-height: 40;
+    -fx-min-height: 40;
+    -fx-max-height: 40;
+    -fx-padding: 0 20 0 20;
+}
+
+.profile-edit-name-icon {
+    -fx-icon-color: -color-primary;
+}
+
+.profile-edit-name-btn:hover .profile-edit-name-icon {
+    -fx-icon-color: -color-ink;
+}
+
+.profile-email-icon {
+    -fx-icon-color: -color-ink-muted-soft;
+}
+
+.profile-email {
+    -fx-font-family: -font-family-base;
+    -fx-font-size: 16px;
+    -fx-font-weight: 500;
+    -fx-text-fill: -color-ink-muted;
+}
+
+.profile-role-pill {
+    -fx-background-color: -color-theme-steel-blue-bg;
+    -fx-background-radius: 20;
+    -fx-padding: 4 10 4 10;
+    -fx-font-family: -font-family-base;
+    -fx-font-size: 12px;
+    -fx-font-weight: 500;
+    -fx-text-fill: -color-primary;
+    -fx-min-height: 25;
+    -fx-pref-height: 25;
+    -fx-max-height: 25;
+}
+
+
+.profile-logout-btn {
+    -fx-background-color: -color-primary;
+    -fx-text-fill: -color-on-primary;
+    -fx-background-radius: 8;
+    -fx-font-family: -font-family-base;
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+    -fx-padding: 0;
+    -fx-graphic-text-gap: 6;
+    -fx-cursor: hand;
+    -fx-min-height: 40;
+    -fx-pref-height: 40;
+    -fx-max-height: 40;
+    -fx-alignment: center;
+    -fx-content-display: left;
+}
+
+.profile-logout-btn:hover {
+    -fx-background-color: -color-primary-hover-strong;
+}
+
+
+.page-scroll .scroll-bar:vertical,
+.page-scroll .scroll-bar:horizontal {
+    -fx-pref-width: 0;
+    -fx-pref-height: 0;
+    -fx-min-width: 0;
+    -fx-min-height: 0;
+    -fx-max-width: 0;
+    -fx-max-height: 0;
+    -fx-padding: 0;
+    -fx-opacity: 0;
+    -fx-background-color: transparent;
+}
+
+.page-scroll .scroll-bar:vertical .track,
+.page-scroll .scroll-bar:horizontal .track,
+.page-scroll .scroll-bar:vertical .thumb,
+.page-scroll .scroll-bar:horizontal .thumb,
+.page-scroll .scroll-bar:vertical .increment-button,
+.page-scroll .scroll-bar:vertical .decrement-button,
+.page-scroll .scroll-bar:horizontal .increment-button,
+.page-scroll .scroll-bar:horizontal .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
 }

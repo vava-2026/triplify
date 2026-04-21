@@ -8,6 +8,7 @@ import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.routing.AppPage;
 import com.triplify.ui.routing.PageAccessService;
 import com.triplify.ui.shared.menu.viewmodel.MenuViewModel;
+import com.triplify.ui.shared.util.AvatarImageHelper;
 import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import com.triplify.ui.shared.util.FxmlLoadResult;
 import javafx.beans.binding.Bindings;
@@ -34,6 +35,7 @@ public class MenuView implements Initializable {
 
     public static final double SIDEBAR_WIDTH = 260;
     private static final double SIDEBAR_COLLAPSED_WIDTH = 0;
+    private static final double SIDEBAR_AVATAR_SIZE = 38;
 
     @FXML private StackPane sidebarRoot;
     @FXML private VBox mainPageInner;
@@ -73,6 +75,8 @@ public class MenuView implements Initializable {
         sidebarRoot.setMaxHeight(Double.MAX_VALUE);
         mainPageInner.setMaxHeight(Double.MAX_VALUE);
         refreshAccountSection();
+
+        userSessionContext.addSessionChangeListener(sessionUser -> refreshAccountSection());
 
         viewModel.activePrimaryPageProperty().addListener(
                 (obs, oldVal, newVal) -> refreshActiveState(newVal));
@@ -133,7 +137,7 @@ public class MenuView implements Initializable {
             currentRoleLabelKey = null;
             accountRole.textProperty().unbind();
             accountRole.setText("");
-            avatarLabel.setText("?");
+            avatarLabel.setText(AvatarImageHelper.extractInitial(null));
             showInitialAvatar();
             avatarImageView.setClip(new Circle(19, 19, 19));
             return;
@@ -147,43 +151,35 @@ public class MenuView implements Initializable {
         accountRole.textProperty().bind(Bindings.createStringBinding(
                 () -> I18n.t(currentRoleLabelKey),
                 I18n.bundleProperty()));
-        avatarLabel.setText(extractInitial(username));
-        showInitialAvatar();
+        avatarLabel.setText(AvatarImageHelper.extractInitial(username));
+        applyAvatarImage(null);
         avatarImageView.setClip(new Circle(19, 19, 19));
 
-        if (currentUser.avatarImageId() == null) {
-            return;
+        if (currentUser.avatarImageId() != null) {
+            var avatarResult = imageService.getImageById(new GetImageByIdRequest(currentUser.avatarImageId().toString()));
+            avatarResult.onSuccess(image -> applyAvatarImage(image.url()));
+            avatarResult.onFailure(error -> {
+                log.debug("Avatar image not available for user '{}'", username);
+                applyAvatarImage(null);
+            });
         }
-
-        var avatarResult = imageService.getImageById(new GetImageByIdRequest(currentUser.avatarImageId()));
-        avatarResult.onSuccess(image -> applyAvatarImage(image.url()));
-        avatarResult.onFailure(error -> {
-            log.debug("Avatar image not available for user '{}'", username);
-            showInitialAvatar();
-        });
     }
 
     private void applyAvatarImage(Path imagePath) {
-        if (imagePath == null) {
+        Image image = AvatarImageHelper.resolveAvatarImage(imagePath);
+        if (image == null) {
+            if (imagePath != null) {
+                log.debug("Failed to render avatar image from path '{}'", imagePath);
+            }
             showInitialAvatar();
             return;
         }
 
-        try {
-            Image image = new Image(imagePath.toUri().toString(), true);
-            if (image.isError()) {
-                showInitialAvatar();
-                return;
-            }
-            avatarImageView.setImage(image);
-            avatarImageView.setManaged(true);
-            avatarImageView.setVisible(true);
-            avatarLabel.setManaged(false);
-            avatarLabel.setVisible(false);
-        } catch (RuntimeException ex) {
-            log.debug("Failed to render avatar image from path '{}'", imagePath, ex);
-            showInitialAvatar();
-        }
+        AvatarImageHelper.applyCoverSquare(avatarImageView, image, SIDEBAR_AVATAR_SIZE);
+        avatarImageView.setManaged(true);
+        avatarImageView.setVisible(true);
+        avatarLabel.setManaged(false);
+        avatarLabel.setVisible(false);
     }
 
     private void showInitialAvatar() {
@@ -194,12 +190,6 @@ public class MenuView implements Initializable {
         avatarLabel.setVisible(true);
     }
 
-    private String extractInitial(String username) {
-        if (username == null || username.isBlank()) {
-            return "?";
-        }
-        return username.substring(0, 1).toUpperCase();
-    }
 
     private void renderNavigation() {
         navContainer.getChildren().clear();

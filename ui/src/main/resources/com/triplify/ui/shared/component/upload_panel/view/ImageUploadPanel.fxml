@@ -39,7 +39,8 @@
                 <VBox fx:id="uploadPlaceholder"
                       styleClass="editor-upload-placeholder">
                     <children>
-                        <FontIcon iconLiteral="fth-image"
+                        <FontIcon fx:id="uploadIconNode"
+                                  iconLiteral="fth-image"
                                   iconSize="30"
                                   styleClass="editor-upload-icon"/>
                         <Label fx:id="uploadTitleLabel"

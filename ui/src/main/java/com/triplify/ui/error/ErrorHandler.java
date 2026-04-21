@@ -64,12 +64,17 @@ public class ErrorHandler {
     }
 
     private void handleValidationViolation(FieldViolation violation, Map<String, Consumer<String>> fieldHandlers) {
+        String messageKey = violation.messageKey();
+        String localizedMessage = (messageKey == null || messageKey.isBlank())
+                ? I18n.t("error.validation.failed")
+                : I18n.t(messageKey);
+
         Consumer<String> handler = fieldHandlers.get(violation.field());
         if (handler != null) {
-            handler.accept(I18n.t(violation.messageKey()));
+            handler.accept(localizedMessage);
             return;
         }
 
-        toast.error(I18n.t("error.validation.failed"));
+        toast.error(localizedMessage);
     }
 }

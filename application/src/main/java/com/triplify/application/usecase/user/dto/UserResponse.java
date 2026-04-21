@@ -14,4 +14,25 @@ public record UserResponse(
         Instant createdAt,
         Instant updatedAt
 ) {
+    public static UserResponse from(com.triplify.domain.model.User user) {
+        ImageResponse avatar = null;
+        if (user.getAvatarImageId() != null) {
+            avatar = new ImageResponse(
+                    user.getAvatarImageId().toString(),
+                    user.getAvatarImage() != null ? user.getAvatarImage().getUrl() : null,
+                    user.getAvatarImage() != null ? user.getAvatarImage().getDescription() : null,
+                    user.getAvatarImage() != null ? user.getAvatarImage().getUploadedAt() : null
+            );
+        }
+
+        return new UserResponse(
+                user.getId().toString(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole(),
+                avatar,
+                user.getCreatedAt(),
+                user.getUpdatedAt()
+        );
+    }
 }

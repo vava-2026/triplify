@@ -1,14 +1,15 @@
 .app-btn {
     -fx-font-family: -font-family-base;
-    -fx-font-size: 14px;
+    -fx-font-size: 16px;
     -fx-font-weight: bold;
     -fx-background-radius: 8;
     -fx-border-radius: 8;
     -fx-cursor: hand;
-    -fx-padding: 10 20 10 20;
+    -fx-padding: 0 20 0 20;
     -fx-min-height: 40;
     -fx-pref-height: 40;
     -fx-alignment: CENTER;
+    -fx-text-alignment: CENTER;
     -fx-content-display: LEFT;
     -fx-graphic-text-gap: 6;
 }
@@ -51,10 +52,6 @@
 
 .app-btn-primary:hover {
     -fx-background-color: -color-primary-hover;
-}
-
-.app-btn-primary:pressed {
-    -fx-background-color: -color-primary-pressed;
 }
 
 .app-btn-secondary {
@@ -286,6 +283,22 @@
 
 .app-btn-sign-up:hover {
     -fx-background-color: -color-sign-up-hover;
+}
+
+.app-btn-pro {
+    -fx-background-color: -color-pro;
+    -fx-text-fill: -color-on-pro;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-padding: 0 10 0 10;
+    -fx-min-height: 25;
+    -fx-pref-height: 25;
+    -fx-max-height: 25;
+    -fx-alignment: center;
+}
+
+.app-btn-pro:hover {
+    -fx-background-color: -color-pro-hover;
 }
 
 .app-btn-user {
