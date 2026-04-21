@@ -13,8 +13,8 @@ public record TagResponse(
 ) {
     public static TagResponse from(Tag tag) {
         return new TagResponse(
-                tag.getId().toString(),
-                tag.getUserId().toString(),
+                tag.getId(),
+                tag.getUserId(),
                 tag.getName(),
                 ColorTheme.from(tag.getColor())
         );
