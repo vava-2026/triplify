@@ -26,6 +26,7 @@ import com.triplify.ui.shared.component.button.model.ButtonVariant;
 import com.triplify.ui.shared.component.button.view.AppButtonView;
 import com.triplify.ui.shared.component.badge.viewmodel.BadgeViewModel;
 import com.triplify.ui.shared.component.badge.view.BadgeView;
+import com.triplify.ui.shared.component.license.view.LicenseModalView;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.toast.ToastService;
 import com.triplify.ui.shared.util.AvatarImageHelper;
@@ -84,9 +85,11 @@ public class AccountController extends SimpleLifecycleAwareController {
     @Inject private FxmlLoaderHelper fxmlLoader;
 
     private InputItem profileNameInput;
+    private LicenseModalView licenseModal;
 
     @FXML
     public void initialize() {
+        licenseModal = new LicenseModalView(fxmlLoader);
         setupAvatarButton();
         setupLogoutButton();
         setupProfileNameEditor();
@@ -260,6 +263,11 @@ public class AccountController extends SimpleLifecycleAwareController {
                 .build();
 
         upgradeButton.setFocusTraversable(false);
+        upgradeButton.setOnAction(evt -> {
+            if (licenseModal != null && upgradeButton.getScene() != null) {
+                licenseModal.show(upgradeButton.getScene().getWindow());
+            }
+        });
         upgradeButtonContainer.getChildren().setAll(upgradeButton);
     }
 
