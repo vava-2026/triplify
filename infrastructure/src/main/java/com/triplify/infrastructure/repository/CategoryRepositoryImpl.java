@@ -4,6 +4,7 @@ import com.triplify.domain.model.Category;
 import com.triplify.domain.model.enums.ColorEnum;
 import com.triplify.domain.repository.CategoryRepository;
 import com.triplify.infrastructure.repository.persistence.SQLiteConnectionFactory;
+import com.triplify.infrastructure.repository.utils.RepositoryUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -154,7 +155,7 @@ public class CategoryRepositoryImpl implements CategoryRepository {
         String description = rs.getString("description");
         String descriptionSk = rs.getString("description_sk");
         String emojiUnicode = rs.getString("emoji_unicode");
-        ColorEnum color = sqlToColor(rs.getString("color"));
+        ColorEnum color = RepositoryUtils.sqlToColor(rs.getString("color"));
 
         return new Category(id, createdById, name, nameSk, description, descriptionSk, emojiUnicode, color);
     }
@@ -164,16 +165,5 @@ public class CategoryRepositoryImpl implements CategoryRepository {
             return ColorEnum.GRAY.getValue();
         }
         return color.getValue();
-    }
-
-    private static ColorEnum sqlToColor(String color) {
-        if (color == null || color.isBlank()) {
-            return ColorEnum.GRAY;
-        }
-        try {
-            return ColorEnum.valueOf(color.trim().toUpperCase(java.util.Locale.ROOT));
-        } catch (IllegalArgumentException ex) {
-            return ColorEnum.GRAY;
-        }
     }
 }
