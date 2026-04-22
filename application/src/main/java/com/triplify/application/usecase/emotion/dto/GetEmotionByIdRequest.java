@@ -5,8 +5,7 @@ import jakarta.validation.constraints.NotNull;
 
 import java.util.UUID;
 
-public record DeleteEmotionRequest(
-
+public record GetEmotionByIdRequest(
         @NotNull(message = ValidationMessage.Constants.REQUIRED)
         UUID id
 ) {
