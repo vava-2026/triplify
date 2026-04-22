@@ -229,7 +229,11 @@ SELECT
     c.id AS country_id,
     NULL AS cover_image_id,
     p.title_en,
-    p.description_en,
+    (
+        'The stop at ' || p.title_en || ' in ' || p.country_name || ' is designed as a full-day anchor rather than a quick checkbox visit. Start in the early morning with a slow orientation walk around the access streets so you can understand where transit points, pedestrian lanes, and quieter corners are located before peak visitor flow begins. Continue with two focused exploration blocks: first for signature architecture, panoramic viewpoints, and classic photo angles, then for neighborhood texture such as side lanes, local craft storefronts, and food counters where the area feels less staged and more lived-in. Keep a measured pace and avoid rushing transitions, because this stop is meant to be experienced in layers, not consumed in one pass. '
+        || 'Plan a mid-day recovery window with shaded seating, water refill points, and one flexible meal break close to the central walking zone. In the afternoon, shift attention to spaces that become most atmospheric when crowds thin and light softens, including terraces, river edges, courtyards, or market streets depending on local layout. The route structure around this stop includes intentional buffer for queue delays, weather changes, and short detours, so small schedule adjustments do not break the rest of the day. If conditions are ideal, reserve an optional sunset loop followed by a final evening pass through the most walkable district segment before transfer. '
+        || 'For seeded planning consistency, this record keeps practical timing assumptions while still leaving room for spontaneous choices and personal interests. Treat ' || p.title_en || ' as a complete destination in ' || p.country_name || ', not just a photo checkpoint, and the experience will feel richer, calmer, and noticeably more memorable from morning through late evening.'
+    ) AS description,
     CASE
         WHEN p.place_order IN (1, 11) THEN 0.0
         ELSE round(cs.base_lat + ((p.place_order - 10) * 0.12), 6)
