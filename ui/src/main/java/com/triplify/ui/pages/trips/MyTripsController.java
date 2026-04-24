@@ -1,7 +1,7 @@
 package com.triplify.ui.pages.trips;
 
 import com.google.inject.Inject;
-import com.triplify.application.pagination.Pagination;
+import com.triplify.application.shared.Pagination;
 import com.triplify.application.usecase.category.CategoryService;
 import com.triplify.application.usecase.category.dto.CategoryResponse;
 import com.triplify.application.usecase.country.CountryService;
@@ -22,7 +22,6 @@ import com.triplify.ui.shared.component.select.model.Select;
 import com.triplify.ui.shared.component.select.view.SelectView;
 import com.triplify.ui.shared.component.trip.view.TripCardView;
 import com.triplify.ui.shared.model.FieldVariant;
-import com.triplify.ui.shared.util.DisplayUtils;
 
 import static com.triplify.ui.shared.util.DisplayUtils.*;
 
@@ -39,7 +38,6 @@ import rahulstech.jfx.routing.element.RouterArgument;
 import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.*;
 
 public class MyTripsController extends SimpleLifecycleAwareController {

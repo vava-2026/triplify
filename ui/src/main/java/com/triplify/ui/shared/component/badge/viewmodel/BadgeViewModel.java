@@ -1,7 +1,7 @@
 package com.triplify.ui.shared.component.badge.viewmodel;
 
-import com.triplify.application.localization.LocalizedDescription;
-import com.triplify.application.localization.LocalizedName;
+import com.triplify.application.shared.localization.LocalizedDescription;
+import com.triplify.application.shared.localization.LocalizedName;
 import com.triplify.application.usecase.badgegroup.dto.BadgeGroupType;
 import lombok.Getter;
 

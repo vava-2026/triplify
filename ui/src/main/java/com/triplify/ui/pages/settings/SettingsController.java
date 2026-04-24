@@ -1,6 +1,6 @@
 package com.triplify.ui.pages.settings;
 
-import com.triplify.application.model.ColorTheme;
+import com.triplify.application.shared.ColorTheme;
 import com.triplify.ui.shared.component.select.entry.model.Entry;
 import com.triplify.ui.shared.component.select.model.Select;
 import com.triplify.ui.shared.model.FieldVariant;

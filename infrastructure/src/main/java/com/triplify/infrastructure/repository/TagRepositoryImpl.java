@@ -109,27 +109,23 @@ public class TagRepositoryImpl implements TagRepository {
     }
 
     @Override
-    public Page<Tag> findList(PageRequest pageRequest, String name) {
+    public List<Tag> findList(UUID userId, String name) {
         StringBuilder sql = new StringBuilder("""
             SELECT id, user_id, name, color
             FROM tags
-            WHERE 1=1
+            WHERE user_id = ?
             """);
-        List<Object> params = new ArrayList<>();
-
-        if (name != null && !name.isBlank()) {
-            sql.append(" AND name LIKE ? ");
-            params.add(name + "%");
-        }
-
-        sql.append(" ORDER BY name COLLATE NOCASE ASC, id ASC LIMIT ? OFFSET ?");
-        params.add(pageRequest.size() + 1);
-        params.add(pageRequest.offset());
-
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-            for (int i = 0; i < params.size(); i++) {
-                ps.setObject(i + 1, params.get(i));
+            boolean hasNameFilter = name != null && !name.isBlank();
+            if (hasNameFilter) {
+                sql.append(" AND name LIKE ? ");
+            }
+            sql.append(" ORDER BY name COLLATE NOCASE, id");
+
+            ps.setString(1, userId.toString());
+            if (hasNameFilter){
+                ps.setString(2, name + "%");
             }
 
             try (ResultSet rs = ps.executeQuery()) {
@@ -137,13 +133,7 @@ public class TagRepositoryImpl implements TagRepository {
                 while (rs.next()) {
                     tags.add(mapRow(rs));
                 }
-
-                boolean hasNext = tags.size() > pageRequest.size();
-                if (hasNext) {
-                    tags.removeLast();
-                }
-
-                return Page.of(tags, pageRequest, hasNext);
+                return tags;
             }
         } catch (SQLException e) {
             log.error("Failed to find tags by name='{}'", name, e);

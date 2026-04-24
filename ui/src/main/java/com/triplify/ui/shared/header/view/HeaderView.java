@@ -1,6 +1,6 @@
 package com.triplify.ui.shared.header.view;
 
-import com.triplify.application.model.ColorTheme;
+import com.triplify.application.shared.ColorTheme;
 import com.triplify.ui.pages.trips.MyTripsController;
 import com.triplify.ui.routing.AppPage;
 import com.triplify.ui.shared.component.select.entry.model.Entry;

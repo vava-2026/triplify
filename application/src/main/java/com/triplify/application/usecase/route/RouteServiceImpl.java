@@ -1,14 +1,13 @@
 package com.triplify.application.usecase.route;
 
 import com.google.inject.Inject;
-import com.triplify.application.error.ApplicationError;
-import com.triplify.application.geo.GeoCalculator;
+import com.triplify.application.shared.error.ApplicationError;
+import com.triplify.application.shared.GeoCalculator;
 import com.triplify.application.security.Authenticated;
 import com.triplify.application.usecase.image.ImageService;
 import com.triplify.application.usecase.image.dto.AddImageRequest;
 import com.triplify.application.usecase.image.dto.DeleteImageRequest;
 import com.triplify.application.usecase.image.dto.ImageResponse;
-import com.triplify.application.usecase.place.dto.PlaceResponse;
 import com.triplify.application.usecase.route.dto.AddPlaceToRouteRequest;
 import com.triplify.application.usecase.route.dto.AddRouteRequest;
 import com.triplify.application.usecase.route.dto.DeletePlaceFromRouteRequest;
@@ -35,7 +34,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;

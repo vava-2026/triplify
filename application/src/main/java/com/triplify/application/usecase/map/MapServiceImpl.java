@@ -1,6 +1,6 @@
 package com.triplify.application.usecase.map;
 
-import com.triplify.application.error.ApplicationError;
+import com.triplify.application.shared.error.ApplicationError;
 import com.triplify.application.usecase.map.dto.GetMapObjectsRequest;
 import com.triplify.application.usecase.map.dto.MapObjectResponse;
 import com.triplify.domain.result.Result;

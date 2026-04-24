@@ -1,7 +1,7 @@
 package com.triplify.application.usecase.triproute;
 
 import com.google.inject.Inject;
-import com.triplify.application.error.ApplicationError;
+import com.triplify.application.shared.error.ApplicationError;
 import com.triplify.application.security.Authenticated;
 import com.triplify.application.usecase.image.dto.ImageResponse;
 import com.triplify.application.usecase.route.RouteService;

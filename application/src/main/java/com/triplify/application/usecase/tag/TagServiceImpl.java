@@ -1,7 +1,7 @@
 package com.triplify.application.usecase.tag;
 
 import com.google.inject.Inject;
-import com.triplify.application.model.ColorTheme;
+import com.triplify.application.shared.ColorTheme;
 import com.triplify.application.security.Authenticated;
 import com.triplify.application.usecase.session.SessionUser;
 import com.triplify.application.usecase.session.UserSessionContext;
@@ -13,7 +13,6 @@ import com.triplify.application.usecase.tag.dto.TagResponse;
 import com.triplify.application.usecase.tag.dto.UpdateTagRequest;
 import com.triplify.domain.error.TagError;
 import com.triplify.domain.model.Tag;
-import com.triplify.domain.model.enums.ColorEnum;
 import com.triplify.domain.repository.TagRepository;
 import com.triplify.domain.result.Result;
 
@@ -41,9 +40,9 @@ public class TagServiceImpl implements TagService {
             return Result.fail(new TagError.AlreadyExists(request.name()));
         }
 
-        Tag tag = new Tag(user.userId(), request.name(), toDomainColor(request.color()));
+        Tag tag = new Tag(user.userId(), request.name(), request.color().toColorEnum());
         tagRepository.create(tag);
-        return Result.ok(toResponse(tag));
+        return Result.ok(TagResponse.from(tag));
     }
 
     @Override
@@ -59,9 +58,9 @@ public class TagServiceImpl implements TagService {
             return Result.fail(new TagError.AlreadyExists(request.name()));
         }
 
-        Tag updatedTag = new Tag(existing.get().getId(), user.userId(), request.name(), toDomainColor(request.color()));
+        Tag updatedTag = new Tag(existing.get().getId(), user.userId(), request.name(), request.color().toColorEnum());
         tagRepository.update(updatedTag);
-        return Result.ok(toResponse(updatedTag));
+        return Result.ok(TagResponse.from(updatedTag));
     }
 
     @Override
@@ -79,7 +78,7 @@ public class TagServiceImpl implements TagService {
     public Result<List<TagResponse>> getTags(GetTagsRequest request) {
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
         List<Tag> tags = tagRepository.findList(user.userId(), request.filter().name());
-        return Result.ok(tags.stream().map(this::toResponse).toList());
+        return Result.ok(tags.stream().map(TagResponse::from).toList());
     }
 
     @Override
@@ -99,18 +98,5 @@ public class TagServiceImpl implements TagService {
             }
         }
         return Result.ok(ids);
-    }
-
-    private TagResponse toResponse(Tag tag) {
-        return new TagResponse(
-                tag.getId(),
-                tag.getUserId(),
-                tag.getName(),
-                tag.getColor() == null ? null : ColorTheme.from(tag.getColor())
-        );
-    }
-
-    private ColorEnum toDomainColor(ColorTheme colorTheme) {
-        return colorTheme.toColorEnum();
     }
 }

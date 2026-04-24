@@ -1,4 +1,4 @@
-package com.triplify.application.model;
+package com.triplify.application.shared;
 
 import com.triplify.domain.model.enums.ColorEnum;
 import lombok.Getter;

@@ -12,7 +12,7 @@ import com.triplify.application.usecase.route.dto.GetRouteByIdRequest;
 import com.triplify.application.usecase.route.dto.RearrangePlacesInRouteRequest;
 import com.triplify.application.usecase.route.dto.RouteResponse;
 import com.triplify.application.usecase.route.dto.UpdateRouteRequest;
-import com.triplify.application.geo.GeoCalculator;
+import com.triplify.application.shared.GeoCalculator;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.pages.WindowedPageController;

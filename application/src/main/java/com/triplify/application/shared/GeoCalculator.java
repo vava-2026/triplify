@@ -1,5 +1,6 @@
-package com.triplify.application.geo;
+package com.triplify.application.shared;
 
+// Partly generated with copilot
 public final class GeoCalculator {
 
     private static final double EARTH_RADIUS_KM = 6371.0;

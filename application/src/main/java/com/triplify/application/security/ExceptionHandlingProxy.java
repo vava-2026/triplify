@@ -1,6 +1,6 @@
 package com.triplify.application.security;
 
-import com.triplify.application.error.ApplicationError;
+import com.triplify.application.shared.error.ApplicationError;
 import com.triplify.domain.result.FailureException;
 import com.triplify.domain.result.Result;
 import org.slf4j.Logger;

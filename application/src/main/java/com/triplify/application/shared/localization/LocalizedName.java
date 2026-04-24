@@ -1,4 +1,4 @@
-package com.triplify.application.localization;
+package com.triplify.application.shared.localization;
 
 public interface LocalizedName {
     String name();
