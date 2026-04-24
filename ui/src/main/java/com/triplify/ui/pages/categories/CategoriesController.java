@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 public class CategoriesController extends SimpleLifecycleAwareController {
@@ -80,7 +81,7 @@ public class CategoriesController extends SimpleLifecycleAwareController {
     private String activeSearchQuery = "";
 
     private final ObjectProperty<CategoryResponse> selectedCategory = new SimpleObjectProperty<>();
-    private final Map<String, Region> categoryRowsById = new HashMap<>();
+    private final Map<UUID, Region> categoryRowsById = new HashMap<>();
     private final List<CategoryResponse> allCategories = new ArrayList<>();
 
     @FXML
@@ -331,7 +332,7 @@ public class CategoriesController extends SimpleLifecycleAwareController {
 
     private void refreshSelectionStyles() {
         CategoryResponse current = selectedCategory.get();
-        String selectedId = current == null ? null : current.id();
+        UUID selectedId = current == null ? null : current.id();
 
         categoryRowsById.forEach((categoryId, row) -> {
             if (categoryId.equals(selectedId)) {

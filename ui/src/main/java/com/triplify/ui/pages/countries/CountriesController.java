@@ -73,7 +73,7 @@ public class CountriesController extends SimpleLifecycleAwareController {
     private SearchView<String> searchView;
 
 	private final ObjectProperty<CountryResponse> selectedCountry = new SimpleObjectProperty<>();
-	private final Map<String, Region> countryRowsById = new HashMap<>();
+	private final Map<UUID, Region> countryRowsById = new HashMap<>();
 
 	private int nextPage;
 	private boolean hasNextPage;
@@ -368,7 +368,7 @@ public class CountriesController extends SimpleLifecycleAwareController {
 
 	private void refreshSelectionStyles() {
 		CountryResponse current = selectedCountry.get();
-		String selectedId = current == null ? null : current.id();
+		UUID selectedId = current == null ? null : current.id();
 
 		countryRowsById.forEach((countryId, row) -> {
 			if (countryId.equals(selectedId)) {

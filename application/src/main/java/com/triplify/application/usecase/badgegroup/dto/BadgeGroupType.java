@@ -1,5 +1,7 @@
 package com.triplify.application.usecase.badgegroup.dto;
 
+import java.util.UUID;
+
 public enum BadgeGroupType {
 	COUNTRIES("10000000-0000-0000-0000-000000000001"),
 	KILOMETERS("10000000-0000-0000-0000-000000000002"),

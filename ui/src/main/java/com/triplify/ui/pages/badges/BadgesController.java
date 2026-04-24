@@ -37,12 +37,7 @@ import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 
 import java.net.URL;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class BadgesController extends SimpleLifecycleAwareController {
@@ -87,12 +82,12 @@ public class BadgesController extends SimpleLifecycleAwareController {
     private InputItem levelInput;
     private InputItem requiredValueInput;
     private InputItem imagePathInput;
-    private SearchView<String> searchView;
-    private Select<String> groupSelectModel;
-    private SelectView<String> groupSelectView;
+    private SearchView<UUID> searchView;
+    private Select<UUID> groupSelectModel;
+    private SelectView<UUID> groupSelectView;
 
     private final ObjectProperty<BadgeResponse> selectedBadge = new SimpleObjectProperty<>();
-    private final Map<String, Region> badgeRowsById = new HashMap<>();
+    private final Map<UUID, Region> badgeRowsById = new HashMap<>();
     private final List<BadgeResponse> allBadges = new ArrayList<>();
     private final Map<String, BadgeGroupResponse> groupsById = new HashMap<>();
 
@@ -124,7 +119,7 @@ public class BadgesController extends SimpleLifecycleAwareController {
         BadgeResponse existing = selectedBadge.get();
         boolean creating = existing == null;
 
-        String groupId = selectedGroupId();
+        UUID groupId = selectedGroupId();
         if (creating && groupId == null) {
             toast.warning(I18n.t("badges.validation.selectGroup"));
             return;
@@ -214,7 +209,7 @@ public class BadgesController extends SimpleLifecycleAwareController {
         requiredValueInputContainer.getChildren().setAll(requiredValueInput);
         imagePathInputContainer.getChildren().setAll(imagePathInput);
 
-        searchView = new SearchView<>(Search.<String>builder(this::search)
+        searchView = new SearchView<>(Search.<UUID>builder(this::search)
                 .placeholderKey("badges.search.placeholder")
                 .variant(FieldVariant.OUTLINED)
                 .build());
@@ -270,7 +265,7 @@ public class BadgesController extends SimpleLifecycleAwareController {
         for (BadgeGroupType groupType : BadgeGroupType.values()) {
             String label = prettifyGroupName(groupType);
             groupsById.put(groupType.id(), new BadgeGroupResponse(
-                    groupType.id(),
+                    UUID.fromString(groupType.id()),
                     label,
                     label,
                     null,
@@ -300,13 +295,13 @@ public class BadgesController extends SimpleLifecycleAwareController {
     }
 
     private void refreshGroupSelectEntries() {
-        List<Entry<String>> entries = groupsById.values().stream()
+        List<Entry<UUID>> entries = groupsById.values().stream()
                 .sorted(Comparator.comparing(group -> Localization.localize(group.name(), group.nameSk()), String.CASE_INSENSITIVE_ORDER))
                 .map(group -> Entry.builder(group.id(), Localization.localize(group.name(), group.nameSk())).build())
                 .toList();
 
-        Entry<String> selectedGroup = groupSelectModel == null ? null : groupSelectModel.getSelectedItem();
-        String selectedGroupId = selectedGroup == null ? null : selectedGroup.getValue();
+        Entry<UUID> selectedGroup = groupSelectModel == null ? null : groupSelectModel.getSelectedItem();
+        UUID selectedGroupId = selectedGroup == null ? null : selectedGroup.getValue();
 
         groupSelectModel = createGroupSelectModel(entries);
         if (selectedGroupId != null) {
@@ -327,7 +322,7 @@ public class BadgesController extends SimpleLifecycleAwareController {
         // updateGroupSelectState();
     }
 
-    private List<Entry<String>> search(String searchQuery) {
+    private List<Entry<UUID>> search(String searchQuery) {
         activeSearchQuery = searchQuery == null ? "" : searchQuery;
         List<BadgeResponse> filtered = filteredBadges(searchQuery);
         renderBadges(filtered);
@@ -477,7 +472,7 @@ public class BadgesController extends SimpleLifecycleAwareController {
         levelInput.setText(Integer.toString(badge.level()));
         requiredValueInput.setText(Integer.toString(badge.requiredValue()));
         imagePathInput.setText("");
-        groupSelectModel.setSelectedItem(findGroupEntry(badge.group().id()));
+        groupSelectModel.setSelectedItem(findGroupEntry(UUID.fromString(badge.group().id())));
         clearFieldErrors();
     }
 
@@ -496,7 +491,7 @@ public class BadgesController extends SimpleLifecycleAwareController {
 
     private void refreshSelectionStyles() {
         BadgeResponse current = selectedBadge.get();
-        String selectedId = current == null ? null : current.id();
+        UUID selectedId = current == null ? null : current.id();
 
         badgeRowsById.forEach((badgeId, row) -> {
             if (badgeId.equals(selectedId)) {
@@ -522,11 +517,11 @@ public class BadgesController extends SimpleLifecycleAwareController {
 //        groupSelectView.getComboBox().setDisable(selectedBadge.get() != null);
 //    }
 
-    private Entry<String> findGroupEntry(String groupId) {
+    private Entry<UUID> findGroupEntry(UUID groupId) {
         if (groupId == null || groupSelectModel == null) {
             return null;
         }
-        for (Entry<String> entry : groupSelectModel.getItems()) {
+        for (Entry<UUID> entry : groupSelectModel.getItems()) {
             if (groupId.equals(entry.getValue())) {
                 return entry;
             }
@@ -534,8 +529,8 @@ public class BadgesController extends SimpleLifecycleAwareController {
         return null;
     }
 
-    private String selectedGroupId() {
-        Entry<String> selected = groupSelectModel.getSelectedItem();
+    private UUID selectedGroupId() {
+        Entry<UUID> selected = groupSelectModel.getSelectedItem();
         return selected == null ? null : selected.getValue();
     }
 
@@ -551,16 +546,16 @@ public class BadgesController extends SimpleLifecycleAwareController {
         return groupType.name().toLowerCase(Locale.ROOT).replace('_', ' ');
     }
 
-    private Select<String> createGroupSelectModel(List<Entry<String>> entries) {
-        return Select.<String>builder()
+    private Select<UUID> createGroupSelectModel(List<Entry<UUID>> entries) {
+        return Select.<UUID>builder()
                 .placeholder(I18n.t("badges.select.group.placeholder"))
                 .variant(FieldVariant.GHOST)
                 .items(entries)
                 .build();
     }
 
-    private SelectView<String> createGroupSelectView(Select<String> model) {
-        SelectView<String> view = new SelectView<>();
+    private SelectView<UUID> createGroupSelectView(Select<UUID> model) {
+        SelectView<UUID> view = new SelectView<>();
         view.update(model);
         view.setMaxWidth(Double.MAX_VALUE);
         view.getComboBox().setMaxWidth(Double.MAX_VALUE);
