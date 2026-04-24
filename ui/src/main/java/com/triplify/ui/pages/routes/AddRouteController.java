@@ -12,6 +12,7 @@ import com.triplify.application.usecase.route.dto.GetRouteByIdRequest;
 import com.triplify.application.usecase.route.dto.RearrangePlacesInRouteRequest;
 import com.triplify.application.usecase.route.dto.RouteResponse;
 import com.triplify.application.usecase.route.dto.UpdateRouteRequest;
+import com.triplify.application.geo.GeoCalculator;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.pages.WindowedPageController;
@@ -19,22 +20,20 @@ import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.shared.component.button.model.ButtonVariant;
 import com.triplify.ui.shared.component.button.view.AppButtonView;
 import com.triplify.ui.shared.component.input_item.InputItem;
+import com.triplify.ui.shared.component.input_item.TextAreaItem;
 import com.triplify.ui.shared.component.search.model.Search;
 import com.triplify.ui.shared.component.search.model.SearchDisplayMode;
-import com.triplify.ui.shared.model.AppComponentSize;
 import com.triplify.ui.shared.component.search.view.SearchView;
-import com.triplify.ui.shared.component.select.entry.model.Entry;
 import com.triplify.ui.shared.component.section_header.view.SectionHeaderView;
-import com.triplify.ui.shared.component.input_item.TextAreaItem;
+import com.triplify.ui.shared.component.select.entry.model.Entry;
 import com.triplify.ui.shared.component.upload_panel.view.ImageUploadPanelView;
+import com.triplify.ui.shared.model.AppComponentSize;
 import com.triplify.ui.shared.model.FieldVariant;
-import com.triplify.ui.storage.EditorDraftStorage;
 import com.triplify.ui.shared.toast.ToastService;
 import com.triplify.ui.shared.util.EditorUtils;
 import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import com.triplify.ui.shared.util.Localization;
-
-import static com.triplify.ui.shared.util.EditorUtils.*;
+import com.triplify.ui.storage.EditorDraftStorage;
 
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -44,6 +43,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
@@ -54,21 +54,27 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.image.WritableImage;
 import javafx.stage.FileChooser;
 import javafx.stage.Popup;
 import org.kordamp.ikonli.javafx.FontIcon;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rahulstech.jfx.routing.element.RouterArgument;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 public class AddRouteController extends WindowedPageController {
 
     private static final String DEFAULT_IMAGE = "/com/triplify/ui/pages/trips/images/one.png";
-    private static final double EARTH_RADIUS_KM = 6371.0;
+    private static final Logger log = LoggerFactory.getLogger(AddRouteController.class);
 
     @FXML private VBox contentContainer;
     @FXML private FlowPane contentFlow;
@@ -105,6 +111,8 @@ public class AddRouteController extends WindowedPageController {
     private String tripName;
     private String routeId;
     private String returnTarget;
+    private boolean editMode;
+    private boolean routeLoaded;
     private String coverImagePath;
     private InputItem titleInput;
     private TextAreaItem descriptionInput;
@@ -121,6 +129,7 @@ public class AddRouteController extends WindowedPageController {
 
     @FXML
     public void initialize() {
+        log.info("Initializing AddRouteController");
         titleInput = createInput("input.placeholder.routeTitle");
         descriptionInput = createTextArea("input.placeholder.routeDescription");
 
@@ -134,23 +143,219 @@ public class AddRouteController extends WindowedPageController {
         contentFlow.prefWrapLengthProperty().bind(contentContainer.widthProperty());
         contentContainer.addEventFilter(MouseEvent.MOUSE_RELEASED, event -> finishDragging());
         contentContainer.addEventFilter(MouseEvent.MOUSE_DRAGGED, this::updateDragPreview);
-        initializeCoverPreview();
+        EditorUtils.initializeCoverPreview(coverPreview, uploadArea);
         initializeDragPreview();
         bindUploadPanelHandlers();
         initializePlacePicker();
 
-        configureButtonIcon(addPlaceButton, "fth-plus");
-        configureButtonIcon(placeCreateButton, "fth-plus");
+        EditorUtils.configureButtonIcon(addPlaceButton, "fth-plus");
+        EditorUtils.configureButtonIcon(placeCreateButton, "fth-plus");
         createActionButtons();
 
-        installRoundedClip(uploadArea, 16);
+        EditorUtils.installRoundedClip(uploadArea, 16);
         setPlacePickerVisible(false);
         bindLocalizedText();
 
         refreshAvailablePlaces();
-        refreshLocalizedUi();
-        I18n.bundleProperty().addListener((obs, oldBundle, newBundle) -> refreshLocalizedUi());
         renderPlaces();
+        I18n.bundleProperty().addListener((obs, oldBundle, newBundle) -> renderPlaces());
+        log.info("Initialized AddRouteController");
+    }
+
+    @Override
+    public void onLifecycleInitialize() {
+        log.info("Getting AddRouteController attributes");
+        resetFormState();
+        RouterArgument data = getRouter().getCurrentData();
+        tripId = data == null ? null : EditorUtils.normalizeKey(data.getValue("tripId"));
+        tripName = data == null ? null : data.getValue("tripName");
+        routeId = data == null ? null : EditorUtils.normalizeKey(data.getValue("routeId"));
+        returnTarget = data == null ? null : data.getValue("editorReturnTarget");
+        editMode = routeId != null && !routeId.isBlank();
+
+        EditorDraftStorage.RouteDraft draft = EditorDraftStorage.consumeRouteDraft();
+        if (matchesDraftContext(draft)) {
+            applyDraft(draft);
+            routeLoaded = true;
+        }
+        log.info("AddRouteController attributes retrieved");
+    }
+
+    @Override
+    protected void onWindowedShow() {
+        refreshAvailablePlaces();
+        if (editMode && !routeLoaded) {
+            loadRouteForEdit(routeId);
+        }
+        EditorDraftStorage.clearRouteDraft();
+        consumeReturnedPlace();
+        renderPlaces();
+    }
+
+    @FXML
+    private void onSave() {
+        clearFieldErrors();
+
+        Path coverImage = coverImagePath == null || coverImagePath.isBlank() ? null : Path.of(coverImagePath);
+        String title = titleInput.getText().trim();
+        String description = EditorUtils.normalizeNullable(descriptionInput.getText());
+        double length = calculateRouteLength();
+
+        Map<String, Consumer<String>> fieldHandlers = Map.of(
+                "title", message -> titleInput.showError(message)
+        );
+
+        if (editMode) {
+            var result = routeService.updateRoute(new UpdateRouteRequest(UUID.fromString(routeId), coverImage, title, description, length));
+            result.onSuccess(route -> onSaveSuccess(route, syncPlacesForRoute(route.id().toString())));
+            result.onFailure(error -> errorHandler.handle(error, fieldHandlers));
+            return;
+        }
+
+        var result = routeService.addRoute(new AddRouteRequest(coverImage, title, description, length));
+        result.onSuccess(route -> onSaveSuccess(route, linkPlacesToRoute(route.id().toString())));
+        result.onFailure(error -> errorHandler.handle(error, fieldHandlers));
+    }
+
+    @FXML
+    private void onDiscard() {
+        EditorDraftStorage.clearRouteDraft();
+        getRouter().popBackStack();
+    }
+
+    @FXML
+    private void onAddPlace() {
+        setPlacePickerVisible(!placePickerContainer.isVisible());
+    }
+
+    @FXML
+    private void onCreatePlace() {
+        setPlacePickerVisible(false);
+        EditorDraftStorage.saveRouteDraft(captureDraft());
+        RouterArgument args = new RouterArgument();
+        args.addArgument("tripId", tripId == null || tripId.isBlank() ? UUID.randomUUID().toString() : tripId);
+        args.addArgument("tripName", tripName == null || tripName.isBlank() ? I18n.t("trip.add.default.name") : tripName);
+        args.addArgument("editorReturnTarget", EditorDraftStorage.TARGET_ROUTE);
+        getRouter().moveto(RouteIds.ADD_PLACE, args);
+    }
+
+    @FXML
+    private void onChooseCoverImage() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle(I18n.t("route.add.dialog.cover.title"));
+        chooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter(I18n.t("route.add.dialog.cover.filter"), "*.png", "*.jpg", "*.jpeg")
+        );
+
+        File file = chooser.showOpenDialog(uploadArea.getScene() == null ? null : uploadArea.getScene().getWindow());
+        if (file != null) {
+            handleCoverImage(file);
+        }
+    }
+
+    private void onSaveSuccess(RouteResponse route, boolean allPlacesSynced) {
+        EditorDraftStorage.clearRouteDraft();
+        EditorDraftStorage.savePendingRoute(returnTarget, loadSavedRoute(route.id().toString(), route));
+        String routeTitle = titleInput.getText().trim();
+        String message = tripName == null || tripName.isBlank()
+                ? EditorUtils.formatMessage("route.add.toast.ready", routeTitle)
+                : EditorUtils.formatMessage("route.add.toast.addedToTrip", routeTitle, tripName);
+        toast.success(I18n.t("route.add.toast.saved.title"), message);
+        if (!allPlacesSynced) {
+            toast.warning(I18n.t("route.add.toast.place.link.failed"));
+        }
+        getRouter().popBackStack();
+    }
+
+    private void handleCoverImage(File file) {
+        if (!EditorUtils.isSupportedImageFile(file)) {
+            toast.warning(I18n.t("route.add.toast.image.unsupported"));
+            return;
+        }
+
+        coverImagePath = file.getAbsolutePath();
+        selectedImageLabel.setText(file.getName());
+        selectedImageLabel.setVisible(true);
+        selectedImageLabel.setManaged(true);
+
+        Image image = new Image(file.toURI().toString(), true);
+        image.errorProperty().addListener((obs, oldVal, isError) -> {
+            if (Boolean.TRUE.equals(isError)) {
+                coverPreview.setImage(null);
+                coverPreview.setViewport(null);
+                coverPreview.setVisible(false);
+                coverPreview.setManaged(false);
+                uploadPlaceholder.setVisible(true);
+                uploadPlaceholder.setManaged(true);
+                log.warn("Failed to load cover image preview", image.getException());
+                toast.warning(I18n.t("route.add.toast.image.previewUnavailable"));
+            }
+        });
+        image.progressProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal.doubleValue() >= 1.0 && !image.isError()) {
+                EditorUtils.setCoverPreviewImage(coverPreview, uploadArea, image);
+                coverPreview.setVisible(true);
+                coverPreview.setManaged(false);
+                uploadPlaceholder.setVisible(false);
+                uploadPlaceholder.setManaged(false);
+            }
+        });
+    }
+
+    private void updateCoverImageUi(String path) {
+        coverImagePath = path;
+        if (path == null || path.isBlank()) {
+            if (selectedImageLabel != null) {
+                selectedImageLabel.setText("");
+                selectedImageLabel.setVisible(false);
+                selectedImageLabel.setManaged(false);
+            }
+            if (coverPreview != null) {
+                coverPreview.setImage(null);
+                coverPreview.setVisible(false);
+                coverPreview.setManaged(false);
+            }
+            if (uploadPlaceholder != null) {
+                uploadPlaceholder.setVisible(true);
+                uploadPlaceholder.setManaged(true);
+            }
+        } else {
+            if (selectedImageLabel != null) {
+                selectedImageLabel.setText(new File(path).getName());
+                selectedImageLabel.setVisible(true);
+                selectedImageLabel.setManaged(true);
+            }
+            if (coverPreview != null) {
+                EditorUtils.setCoverPreviewImage(coverPreview, uploadArea, EditorUtils.loadImage(path, DEFAULT_IMAGE, getClass()));
+                coverPreview.setVisible(true);
+                coverPreview.setManaged(false);
+            }
+            if (uploadPlaceholder != null) {
+                uploadPlaceholder.setVisible(false);
+                uploadPlaceholder.setManaged(false);
+            }
+        }
+    }
+
+    private void resetFormState() {
+        tripId = null;
+        tripName = null;
+        routeId = null;
+        returnTarget = null;
+        editMode = false;
+        routeLoaded = false;
+        placeItems.clear();
+
+        if (titleInput != null) {
+            titleInput.setText("");
+            titleInput.clearError();
+        }
+        if (descriptionInput != null) {
+            descriptionInput.setText("");
+            descriptionInput.clearError();
+        }
+        setPlacePickerVisible(false);
+        updateCoverImageUi(null);
     }
 
     private void initializePlacePicker() {
@@ -179,134 +384,13 @@ public class AddRouteController extends WindowedPageController {
                 .toList();
     }
 
-    @Override
-    public void onLifecycleInitialize() {
-        RouterArgument data = getRouter().getCurrentData();
-        tripId = data == null ? null : normalizeKey(data.getValue("tripId"));
-        tripName = data == null ? null : data.getValue("tripName");
-        routeId = data == null ? null : normalizeKey(data.getValue("routeId"));
-        returnTarget = data == null ? null : data.getValue("editorReturnTarget");
-
-        EditorDraftStorage.RouteDraft draft = EditorDraftStorage.consumeRouteDraft();
-        if (matchesDraftContext(draft)) {
-            applyDraft(draft);
-        } else if (routeId != null && !routeId.isBlank()) {
-            loadRouteForEdit(routeId);
-        }
-    }
-
-    @Override
-    protected void onWindowedShow() {
-        refreshAvailablePlaces();
-        EditorDraftStorage.clearRouteDraft();
-        consumeReturnedPlace();
-        renderPlaces();
-    }
-
-    @FXML
-    private void onSave() {
-        clearFieldErrors();
-
-        Path coverImage = coverImagePath == null || coverImagePath.isBlank() ? null : Path.of(coverImagePath);
-        String title = normalize(titleInput.getText());
-        String description = normalizeNullable(descriptionInput.getText());
-        double length = calculateRouteLength();
-
-        Map<String, Consumer<String>> fieldHandlers = Map.of(
-                "title", message -> titleInput.showError(message)
-        );
-
-        if (routeId != null && !routeId.isBlank()) {
-            var result = routeService.updateRoute(new UpdateRouteRequest(UUID.fromString(routeId), coverImage, title, description, length));
-            result.onSuccess(route -> {
-                boolean syncedAllPlaces = syncPlacesForRoute(route.id().toString());
-                RouteResponse savedRoute = loadSavedRoute(route.id().toString(), route);
-                EditorDraftStorage.clearRouteDraft();
-                EditorDraftStorage.savePendingRoute(returnTarget, savedRoute);
-                String routeTitle = titleInput.getText().trim();
-                String message = tripName == null || tripName.isBlank()
-                        ? formatMessage("route.add.toast.ready", routeTitle)
-                        : formatMessage("route.add.toast.addedToTrip", routeTitle, tripName);
-
-                toast.success(I18n.t("route.add.toast.saved.title"), message);
-                if (!syncedAllPlaces) {
-                    toast.warning(I18n.t("route.add.toast.place.link.failed"));
-                }
-                getRouter().popBackStack();
-            });
-            result.onFailure(error -> errorHandler.handle(error, fieldHandlers));
-            return;
-        }
-
-        var result = routeService.addRoute(new AddRouteRequest(coverImage, title, description, length));
-        result.onSuccess(route -> {
-            boolean linkedAllPlaces = linkPlacesToRoute(route.id().toString());
-            RouteResponse savedRoute = loadSavedRoute(route.id().toString(), route);
-            EditorDraftStorage.clearRouteDraft();
-            EditorDraftStorage.savePendingRoute(returnTarget, savedRoute);
-            String routeTitle = titleInput.getText().trim();
-            String message = tripName == null || tripName.isBlank()
-                    ? formatMessage("route.add.toast.ready", routeTitle)
-                    : formatMessage("route.add.toast.addedToTrip", routeTitle, tripName);
-
-            toast.success(I18n.t("route.add.toast.saved.title"), message);
-            if (!linkedAllPlaces) {
-                toast.warning(I18n.t("route.add.toast.place.link.failed"));
-            }
-            getRouter().popBackStack();
-        });
-        result.onFailure(error -> errorHandler.handle(error, fieldHandlers));
-    }
-
-    @FXML
-    private void onDiscard() {
-        EditorDraftStorage.clearRouteDraft();
-        getRouter().popBackStack();
-    }
-
-    @FXML
-    private void onAddPlace() {
-        boolean nextState = !placePickerContainer.isVisible();
-        setPlacePickerVisible(nextState);
-    }
-
-    @FXML
-    private void onCreatePlace() {
-        setPlacePickerVisible(false);
-        EditorDraftStorage.saveRouteDraft(captureDraft());
-        RouterArgument args = new RouterArgument();
-        args.addArgument("tripId", tripId == null || tripId.isBlank() ? UUID.randomUUID().toString() : tripId);
-        args.addArgument("tripName", tripName == null || tripName.isBlank() ? I18n.t("trip.add.default.name") : tripName);
-        args.addArgument("editorReturnTarget", EditorDraftStorage.TARGET_ROUTE);
-        getRouter().moveto(RouteIds.ADD_PLACE, args);
-    }
-
-    @FXML
-    private void onChooseCoverImage() {
-        FileChooser chooser = new FileChooser();
-        chooser.setTitle(I18n.t("route.add.dialog.cover.title"));
-        chooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter(I18n.t("route.add.dialog.cover.filter"), "*.png", "*.jpg", "*.jpeg")
-        );
-
-        File file = chooser.showOpenDialog(uploadArea.getScene() == null ? null : uploadArea.getScene().getWindow());
-        if (file != null) {
-            handleCoverImage(file);
-        }
-    }
-
     private void refreshAvailablePlaces() {
         availablePlaceItems.clear();
-        if (placeService == null) {
-            return;
-        }
-
         var result = placeService.getPlaces(new GetPlacesRequest(null, null));
         if (result.isFailure()) {
             toast.warning(I18n.t("route.add.toast.places.loadFailed"));
             return;
         }
-
         availablePlaceItems.addAll(result.getValue().items().stream()
                 .map(this::toRoutePlaceItem)
                 .toList());
@@ -520,7 +604,7 @@ public class AddRouteController extends WindowedPageController {
     }
 
     private ImageView createImageView(String imagePath, double width, double height) {
-        ImageView view = new ImageView(loadImage(imagePath));
+        ImageView view = new ImageView(EditorUtils.loadImage(imagePath, DEFAULT_IMAGE, getClass()));
         view.setFitWidth(width);
         view.setFitHeight(height);
         view.setPreserveRatio(false);
@@ -533,55 +617,12 @@ public class AddRouteController extends WindowedPageController {
         return view;
     }
 
-    private void handleCoverImage(File file) {
-        if (!isSupportedImageFile(file)) {
-            toast.warning(I18n.t("route.add.toast.image.unsupported"));
-            return;
-        }
-
-        coverImagePath = file.getAbsolutePath();
-        selectedImageLabel.setText(file.getName());
-        selectedImageLabel.setVisible(true);
-        selectedImageLabel.setManaged(true);
-
-        Image image = new Image(file.toURI().toString(), true);
-        image.errorProperty().addListener((obs, oldVal, isError) -> {
-            if (Boolean.TRUE.equals(isError)) {
-                coverPreview.setImage(null);
-                coverPreview.setViewport(null);
-                coverPreview.setVisible(false);
-                coverPreview.setManaged(false);
-                uploadPlaceholder.setVisible(true);
-                uploadPlaceholder.setManaged(true);
-                toast.warning(I18n.t("route.add.toast.image.previewUnavailable"));
-            }
-        });
-        image.progressProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal.doubleValue() >= 1.0 && !image.isError()) {
-                setCoverPreviewImage(image);
-                coverPreview.setVisible(true);
-                coverPreview.setManaged(false);
-                uploadPlaceholder.setVisible(false);
-                uploadPlaceholder.setManaged(false);
-            }
-        });
-    }
-
-    private void initializeCoverPreview() {
-        EditorUtils.initializeCoverPreview(coverPreview, uploadArea);
-    }
-
-    private void setCoverPreviewImage(Image image) {
-        EditorUtils.setCoverPreviewImage(coverPreview, uploadArea, image);
-    }
-
     private void bindUploadPanelHandlers() {
         imageUploadPanel.setOnUploadClicked(event -> onChooseCoverImage());
         imageUploadPanel.setOnImageFileSelected(this::handleCoverImage);
         imageUploadPanel.setOnUnsupportedImageFile(file -> toast.warning(I18n.t("route.add.toast.image.unsupported")));
         imageUploadPanel.installDefaultImageDragAndDrop();
     }
-
 
     private void bindLocalizedText() {
         Localization.bindText(routePageTitleLabel.textProperty(), "route.add.page.title");
@@ -612,10 +653,6 @@ public class AddRouteController extends WindowedPageController {
         discardButton.getStyleClass().add("editor-action-button");
         discardButton.setMaxWidth(Double.MAX_VALUE);
         actionButtonsContainer.getChildren().setAll(saveButton, discardButton);
-    }
-
-    private void refreshLocalizedUi() {
-        renderPlaces();
     }
 
     private void setPlacePickerVisible(boolean visible) {
@@ -651,8 +688,8 @@ public class AddRouteController extends WindowedPageController {
                 routeId,
                 tripId,
                 tripName,
-                normalize(titleInput.getText()),
-                normalizeNullable(descriptionInput.getText()),
+                titleInput.getText().trim(),
+                EditorUtils.normalizeNullable(descriptionInput.getText()),
                 coverImagePath,
                 placeItems.stream()
                         .map(item -> new EditorDraftStorage.PlaceDraftItem(
@@ -673,9 +710,8 @@ public class AddRouteController extends WindowedPageController {
         if (draft == null) {
             return false;
         }
-
-        return normalizeKey(routeId).equals(normalizeKey(draft.routeId()))
-                && normalizeKey(tripId).equals(normalizeKey(draft.tripId()));
+        return EditorUtils.normalizeKey(routeId).equals(EditorUtils.normalizeKey(draft.routeId()))
+                && EditorUtils.normalizeKey(tripId).equals(EditorUtils.normalizeKey(draft.tripId()));
     }
 
     private void applyDraft(EditorDraftStorage.RouteDraft draft) {
@@ -692,27 +728,7 @@ public class AddRouteController extends WindowedPageController {
                         item.longitude()
                 ))
                 .forEach(placeItems::add);
-        coverImagePath = draft.coverImagePath();
-        if (coverImagePath == null || coverImagePath.isBlank()) {
-            selectedImageLabel.setVisible(false);
-            selectedImageLabel.setManaged(false);
-            selectedImageLabel.setText("");
-            coverPreview.setImage(null);
-            coverPreview.setVisible(false);
-            coverPreview.setManaged(false);
-            uploadPlaceholder.setVisible(true);
-            uploadPlaceholder.setManaged(true);
-        } else {
-            selectedImageLabel.setText(new File(coverImagePath).getName());
-            selectedImageLabel.setVisible(true);
-            selectedImageLabel.setManaged(true);
-            setCoverPreviewImage(loadImage(coverImagePath));
-            coverPreview.setVisible(true);
-            coverPreview.setManaged(false);
-            uploadPlaceholder.setVisible(false);
-            uploadPlaceholder.setManaged(false);
-        }
-        renderPlaces();
+        updateCoverImageUi(draft.coverImagePath());
     }
 
     private void consumeReturnedPlace() {
@@ -724,39 +740,24 @@ public class AddRouteController extends WindowedPageController {
     }
 
     private void loadRouteForEdit(String routeId) {
+        log.debug("Loading route for edit with ID: {}", routeId);
         var result = routeService.getRouteById(new GetRouteByIdRequest(UUID.fromString(routeId)));
         if (result.isFailure()) {
+            log.error("Failed to load route for edit: {}", result.getError());
             errorHandler.handle(result.getError());
             getRouter().popBackStack();
             return;
         }
+        log.debug("Route data loaded successfully for route ID: {}", routeId);
 
         RouteResponse route = result.getValue();
         titleInput.setText(route.title() == null ? "" : route.title());
         descriptionInput.setText(route.description() == null ? "" : route.description());
-        coverImagePath = route.coverImage() == null || route.coverImage().url() == null
+
+        String imagePath = route.coverImage() == null || route.coverImage().url() == null
                 ? null
                 : route.coverImage().url().toString();
-
-        if (coverImagePath == null || coverImagePath.isBlank()) {
-            selectedImageLabel.setVisible(false);
-            selectedImageLabel.setManaged(false);
-            selectedImageLabel.setText("");
-            coverPreview.setImage(null);
-            coverPreview.setVisible(false);
-            coverPreview.setManaged(false);
-            uploadPlaceholder.setVisible(true);
-            uploadPlaceholder.setManaged(true);
-        } else {
-            selectedImageLabel.setText(new File(coverImagePath).getName());
-            selectedImageLabel.setVisible(true);
-            selectedImageLabel.setManaged(true);
-            setCoverPreviewImage(loadImage(coverImagePath));
-            coverPreview.setVisible(true);
-            coverPreview.setManaged(false);
-            uploadPlaceholder.setVisible(false);
-            uploadPlaceholder.setManaged(false);
-        }
+        updateCoverImageUi(imagePath);
 
         placeItems.clear();
         if (route.places() != null) {
@@ -764,7 +765,8 @@ public class AddRouteController extends WindowedPageController {
                     .map(this::toRoutePlaceItem)
                     .forEach(placeItems::add);
         }
-        renderPlaces();
+        routeLoaded = true;
+        log.debug("Route loaded successfully for route ID: {}", routeId);
     }
 
     private RouteResponse loadSavedRoute(String routeId, RouteResponse fallback) {
@@ -790,7 +792,6 @@ public class AddRouteController extends WindowedPageController {
             if (targetPlaceIds.contains(existingPlaceId)) {
                 continue;
             }
-
             var deleteResult = routeService.deletePlaceFromRoute(new DeletePlaceFromRouteRequest(UUID.fromString(routeId), UUID.fromString(existingPlaceId)));
             if (deleteResult.isFailure()) {
                 errorHandler.handle(deleteResult.getError());
@@ -802,7 +803,6 @@ public class AddRouteController extends WindowedPageController {
             if (currentPlaceIds.contains(targetPlaceId)) {
                 continue;
             }
-
             var addResult = routeService.addPlaceToRoute(new AddPlaceToRouteRequest(UUID.fromString(routeId), UUID.fromString(targetPlaceId)));
             if (addResult.isFailure()) {
                 errorHandler.handle(addResult.getError());
@@ -847,13 +847,14 @@ public class AddRouteController extends WindowedPageController {
         for (int index = 1; index < placeItems.size(); index++) {
             RoutePlaceItem previous = placeItems.get(index - 1);
             RoutePlaceItem current = placeItems.get(index);
-            totalDistanceKm += calculateDistanceKm(previous, current);
+            totalDistanceKm += GeoCalculator.distanceKm(
+                    previous.latitude(),
+                    previous.longitude(),
+                    current.latitude(),
+                    current.longitude()
+            );
         }
         return totalDistanceKm;
-    }
-
-    private String normalize(String value) {
-        return value == null ? null : value.trim();
     }
 
     private RoutePlaceItem toRoutePlaceItem(PlaceResponse response) {
@@ -870,22 +871,6 @@ public class AddRouteController extends WindowedPageController {
         );
     }
 
-    private double calculateDistanceKm(RoutePlaceItem from, RoutePlaceItem to) {
-        if (from.latitude() == null || from.longitude() == null || to.latitude() == null || to.longitude() == null) {
-            return 0.0;
-        }
-
-        double latitudeDelta = Math.toRadians(to.latitude() - from.latitude());
-        double longitudeDelta = Math.toRadians(to.longitude() - from.longitude());
-        double fromLatitudeRadians = Math.toRadians(from.latitude());
-        double toLatitudeRadians = Math.toRadians(to.latitude());
-
-        double a = Math.sin(latitudeDelta / 2) * Math.sin(latitudeDelta / 2)
-                + Math.cos(fromLatitudeRadians) * Math.cos(toLatitudeRadians)
-                * Math.sin(longitudeDelta / 2) * Math.sin(longitudeDelta / 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return EARTH_RADIUS_KM * c;
-    }
 
     private InputItem createInput(String placeholderKey) {
         InputItem input = new InputItem(placeholderKey, FieldVariant.GHOST);
@@ -898,10 +883,6 @@ public class AddRouteController extends WindowedPageController {
         input.getStyleClass().addAll("add-route-field", "add-route-textarea-field");
         input.setRows(6);
         return input;
-    }
-
-    private Image loadImage(String imagePath) {
-        return EditorUtils.loadImage(imagePath, DEFAULT_IMAGE, getClass());
     }
 
     private record RoutePlaceItem(

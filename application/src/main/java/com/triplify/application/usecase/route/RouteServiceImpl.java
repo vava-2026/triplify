@@ -2,6 +2,7 @@ package com.triplify.application.usecase.route;
 
 import com.google.inject.Inject;
 import com.triplify.application.error.ApplicationError;
+import com.triplify.application.geo.GeoCalculator;
 import com.triplify.application.security.Authenticated;
 import com.triplify.application.usecase.image.ImageService;
 import com.triplify.application.usecase.image.dto.AddImageRequest;
@@ -48,7 +49,6 @@ import java.util.stream.Collectors;
 public class RouteServiceImpl implements RouteService {
     private static final Logger log = LoggerFactory.getLogger(RouteServiceImpl.class);
     private static final String DEFAULT_IMAGE_DESCRIPTION = "Cover image for route ";
-    private static final double EARTH_RADIUS_KM = 6371.0;
 
     private final RouteRepository routeRepository;
     private final RoutePlaceRepository routePlaceRepository;
@@ -293,7 +293,7 @@ public class RouteServiceImpl implements RouteService {
             if (from == null || to == null) {
                 continue;
             }
-            totalLength += calculateDistanceKm(
+            totalLength += GeoCalculator.distanceKm(
                     from.getLatitude(),
                     from.getLongitude(),
                     to.getLatitude(),
@@ -304,17 +304,6 @@ public class RouteServiceImpl implements RouteService {
         return totalLength;
     }
 
-    private double calculateDistanceKm(double fromLatitude, double fromLongitude, double toLatitude, double toLongitude) {
-        double latDistance = Math.toRadians(toLatitude - fromLatitude);
-        double lonDistance = Math.toRadians(toLongitude - fromLongitude);
-        double startLat = Math.toRadians(fromLatitude);
-        double endLat = Math.toRadians(toLatitude);
-
-        double a = Math.pow(Math.sin(latDistance / 2), 2)
-                + Math.cos(startLat) * Math.cos(endLat) * Math.pow(Math.sin(lonDistance / 2), 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return EARTH_RADIUS_KM * c;
-    }
 
     private String normalizeDescription(String description) {
         return Objects.requireNonNullElse(description, "");

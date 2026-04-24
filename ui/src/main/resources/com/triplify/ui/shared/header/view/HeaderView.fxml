@@ -15,8 +15,7 @@
 
     <HBox styleClass="header-hbox" alignment="CENTER_LEFT" spacing="0" StackPane.alignment="CENTER_LEFT">
         <Label fx:id="pageTitle"
-               styleClass="header-title"
-               text="My Trips" />
+               styleClass="header-title" />
 
         <Region HBox.hgrow="ALWAYS" />
 

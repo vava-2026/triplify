@@ -110,6 +110,7 @@ public class AddPlaceController extends WindowedPageController {
 
     @FXML
     public void initialize() {
+        log.info("Initializing AddPlaceController");
         titleInput = new InputItem("input.placeholder.placeTitle", FieldVariant.GHOST);
 
         countriesView = new CountriesView(
@@ -160,12 +161,15 @@ public class AddPlaceController extends WindowedPageController {
         initializeMap();
         updateSelectedCoordinatesLabel();
         I18n.bundleProperty().addListener((obs, oldBundle, newBundle) -> updateSelectedCoordinatesLabel());
+        log.info("Initialized AddPlaceController");
     }
 
     @Override
     public void onLifecycleInitialize() {
+        log.info("Getting AddPlaceController attributes");
+        resetFormState();
         RouterArgument data = getRouter().getCurrentData();
-        if (data==null){
+        if (data == null) {
             log.warn("No router data found for AddPlaceController – this may cause issues with returning to the correct place after saving an edit");
             return;
         }
@@ -173,6 +177,7 @@ public class AddPlaceController extends WindowedPageController {
         returnTarget = data.getValue("editorReturnTarget");
         placeId = data.getValue("placeId");
         editMode = placeId != null && !placeId.isBlank();
+        log.info("AddPlaceController attributes retrieved");
     }
 
     @Override
@@ -272,23 +277,19 @@ public class AddPlaceController extends WindowedPageController {
                 coverPreview.setManaged(false);
                 uploadPlaceholder.setVisible(true);
                 uploadPlaceholder.setManaged(true);
+                log.warn("Failed to load cover image preview", image.getException());
                 toast.warning(I18n.t("place.add.toast.image.previewUnavailable"));
             }
         });
         image.progressProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal.doubleValue() >= 1.0 && !image.isError()) {
-                setCoverPreviewImage(image);
+                EditorUtils.setCoverPreviewImage(coverPreview, uploadArea, image);
                 coverPreview.setVisible(true);
                 coverPreview.setManaged(false);
                 uploadPlaceholder.setVisible(false);
                 uploadPlaceholder.setManaged(false);
             }
         });
-    }
-
-
-    private void setCoverPreviewImage(Image image) {
-        EditorUtils.setCoverPreviewImage(coverPreview, uploadArea, image);
     }
 
     private void initializeMap() {
@@ -310,12 +311,15 @@ public class AddPlaceController extends WindowedPageController {
     }
 
     private void loadPlaceForEdit() {
+        log.debug("Loading place for edit with ID: {}", placeId);
         var result = placeService.getPlaceById(new GetPlaceByIdRequest(UUID.fromString(placeId)));
         if (result.isFailure()) {
+            log.error("Failed to load place for edit: {}", result.getError());
             errorHandler.handle(result.getError());
             getRouter().popBackStack();
             return;
         }
+        log.debug("Place data loaded successfully for place ID: {}", placeId);
 
         var place = result.getValue();
         titleInput.setText(place.title());
@@ -336,19 +340,19 @@ public class AddPlaceController extends WindowedPageController {
             selectedImageLabel.setVisible(true);
             selectedImageLabel.setManaged(true);
 
-            setCoverPreviewImage(new Image(new File(coverImagePath).toURI().toString(), true));
+            EditorUtils.setCoverPreviewImage(coverPreview, uploadArea, new Image(new File(coverImagePath).toURI().toString(), true));
             coverPreview.setVisible(true);
             coverPreview.setManaged(false);
             uploadPlaceholder.setVisible(false);
             uploadPlaceholder.setManaged(false);
         }
-
         placeLoaded = true;
+        log.debug("Place loaded successfully for place ID: {}", placeId);
     }
 
     private void updateSelectedCoordinatesLabel() {
         selectedCoordinatesLabel.setText(
-                String.format(Locale.US, I18n.t("place.add.coordinates.format"), selectedLatitude, selectedLongitude)
+                String.format(I18n.t("place.add.coordinates.format"), selectedLatitude, selectedLongitude)
         );
     }
 
@@ -371,7 +375,49 @@ public class AddPlaceController extends WindowedPageController {
         imageUploadPanel.installDefaultImageDragAndDrop();
     }
 
-    private double clamp(double value, double min, double max) {
-        return Math.max(min, Math.min(max, value));
+    private void resetFormState() {
+        tripName = null;
+        returnTarget = null;
+        placeId = null;
+        editMode = false;
+        placeLoaded = false;
+        coverImagePath = null;
+        selectedLatitude = DEFAULT_LATITUDE;
+        selectedLongitude = DEFAULT_LONGITUDE;
+
+        if (titleInput != null) {
+            titleInput.setText("");
+            titleInput.clearError();
+        }
+        if (descriptionInput != null) {
+            descriptionInput.setText("");
+            descriptionInput.clearError();
+        }
+        if (countriesView != null) {
+            countriesView.clearSearch();
+            countriesView.clearError();
+        }
+
+        if (coverPreview != null) {
+            coverPreview.setImage(null);
+            coverPreview.setViewport(null);
+            coverPreview.setVisible(false);
+            coverPreview.setManaged(false);
+        }
+        if (uploadPlaceholder != null) {
+            uploadPlaceholder.setVisible(true);
+            uploadPlaceholder.setManaged(true);
+        }
+        if (selectedImageLabel != null) {
+            selectedImageLabel.setText("");
+            selectedImageLabel.setVisible(false);
+            selectedImageLabel.setManaged(false);
+        }
+
+        if (interactiveMap != null) {
+            interactiveMap.setMapCenter(DEFAULT_LATITUDE, DEFAULT_LONGITUDE);
+            interactiveMap.setPinPosition(DEFAULT_LATITUDE, DEFAULT_LONGITUDE);
+        }
+        updateSelectedCoordinatesLabel();
     }
 }

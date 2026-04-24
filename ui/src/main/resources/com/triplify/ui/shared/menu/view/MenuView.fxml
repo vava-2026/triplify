@@ -36,11 +36,11 @@
 
             <StackPane fx:id="avatarCircle" styleClass="avatar-circle">
                 <ImageView fx:id="avatarImageView" styleClass="avatar-image" />
-                <Label fx:id="avatarLabel" text="N" styleClass="avatar-label" />
+                <Label fx:id="avatarLabel" styleClass="avatar-label" />
             </StackPane>
 
             <VBox HBox.hgrow="ALWAYS">
-                <Label fx:id="accountNameLabel" styleClass="account-name" text="Name Surname" />
+                <Label fx:id="accountNameLabel" styleClass="account-name" />
                 <Label fx:id="accountRole" styleClass="account-role" />
             </VBox>
         </HBox>
