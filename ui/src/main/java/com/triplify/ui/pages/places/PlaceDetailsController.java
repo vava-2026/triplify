@@ -1,14 +1,16 @@
 package com.triplify.ui.pages.places;
 
 import com.google.inject.Inject;
-import com.triplify.application.usecase.place.dto.GetPlaceDetailsRequest;
-import com.triplify.application.usecase.place.dto.PlaceDetailsResponse;
 import com.triplify.application.usecase.place.PlaceService;
 import com.triplify.application.usecase.place.dto.DeletePlaceRequest;
+import com.triplify.application.usecase.place.dto.GetPlaceByIdRequest;
+import com.triplify.application.usecase.place.dto.GetPlaceRoutesRequest;
+import com.triplify.application.usecase.place.dto.GetPlaceTripsRequest;
 import com.triplify.application.usecase.place.dto.PlaceResponse;
 import com.triplify.application.usecase.route.dto.RouteResponse;
 import com.triplify.application.usecase.story.dto.StoryResponse;
-import com.triplify.domain.model.enums.StatusEnum;
+import com.triplify.application.usecase.trip.dto.TripResponse;
+import com.triplify.domain.pagination.PageRequest;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.map.InteractiveMap;
@@ -40,14 +42,13 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import rahulstech.jfx.routing.element.RouterArgument;
 import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 
-import java.io.File;
-import java.time.Instant;
-import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 public class PlaceDetailsController extends SimpleLifecycleAwareController {
 
     private static final String DEFAULT_IMAGE = "/com/triplify/ui/pages/trips/images/one.png";
+    private static final int ASSOCIATED_ITEMS_PAGE_SIZE = 8;
     @FXML private VBox contentContainer;
     @FXML private StackPane heroContainer;
     @FXML private FlowPane topRowFlow;
@@ -155,19 +156,39 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
             return;
         }
 
-        var result = placeService.getPlaceDetails(new GetPlaceDetailsRequest(UUID.fromString(placeId)));
-        if (result.isFailure()) {
-            errorHandler.handle(result.getError());
+        UUID placeUuid = UUID.fromString(placeId);
+
+        var placeResult = placeService.getPlaceById(new GetPlaceByIdRequest(placeUuid));
+        if (placeResult.isFailure()) {
+            errorHandler.handle(placeResult.getError());
             getRouter().popBackStack();
             return;
         }
 
-        bind(result.getValue());
+        var tripsResult = placeService.getPlaceTrips(new GetPlaceTripsRequest(
+                placeUuid,
+                new PageRequest(0, ASSOCIATED_ITEMS_PAGE_SIZE)
+        ));
+        if (tripsResult.isFailure()) {
+            errorHandler.handle(tripsResult.getError());
+            getRouter().popBackStack();
+            return;
+        }
+
+        var routesResult = placeService.getPlaceRoutes(new GetPlaceRoutesRequest(
+                placeUuid,
+                new PageRequest(0, ASSOCIATED_ITEMS_PAGE_SIZE)
+        ));
+        if (routesResult.isFailure()) {
+            errorHandler.handle(routesResult.getError());
+            getRouter().popBackStack();
+            return;
+        }
+
+        bind(placeResult.getValue(), tripsResult.getValue().items(), routesResult.getValue().items());
     }
 
-    private void bind(PlaceDetailsResponse details) {
-        PlaceResponse place = details.place();
-
+    private void bind(PlaceResponse place, List<TripResponse> trips, List<RouteResponse> routes) {
         heroImageView.setImage(loadImage(imagePath(place)));
         placeTitleLabel.setText(safeText(place.title(), I18n.t("trip.add.fallback.place")));
         placeCountryLabel.setText(place.country() == null ? "" : safeText(place.country().name(), ""));
@@ -176,19 +197,19 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         placeMap.setMapCenter(place.latitude(), place.longitude());
         placeMap.setPinPosition(place.latitude(), place.longitude());
 
-        renderAssociatedTrips(details.associatedTrips());
-        renderAssociatedRoutes(details.associatedRoutes());
-        renderAssociatedStories(details.associatedStories());
+        renderAssociatedTrips(trips);
+        renderAssociatedRoutes(routes);
+        renderAssociatedStories(List.of());
     }
 
-    private void renderAssociatedTrips(java.util.List<com.triplify.application.usecase.trip.dto.TripResponse> trips) {
+    private void renderAssociatedTrips(List<TripResponse> trips) {
         associatedTripsFlow.getChildren().clear();
         if (trips.isEmpty()) {
             associatedTripsFlow.getChildren().add(createEmptyState(I18n.t("place.details.empty.trips"), associatedTripsFlow));
             return;
         }
 
-        for (com.triplify.application.usecase.trip.dto.TripResponse trip : trips) {
+        for (TripResponse trip : trips) {
             String dateRange = formatDateRange(toLocalDate(trip.startedAt()), toLocalDate(trip.endedAt()));
             TripCardView card = TripCardView.createForDetails(
                     trip,
@@ -199,7 +220,7 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         }
     }
 
-    private void renderAssociatedRoutes(java.util.List<RouteResponse> routes) {
+    private void renderAssociatedRoutes(List<RouteResponse> routes) {
         associatedRoutesFlow.getChildren().clear();
         if (routes.isEmpty()) {
             associatedRoutesFlow.getChildren().add(createEmptyState(I18n.t("place.details.empty.routes"), associatedRoutesFlow));
@@ -212,7 +233,7 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         }
     }
 
-    private void renderAssociatedStories(java.util.List<StoryResponse> stories) {
+    private void renderAssociatedStories(List<StoryResponse> stories) {
         associatedStoriesFlow.getChildren().clear();
         if (stories.isEmpty()) {
             associatedStoriesFlow.getChildren().add(createEmptyState(I18n.t("place.details.empty.stories"), associatedStoriesFlow));
@@ -244,7 +265,7 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         return card;
     }
 
-    private void openTrip(com.triplify.application.usecase.trip.dto.TripResponse trip) {
+    private void openTrip(TripResponse trip) {
         RouterArgument args = new RouterArgument();
         args.addArgument("tripId", trip.id().toString());
         args.addArgument("tripStatus", trip.status());
