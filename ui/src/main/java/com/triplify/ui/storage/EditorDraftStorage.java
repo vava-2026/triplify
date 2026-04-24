@@ -97,7 +97,6 @@ public final class EditorDraftStorage {
             Set<String> selectedCountryIds,
             Map<String, String> selectedCountryLabelsById,
             Set<String> selectedTagLabels,
-            Set<String> selectedTagIds,
             String coverImagePath,
             boolean coverImageDirty,
             List<RouteDraftItem> routes,
@@ -110,7 +109,6 @@ public final class EditorDraftStorage {
                     ? Map.of()
                     : new LinkedHashMap<>(selectedCountryLabelsById);
             selectedTagLabels = selectedTagLabels == null ? Set.of() : new LinkedHashSet<>(selectedTagLabels);
-            selectedTagIds = selectedTagIds == null ? Set.of() : new LinkedHashSet<>(selectedTagIds);
             routes = routes == null ? List.of() : List.copyOf(routes);
             manualPlaces = manualPlaces == null ? List.of() : List.copyOf(manualPlaces);
         }

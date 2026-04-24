@@ -14,6 +14,7 @@ import com.triplify.application.usecase.triproute.dto.DeleteTripRouteRequest;
 import com.triplify.application.usecase.triproute.dto.GetTripRouteByIdRequest;
 import com.triplify.application.usecase.triproute.dto.GetTripRoutesRequest;
 import com.triplify.application.usecase.triproute.dto.RearrangeTripRoutesRequest;
+import com.triplify.application.usecase.triproute.dto.ReplaceTripRoutesRequest;
 import com.triplify.application.usecase.triproute.dto.TripRouteResponse;
 import com.triplify.application.usecase.triproute.dto.UpdateTripRouteRequest;
 import com.triplify.application.usecase.triproute.dto.UpdateTripRouteStatusRequest;
@@ -37,6 +38,7 @@ import com.triplify.domain.result.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -48,6 +50,8 @@ import java.util.UUID;
 
 @Authenticated
 public class TripRouteServiceImpl implements TripRouteService {
+
+    private static final Logger log = LoggerFactory.getLogger(TripRouteServiceImpl.class);
 
     private final TripRouteRepository tripRouteRepository;
     private final TripRepository tripRepository;
@@ -242,6 +246,47 @@ public class TripRouteServiceImpl implements TripRouteService {
         }
 
         return Result.ok(new Page<>(responses, page.page(), page.size(), page.hasNext()));
+    }
+
+    @Override
+    public Result<Void> replaceTripRoutes(ReplaceTripRoutesRequest request) {
+        SessionUser user = userSessionContext.getCurrent().orElseThrow();
+        requireOwnedTrip(request.tripId(), user.userId()).orThrow();
+
+        List<TripRoute> existing = new ArrayList<>();
+        PageRequest pageRequest = new PageRequest(0, 512);
+        while (true) {
+            Page<TripRoute> page = tripRouteRepository.findList(pageRequest, request.tripId(), null);
+            existing.addAll(page.items());
+            if (!page.hasNext()) break;
+            pageRequest = pageRequest.next();
+        }
+        for (TripRoute tripRoute : existing) {
+            tripRouteRepository.delete(tripRoute);
+        }
+
+        List<UUID> routeIds = request.routeIdsInOrder();
+        for (int i = 0; i < routeIds.size(); i++) {
+            tripRouteRepository.create(new TripRoute(request.tripId(), routeIds.get(i), i));
+        }
+
+        syncRouteDerivedPlaces(request.tripId());
+        log.info("Replaced trip routes for tripId='{}' with {} routes by userId='{}'", request.tripId(), routeIds.size(), user.userId());
+        return Result.ok();
+    }
+
+    @Override
+    public Result<List<TripRouteResponse>> getAllTripRoutes(UUID tripId) {
+        List<TripRouteResponse> items = new ArrayList<>();
+        PageRequest pageRequest = new PageRequest(0, 100);
+        while (true) {
+            var result = getTripRoutes(new GetTripRoutesRequest(pageRequest, new GetTripRoutesRequest.Filter(tripId, null)));
+            if (result.isFailure()) return Result.fail(result.getError());
+            Page<TripRouteResponse> page = result.getValue();
+            items.addAll(page.items());
+            if (!page.hasNext()) return Result.ok(items);
+            pageRequest = pageRequest.next();
+        }
     }
 
     private Result<Trip> requireOwnedTrip(UUID tripId, UUID userId) {

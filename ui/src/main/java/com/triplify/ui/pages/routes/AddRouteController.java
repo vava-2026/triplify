@@ -2,8 +2,8 @@ package com.triplify.ui.pages.routes;
 
 import com.google.inject.Inject;
 import com.triplify.application.usecase.place.PlaceService;
-import com.triplify.application.usecase.place.dto.GetPlacesRequest;
 import com.triplify.application.usecase.place.dto.PlaceResponse;
+import com.triplify.ui.shared.component.places.model.Places;
 import com.triplify.application.usecase.route.RouteService;
 import com.triplify.application.usecase.route.dto.AddPlaceToRouteRequest;
 import com.triplify.application.usecase.route.dto.AddRouteRequest;
@@ -104,7 +104,7 @@ public class AddRouteController extends WindowedPageController {
     @Inject private ErrorHandler errorHandler;
     @Inject private FxmlLoaderHelper fxmlLoader;
 
-    private final List<RoutePlaceItem> availablePlaceItems = new ArrayList<>();
+    private Places placesModel;
     private final List<RoutePlaceItem> placeItems = new ArrayList<>();
 
     private String tripId;
@@ -156,7 +156,9 @@ public class AddRouteController extends WindowedPageController {
         setPlacePickerVisible(false);
         bindLocalizedText();
 
-        refreshAvailablePlaces();
+        placesModel = Places.builder(placeService)
+                .onLoadFailed(error -> toast.warning(I18n.t("route.add.toast.places.loadFailed")))
+                .build();
         renderPlaces();
         I18n.bundleProperty().addListener((obs, oldBundle, newBundle) -> renderPlaces());
         log.info("Initialized AddRouteController");
@@ -183,7 +185,7 @@ public class AddRouteController extends WindowedPageController {
 
     @Override
     protected void onWindowedShow() {
-        refreshAvailablePlaces();
+        placesModel.reset();
         if (editMode && !routeLoaded) {
             loadRouteForEdit(routeId);
         }
@@ -367,6 +369,7 @@ public class AddRouteController extends WindowedPageController {
                 .size(AppComponentSize.MIDDLE)
                 .maxVisibleResults(8)
                 .showOnEmptyQuery(true)
+                .onLoadMore(this::loadMorePlaceEntries)
                 .onResultSelected(entry -> addExistingPlace(entry.getValue()))
                 .build();
 
@@ -375,25 +378,18 @@ public class AddRouteController extends WindowedPageController {
     }
 
     private List<Entry<RoutePlaceItem>> searchPlaceEntries(String query) {
-        String normalized = query == null ? "" : query.trim().toLowerCase(Locale.ROOT);
-        return getAvailablePlaces().stream()
-                .filter(place -> normalized.isBlank()
-                        || (place.title() != null && place.title().toLowerCase(Locale.ROOT).contains(normalized))
-                        || (place.subtitle() != null && place.subtitle().toLowerCase(Locale.ROOT).contains(normalized)))
-                .map(place -> Entry.builder(place, place.title()).icon("fth-map-pin").build())
-                .toList();
+        return toPlaceEntries(placesModel.search(query));
     }
 
-    private void refreshAvailablePlaces() {
-        availablePlaceItems.clear();
-        var result = placeService.getPlaces(new GetPlacesRequest(null, null));
-        if (result.isFailure()) {
-            toast.warning(I18n.t("route.add.toast.places.loadFailed"));
-            return;
-        }
-        availablePlaceItems.addAll(result.getValue().items().stream()
-                .map(this::toRoutePlaceItem)
-                .toList());
+    private List<Entry<RoutePlaceItem>> loadMorePlaceEntries(String query) {
+        return toPlaceEntries(placesModel.loadMore(query));
+    }
+
+    private List<Entry<RoutePlaceItem>> toPlaceEntries(List<PlaceResponse> places) {
+        return places.stream()
+                .filter(place -> placeItems.stream().noneMatch(linked -> linked.id().equals(place.id().toString())))
+                .map(place -> Entry.builder(toRoutePlaceItem(place), place.title()).icon("fth-map-pin").build())
+                .toList();
     }
 
     private void renderPlaces() {
@@ -661,12 +657,6 @@ public class AddRouteController extends WindowedPageController {
         if (!visible && placeSearchView != null) {
             placeSearchView.getSearchField().setText("");
         }
-    }
-
-    private List<RoutePlaceItem> getAvailablePlaces() {
-        return availablePlaceItems.stream()
-                .filter(candidate -> placeItems.stream().noneMatch(linked -> linked.id().equals(candidate.id())))
-                .toList();
     }
 
     private void addExistingPlace(RoutePlaceItem candidate) {
