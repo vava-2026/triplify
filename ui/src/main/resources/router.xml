@@ -101,7 +101,7 @@
                  singleTop="true"/>
 
     <destination id="emotions"
-                 fxml="com/triplify/ui/pages/placeholder/PlaceholderPageView.fxml"
+                 fxml="com/triplify/ui/pages/emotions/EmotionsView.fxml"
                  singleTop="true"/>
 
     <destination id="badge_groups"

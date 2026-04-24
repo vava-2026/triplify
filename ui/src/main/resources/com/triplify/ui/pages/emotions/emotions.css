@@ -1,0 +1,125 @@
+.emotions-root {
+	-fx-padding: 24px 28px;
+}
+
+.emotions-content {
+	-fx-spacing: 14px;
+}
+
+.emotions-layout {
+	-fx-hgap: 16px;
+	-fx-vgap: 0;
+	-fx-alignment: top-left;
+}
+
+.emotions-form-card {
+	-fx-pref-width: 370px;
+	-fx-min-width: 330px;
+	-fx-max-width: 410px;
+}
+
+.emotions-list-card {
+	-fx-min-width: 520px;
+}
+
+.emotions-list-scroll {
+	-fx-background-color: transparent;
+	-fx-border-color: transparent;
+	-fx-padding: 0;
+}
+
+.emotions-list-scroll > .viewport {
+	-fx-background-color: transparent;
+}
+
+.emotions-list-scroll > .corner {
+	-fx-background-color: transparent;
+}
+
+.emotions-card-header {
+	-fx-alignment: center-left;
+}
+
+.emotions-section-title {
+	-fx-text-fill: -color-ink;
+	-fx-font-size: 20px;
+	-fx-padding: 10px 0 10px 0;
+	-fx-font-weight: bold;
+}
+
+.emotions-mode-badge {
+	-fx-background-color: -color-primary-light;
+	-fx-text-fill: -color-primary-dark;
+	-fx-background-radius: 999px;
+	-fx-padding: 4px 10px;
+	-fx-font-size: 12px;
+	-fx-font-weight: bold;
+}
+
+.emotions-form-group {
+	-fx-spacing: 6px;
+}
+
+.emotions-actions-row {
+	-fx-alignment: center-left;
+}
+
+.emotions-grow-btn {
+	-fx-max-width: Infinity;
+}
+
+.emotions-search-row {
+	-fx-alignment: center-left;
+}
+
+.emotions-list {
+	-fx-padding: 2px 0 2px 0;
+}
+
+.emotions-item {
+	-fx-background-color: -color-surface;
+	-fx-border-color: -color-border-muted;
+	-fx-border-width: 1;
+	-fx-border-radius: 12;
+	-fx-background-radius: 12;
+	-fx-padding: 10 12 10 12;
+	-fx-cursor: hand;
+}
+
+.emotions-item:hover {
+	-fx-background-color: -color-primary-light;
+}
+
+.emotions-item-selected {
+	-fx-border-color: -color-primary;
+	-fx-border-width: 1.5;
+	-fx-background-color: -color-primary-light;
+}
+
+.emotions-item-header {
+	-fx-alignment: center-left;
+}
+
+.emotions-item-emoji {
+	-fx-font-size: 20px;
+}
+
+.emotions-item-text {
+	-fx-alignment: center-left;
+}
+
+.emotions-item-title {
+	-fx-text-fill: -color-ink;
+	-fx-font-size: 14px;
+	-fx-font-weight: bold;
+}
+
+.emotions-item-subtitle {
+	-fx-text-fill: -color-ink-muted;
+	-fx-font-size: 12px;
+}
+
+.emotions-empty {
+	-fx-text-fill: -color-ink-muted;
+	-fx-font-size: 13px;
+}
