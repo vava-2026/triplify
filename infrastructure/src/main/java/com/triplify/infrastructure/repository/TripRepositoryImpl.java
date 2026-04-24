@@ -3,6 +3,7 @@ package com.triplify.infrastructure.repository;
 import com.triplify.domain.filter.TripFilter;
 import com.triplify.domain.model.Category;
 import com.triplify.domain.model.Country;
+import com.triplify.domain.model.Image;
 import com.triplify.domain.model.Tag;
 import com.triplify.domain.model.Trip;
 import com.triplify.domain.model.enums.ColorEnum;
@@ -20,6 +21,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.time.Instant;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,6 +43,7 @@ public class TripRepositoryImpl implements TripRepository {
             t.id AS t_id,
             t.user_id AS t_user_id,
             t.category_id AS t_category_id,
+            t.cover_image_id AS t_cover_image_id,
             t.title AS t_title,
             t.description AS t_description,
             t.status AS t_status,
@@ -48,6 +51,11 @@ public class TripRepositoryImpl implements TripRepository {
             t.ended_at AS t_ended_at,
             t.created_at AS t_created_at,
             t.updated_at AS t_updated_at,
+
+            i.id AS i_id,
+            i.url AS i_url,
+            i.description AS i_description,
+            i.uploaded_at AS i_uploaded_at,
 
             c.id AS c_id,
             c.created_by AS c_created_by,
@@ -58,16 +66,17 @@ public class TripRepositoryImpl implements TripRepository {
             c.emoji_unicode AS c_emoji_unicode,
             c.color AS c_color
         FROM trips t
+        LEFT JOIN images i ON t.cover_image_id = i.id
         LEFT JOIN categories c ON t.category_id = c.id
         """;
 
     @Override
-    public Optional<Trip> findById(String id) {
+    public Optional<Trip> findById(UUID id) {
         String sql = TRIP_WITH_CATEGORY_SELECT + " WHERE t.id = ? LIMIT 1";
 
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, id);
+            ps.setString(1, id.toString());
             try (ResultSet rs = ps.executeQuery()) {
                 if (!rs.next()) {
                     return Optional.empty();
@@ -168,7 +177,7 @@ public class TripRepositoryImpl implements TripRepository {
             ps.setString(1, trip.getId().toString());
             ps.setString(2, trip.getUserId().toString());
             setNullableUuid(ps, 3, trip.getCategoryId());
-            ps.setNull(4, Types.VARCHAR);
+            setNullableUuid(ps, 4, trip.getCoverImageId());
             ps.setString(5, trip.getTitle());
             ps.setString(6, trip.getDescription());
             ps.setString(7, trip.getStatus().getValue());
@@ -187,7 +196,7 @@ public class TripRepositoryImpl implements TripRepository {
     public void update(Trip trip) {
         String sql = """
             UPDATE trips
-            SET user_id = ?, category_id = ?, title = ?, description = ?, status = ?,
+            SET user_id = ?, category_id = ?, cover_image_id = ?, title = ?, description = ?, status = ?,
                 started_at = ?, ended_at = ?, updated_at = ?
             WHERE id = ?
             """;
@@ -196,13 +205,14 @@ public class TripRepositoryImpl implements TripRepository {
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, trip.getUserId().toString());
             setNullableUuid(ps, 2, trip.getCategoryId());
-            ps.setString(3, trip.getTitle());
-            ps.setString(4, trip.getDescription());
-            ps.setString(5, trip.getStatus().getValue());
-            setNullableInstant(ps, 6, trip.getStartedAt());
-            setNullableInstant(ps, 7, trip.getEndedAt());
-            ps.setString(8, trip.getUpdatedAt().toString());
-            ps.setString(9, trip.getId().toString());
+            setNullableUuid(ps, 3, trip.getCoverImageId());
+            ps.setString(4, trip.getTitle());
+            ps.setString(5, trip.getDescription());
+            ps.setString(6, trip.getStatus().getValue());
+            setNullableInstant(ps, 7, trip.getStartedAt());
+            setNullableInstant(ps, 8, trip.getEndedAt());
+            ps.setString(9, trip.getUpdatedAt().toString());
+            ps.setString(10, trip.getId().toString());
             ps.executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to update trip id='{}'", trip.getId(), e);
@@ -225,18 +235,33 @@ public class TripRepositoryImpl implements TripRepository {
     }
 
     @Override
-    public void replaceTagIds(String tripId, Set<String> tagIds) {
+    public void replaceTagIds(UUID tripId, Set<UUID> tagIds) {
         replaceRelationIds("trip_tags", "tag_id", "trip_id", tripId, tagIds);
     }
 
     @Override
-    public void replaceCountryIds(String tripId, Set<String> countryIds) {
+    public void replaceCountryIds(UUID tripId, Set<UUID> countryIds) {
         replaceRelationIds("trip_countries", "country_id", "trip_id", tripId, countryIds);
     }
 
     @Override
-    public void replaceImageIds(String tripId, Set<String> imageIds) {
-        replaceRelationIds("trip_images", "image_id", "trip_id", tripId, imageIds);
+    public void updateCoverImageId(UUID tripId, UUID coverImageId) {
+        String sql = "UPDATE trips SET cover_image_id = ?, updated_at = ? WHERE id = ?";
+
+        try (Connection conn = SQLiteConnectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            if (coverImageId == null) {
+                ps.setNull(1, Types.VARCHAR);
+            } else {
+                ps.setString(1, coverImageId.toString());
+            }
+            ps.setString(2, Instant.now().toString());
+            ps.setString(3, tripId.toString());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            log.error("Failed to update cover image for trip id='{}'", tripId, e);
+            throw new RuntimeException("Database error while updating trip cover image", e);
+        }
     }
 
     private List<Trip> hydrateTrips(Connection conn, List<Trip> trips) throws SQLException {
@@ -260,6 +285,8 @@ public class TripRepositoryImpl implements TripRepository {
                     trip.getUserId(),
                     trip.getCategoryId(),
                     trip.getCategory(),
+                    trip.getCoverImageId(),
+                    trip.getCoverImage(),
                     trip.getTitle(),
                     trip.getDescription(),
                     trip.getStatus(),
@@ -366,13 +393,13 @@ public class TripRepositoryImpl implements TripRepository {
         return result;
     }
 
-    private void replaceRelationIds(String tableName, String relationColumn, String ownerColumn, String ownerId, Set<String> relationIds) {
+    private void replaceRelationIds(String tableName, String relationColumn, String ownerColumn, UUID ownerId, Set<UUID> relationIds) {
         String deleteSql = "DELETE FROM %s WHERE %s = ?".formatted(tableName, ownerColumn);
         String insertSql = "INSERT INTO %s (%s, %s) VALUES (?, ?)".formatted(tableName, ownerColumn, relationColumn);
 
         try (Connection conn = SQLiteConnectionFactory.getConnection()) {
             try (PreparedStatement deleteStatement = conn.prepareStatement(deleteSql)) {
-                deleteStatement.setString(1, ownerId);
+                deleteStatement.setString(1, ownerId.toString());
                 deleteStatement.executeUpdate();
             }
 
@@ -381,9 +408,9 @@ public class TripRepositoryImpl implements TripRepository {
             }
 
             try (PreparedStatement insertStatement = conn.prepareStatement(insertSql)) {
-                for (String relationId : relationIds) {
-                    insertStatement.setString(1, ownerId);
-                    insertStatement.setString(2, relationId);
+                for (UUID relationId : relationIds) {
+                    insertStatement.setString(1, ownerId.toString());
+                    insertStatement.setString(2, relationId.toString());
                     insertStatement.addBatch();
                 }
                 insertStatement.executeBatch();
@@ -396,6 +423,17 @@ public class TripRepositoryImpl implements TripRepository {
 
     private Trip mapTrip(ResultSet rs) throws SQLException {
         UUID categoryId = nullableUuid(rs.getString("t_category_id"));
+        UUID coverImageId = nullableUuid(rs.getString("t_cover_image_id"));
+        Image coverImage = null;
+        if (rs.getString("i_id") != null && rs.getString("i_url") != null) {
+            coverImage = new Image(
+                    UUID.fromString(rs.getString("i_id")),
+                    Path.of(rs.getString("i_url")),
+                    rs.getString("i_description"),
+                    Instant.parse(rs.getString("i_uploaded_at"))
+            );
+        }
+
         Category category = null;
         if (rs.getString("c_id") != null) {
             category = new Category(
@@ -415,6 +453,8 @@ public class TripRepositoryImpl implements TripRepository {
                 UUID.fromString(rs.getString("t_user_id")),
                 categoryId,
                 category,
+                coverImageId,
+                coverImage,
                 rs.getString("t_title"),
                 rs.getString("t_description"),
                 StatusEnum.fromValue(rs.getString("t_status")),

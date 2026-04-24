@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Size;
 
 import java.time.Instant;
 import java.util.Set;
+import java.util.UUID;
 
 public record AddStoryRequest(
 
@@ -20,10 +21,10 @@ public record AddStoryRequest(
 
         @NotNull(message = ValidationMessage.Constants.REQUIRED)
         Instant storyTime,
-        String tripId,
-        String tripRouteId,
-        String tripPlaceId,
-        String emotionId,
-        Set<String> tagIds
+        UUID tripId,
+        UUID tripRouteId,
+        UUID tripPlaceId,
+        UUID emotionId,
+        Set<UUID> tagIds
 ) {
 }

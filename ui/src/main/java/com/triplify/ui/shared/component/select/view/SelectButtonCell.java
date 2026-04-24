@@ -44,6 +44,7 @@ public class SelectButtonCell<T> extends ListCell<Entry<T>> {
     @Override
     protected void updateItem(Entry<T> entry, boolean empty) {
         super.updateItem(entry, empty);
+        getStyleClass().remove("select-placeholder");
         if (empty || entry == null) {
             entryView.update(null);
             if (emojiView != null) {

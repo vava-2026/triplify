@@ -6,6 +6,7 @@ import com.triplify.domain.pagination.PageRequest;
 import jakarta.validation.constraints.Size;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public record GetStoriesRequest(
         PageRequest pageRequest,
@@ -18,9 +19,9 @@ public record GetStoriesRequest(
     }
 
     public record Filter(
-            String tripId,
-            String tripRouteId,
-            String tripPlaceId,
+            UUID tripId,
+            UUID tripRouteId,
+            UUID tripPlaceId,
             @Size(max = DtoConstraints.TITLE_MAX_LENGTH, message = ValidationMessage.Constants.TITLE_TOO_LONG)
             String title,
             Instant storyTimeFrom,
@@ -28,9 +29,6 @@ public record GetStoriesRequest(
     ) {
 
         public Filter {
-            tripId = tripId == null ? null : tripId.trim();
-            tripRouteId = tripRouteId == null ? null : tripRouteId.trim();
-            tripPlaceId = tripPlaceId == null ? null : tripPlaceId.trim();
             title = title == null ? null : title.trim();
         }
     }

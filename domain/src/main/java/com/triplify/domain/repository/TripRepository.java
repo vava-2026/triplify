@@ -7,14 +7,15 @@ import com.triplify.domain.pagination.PageRequest;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 public interface TripRepository {
-    Optional<Trip> findById(String id);
+    Optional<Trip> findById(UUID id);
     Page<Trip> findList(PageRequest pageRequest, TripFilter filter, boolean startTimeAsc);
     void create(Trip trip);
     void update(Trip trip);
     void delete(Trip trip);
-    void replaceTagIds(String tripId, Set<String> tagIds);
-    void replaceCountryIds(String tripId, Set<String> countryIds);
-    void replaceImageIds(String tripId, Set<String> imageIds);
+    void replaceTagIds(UUID tripId, Set<UUID> tagIds);
+    void replaceCountryIds(UUID tripId, Set<UUID> countryIds);
+    void updateCoverImageId(UUID tripId, UUID coverImageId);
 }

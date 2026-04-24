@@ -28,6 +28,12 @@ public class Trip {
     @Setter(AccessLevel.PRIVATE)
     private Category category;
 
+    @Setter(AccessLevel.PRIVATE)
+    private UUID coverImageId;
+
+    @Setter(AccessLevel.PRIVATE)
+    private Image coverImage;
+
     @NonNull
     @Setter(AccessLevel.PRIVATE)
     private String title;
@@ -69,6 +75,24 @@ public class Trip {
         this.countryIds = new HashSet<>();
         this.tags = new LinkedHashSet<>();
         this.countries = new LinkedHashSet<>();
+    }
+
+    public void updateCoverImage(@NonNull UUID coverImageId) {
+        this.coverImageId = coverImageId;
+        this.coverImage = null;
+        this.updatedAt = Instant.now();
+    }
+
+    public void updateCoverImage(@NonNull Image coverImage) {
+        this.coverImageId = coverImage.getId();
+        this.coverImage = coverImage;
+        this.updatedAt = Instant.now();
+    }
+
+    public void removeCoverImage() {
+        this.coverImageId = null;
+        this.coverImage = null;
+        this.updatedAt = Instant.now();
     }
 
     public Set<UUID> getTagIds() {

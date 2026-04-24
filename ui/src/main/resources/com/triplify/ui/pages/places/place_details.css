@@ -1,0 +1,176 @@
+.place-details-root {
+    -fx-padding: 20px 24px 28px;
+}
+
+.place-details-content {
+    -fx-max-width: 1120px;
+    -fx-pref-width: 1120px;
+    -fx-spacing: 20px;
+}
+
+.place-details-hero {
+    -fx-min-height: 320px;
+    -fx-pref-height: 320px;
+    -fx-max-height: 320px;
+    -fx-background-color: transparent;
+    -fx-background-radius: 28px;
+}
+
+.place-details-hero-image {
+    -fx-smooth: true;
+}
+
+.place-details-hero-overlay {
+    -fx-padding: 18px;
+    -fx-background-color: linear-gradient(to top, rgba(10, 9, 12, 0.58), rgba(10, 9, 12, 0.08));
+    -fx-background-radius: 28px;
+    -fx-alignment: top-left;
+}
+
+.place-details-hero-copy {
+    -fx-alignment: bottom-left;
+    -fx-max-width: 540px;
+    -fx-padding: 192px 0 0;
+}
+
+.place-details-back-button {
+    -fx-background-color: -color-on-surface;
+    -fx-background-radius: 999px;
+    -fx-text-fill: -color-primary-dark;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-padding: 8px 14px;
+    -fx-cursor: hand;
+}
+
+.place-details-back-icon {
+    -fx-icon-color: -color-primary-dark;
+}
+
+.place-details-title {
+    -fx-font-size: 30px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -color-on-surface;
+}
+
+.place-details-country {
+    -fx-font-size: 15px;
+    -fx-text-fill: rgba(255, 255, 255, 0.88);
+}
+
+.place-details-sections {
+    -fx-spacing: 20px;
+}
+
+.place-details-top-row {
+    -fx-hgap: 20px;
+    -fx-vgap: 20px;
+}
+
+.place-details-main-column {
+    -fx-pref-width: 704px;
+    -fx-max-width: 704px;
+}
+
+.place-details-side-column {
+    -fx-pref-width: 396px;
+    -fx-max-width: 396px;
+}
+
+.place-details-associated-sections {
+    -fx-spacing: 20px;
+}
+
+.place-details-trips-section {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+    -fx-effect: none;
+}
+
+.place-details-routes-section {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+    -fx-effect: none;
+}
+
+.place-details-card {
+    -fx-background-color: -color-on-surface;
+    -fx-background-radius: 22px;
+    -fx-padding: 18px 18px 20px 18px;
+    -fx-effect: dropshadow(gaussian, rgba(12, 12, 13, 0.06), 16, 0, 0, 4);
+}
+
+.place-details-description-card {
+    -fx-padding: 22px 22px 24px 22px;
+}
+
+.place-details-map-card .add-place-map-shell {
+    -fx-min-height: 360px;
+    -fx-pref-height: 360px;
+    -fx-max-height: 360px;
+    -fx-background-radius: 18px;
+}
+
+.place-details-card-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -color-primary-dark;
+}
+
+.place-details-description {
+    -fx-font-size: 13px;
+    -fx-line-spacing: 4px;
+    -fx-text-fill: -color-ink;
+}
+
+.place-details-grid {
+    -fx-hgap: 16px;
+    -fx-vgap: 16px;
+}
+
+.place-details-meta-title {
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-text-fill: -color-ink-muted;
+}
+
+.place-details-meta-value {
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-text-fill: -color-primary-dark;
+}
+
+.place-details-story-card {
+    -fx-pref-width: 244px;
+    -fx-background-color: -color-primary-light;
+    -fx-background-radius: 14px;
+    -fx-padding: 14px;
+    -fx-spacing: 8px;
+}
+
+.place-details-story-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -color-ink;
+}
+
+.place-details-story-description {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-ink-muted;
+}
+
+.place-details-meta-list {
+    -fx-padding: 4px 0 0;
+}
+
+.place-details-side-column .detail-action-group {
+    -fx-spacing: 12px;
+}
+
+.place-details-side-column .detail-action-button {
+    -fx-pref-height: 44px;
+}
+
+.place-details-associated-sections > .place-details-card {
+    -fx-max-width: Infinity;
+}

@@ -62,6 +62,7 @@ public class ApplicationModule extends AbstractModule {
         bindValidated(TripRouteService.class, TripRouteServiceImpl.class);
         bindValidated(TripService.class, TripServiceImpl.class);
         bindValidated(UserService.class, UserServiceImpl.class);
+        bindValidated(StoryService.class, StoryServiceImpl.class);
     }
 
     private <T> void bindValidated(Class<T> iface, Class<? extends T> impl) {

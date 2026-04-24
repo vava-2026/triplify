@@ -3,7 +3,6 @@ package com.triplify.infrastructure.repository.persistence;
 import com.google.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sqlite.SQLiteConnection;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -15,7 +14,7 @@ import java.util.List;
 @Singleton
 public class DatabaseMigrationInitializer {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseMigrationInitializer.class);
-    private static final int CURRENT_SCHEMA_VERSION = 11;
+    private static final int CURRENT_SCHEMA_VERSION = 15;
     private static final List<MigrationStep> MIGRATIONS = List.of(
             new MigrationStep(1, "migrations/initial.sql"),
             new MigrationStep(2, "migrations/V2__countries_created_by_nullable.sql"),
@@ -27,7 +26,11 @@ public class DatabaseMigrationInitializer {
             new MigrationStep(8, "migrations/V8__badges_created_by_not_null.sql"),
             new MigrationStep(9, "seeders/badge_group_seeder.sql"),
             new MigrationStep(10, "seeders/badge_image_seeder.sql"),
-            new MigrationStep(11, "seeders/badge_seeder.sql")
+            new MigrationStep(11, "seeders/badge_seeder.sql"),
+            new MigrationStep(12, "migrations/V7__seed_default_tags.sql"),
+            new MigrationStep(13, "seeders/user_seeder.sql"),
+            new MigrationStep(14, "seeders/place_seeder.sql"),
+            new MigrationStep(15, "seeders/route_seeder.sql")
     );
 
     public void initialize() {

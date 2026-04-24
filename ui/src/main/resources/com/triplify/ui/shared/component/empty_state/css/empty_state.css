@@ -1,0 +1,15 @@
+.empty-state-card {
+    -fx-min-width: 220px;
+    -fx-min-height: 104px;
+    -fx-background-color: -color-primary-light;
+    -fx-background-radius: 16px;
+    -fx-border-color: -color-surface-dark;
+    -fx-border-radius: 16px;
+    -fx-border-style: dashed;
+    -fx-padding: 18px;
+}
+
+.empty-state-label {
+    -fx-font-size: 13px;
+    -fx-text-fill: -color-ink-muted;
+}

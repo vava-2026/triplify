@@ -39,12 +39,12 @@ public class BadgeGroupRepositoryImpl implements BadgeGroupRepository {
     }
 
     @Override
-    public Optional<BadgeGroup> findById(String id) {
+    public Optional<BadgeGroup> findById(UUID id) {
         String sql = "SELECT id, name, name_sk, description, description_sk, created_by FROM badges_groups WHERE id = ? LIMIT 1";
 
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, id);
+            ps.setString(1, id.toString());
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return Optional.of(mapRow(rs));

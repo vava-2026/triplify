@@ -1,14 +1,13 @@
 package com.triplify.ui.pages.start;
 
 import com.google.inject.Inject;
-import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.routing.GuardedNavigator;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.component.button.model.ButtonVariant;
 import com.triplify.ui.shared.component.button.view.AppButtonView;
 import com.triplify.ui.shared.util.FxmlLoaderHelper;
-import javafx.beans.binding.Bindings;
+import com.triplify.ui.shared.util.Localization;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -35,18 +34,15 @@ public class StartPageController extends SimpleLifecycleAwareController implemen
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        heroTitleLine1.textProperty().bind(
-                Bindings.createStringBinding(() -> I18n.t("start.title.line1"), I18n.bundleProperty()));
-        heroTitleLine2.textProperty().bind(
-                Bindings.createStringBinding(() -> I18n.t("start.title.line2"), I18n.bundleProperty()));
-        heroSubtitle.textProperty().bind(
-                Bindings.createStringBinding(() -> I18n.t("start.subtitle"), I18n.bundleProperty()));
+        Localization.bindText(heroTitleLine1.textProperty(), "start.title.line1");
+        Localization.bindText(heroTitleLine2.textProperty(), "start.title.line2");
+        Localization.bindText(heroSubtitle.textProperty(), "start.subtitle");
 
         heroTitleLine2.getStyleClass().add("start-hero-title-tight");
 
         Button loginBtn = AppButtonView.builder(fxmlLoader)
                 .variant(ButtonVariant.LOGIN)
-                .labelBinding(Bindings.createStringBinding(() -> I18n.t("start.login"), I18n.bundleProperty()))
+                .labelBinding(Localization.textBinding("start.login"))
                 .onAction(() -> {
                     log.debug("Log In clicked");
                     guardedNavigator.goTo(getRouter(), RouteIds.LOGIN);
@@ -55,7 +51,7 @@ public class StartPageController extends SimpleLifecycleAwareController implemen
 
         Button signUpBtn = AppButtonView.builder(fxmlLoader)
                 .variant(ButtonVariant.SIGN_UP)
-                .labelBinding(Bindings.createStringBinding(() -> I18n.t("start.signUp"), I18n.bundleProperty()))
+                .labelBinding(Localization.textBinding("start.signUp"))
                 .onAction(() -> {
                     log.debug("Sign Up clicked");
                     guardedNavigator.goTo(getRouter(), RouteIds.SIGN_UP);

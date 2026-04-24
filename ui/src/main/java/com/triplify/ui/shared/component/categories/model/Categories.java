@@ -30,10 +30,10 @@ public class Categories {
 
         List<Entry<String>> entries = new ArrayList<>();
         for (CategoryResponse category : categories) {
-            if (category == null || category.id() == null || category.id().isBlank() || category.name() == null || category.name().isBlank()) {
+            if (category == null || category.id() == null || category.name() == null || category.name().isBlank()) {
                 continue;
             }
-            entries.add(Entry.<String>builder(category.id(), category.name())
+            entries.add(Entry.<String>builder(category.id().toString(), category.name())
                     .emoji(category.emojiUnicode())
                     .build());
         }

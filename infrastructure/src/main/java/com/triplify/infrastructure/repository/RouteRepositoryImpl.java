@@ -45,12 +45,12 @@ public class RouteRepositoryImpl implements RouteRepository {
         """;
 
     @Override
-    public Optional<Route> findById(String id) {
+    public Optional<Route> findById(UUID id) {
         String sql = ROUTE_WITH_IMAGE_SELECT + " WHERE r.id = ? LIMIT 1";
 
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, id);
+            ps.setString(1, id.toString());
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return Optional.of(mapRouteWithRelations(rs));

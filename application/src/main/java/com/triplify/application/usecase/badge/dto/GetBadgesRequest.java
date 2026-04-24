@@ -1,17 +1,14 @@
 package com.triplify.application.usecase.badge.dto;
 
+import java.util.UUID;
+
 public record GetBadgesRequest(
         Filter filter
 ) {
 
     public record Filter(
-            String groupId,
-            String createdById
+            UUID groupId,
+            UUID createdById
     ) {
-
-        public Filter {
-            groupId = groupId == null ? null : groupId.trim();
-            createdById = createdById == null ? null : createdById.trim();
-        }
     }
 }

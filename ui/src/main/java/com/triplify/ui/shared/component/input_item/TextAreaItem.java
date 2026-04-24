@@ -2,7 +2,7 @@ package com.triplify.ui.shared.component.input_item;
 
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.model.FieldVariant;
-import javafx.beans.binding.Bindings;
+import com.triplify.ui.shared.util.Localization;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -29,8 +29,7 @@ public class TextAreaItem extends VBox {
 
     public TextAreaItem(String placeholderKey, FieldVariant variant) {
         textArea = new TextArea();
-        textArea.promptTextProperty().bind(
-                Bindings.createStringBinding(() -> I18n.t(placeholderKey), I18n.bundleProperty()));
+        textArea.promptTextProperty().bind(Localization.textBinding(placeholderKey));
         textArea.getStyleClass().addAll("input-item", "textarea-item", toStyleClass(variant));
         textArea.setWrapText(true);
 
