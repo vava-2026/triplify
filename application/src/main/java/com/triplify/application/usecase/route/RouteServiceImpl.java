@@ -221,12 +221,13 @@ public class RouteServiceImpl implements RouteService {
 
     @Override
     public Result<Page<RouteResponse>> getRoutes(GetRoutesRequest request) {
+        log.info("Getting routes with filter='{}'", request.filter().name());
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
-        RouteFilter filter = new RouteFilter(request.filter() != null ? request.filter().name() : null);
-        Page<Route> routesPage = routeRepository.findList(request.pageRequest(), filter, user.userId());
+        Page<Route> routesPage = routeRepository.findList(request.pageRequest(), request.filter().name(), user.userId());
         Page<RouteResponse> responsePage = routesPage.map(route ->
                 RouteResponse.from(route, List.of())
         );
+        log.info("Got {} routes", responsePage.items().size());
         return Result.ok(responsePage);
     }
 

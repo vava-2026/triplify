@@ -146,6 +146,10 @@ public class AddRouteController extends WindowedPageController {
         EditorUtils.initializeCoverPreview(coverPreview, uploadArea);
         initializeDragPreview();
         bindUploadPanelHandlers();
+
+        placesModel = Places.builder(placeService)
+                .onLoadFailed(error -> toast.warning(I18n.t("route.add.toast.places.loadFailed")))
+                .build();
         initializePlacePicker();
 
         EditorUtils.configureButtonIcon(addPlaceButton, "fth-plus");
@@ -156,9 +160,6 @@ public class AddRouteController extends WindowedPageController {
         setPlacePickerVisible(false);
         bindLocalizedText();
 
-        placesModel = Places.builder(placeService)
-                .onLoadFailed(error -> toast.warning(I18n.t("route.add.toast.places.loadFailed")))
-                .build();
         renderPlaces();
         I18n.bundleProperty().addListener((obs, oldBundle, newBundle) -> renderPlaces());
         log.info("Initialized AddRouteController");

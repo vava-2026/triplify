@@ -65,18 +65,18 @@ public class RouteRepositoryImpl implements RouteRepository {
     }
 
     @Override
-    public Page<Route> findList(PageRequest page, RouteFilter filter, UUID userId) {
+    public Page<Route> findList(PageRequest page, String name, UUID userId) {
         StringBuilder sql = new StringBuilder(ROUTE_WITH_IMAGE_SELECT).append(" WHERE r.user_id = ? ");
         List<Object> params = new ArrayList<>();
+        params.add(userId.toString());
 
-        if (filter != null && filter.name() != null && !filter.name().isBlank()) {
+        if (name != null && !name.isBlank()) {
             sql.append("AND r.title LIKE ? ");
-            params.add(filter.name() + "%");
+            params.add("%" + name + "%");
         }
 
         sql.append("ORDER BY r.updated_at DESC ");
         sql.append("LIMIT ? OFFSET ?");
-        params.add(userId.toString());
         params.add(page.size() + 1);
         params.add(page.offset());
 
@@ -101,7 +101,6 @@ public class RouteRepositoryImpl implements RouteRepository {
                 return Page.of(routes, page, hasNext);
             }
         } catch (SQLException e) {
-            String name = filter != null ? filter.name() : null;
             log.error("Error finding routes with name='{}'", name, e);
             throw new RuntimeException("Database error while finding routes", e);
         }

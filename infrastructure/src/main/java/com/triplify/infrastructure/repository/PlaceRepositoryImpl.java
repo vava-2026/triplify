@@ -66,6 +66,7 @@ public class PlaceRepositoryImpl implements PlaceRepository {
         String sql = PLACE_WITH_COUNTRY_AND_IMAGE_SELECT + " WHERE p.user_id = ? ";
 
         List<Object> params = new ArrayList<>();
+        params.add(userId.toString());
 
         if (filter.countryId() != null && !filter.countryId().isBlank()) {
             sql += "AND p.country_id = ? ";
@@ -73,11 +74,10 @@ public class PlaceRepositoryImpl implements PlaceRepository {
         }
         if (filter.name() != null && !filter.name().isBlank()) {
             sql += "AND p.title LIKE ? ";
-            params.add(filter.name() + "%");
+            params.add("%"+filter.name() + "%");
         }
 
         sql += "LIMIT ? OFFSET ?";
-        params.add(userId.toString());
         params.add(page.size() + 1);
         params.add(page.offset());
 

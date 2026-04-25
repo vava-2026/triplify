@@ -12,6 +12,7 @@ public record GetRoutesRequest(
 
     public GetRoutesRequest {
         pageRequest = pageRequest == null ? PageRequest.defaultRequest() : pageRequest;
+        filter = filter == null ? new Filter(null) : filter;
     }
 
     public record Filter(

@@ -7,6 +7,7 @@ import com.triplify.application.usecase.country.CountryService;
 import com.triplify.application.usecase.place.PlaceService;
 import com.triplify.application.usecase.place.dto.PlaceResponse;
 import com.triplify.application.usecase.route.RouteService;
+import com.triplify.application.usecase.route.dto.GetRouteByIdRequest;
 import com.triplify.application.usecase.route.dto.RouteResponse;
 import com.triplify.application.usecase.tag.TagService;
 import com.triplify.application.usecase.tag.dto.TagResponse;
@@ -747,7 +748,17 @@ public class AddTripController extends WindowedPageController {
             toast.info(I18n.t("trip.add.toast.route.duplicate"));
             return;
         }
-        routeItems.add(route);
+        RouteItem routeWithPlaces = route;
+        if (route.derivedPlaces().isEmpty()) {
+            var fullResult = routeService.getRouteById(new GetRouteByIdRequest(UUID.fromString(route.id())));
+            if (fullResult.isSuccess()) {
+                routeWithPlaces = toRouteItem(fullResult.getValue());
+            } else {
+                log.warn("Failed to load route places [routeId={}, code={}, message={}]",
+                        route.id(), fullResult.getError().code(), fullResult.getError().message());
+            }
+        }
+        routeItems.add(routeWithPlaces);
         renderRoutes();
         renderPlaces();
         refreshRoutePicker();
