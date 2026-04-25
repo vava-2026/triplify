@@ -627,6 +627,9 @@ public class AddRouteController extends WindowedPageController {
         Localization.bindText(routeTitleLabel.textProperty(), "route.add.field.title");
         Localization.bindText(descriptionLabel.textProperty(), "route.add.field.description");
         Localization.bindText(placesSectionHeader.titleProperty(), "route.add.section.places");
+        Localization.bindText(imageUploadPanel.sectionTitleProperty(), "route.add.section.cover");
+        Localization.bindText(imageUploadPanel.uploadTitleProperty(), "route.add.upload.title");
+        Localization.bindText(imageUploadPanel.uploadSubtitleProperty(), "route.add.upload.subtitle");
         Localization.bindText(addPlaceButton.textProperty(), "route.add.action.addPlace");
         Localization.bindText(placeCreateButton.textProperty(), "route.add.action.createPlace");
     }
