@@ -61,8 +61,9 @@ public class PlaceRepositoryImpl implements PlaceRepository {
         return Optional.empty();
     }
 
-    public Page<Place> findList(PageRequest page, PlaceFilter filter) {
-        String sql = PLACE_WITH_COUNTRY_AND_IMAGE_SELECT + " WHERE 1=1 ";
+    @Override
+    public Page<Place> findList(PageRequest page, PlaceFilter filter, UUID userId) {
+        String sql = PLACE_WITH_COUNTRY_AND_IMAGE_SELECT + " WHERE p.user_id = ? ";
 
         List<Object> params = new ArrayList<>();
 
@@ -76,6 +77,7 @@ public class PlaceRepositoryImpl implements PlaceRepository {
         }
 
         sql += "LIMIT ? OFFSET ?";
+        params.add(userId.toString());
         params.add(page.size() + 1);
         params.add(page.offset());
 

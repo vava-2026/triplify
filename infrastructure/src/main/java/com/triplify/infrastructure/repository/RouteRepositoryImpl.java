@@ -65,8 +65,8 @@ public class RouteRepositoryImpl implements RouteRepository {
     }
 
     @Override
-    public Page<Route> findList(PageRequest page, RouteFilter filter) {
-        StringBuilder sql = new StringBuilder(ROUTE_WITH_IMAGE_SELECT).append(" WHERE 1=1 ");
+    public Page<Route> findList(PageRequest page, RouteFilter filter, UUID userId) {
+        StringBuilder sql = new StringBuilder(ROUTE_WITH_IMAGE_SELECT).append(" WHERE r.user_id = ? ");
         List<Object> params = new ArrayList<>();
 
         if (filter != null && filter.name() != null && !filter.name().isBlank()) {
@@ -76,6 +76,7 @@ public class RouteRepositoryImpl implements RouteRepository {
 
         sql.append("ORDER BY r.updated_at DESC ");
         sql.append("LIMIT ? OFFSET ?");
+        params.add(userId.toString());
         params.add(page.size() + 1);
         params.add(page.offset());
 

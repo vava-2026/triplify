@@ -196,7 +196,8 @@ public class PlaceServiceImpl implements PlaceService {
 
     @Override
     public Result<Page<PlaceResponse>> getPlaces(GetPlacesRequest request) {
-        Page<Place> placesPage = placeRepository.findList(request.pageRequest(), request.filter());
+        SessionUser user = userSessionContext.getCurrent().orElseThrow();
+        Page<Place> placesPage = placeRepository.findList(request.pageRequest(), request.filter(), user.userId());
         Page<PlaceResponse> responsePage = placesPage.map(PlaceResponse::from);
         return Result.ok(responsePage);
     }
