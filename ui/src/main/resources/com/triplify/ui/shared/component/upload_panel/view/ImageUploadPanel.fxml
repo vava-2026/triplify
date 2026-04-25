@@ -20,7 +20,6 @@
                           iconSize="14"
                           styleClass="editor-section-icon"/>
                 <Label fx:id="sectionTitleLabel"
-                       text="Cover Image"
                        styleClass="editor-section-title"/>
             </children>
         </HBox>
@@ -39,15 +38,14 @@
                 <VBox fx:id="uploadPlaceholder"
                       styleClass="editor-upload-placeholder">
                     <children>
-                        <FontIcon iconLiteral="fth-image"
+                        <FontIcon fx:id="uploadIconNode"
+                                  iconLiteral="fth-image"
                                   iconSize="30"
                                   styleClass="editor-upload-icon"/>
                         <Label fx:id="uploadTitleLabel"
-                               text="Click to upload&#10;or drag and drop"
                                wrapText="true"
                                styleClass="editor-upload-title"/>
                         <Label fx:id="uploadSubtitleLabel"
-                               text="SVG, PNG, JPEG"
                                styleClass="editor-upload-subtitle"/>
                     </children>
                 </VBox>

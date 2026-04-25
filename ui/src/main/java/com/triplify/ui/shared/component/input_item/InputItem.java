@@ -105,6 +105,14 @@ public class InputItem extends VBox {
         textField.getStyleClass().add("input-item-error");
     }
 
+    public void showErrorHighlightOnly() {
+        errorLabel.setText("");
+        errorLabel.setVisible(false);
+        errorLabel.setManaged(false);
+        textField.getStyleClass().remove("input-item-error");
+        textField.getStyleClass().add("input-item-error");
+    }
+
     public void clearError() {
         errorLabel.setVisible(false);
         errorLabel.setManaged(false);

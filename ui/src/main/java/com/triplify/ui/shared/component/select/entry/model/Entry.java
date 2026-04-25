@@ -1,6 +1,6 @@
 package com.triplify.ui.shared.component.select.entry.model;
 
-import com.triplify.application.model.ColorTheme;
+import com.triplify.application.shared.ColorTheme;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 

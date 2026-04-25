@@ -1,4 +1,4 @@
-package com.triplify.application.pagination;
+package com.triplify.application.shared;
 
 public record Pagination(int page, int size, Integer totalItems, Integer totalPages) {
 

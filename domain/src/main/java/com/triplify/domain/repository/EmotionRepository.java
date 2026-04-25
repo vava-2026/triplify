@@ -4,6 +4,7 @@ import com.triplify.domain.model.Emotion;
 import com.triplify.domain.pagination.Page;
 import com.triplify.domain.pagination.PageRequest;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -13,5 +14,5 @@ public interface EmotionRepository {
     void update(Emotion emotion);
     void delete(UUID id);
     Optional<Emotion> findByName(String name);
-    Optional<Page<Emotion>> findAll(PageRequest page);
+    List<Emotion> findAll();
 }

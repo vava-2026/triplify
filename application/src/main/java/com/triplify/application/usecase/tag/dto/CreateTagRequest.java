@@ -1,7 +1,7 @@
 package com.triplify.application.usecase.tag.dto;
 
-import com.triplify.application.error.ValidationMessage;
-import com.triplify.application.model.ColorTheme;
+import com.triplify.application.shared.error.ValidationMessage;
+import com.triplify.application.shared.ColorTheme;
 import com.triplify.application.usecase.dto.DtoConstraints;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

@@ -1,4 +1,4 @@
-package com.triplify.application.error;
+package com.triplify.application.shared.error;
 
 public final class ValidationMessage {
 

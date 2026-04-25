@@ -140,33 +140,25 @@ public class EmotionRepositoryImpl implements EmotionRepository {
     }
 
     @Override
-    public Optional<Page<Emotion>> findAll(PageRequest page) {
+    public List<Emotion> findAll() {
         String sql = """
             SELECT id, created_by, name, name_sk, emoji_unicode
             FROM emotions
             ORDER BY name COLLATE NOCASE, id
-            LIMIT ? OFFSET ?
             """;
 
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, page.size() + 1);
-            ps.setInt(2, page.offset());
             try (ResultSet rs = ps.executeQuery()) {
                 List<Emotion> emotions = new ArrayList<>();
                 while (rs.next()) {
                     emotions.add(mapRow(rs));
                 }
 
-                boolean hasNext = emotions.size() > page.size();
-                if (hasNext) {
-                    emotions.removeLast();
-                }
-
-                return Optional.of(Page.of(emotions, page, hasNext));
+                return emotions;
             }
         } catch (SQLException e) {
-            log.error("Failed to find all emotions page={}", page.page(), e);
+            log.error("Failed to find all emotions", e);
             throw new RuntimeException("Database error while finding all emotions", e);
         }
     }

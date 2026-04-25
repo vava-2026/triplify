@@ -33,8 +33,8 @@ public record StoryResponse(
         Emotion emotion = story.getEmotion();
         if (emotion != null) {
             emotionResponse = new EmotionResponse(
-                    emotion.getId().toString(),
-                    emotion.getCreatedById().toString(),
+                    emotion.getId(),
+                    emotion.getCreatedById(),
                     emotion.getName(),
                     emotion.getNameSk(),
                     emotion.getEmojiUnicode()

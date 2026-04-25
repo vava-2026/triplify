@@ -33,6 +33,7 @@ public class CountryServiceImpl implements CountryService {
     @Override
     @Authenticated(roles = {RoleEnum.CONFIGURATION_MANAGER})
     public Result<CountryResponse> addCountry(AddCountryRequest request) {
+        log.info("Adding new country with name='{}'", request.name());
         SessionUser user = sessionContext.getCurrent().orElseThrow();
 
         if (countryRepository.existsByName(request.name(), request.nameSk())) {
@@ -49,6 +50,7 @@ public class CountryServiceImpl implements CountryService {
     @Override
     @Authenticated(roles = {RoleEnum.CONFIGURATION_MANAGER})
     public Result<CountryResponse> updateCountry(UpdateCountryRequest request) {
+        log.info("Updating country with id='{}', name='{}'", request.id(), request.name());
         SessionUser user = sessionContext.getCurrent().orElseThrow();
 
         Optional<Country> oldRes = countryRepository.findById(request.id());
@@ -58,7 +60,7 @@ public class CountryServiceImpl implements CountryService {
         }
 
         Country old = oldRes.get();
-        if (old.getCreatedById() != null && !old.getCreatedById().equals(user.userId())) {
+        if (old.getCreatedById() == null || !old.getCreatedById().equals(user.userId())) {
             log.warn("Attempted to update country not created by userId='{}' by userId='{}', countryName='{}'", old.getCreatedById(), user.userId(), old.getName());
             return Result.fail(new CountryError.NotFound(request.id().toString()));
         }
@@ -72,6 +74,7 @@ public class CountryServiceImpl implements CountryService {
     @Override
     @Authenticated(roles = {RoleEnum.CONFIGURATION_MANAGER})
     public Result<Void> deleteCountry(DeleteCountryRequest request) {
+        log.info("Deleting country with id='{}'", request.id());
         SessionUser user = sessionContext.getCurrent().orElseThrow();
 
         Optional<Country> oldRes = countryRepository.findById(request.id());
@@ -81,7 +84,7 @@ public class CountryServiceImpl implements CountryService {
         }
 
         Country old = oldRes.get();
-        if (old.getCreatedById() != null && !old.getCreatedById().equals(user.userId())) {
+        if (old.getCreatedById() == null || !old.getCreatedById().equals(user.userId())) {
             log.warn("Attempted to delete country not created by userId='{}' by userId='{}', countryName='{}'", old.getCreatedById(), user.userId(), old.getName());
             return Result.fail(new CountryError.NotFound(request.id().toString()));
         }
@@ -94,12 +97,14 @@ public class CountryServiceImpl implements CountryService {
     @Override
     @Authenticated(roles = {RoleEnum.CONFIGURATION_MANAGER})
     public Result<CountryResponse> banCountry(BanCountryRequest request) {
+        log.info("Banning country with id='{}'", request.id());
         return changeAvailable(request.id(), false);
     }
 
     @Override
     @Authenticated(roles = {RoleEnum.CONFIGURATION_MANAGER})
     public Result<CountryResponse> unbanCountry(UnbanCountryRequest request) {
+        log.info("Unbanning country with id='{}'", request.id());
         return changeAvailable(request.id(), true);
     }
 
@@ -131,16 +136,9 @@ public class CountryServiceImpl implements CountryService {
         }
 
         Country old = oldRes.get();
-        if (old.getCreatedById() != null && !old.getCreatedById().equals(user.userId())) {
-            log.warn("Attempted to {} country not created by userId='{}' by userId='{}', countryName='{}'", logAction, old.getCreatedById(), user.userId(), old.getName());
-            return Result.fail(new CountryError.NotFound(countryId.toString()));
-        }
-
-        // Legacy rows can have null owner; normalize ownership after first management action.
-        var ownerId = old.getCreatedById() == null ? user.userId() : old.getCreatedById();
-        Country changed = new Country(old.getId(), ownerId, old.getName(), old.getNameSk(), old.getEmojiUnicode(), available);
-        countryRepository.update(changed);
+        old.setAvailable(available);
+        countryRepository.update(old);
         log.info("{} country with id='{}', name='{}' by userId='{}'", logAction, old.getId(), old.getName(), user.userId());
-        return Result.ok(CountryResponse.from(changed));
+        return Result.ok(CountryResponse.from(old));
     }
 }

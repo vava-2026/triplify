@@ -11,7 +11,10 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class UserSessionContextImpl implements UserSessionContext {
 
@@ -21,6 +24,7 @@ public class UserSessionContextImpl implements UserSessionContext {
 
     private final UserRepository userRepository;
     private volatile SessionUser currentUser;
+    private final List<Consumer<Optional<SessionUser>>> sessionChangeListeners = new ArrayList<>();
 
     @Inject
     public UserSessionContextImpl(UserRepository userRepository) {
@@ -30,11 +34,13 @@ public class UserSessionContextImpl implements UserSessionContext {
     @Override
     public void set(SessionUser user) {
         this.currentUser = user;
+        notifySessionChangeListeners();
     }
 
     @Override
     public void clear() {
         this.currentUser = null;
+        notifySessionChangeListeners();
         deletePersistedSession();
     }
 
@@ -52,6 +58,7 @@ public class UserSessionContextImpl implements UserSessionContext {
     public Optional<SessionUser> load() {
         if (!Files.exists(SESSION_FILE)) {
             currentUser = null;
+            notifySessionChangeListeners();
             return Optional.empty();
         }
         log.debug("Loading persisted session from {}", SESSION_FILE);
@@ -64,6 +71,7 @@ public class UserSessionContextImpl implements UserSessionContext {
             log.warn("Failed to load persisted session from {}", SESSION_FILE, e);
             deletePersistedSession();
             currentUser = null;
+            notifySessionChangeListeners();
             return Optional.empty();
         }
 
@@ -71,6 +79,7 @@ public class UserSessionContextImpl implements UserSessionContext {
             log.warn("Ignoring invalid session file: missing email");
             deletePersistedSession();
             currentUser = null;
+            notifySessionChangeListeners();
             return Optional.empty();
         }
 
@@ -82,6 +91,7 @@ public class UserSessionContextImpl implements UserSessionContext {
         } catch (RuntimeException e) {
             log.warn("Failed to validate persisted session for email='{}'", storedUser.email(), e);
             currentUser = null;
+            notifySessionChangeListeners();
             return Optional.empty();
         }
 
@@ -89,6 +99,7 @@ public class UserSessionContextImpl implements UserSessionContext {
             log.info("Ignoring persisted session for deleted user email='{}'", storedUser.email());
             deletePersistedSession();
             currentUser = null;
+            notifySessionChangeListeners();
             return Optional.empty();
         }
 
@@ -99,6 +110,7 @@ public class UserSessionContextImpl implements UserSessionContext {
                 user.getEmail(),
                 user.getRole(),
                 user.getAvatarImageId());
+        notifySessionChangeListeners();
         log.info("Loaded persisted session for user email='{}'", currentUser.email());
         save();
         log.debug("Persisted session loaded successfully");
@@ -122,6 +134,27 @@ public class UserSessionContextImpl implements UserSessionContext {
             log.debug("Session saved successfully");
         } catch (IOException e) {
             log.warn("Failed to save session to {}", SESSION_FILE, e);
+        }
+    }
+
+    @Override
+    public void addSessionChangeListener(Consumer<Optional<SessionUser>> listener) {
+        sessionChangeListeners.add(listener);
+    }
+
+    @Override
+    public void removeSessionChangeListener(Consumer<Optional<SessionUser>> listener) {
+        sessionChangeListeners.remove(listener);
+    }
+
+    private void notifySessionChangeListeners() {
+        Optional<SessionUser> current = Optional.ofNullable(currentUser);
+        for (Consumer<Optional<SessionUser>> listener : new ArrayList<>(sessionChangeListeners)) {
+            try {
+                listener.accept(current);
+            } catch (Exception e) {
+                log.warn("Error notifying session change listener", e);
+            }
         }
     }
 

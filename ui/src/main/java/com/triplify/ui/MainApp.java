@@ -1,18 +1,25 @@
 package com.triplify.ui;
 
+import java.net.URL;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Inject;
-import com.triplify.application.usecase.session.UserSessionContext;
 import com.google.inject.Injector;
+import com.triplify.application.usecase.session.UserSessionContext;
 import com.triplify.ui.routing.AppPage;
 import com.triplify.ui.routing.GuardedNavigator;
 import com.triplify.ui.routing.PageAccessService;
+import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.header.view.HeaderView;
 import com.triplify.ui.shared.menu.view.MenuView;
 import com.triplify.ui.shared.menu.view.SidebarIslandView;
 import com.triplify.ui.shared.toast.ToastService;
-import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import com.triplify.ui.shared.util.FxmlLoadResult;
+import com.triplify.ui.shared.util.FxmlLoaderHelper;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.binding.BooleanBinding;
@@ -25,11 +32,9 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import rahulstech.jfx.routing.Router;
+import rahulstech.jfx.routing.element.RouterArgument;
 import rahulstech.jfx.routing.layout.RouterStackPane;
-import java.net.URL;
 
 public class MainApp extends Application {
 
@@ -85,6 +90,13 @@ public class MainApp extends Application {
         Node header = headerResult.node();
         HeaderView headerView = headerResult.controller();
         HBox.setHgrow(header, Priority.ALWAYS);
+        headerView.setNavigationHandler(tripId -> {
+            if (router != null) {
+                RouterArgument args = new RouterArgument();
+                args.addArgument("tripId", tripId);
+                guardedNavigator.goTo(router, RouteIds.TRIP_DETAILS, args);
+            }
+        });
 
         // Router content area
         TriplifyRouterContext routerContext = new TriplifyRouterContext(injectorRef);

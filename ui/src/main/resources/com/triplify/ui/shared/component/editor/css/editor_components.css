@@ -62,14 +62,6 @@
     -fx-smooth: true;
 }
 
-.editor-action-group {
-    -fx-spacing: 10px;
-}
-
-.editor-action-button {
-    -fx-pref-height: 42px;
-}
-
 .editor-media-card {
     -fx-pref-width: 152px;
     -fx-background-color: #f8fbfe;

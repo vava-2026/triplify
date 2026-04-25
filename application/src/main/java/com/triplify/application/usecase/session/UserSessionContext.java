@@ -1,6 +1,7 @@
 package com.triplify.application.usecase.session;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
 /**
  * Manages the current user's session state within the application lifecycle.
@@ -14,4 +15,6 @@ public interface UserSessionContext {
     boolean isLoggedIn();
     Optional<SessionUser> load();
     void save();
+    void addSessionChangeListener(Consumer<Optional<SessionUser>> listener);
+    void removeSessionChangeListener(Consumer<Optional<SessionUser>> listener);
 }

@@ -13,7 +13,7 @@ public interface TagRepository {
     Optional<Tag> findById(UUID id);
     Optional<Tag> findByUserIdAndName(UUID userId, String name);
     List<Tag> findByIds(Set<UUID> ids);
-    Page<Tag> findList(PageRequest pageRequest, String name);
+    List<Tag> findList(UUID userId, String name);
     void create(Tag tag);
     void delete(UUID id);
     void update(Tag tag);

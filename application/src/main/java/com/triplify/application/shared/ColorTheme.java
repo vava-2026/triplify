@@ -1,7 +1,9 @@
-package com.triplify.application.model;
+package com.triplify.application.shared;
 
 import com.triplify.domain.model.enums.ColorEnum;
+import lombok.Getter;
 
+@Getter
 public enum ColorTheme {
 
     GRAY("app-theme-gray"),
@@ -31,16 +33,17 @@ public enum ColorTheme {
         this.styleClass = styleClass;
     }
 
-    public String getStyleClass() {
-        return styleClass;
-    }
-
     public static ColorTheme from(ColorEnum color) {
         return color == null ? GRAY : ColorTheme.valueOf(color.name());
     }
 
     public ColorEnum toColorEnum() {
         return ColorEnum.valueOf(name());
+    }
+
+    public static ColorTheme forLabel(String label) {
+        ColorTheme[] values = ColorTheme.values();
+        return values[Math.floorMod(label == null ? 0 : label.hashCode(), values.length)];
     }
 }
 

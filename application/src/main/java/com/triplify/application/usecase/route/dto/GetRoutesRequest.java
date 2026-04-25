@@ -1,6 +1,6 @@
 package com.triplify.application.usecase.route.dto;
 
-import com.triplify.application.error.ValidationMessage;
+import com.triplify.application.shared.error.ValidationMessage;
 import com.triplify.application.usecase.dto.DtoConstraints;
 import com.triplify.domain.pagination.PageRequest;
 import jakarta.validation.constraints.Size;
@@ -12,6 +12,7 @@ public record GetRoutesRequest(
 
     public GetRoutesRequest {
         pageRequest = pageRequest == null ? PageRequest.defaultRequest() : pageRequest;
+        filter = filter == null ? new Filter(null) : filter;
     }
 
     public record Filter(

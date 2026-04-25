@@ -1,4 +1,4 @@
-package com.triplify.application.error;
+package com.triplify.application.shared.error;
 
 import com.triplify.domain.error.AppError;
 

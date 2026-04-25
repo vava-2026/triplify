@@ -9,6 +9,8 @@ import com.triplify.application.usecase.emotion.dto.UpdateEmotionRequest;
 import com.triplify.domain.pagination.Page;
 import com.triplify.domain.result.Result;
 
+import java.util.List;
+
 public interface EmotionService {
 
     Result<EmotionResponse> createEmotion(CreateEmotionRequest request);
@@ -19,5 +21,5 @@ public interface EmotionService {
 
     Result<EmotionResponse> findById(GetEmotionByIdRequest request);
 
-    Result<Page<EmotionResponse>> getAllEmotions(GetAllEmotionsRequest request);
+    Result<List<EmotionResponse>> getAllEmotions();
 }

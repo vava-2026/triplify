@@ -1,6 +1,6 @@
 package com.triplify.application.usecase.tripplace.dto;
 
-import com.triplify.application.error.ValidationMessage;
+import com.triplify.application.shared.error.ValidationMessage;
 import com.triplify.domain.model.enums.TripPlaceSourceType;
 import jakarta.validation.constraints.NotNull;
 

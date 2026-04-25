@@ -1,11 +1,17 @@
 package com.triplify.infrastructure.repository;
 
 import com.triplify.domain.model.TripPlace;
+import com.triplify.domain.model.Trip;
+import com.triplify.domain.model.Category;
+import com.triplify.domain.model.Image;
+import com.triplify.domain.model.enums.ColorEnum;
+import com.triplify.domain.model.enums.StatusEnum;
 import com.triplify.domain.model.enums.TripPlaceSourceType;
 import com.triplify.domain.pagination.Page;
 import com.triplify.domain.pagination.PageRequest;
 import com.triplify.domain.repository.TripPlaceRepository;
 import com.triplify.infrastructure.repository.persistence.SQLiteConnectionFactory;
+import com.triplify.infrastructure.repository.utils.RepositoryUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +22,9 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -81,6 +89,128 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
             log.error("Failed to find trip places by placeId='{}'", placeId, e);
             throw new RuntimeException("Database error while finding trip places by place id", e);
         }
+    }
+
+    @Override
+    public Page<Trip> findTripsByPlaceId(PageRequest pageRequest, UUID placeId, UUID userId) {
+        String sql = """
+                WITH selected_trips AS (
+                    SELECT
+                        tp.trip_id AS trip_id,
+                        MAX(tp.updated_at) AS assoc_updated_at,
+                        MAX(tp.created_at) AS assoc_created_at
+                    FROM trip_places tp
+                    INNER JOIN trips t ON t.id = tp.trip_id
+                    WHERE tp.place_id = ? AND t.user_id = ?
+                    GROUP BY tp.trip_id
+                    ORDER BY assoc_updated_at DESC, assoc_created_at DESC
+                    LIMIT ? OFFSET ?
+                )
+                SELECT
+                    t.id AS t_id,
+                    t.user_id AS t_user_id,
+                    t.category_id AS t_category_id,
+                    t.cover_image_id AS t_cover_image_id,
+                    t.title AS t_title,
+                    t.description AS t_description,
+                    t.status AS t_status,
+                    t.started_at AS t_started_at,
+                    t.ended_at AS t_ended_at,
+                    t.created_at AS t_created_at,
+                    t.updated_at AS t_updated_at,
+                    i.id AS i_id,
+                    i.url AS i_url,
+                    i.description AS i_description,
+                    i.uploaded_at AS i_uploaded_at,
+                    c.id AS c_id,
+                    c.created_by AS c_created_by,
+                    c.name AS c_name,
+                    c.name_sk AS c_name_sk,
+                    c.description AS c_description,
+                    c.description_sk AS c_description_sk,
+                    c.emoji_unicode AS c_emoji_unicode,
+                    c.color AS c_color,
+                    st.assoc_updated_at AS assoc_updated_at,
+                    st.assoc_created_at AS assoc_created_at
+                FROM selected_trips st
+                INNER JOIN trips t ON t.id = st.trip_id
+                LEFT JOIN images i ON t.cover_image_id = i.id
+                LEFT JOIN categories c ON t.category_id = c.id
+                ORDER BY st.assoc_updated_at DESC, st.assoc_created_at DESC
+                """;
+
+        try (Connection conn = SQLiteConnectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, placeId.toString());
+            ps.setString(2, userId.toString());
+            ps.setInt(3, pageRequest.size() + 1);
+            ps.setInt(4, pageRequest.offset());
+
+            try (ResultSet rs = ps.executeQuery()) {
+                List<Trip> trips = new ArrayList<>();
+                while (rs.next()) {
+                    trips.add(mapTripRow(rs));
+                }
+
+                boolean hasNext = trips.size() > pageRequest.size();
+                if (hasNext) {
+                    trips.remove(trips.size() - 1);
+                }
+                return Page.of(trips, pageRequest, hasNext);
+            }
+        } catch (SQLException e) {
+            log.error("Failed to find trips by placeId='{}'", placeId, e);
+            throw new RuntimeException("Database error while finding trips by place id", e);
+        }
+    }
+
+    private Trip mapTripRow(ResultSet rs) throws SQLException {
+        UUID categoryId = nullableUuid(rs.getString("t_category_id"));
+        UUID coverImageId = nullableUuid(rs.getString("t_cover_image_id"));
+
+        Image coverImage = null;
+        if (rs.getString("i_id") != null && rs.getString("i_url") != null) {
+            coverImage = new Image(
+                    UUID.fromString(rs.getString("i_id")),
+                    java.nio.file.Path.of(rs.getString("i_url")),
+                    rs.getString("i_description"),
+                    Instant.parse(rs.getString("i_uploaded_at"))
+            );
+        }
+
+        Category category = null;
+        if (rs.getString("c_id") != null) {
+            category = new Category(
+                    UUID.fromString(rs.getString("c_id")),
+                    nullableUuid(rs.getString("c_created_by")),
+                    rs.getString("c_name"),
+                    rs.getString("c_name_sk"),
+                    rs.getString("c_description"),
+                    rs.getString("c_description_sk"),
+                    rs.getString("c_emoji_unicode"),
+                    RepositoryUtils.sqlToColor(rs.getString("c_color"))
+            );
+        }
+
+        return new Trip(
+                UUID.fromString(rs.getString("t_id")),
+                UUID.fromString(rs.getString("t_user_id")),
+                categoryId,
+                category,
+                coverImageId,
+                coverImage,
+                rs.getString("t_title"),
+                rs.getString("t_description"),
+                StatusEnum.fromValue(rs.getString("t_status")),
+                nullableInstant(rs.getString("t_started_at")),
+                nullableInstant(rs.getString("t_ended_at")),
+                Instant.parse(rs.getString("t_created_at")),
+                Instant.parse(rs.getString("t_updated_at")),
+                new LinkedHashSet<>(),
+                new LinkedHashSet<>(),
+                new LinkedHashSet<>(),
+                new LinkedHashSet<>()
+        );
     }
 
     @Override

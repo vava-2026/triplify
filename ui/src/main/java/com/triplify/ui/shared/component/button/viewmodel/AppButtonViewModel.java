@@ -1,6 +1,7 @@
 package com.triplify.ui.shared.component.button.viewmodel;
 
 import com.triplify.ui.shared.component.button.model.ButtonVariant;
+import com.triplify.ui.shared.model.AppComponentSize;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -12,6 +13,7 @@ public class AppButtonViewModel {
 
     private final StringProperty label = new SimpleStringProperty("");
     private final ObjectProperty<ButtonVariant> variant = new SimpleObjectProperty<>(ButtonVariant.PRIMARY);
+    private final ObjectProperty<AppComponentSize> size = new SimpleObjectProperty<>(AppComponentSize.MIDDLE);
     private final StringProperty icon = new SimpleStringProperty(null);
     private final BooleanProperty disabled = new SimpleBooleanProperty(false);
     private final BooleanProperty loading = new SimpleBooleanProperty(false);
@@ -27,6 +29,10 @@ public class AppButtonViewModel {
     public ObjectProperty<ButtonVariant> variantProperty() { return variant; }
     public ButtonVariant getVariant() { return variant.get(); }
     public void setVariant(ButtonVariant v) { variant.set(v); }
+
+    public ObjectProperty<AppComponentSize> sizeProperty() { return size; }
+    public AppComponentSize getSize() { return size.get(); }
+    public void setSize(AppComponentSize v) { size.set(v); }
 
     public StringProperty iconProperty() { return icon; }
     public String getIcon() { return icon.get(); }

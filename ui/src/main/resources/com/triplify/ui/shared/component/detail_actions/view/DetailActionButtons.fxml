@@ -11,12 +11,10 @@
 
     <Button fx:id="primaryButton"
             maxWidth="Infinity"
-            styleClass="app-btn,app-btn-primary,detail-action-button"
-            text="Edit Place"/>
+            styleClass="app-btn,app-btn-primary,detail-action-button"/>
 
     <Button fx:id="secondaryButton"
             maxWidth="Infinity"
-            styleClass="app-btn,app-btn-danger-outline,detail-action-button"
-            text="Delete Place"/>
+            styleClass="app-btn,app-btn-danger-outline,detail-action-button"/>
 
 </fx:root>

@@ -1,7 +1,7 @@
 package com.triplify.application.usecase.trip;
 
 import com.google.inject.Inject;
-import com.triplify.application.model.ColorTheme;
+import com.triplify.application.shared.ColorTheme;
 import com.triplify.application.security.Authenticated;
 import com.triplify.application.usecase.category.dto.CategoryResponse;
 import com.triplify.application.usecase.country.dto.CountryResponse;
@@ -31,7 +31,6 @@ import com.triplify.domain.model.Tag;
 import com.triplify.domain.model.Trip;
 import com.triplify.domain.model.enums.StatusEnum;
 import com.triplify.domain.pagination.Page;
-import com.triplify.domain.pagination.PageRequest;
 import com.triplify.domain.repository.CategoryRepository;
 import com.triplify.domain.repository.CountryRepository;
 import com.triplify.domain.repository.TagRepository;

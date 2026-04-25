@@ -1,0 +1,100 @@
+.license-modal-root {
+    -fx-background-color: -color-overlay-modal;
+}
+
+.license-modal-backdrop {
+    -fx-background-color: transparent;
+}
+
+.license-modal-card {
+    -fx-background-color: -color-surface;
+    -fx-background-radius: 20;
+    -fx-border-radius: 20;
+    -fx-effect: dropshadow(gaussian, -color-shadow-modal, 28, 0, 0, 8);
+}
+
+.license-upload-panel {
+    -fx-spacing: 25;
+    -fx-pref-width: 270;
+    -fx-min-width: 270;
+    -fx-max-width: 270;
+    -fx-pref-height: 270;
+    -fx-min-height: 270;
+    -fx-max-height: 270;
+}
+
+.license-upload-panel .editor-section-header {
+    -fx-spacing: 10;
+}
+
+.license-upload-panel .editor-section-icon {
+    -fx-icon-color: -color-primary-dark;
+}
+
+.license-upload-panel .editor-section-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
+
+.license-upload-panel .editor-upload-area {
+    -fx-min-height: 270px;
+    -fx-pref-height: 270px;
+    -fx-max-height: 270px;
+}
+
+.license-upload-panel .editor-upload-placeholder {
+    -fx-spacing: 10;
+}
+
+.license-upload-panel .editor-upload-icon {
+    -fx-icon-color: -color-primary-dark;
+}
+
+.license-upload-panel .editor-upload-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.license-upload-panel .editor-upload-subtitle {
+    -fx-font-size: 14px;
+}
+
+.license-modal-card-shell {
+    -fx-background-color: transparent;
+}
+
+.license-modal-content {
+    -fx-background-color: transparent;
+}
+
+.license-modal-title {
+    -fx-font-family: -font-family-base;
+    -fx-font-size: 24px;
+    -fx-font-weight: 700;
+    -fx-text-fill: -color-ink;
+}
+
+.license-modal-body {
+    -fx-font-family: -font-family-base;
+    -fx-font-size: 14px;
+    -fx-text-fill: -color-ink-muted;
+}
+
+.license-modal-close-btn {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+}
+
+.license-modal-close-icon {
+    -fx-icon-color: -color-primary-dark;
+}
+
+.license-modal-close-btn:hover .license-modal-close-icon {
+    -fx-icon-color: -color-ink;
+}
+
+.license-modal-actions {
+    -fx-padding: 0 50 30 50;
+}
+

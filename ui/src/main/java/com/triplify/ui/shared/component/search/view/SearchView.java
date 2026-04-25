@@ -4,7 +4,7 @@ import com.triplify.ui.shared.component.select.entry.model.Entry;
 import com.triplify.ui.shared.component.select.entry.view.EntryCell;
 import com.triplify.ui.shared.component.search.model.Search;
 import com.triplify.ui.shared.component.search.model.SearchDisplayMode;
-import com.triplify.ui.shared.component.search.model.SearchSize;
+import com.triplify.ui.shared.model.AppComponentSize;
 import com.triplify.ui.shared.model.FieldVariant;
 import javafx.animation.PauseTransition;
 import javafx.beans.value.ChangeListener;
@@ -48,7 +48,7 @@ public class SearchView<T> extends VBox {
     private PauseTransition debounce;
 
     private FieldVariant lastVariant = null;
-    private SearchSize lastSize = null;
+    private AppComponentSize lastSize = null;
     private boolean isFocused = false;
     private ScrollBar verticalScrollBar;
     private String activeQuery = "";
@@ -324,24 +324,25 @@ public class SearchView<T> extends VBox {
         };
     }
 
-    private void applySize(SearchSize size) {
+    private void applySize(AppComponentSize size) {
         if (lastSize == size) return;
         if (lastSize != null) {
             String cls = toStyleClass(lastSize);
             getStyleClass().remove(cls);
             popupContent.getStyleClass().remove(cls);
         }
-        SearchSize effective = size == null ? SearchSize.SMALL : size;
+        AppComponentSize effective = size == null ? AppComponentSize.SMALL : size;
         String cls = toStyleClass(effective);
         getStyleClass().add(cls);
         popupContent.getStyleClass().add(cls);
         lastSize = effective;
     }
 
-    private static String toStyleClass(SearchSize size) {
+    private static String toStyleClass(AppComponentSize size) {
         return switch (size) {
             case SMALL -> "app-search-size-small";
             case MIDDLE -> "app-search-size-middle";
+            case BIG -> "app-search-size-big";
         };
     }
 

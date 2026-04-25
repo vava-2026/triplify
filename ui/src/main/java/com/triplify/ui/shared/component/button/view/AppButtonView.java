@@ -3,6 +3,7 @@ package com.triplify.ui.shared.component.button.view;
 import com.google.inject.Inject;
 import com.triplify.ui.shared.component.button.model.ButtonVariant;
 import com.triplify.ui.shared.component.button.viewmodel.AppButtonViewModel;
+import com.triplify.ui.shared.model.AppComponentSize;
 import javafx.beans.value.ObservableValue;
 import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import com.triplify.ui.shared.util.FxmlLoadResult;
@@ -15,6 +16,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import lombok.Getter;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.net.URL;
@@ -26,18 +28,16 @@ public class AppButtonView implements Initializable {
     private static final URL CSS_URL = AppButtonView.class.getResource("/com/triplify/ui/shared/component/button/css/button.css");
     private static final URL DIALOG_FXML_URL = AppButtonView.class.getResource("/com/triplify/ui/shared/component/button/view/ConfirmDialog.fxml");
 
+    @Getter
     @FXML private Button button;
 
+    @Getter
     private AppButtonViewModel viewModel;
 
     @Inject private FxmlLoaderHelper fxmlLoader;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) { }
-
-    public Button getButton() { return button; }
-
-    public AppButtonViewModel getViewModel() { return viewModel; }
 
     @FXML
     private void onClicked() {
@@ -56,6 +56,7 @@ public class AppButtonView implements Initializable {
         private String label = "";
         private ObservableValue<String> labelBinding = null;
         private ButtonVariant variant = ButtonVariant.PRIMARY;
+        private AppComponentSize size = AppComponentSize.MIDDLE;
         private String icon = null;
         private boolean disabled = false;
         private boolean requireConfirm = false;
@@ -67,6 +68,7 @@ public class AppButtonView implements Initializable {
         public Builder label(String v) { this.label = v; return this; }
         public Builder labelBinding(ObservableValue<String> binding) { this.labelBinding = binding; return this; }
         public Builder variant(ButtonVariant v) { this.variant = v; return this; }
+        public Builder size(AppComponentSize v) { this.size = v == null ? AppComponentSize.MIDDLE : v; return this; }
         public Builder icon(String iconLiteral) { this.icon = iconLiteral; return this; }
         public Builder disabled(boolean v) { this.disabled = v; return this; }
         public Builder requireConfirm(String msg) { this.requireConfirm = true; this.confirmMessage = msg; return this; }
@@ -76,17 +78,18 @@ public class AppButtonView implements Initializable {
             if (FXML_URL == null) throw new IllegalStateException("AppButton.fxml not found");
             FxmlLoadResult<?, AppButtonView> result = fxmlLoader.load(FXML_URL);
             AppButtonView view = result.controller();
-            view.configure(label, labelBinding, variant, icon, disabled, requireConfirm, confirmMessage, onAction);
+            view.configure(label, labelBinding, variant, size, icon, disabled, requireConfirm, confirmMessage, onAction);
             return view.getButton();
         }
     }
 
-    private void configure(String label, ObservableValue<String> labelBinding, ButtonVariant variant, String iconLiteral,
+    private void configure(String label, ObservableValue<String> labelBinding, ButtonVariant variant, AppComponentSize size, String iconLiteral,
                            boolean disabled, boolean requireConfirm, String confirmMessage,
                            Runnable onAction) {
         viewModel = new AppButtonViewModel();
         viewModel.setLabel(label);
         viewModel.setVariant(variant);
+        viewModel.setSize(size);
         viewModel.setIcon(iconLiteral);
         viewModel.setDisabled(disabled);
         viewModel.setRequireConfirm(requireConfirm);
@@ -98,6 +101,7 @@ public class AppButtonView implements Initializable {
         }
 
         button.getStyleClass().add(variant.getStyleClass());
+        button.getStyleClass().add(toSizeClass(size));
 
         if (labelBinding != null) {
             button.textProperty().bind(labelBinding);
@@ -112,6 +116,15 @@ public class AppButtonView implements Initializable {
             button.setDisable(newV || viewModel.isDisabled());
             rebuildGraphic(viewModel.getIcon(), newV);
         });
+    }
+
+    private String toSizeClass(AppComponentSize size) {
+        AppComponentSize effective = size == null ? AppComponentSize.MIDDLE : size;
+        return switch (effective) {
+            case SMALL -> "app-btn-size-small";
+            case MIDDLE -> "app-btn-size-middle";
+            case BIG -> "app-btn-size-big";
+        };
     }
 
     private void rebuildGraphic(String iconLiteral, boolean loading) {

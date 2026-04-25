@@ -1,7 +1,7 @@
 package com.triplify.application.usecase.tripplace;
 
 import com.google.inject.Inject;
-import com.triplify.application.error.ApplicationError;
+import com.triplify.application.shared.error.ApplicationError;
 import com.triplify.application.security.Authenticated;
 import com.triplify.application.usecase.image.dto.ImageResponse;
 import com.triplify.application.usecase.place.PlaceService;
@@ -13,6 +13,7 @@ import com.triplify.application.usecase.tripplace.dto.AddTripPlaceRequest;
 import com.triplify.application.usecase.tripplace.dto.DeleteTripPlaceRequest;
 import com.triplify.application.usecase.tripplace.dto.GetTripPlaceByIdRequest;
 import com.triplify.application.usecase.tripplace.dto.GetTripPlacesRequest;
+import com.triplify.application.usecase.tripplace.dto.ReplaceManualTripPlacesRequest;
 import com.triplify.application.usecase.tripplace.dto.TripPlaceResponse;
 import com.triplify.application.usecase.tripplace.dto.UpdateTripPlaceRequest;
 import com.triplify.domain.error.PlaceError;
@@ -24,6 +25,7 @@ import com.triplify.domain.model.TripPlace;
 import com.triplify.domain.model.TripRoute;
 import com.triplify.domain.model.enums.TripPlaceSourceType;
 import com.triplify.domain.pagination.Page;
+import com.triplify.domain.pagination.PageRequest;
 import com.triplify.domain.repository.PlaceRepository;
 import com.triplify.domain.repository.RoutePlaceRepository;
 import com.triplify.domain.repository.TripPlaceRepository;
@@ -42,6 +44,8 @@ import java.util.UUID;
 
 @Authenticated
 public class TripPlaceServiceImpl implements TripPlaceService {
+
+    private static final Logger log = LoggerFactory.getLogger(TripPlaceServiceImpl.class);
 
     private final TripPlaceRepository tripPlaceRepository;
     private final TripRepository tripRepository;
@@ -161,6 +165,42 @@ public class TripPlaceServiceImpl implements TripPlaceService {
         }
 
         return Result.ok(new Page<>(responses, page.page(), page.size(), page.hasNext()));
+    }
+
+    @Override
+    public Result<Void> replaceManualTripPlaces(ReplaceManualTripPlacesRequest request) {
+        SessionUser user = userSessionContext.getCurrent().orElseThrow();
+        requireOwnedTrip(request.tripId(), user.userId()).orThrow();
+
+        List<TripPlaceResponse> existing = getAllManualTripPlaces(request.tripId()).orThrow();
+        for (TripPlaceResponse tripPlace : existing) {
+            tripPlaceRepository.findById(tripPlace.id()).ifPresent(tripPlaceRepository::delete);
+        }
+
+        for (UUID placeId : request.placeIds()) {
+            tripPlaceRepository.create(new TripPlace(request.tripId(), placeId));
+        }
+
+        log.info("Replaced manual trip places for tripId='{}' with {} places by userId='{}'", request.tripId(), request.placeIds().size(), user.userId());
+        return Result.ok();
+    }
+
+    @Override
+    public Result<List<TripPlaceResponse>> getAllManualTripPlaces(UUID tripId) {
+        List<TripPlaceResponse> items = new ArrayList<>();
+        PageRequest pageRequest = new PageRequest(0, 100);
+        while (true) {
+            var result = getTripPlaces(new GetTripPlacesRequest(
+                    pageRequest,
+                    new GetTripPlacesRequest.Filter(tripId, TripPlaceSourceType.MANUAL, null, null, null, null),
+                    new GetTripPlacesRequest.OrderBy(true)
+            ));
+            if (result.isFailure()) return Result.fail(result.getError());
+            Page<TripPlaceResponse> page = result.getValue();
+            items.addAll(page.items());
+            if (!page.hasNext()) return Result.ok(items);
+            pageRequest = pageRequest.next();
+        }
     }
 
     private Result<Trip> requireOwnedTrip(UUID tripId, UUID userId) {
