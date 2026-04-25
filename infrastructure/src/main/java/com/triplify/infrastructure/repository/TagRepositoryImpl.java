@@ -115,14 +115,13 @@ public class TagRepositoryImpl implements TagRepository {
             FROM tags
             WHERE user_id = ?
             """);
+        boolean hasNameFilter = name != null && !name.isBlank();
+        if (hasNameFilter) {
+            sql.append(" AND name LIKE ? ");
+        }
+        sql.append(" ORDER BY name COLLATE NOCASE, id");
         try (Connection conn = SQLiteConnectionFactory.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-            boolean hasNameFilter = name != null && !name.isBlank();
-            if (hasNameFilter) {
-                sql.append(" AND name LIKE ? ");
-            }
-            sql.append(" ORDER BY name COLLATE NOCASE, id");
-
             ps.setString(1, userId.toString());
             if (hasNameFilter){
                 ps.setString(2, name + "%");

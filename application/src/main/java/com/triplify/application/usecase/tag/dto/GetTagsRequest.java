@@ -3,6 +3,7 @@ package com.triplify.application.usecase.tag.dto;
 import com.triplify.application.shared.error.ValidationMessage;
 import com.triplify.application.usecase.dto.DtoConstraints;
 import com.triplify.domain.pagination.PageRequest;
+
 import jakarta.validation.constraints.Size;
 
 public record GetTagsRequest(
@@ -12,6 +13,7 @@ public record GetTagsRequest(
 
     public GetTagsRequest {
         pageRequest = pageRequest == null ? PageRequest.defaultRequest() : pageRequest;
+        filter = filter == null ? new Filter(null) : filter;
     }
 
     public record Filter(
@@ -22,5 +24,9 @@ public record GetTagsRequest(
         public Filter {
             name = name == null ? null : name.trim();
         }
+    }
+
+    public static GetTagsRequest defaultRequest() {
+        return new GetTagsRequest(PageRequest.defaultRequest(), null);
     }
 }

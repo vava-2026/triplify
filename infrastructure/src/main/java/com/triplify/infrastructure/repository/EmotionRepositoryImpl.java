@@ -158,7 +158,7 @@ public class EmotionRepositoryImpl implements EmotionRepository {
                 return emotions;
             }
         } catch (SQLException e) {
-            log.error("Failed to find all emotions page={}", page.page(), e);
+            log.error("Failed to find all emotions", e);
             throw new RuntimeException("Database error while finding all emotions", e);
         }
     }

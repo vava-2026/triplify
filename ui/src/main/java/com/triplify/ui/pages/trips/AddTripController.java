@@ -9,7 +9,6 @@ import com.triplify.application.usecase.place.dto.PlaceResponse;
 import com.triplify.application.usecase.route.RouteService;
 import com.triplify.application.usecase.route.dto.RouteResponse;
 import com.triplify.application.usecase.tag.TagService;
-import com.triplify.application.usecase.tag.dto.ResolveOrCreateTagsRequest;
 import com.triplify.application.usecase.tag.dto.TagResponse;
 import com.triplify.application.usecase.trip.TripService;
 import com.triplify.application.usecase.trip.dto.AddTripRequest;
@@ -147,7 +146,6 @@ public class AddTripController extends WindowedPageController {
 
     private final Set<String> selectedCountryIds = new LinkedHashSet<>();
     private final Map<String, String> selectedCountryLabelsById = new LinkedHashMap<>();
-    private final Set<String> selectedTagLabels = new LinkedHashSet<>();
     private final List<RouteItem> routeItems = new ArrayList<>();
     private final List<PlaceItem> placeItems = new ArrayList<>();
 
@@ -170,7 +168,6 @@ public class AddTripController extends WindowedPageController {
     private Routes routesModel;
     private Places placesModel;
     private List<CategoryResponse> availableCategories = List.of();
-    private List<TagResponse> availableTags = List.of();
     private boolean coverImageDirty;
 
     @FXML
@@ -200,7 +197,6 @@ public class AddTripController extends WindowedPageController {
         initializeCountrySelector();
         categoriesComponent = Categories.builder(categoryService).build();
         loadAvailableCategories();
-        loadAvailableTags();
         refreshLocalizedUi();
         initializeActionPickers();
         I18n.bundleProperty().addListener((obs, oldBundle, newBundle) -> refreshLocalizedUi());
@@ -326,18 +322,17 @@ public class AddTripController extends WindowedPageController {
             return;
         }
 
+        Set<UUID> tagIds = tagPickerInput.getSelectedTagIds();
+        if (tagIds.isEmpty()) {
+            toast.warning(I18n.t("trip.add.toast.tags.required"));
+            return;
+        }
+
         String tripTitle = titleInput.getText().trim();
         StatusEnum status = tripStatus != null ? tripStatus : StatusEnum.PLANNED;
         Instant startedAt = toInstant(startDateInput.getValue());
         Instant endedAt = toInstant(endDateInput.getValue());
 
-        var tagIdsResult = tagService.resolveOrCreateTags(new ResolveOrCreateTagsRequest(new ArrayList<>(selectedTagLabels)));
-        if (tagIdsResult.isFailure()) {
-            toast.error(I18n.t("trip.add.toast.title.saved"), tagIdsResult.getError().message());
-            return;
-        }
-
-        Set<UUID> tagIds = tagIdsResult.getValue();
         Set<UUID> countryIds = selectedCountryIds.stream()
                 .map(UUID::fromString)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
@@ -449,7 +444,6 @@ public class AddTripController extends WindowedPageController {
 
         tagPickerInput.setPlaceholderText(I18n.t("trip.add.select.tag"));
         tagPickerInput.setPopupTitle(I18n.t("trip.add.tag.popupTitle"));
-        syncTagPicker();
 
         if (routePickerContainer.isVisible()) refreshRoutePicker();
         if (placePickerContainer.isVisible()) refreshPlacePicker();
@@ -466,16 +460,6 @@ public class AddTripController extends WindowedPageController {
             return;
         }
         availableCategories = result.getValue();
-    }
-
-    private void loadAvailableTags() {
-        var result = tagService.getAllTags();
-        if (result.isFailure()) {
-            log.warn("Failed to load tags [code={}, message={}]", result.getError().code(), result.getError().message());
-            availableTags = List.of();
-            return;
-        }
-        availableTags = result.getValue();
     }
 
     private void renderCountryChips() {
@@ -846,13 +830,14 @@ public class AddTripController extends WindowedPageController {
         }
         renderCountryChips();
 
-        selectedTagLabels.clear();
-        if (trip.tags() != null) {
-            trip.tags().stream()
-                    .filter(tag -> tag.name() != null && !tag.name().isBlank())
-                    .forEach(tag -> selectedTagLabels.add(tag.name().trim()));
-        }
-        syncTagPicker();
+        tagPickerInput.setSelectedTagIds(
+            trip.tags() == null
+                ? Set.of()
+                : trip.tags().stream()
+                    .map(TagResponse::id)
+                    .filter(id -> id != null)
+                    .collect(Collectors.toCollection(LinkedHashSet::new))
+        );
 
         String categoryId = trip.category() == null ? null : trip.category().id().toString();
         categorySelectModel.setSelectedItem(findEntry(categorySelectModel, categoryId));
@@ -921,7 +906,7 @@ public class AddTripController extends WindowedPageController {
                 selectedValue(categorySelectModel),
                 new LinkedHashSet<>(selectedCountryIds),
                 new LinkedHashMap<>(selectedCountryLabelsById),
-                new LinkedHashSet<>(selectedTagLabels),
+                new LinkedHashSet<>(tagPickerInput.getSelectedTagIds()),
                 coverImagePath,
                 coverImageDirty,
                 routeItems.stream()
@@ -961,9 +946,7 @@ public class AddTripController extends WindowedPageController {
         selectedCountryLabelsById.putAll(draft.selectedCountryLabelsById());
         renderCountryChips();
 
-        selectedTagLabels.clear();
-        selectedTagLabels.addAll(draft.selectedTagLabels());
-        syncTagPicker();
+        tagPickerInput.setSelectedTagIds(draft.selectedTagIds());
 
         categorySelectModel.setSelectedItem(findEntry(categorySelectModel, draft.categoryValue()));
 
@@ -995,23 +978,9 @@ public class AddTripController extends WindowedPageController {
 
     private void configureTagPicker() {
         tagPickerInput.setAllowCustomTags(true);
-        tagPickerInput.setAvailableTags(availableTagLabels());
-        tagPickerInput.setOnSelectionChanged(tags -> {
-            selectedTagLabels.clear();
-            selectedTagLabels.addAll(tags);
-        });
-    }
-
-    private void syncTagPicker() {
-        tagPickerInput.setAvailableTags(availableTagLabels());
-        tagPickerInput.setSelectedTags(new ArrayList<>(selectedTagLabels));
-    }
-
-    private List<String> availableTagLabels() {
-        return availableTags.stream()
-                .map(TagResponse::name)
-                .filter(name -> name != null && !name.isBlank())
-                .toList();
+        tagPickerInput.configureTagService(tagService, message ->
+                toast.warning(I18n.t("trip.add.toast.tag.operation.failed"), message)
+        );
     }
 
     private void bindUploadPanelHandlers() {

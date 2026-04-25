@@ -280,25 +280,17 @@ public class MyTripsController extends SimpleLifecycleAwareController {
         List<String> tags = new ArrayList<>();
         tags.add(ALL_OPTION);
 
-        PageRequest pageRequest = PageRequest.defaultRequest();
-        while (true) {
-            var result = tagService.getTags(new GetTagsRequest(pageRequest, null));
-            if (result.isFailure()) {
-                log.warn("Failed to load tags for My Trips filters: {}", result.getError().message());
-                return List.copyOf(new LinkedHashSet<>(tags));
-            }
+        var result = tagService.getTags(GetTagsRequest.defaultRequest());
+        if (result.isFailure()) {
+            log.warn("Failed to load tags for My Trips filters: {}", result.getError().message());
+            return List.copyOf(new LinkedHashSet<>(tags));
+        }
 
-            for (TagResponse tag : result.getValue().items()) {
-                if (tag == null || tag.name() == null || tag.name().isBlank()) {
-                    continue;
-                }
-                tags.add(tag.name().trim());
+        for (TagResponse tag : result.getValue()) {
+            if (tag == null || tag.name() == null || tag.name().isBlank()) {
+                continue;
             }
-
-            if (!result.getValue().hasNext()) {
-                break;
-            }
-            pageRequest = pageRequest.next();
+            tags.add(tag.name().trim());
         }
 
         return List.copyOf(new LinkedHashSet<>(tags));

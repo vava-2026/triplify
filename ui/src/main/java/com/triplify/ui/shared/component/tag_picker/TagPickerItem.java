@@ -1,10 +1,33 @@
 package com.triplify.ui.shared.component.tag_picker;
 
+import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Consumer;
+
+import org.kordamp.ikonli.javafx.FontIcon;
+
+import com.triplify.application.shared.ColorTheme;
+import com.triplify.application.usecase.tag.TagService;
+import com.triplify.application.usecase.tag.dto.CreateTagRequest;
+import com.triplify.application.usecase.tag.dto.DeleteTagRequest;
+import com.triplify.application.usecase.tag.dto.GetTagsRequest;
+import com.triplify.application.usecase.tag.dto.TagResponse;
+import com.triplify.domain.pagination.PageRequest;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.util.Localization;
+
+import javafx.beans.InvalidationListener;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.InvalidationListener;
 import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -24,17 +47,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Popup;
 import javafx.stage.PopupWindow;
 import javafx.stage.Window;
-import org.kordamp.ikonli.javafx.FontIcon;
-
-import java.io.IOException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.function.Consumer;
 
 public class TagPickerItem extends VBox {
 
@@ -63,14 +75,17 @@ public class TagPickerItem extends VBox {
     private final InvalidationListener popupAnchorListener = observable -> updatePopupPosition();
     private final ChangeListener<Window> sceneWindowListener = (obs, oldWindow, newWindow) -> trackWindow(newWindow);
 
-    private final List<String> availableTags = new ArrayList<>();
-    private final LinkedHashSet<String> selectedTags = new LinkedHashSet<>();
+    private final List<TagItem> availableTags = new ArrayList<>();
+    private final LinkedHashSet<UUID> selectedTagIds = new LinkedHashSet<>();
+    private final Map<UUID, String> selectedTagNamesById = new LinkedHashMap<>();
     private final StringProperty placeholderKey = new SimpleStringProperty();
     private final StringProperty popupTitleKey = new SimpleStringProperty();
-    private Consumer<Set<String>> onSelectionChanged;
+    private Consumer<Set<UUID>> onSelectionChanged;
+    private Consumer<String> onTagOperationFailed;
     private String popupTitle = DEFAULT_POPUP_TITLE;
     private Window trackedWindow;
     private boolean allowCustomTags = true;
+    private TagService tagService;
 
     public TagPickerItem() {
         FXMLLoader loader = new FXMLLoader(FXML_URL);
@@ -147,6 +162,7 @@ public class TagPickerItem extends VBox {
             boolean hasText = newVal != null && !newVal.isBlank();
             clearInputButton.setVisible(hasText);
             clearInputButton.setManaged(hasText);
+            loadAvailableTags(normalizedTag(newVal));
             if (!popup.isShowing()) {
                 showPopup();
             } else {
@@ -267,6 +283,8 @@ public class TagPickerItem extends VBox {
             return;
         }
 
+        loadAvailableTags(normalizedTag(inputField.getText()));
+
         Bounds bounds = shell.localToScreen(shell.getBoundsInLocal());
         if (bounds == null) {
             return;
@@ -338,13 +356,13 @@ public class TagPickerItem extends VBox {
         popupContent.getChildren().clear();
 
         String filter = normalizedTag(inputField.getText());
-        String matchingTag = findMatchingTag(filter);
+        TagItem matchingTag = findMatchingTag(filter);
         if (allowCustomTags && filter != null && !filter.isBlank() && matchingTag == null) {
             popupChipFlow.getChildren().add(createSuggestionChip(filter, true));
         }
 
         availableTags.stream()
-                .filter(tag -> matchesFilter(tag, filter))
+                .filter(tag -> matchesFilter(tag.name(), filter))
                 .forEach(tag -> popupChipFlow.getChildren().add(createSuggestionChip(tag, false)));
 
         if (popupChipFlow.getChildren().isEmpty()) {
@@ -366,26 +384,30 @@ public class TagPickerItem extends VBox {
         return row;
     }
 
-    private Button createSuggestionChip(String tag, boolean isNewTag) {
-        Button chip = new Button(isNewTag ? tag + " +" : tag);
+    private Button createSuggestionChip(TagItem tag, boolean isNewTag) {
+        Button chip = new Button(isNewTag ? tag.name() + " +" : tag.name());
         chip.setFocusTraversable(false);
-        chip.getStyleClass().addAll("app-tag-picker-option", colorClass(tag));
+        chip.getStyleClass().addAll("app-tag-picker-option", colorClass(tag.name()));
 
         if (isNewTag) {
             chip.getStyleClass().add("app-tag-picker-option-new");
         }
-        if (!isNewTag && selectedTags.contains(tag)) {
+        if (!isNewTag && selectedTagIds.contains(tag.id())) {
             chip.getStyleClass().add("app-tag-picker-option-selected");
         }
 
         chip.setOnAction(event -> {
             if (isNewTag) {
-                addTag(tag);
+                addTag(tag.name());
                 return;
             }
             toggleSelectedTag(tag);
         });
         return chip;
+    }
+
+    private Button createSuggestionChip(String tagName, boolean isNewTag) {
+        return createSuggestionChip(new TagItem(null, tagName), isNewTag);
     }
 
     private boolean matchesFilter(String tag, String filter) {
@@ -395,15 +417,20 @@ public class TagPickerItem extends VBox {
         return tag.toLowerCase(Locale.ROOT).contains(filter.toLowerCase(Locale.ROOT));
     }
 
-    private void toggleSelectedTag(String tag) {
-        if (selectedTags.contains(tag)) {
-            selectedTags.remove(tag);
-        } else {
-            selectedTags.add(tag);
+    private void toggleSelectedTag(TagItem tag) {
+        if (tag.id() == null) {
+            return;
         }
-        updateSelectedView();
-        renderPopupList();
-        notifySelectionChanged();
+
+        if (selectedTagIds.contains(tag.id())) {
+            deleteTag(tag);
+        } else {
+            selectedTagIds.add(tag.id());
+            selectedTagNamesById.put(tag.id(), tag.name());
+            updateSelectedView();
+            renderPopupList();
+            notifySelectionChanged();
+        }
     }
 
     private void addCurrentInputAsTag() {
@@ -418,13 +445,51 @@ public class TagPickerItem extends VBox {
     }
 
     private void addTag(String tag) {
-        String existingTag = findMatchingTag(tag);
-        String targetTag = existingTag == null ? tag : existingTag;
-        if (existingTag == null) {
-            availableTags.add(targetTag);
+        TagItem existingTag = findMatchingTag(tag);
+        if (existingTag != null && existingTag.id() != null) {
+            selectedTagIds.add(existingTag.id());
+            selectedTagNamesById.put(existingTag.id(), existingTag.name());
+            inputField.clear();
+            updateSelectedView();
+            renderPopupList();
+            notifySelectionChanged();
+            return;
         }
-        selectedTags.add(targetTag);
+
+        if (tagService == null) {
+            return;
+        }
+
+        var result = tagService.createTag(new CreateTagRequest(tag, ColorTheme.forLabel(tag)));
+        if (result.isFailure()) {
+            notifyTagFailure(result.getError().message());
+            loadAvailableTags(normalizedTag(inputField.getText()));
+            return;
+        }
+
+        TagResponse created = result.getValue();
+        if (created == null || created.id() == null || created.name() == null || created.name().isBlank()) {
+            return;
+        }
+
+        TagItem createdTag = new TagItem(created.id(), created.name().trim());
+        availableTags.removeIf(item -> item.id() != null && item.id().equals(createdTag.id()));
+        availableTags.add(createdTag);
+        selectedTagIds.add(createdTag.id());
+        selectedTagNamesById.put(createdTag.id(), createdTag.name());
         inputField.clear();
+        updateSelectedView();
+        renderPopupList();
+        notifySelectionChanged();
+    }
+
+    private void deleteTag(TagItem tag) {
+        if (tag.id() == null) {
+            return;
+        }
+
+        selectedTagIds.remove(tag.id());
+        selectedTagNamesById.remove(tag.id());
         updateSelectedView();
         renderPopupList();
         notifySelectionChanged();
@@ -432,26 +497,29 @@ public class TagPickerItem extends VBox {
 
     private void updateSelectedView() {
         selectedFlow.getChildren().clear();
-        boolean hasTags = !selectedTags.isEmpty();
+        boolean hasTags = !selectedTagIds.isEmpty();
         selectedFlow.setVisible(hasTags);
         selectedFlow.setManaged(hasTags);
 
-        for (String tag : selectedTags) {
-            selectedFlow.getChildren().add(createSelectedChip(tag));
+        for (UUID tagId : selectedTagIds) {
+            String tagName = selectedTagNamesById.get(tagId);
+            if (tagName == null || tagName.isBlank()) {
+                TagItem availableTag = findTagById(tagId);
+                tagName = availableTag == null ? null : availableTag.name();
+            }
+            if (tagName == null || tagName.isBlank()) {
+                continue;
+            }
+            selectedFlow.getChildren().add(createSelectedChip(new TagItem(tagId, tagName)));
         }
     }
 
-    private Button createSelectedChip(String tag) {
-        Button chip = new Button(tag + "  x");
+    private Button createSelectedChip(TagItem tag) {
+        Button chip = new Button(tag.name() + "  x");
         chip.setFocusTraversable(false);
-        chip.getStyleClass().addAll("app-tag-picker-chip", colorClass(tag), "app-tag-picker-chip-selected");
+        chip.getStyleClass().addAll("app-tag-picker-chip", colorClass(tag.name()), "app-tag-picker-chip-selected");
         chip.setOnAction(event -> {
-            selectedTags.remove(tag);
-            updateSelectedView();
-            if (popup.isShowing()) {
-                renderPopupList();
-            }
-            notifySelectionChanged();
+            deleteTag(tag);
         });
         return chip;
     }
@@ -461,13 +529,25 @@ public class TagPickerItem extends VBox {
         return "app-tag-picker-chip-color-" + index;
     }
 
-    private String findMatchingTag(String candidate) {
+    private TagItem findMatchingTag(String candidate) {
         if (candidate == null || candidate.isBlank()) {
             return null;
         }
 
-        for (String tag : availableTags) {
-            if (tag.equalsIgnoreCase(candidate)) {
+        for (TagItem tag : availableTags) {
+            if (tag.name().equalsIgnoreCase(candidate)) {
+                return tag;
+            }
+        }
+        return null;
+    }
+
+    private TagItem findTagById(UUID id) {
+        if (id == null) {
+            return null;
+        }
+        for (TagItem tag : availableTags) {
+            if (id.equals(tag.id())) {
                 return tag;
             }
         }
@@ -487,8 +567,79 @@ public class TagPickerItem extends VBox {
 
     private void notifySelectionChanged() {
         if (onSelectionChanged != null) {
-            onSelectionChanged.accept(Set.copyOf(selectedTags));
+            onSelectionChanged.accept(Set.copyOf(selectedTagIds));
         }
+    }
+
+    private void notifyTagFailure(String message) {
+        if (onTagOperationFailed != null && message != null && !message.isBlank()) {
+            onTagOperationFailed.accept(message);
+        }
+    }
+
+    private void loadAvailableTags(String filter) {
+        if (tagService == null) {
+            return;
+        }
+
+        GetTagsRequest request = new GetTagsRequest(
+                PageRequest.defaultRequest(),
+                filter == null || filter.isBlank() ? null : new GetTagsRequest.Filter(filter)
+        );
+        var result = tagService.getTags(request);
+        if (result.isFailure()) {
+            notifyTagFailure(result.getError().message());
+            return;
+        }
+
+        availableTags.clear();
+        result.getValue().stream()
+                .filter(tag -> tag != null && tag.id() != null && tag.name() != null && !tag.name().isBlank())
+                .forEach(tag -> {
+                    TagItem mapped = new TagItem(tag.id(), tag.name().trim());
+                    if (findTagById(mapped.id()) == null) {
+                        availableTags.add(mapped);
+                    }
+                    if (selectedTagIds.contains(mapped.id())) {
+                        selectedTagNamesById.put(mapped.id(), mapped.name());
+                    }
+                });
+
+        if (popup.isShowing()) {
+            renderPopupList();
+        }
+        updateSelectedView();
+    }
+
+    public void configureTagService(TagService tagService, Consumer<String> onTagOperationFailed) {
+        this.tagService = tagService;
+        this.onTagOperationFailed = onTagOperationFailed;
+        loadAvailableTags(null);
+    }
+
+    public void reloadTags() {
+        loadAvailableTags(normalizedTag(inputField.getText()));
+    }
+
+    public void setSelectedTagIds(Collection<UUID> tagIds) {
+        selectedTagIds.clear();
+        selectedTagNamesById.clear();
+        if (tagIds != null) {
+            tagIds.stream()
+                    .filter(id -> id != null)
+                    .forEach(id -> {
+                        selectedTagIds.add(id);
+                        TagItem availableTag = findTagById(id);
+                        if (availableTag != null) {
+                            selectedTagNamesById.put(id, availableTag.name());
+                        }
+                    });
+        }
+        updateSelectedView();
+        if (popup.isShowing()) {
+            renderPopupList();
+        }
+        notifySelectionChanged();
     }
 
     public void setPlaceholderText(String text) {
@@ -526,47 +677,8 @@ public class TagPickerItem extends VBox {
         return popupTitleKey;
     }
 
-    public void setAvailableTags(Collection<String> tags) {
-        availableTags.clear();
-        if (tags != null) {
-            tags.stream()
-                    .filter(tag -> tag != null && !tag.isBlank())
-                    .forEach(availableTags::add);
-        }
-        if (popup.isShowing()) {
-            renderPopupList();
-        }
-    }
-
-    public void setSelectedTags(Collection<String> tags) {
-        selectedTags.clear();
-        if (tags != null) {
-            for (String tag : tags) {
-                if (tag == null || tag.isBlank()) {
-                    continue;
-                }
-                selectedTags.add(tag);
-                if (findMatchingTag(tag) == null) {
-                    availableTags.add(tag);
-                }
-            }
-        }
-        updateSelectedView();
-        if (popup.isShowing()) {
-            renderPopupList();
-        }
-    }
-
-    public Set<String> getSelectedTags() {
-        return new LinkedHashSet<>(selectedTags);
-    }
-
-    public void setOnSelectionChanged(Consumer<Set<String>> onSelectionChanged) {
-        this.onSelectionChanged = onSelectionChanged;
-    }
-
-    public boolean isAllowCustomTags() {
-        return allowCustomTags;
+    public Set<UUID> getSelectedTagIds() {
+        return new LinkedHashSet<>(selectedTagIds);
     }
 
     public void setAllowCustomTags(boolean allowCustomTags) {
@@ -574,5 +686,8 @@ public class TagPickerItem extends VBox {
         if (popup.isShowing()) {
             renderPopupList();
         }
+    }
+
+    private record TagItem(UUID id, String name) {
     }
 }

@@ -6,7 +6,6 @@ import com.triplify.application.usecase.tag.dto.GetTagsRequest;
 import com.triplify.application.usecase.tag.dto.ResolveOrCreateTagsRequest;
 import com.triplify.application.usecase.tag.dto.TagResponse;
 import com.triplify.application.usecase.tag.dto.UpdateTagRequest;
-import com.triplify.domain.pagination.Page;
 import com.triplify.domain.result.Result;
 
 import java.util.LinkedHashSet;
