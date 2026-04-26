@@ -31,38 +31,38 @@
 
             <VBox spacing="14" styleClass="page-card,categories-form-card" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.vgrow="ALWAYS">
                 <HBox styleClass="categories-card-header">
-                    <Label fx:id="formSectionTitleLabel" text="Category Details" styleClass="categories-section-title"/>
+                    <Label fx:id="formSectionTitleLabel" styleClass="categories-section-title"/>
                     <Region HBox.hgrow="ALWAYS"/>
-                    <Label fx:id="modeBadgeLabel" text="Create mode" styleClass="categories-mode-badge"/>
+                    <Label fx:id="modeBadgeLabel" styleClass="categories-mode-badge"/>
                 </HBox>
 
                 <VBox spacing="6" styleClass="categories-form-group">
-                    <Label fx:id="nameLabel" text="English Name *" styleClass="form-label"/>
+                    <Label fx:id="nameLabel" styleClass="form-label"/>
                     <VBox fx:id="nameInputContainer"/>
                 </VBox>
 
                 <VBox spacing="6" styleClass="categories-form-group">
-                    <Label fx:id="nameSkLabel" text="Slovak Name *" styleClass="form-label"/>
+                    <Label fx:id="nameSkLabel" styleClass="form-label"/>
                     <VBox fx:id="nameSkInputContainer"/>
                 </VBox>
 
                 <VBox spacing="6" styleClass="categories-form-group">
-                    <Label fx:id="descriptionLabel" text="Description" styleClass="form-label"/>
+                    <Label fx:id="descriptionLabel" styleClass="form-label"/>
                     <VBox fx:id="descriptionInputContainer"/>
                 </VBox>
 
                 <VBox spacing="6" styleClass="categories-form-group">
-                    <Label fx:id="descriptionSkLabel" text="Description (SK)" styleClass="form-label"/>
+                    <Label fx:id="descriptionSkLabel" styleClass="form-label"/>
                     <VBox fx:id="descriptionSkInputContainer"/>
                 </VBox>
 
                 <VBox spacing="6" styleClass="categories-form-group">
-                    <Label fx:id="emojiLabel" text="Emoji *" styleClass="form-label"/>
+                    <Label fx:id="emojiLabel" styleClass="form-label"/>
                     <VBox fx:id="emojiInputContainer"/>
                 </VBox>
 
                 <VBox spacing="6" styleClass="categories-form-group">
-                    <Label fx:id="colorLabel" text="Theme Color *" styleClass="form-label"/>
+                    <Label fx:id="colorLabel" styleClass="form-label"/>
                     <VBox fx:id="colorSelectContainer"/>
                 </VBox>
 
@@ -78,7 +78,7 @@
 
             <VBox spacing="14" styleClass="page-card,categories-list-card" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS">
                 <HBox styleClass="categories-card-header">
-                      <Label fx:id="listSectionTitleLabel" text="Category Directory" styleClass="categories-section-title"/>
+                      <Label fx:id="listSectionTitleLabel" styleClass="categories-section-title"/>
                 </HBox>
 
                 <HBox spacing="10" styleClass="categories-search-row">

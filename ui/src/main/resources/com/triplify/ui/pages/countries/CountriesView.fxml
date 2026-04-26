@@ -31,23 +31,23 @@
 
 			<VBox spacing="14" styleClass="page-card,countries-form-card" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.vgrow="ALWAYS">
 				<HBox styleClass="countries-card-header">
-					<Label fx:id="formSectionTitleLabel" text="Country Details" styleClass="countries-section-title"/>
+					<Label fx:id="formSectionTitleLabel" styleClass="countries-section-title"/>
 					<Region HBox.hgrow="ALWAYS"/>
-					<Label fx:id="modeBadgeLabel" text="Create mode" styleClass="countries-mode-badge"/>
+					<Label fx:id="modeBadgeLabel" styleClass="countries-mode-badge"/>
 				</HBox>
 
 				<VBox spacing="6" styleClass="countries-form-group">
-                    <Label fx:id="nameLabel" text="English Name *" styleClass="form-label"/>
+                    <Label fx:id="nameLabel"  styleClass="form-label"/>
                     <VBox fx:id="nameInputContainer"/>
                 </VBox>
 
 				<VBox spacing="6" styleClass="countries-form-group">
-					<Label fx:id="nameSkLabel" text="Slovak Name *" styleClass="form-label"/>
+					<Label fx:id="nameSkLabel" styleClass="form-label"/>
 					<VBox fx:id="nameSkInputContainer"/>
 				</VBox>
 
 				<VBox spacing="6" styleClass="countries-form-group">
-					<Label fx:id="emojiLabel" text="Emoji *" styleClass="form-label"/>
+					<Label fx:id="emojiLabel" styleClass="form-label"/>
 					<VBox fx:id="emojiInputContainer"/>
 				</VBox>
 
@@ -64,7 +64,7 @@
 
 			<VBox spacing="14" styleClass="page-card,countries-list-card" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS">
 				<HBox styleClass="countries-card-header">
-					<Label fx:id="listSectionTitleLabel" text="Country Directory" styleClass="countries-section-title"/>
+					<Label fx:id="listSectionTitleLabel" styleClass="countries-section-title"/>
 					<Region HBox.hgrow="ALWAYS"/>
 				</HBox>
 
