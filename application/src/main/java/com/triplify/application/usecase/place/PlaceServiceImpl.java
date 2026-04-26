@@ -173,7 +173,7 @@ public class PlaceServiceImpl implements PlaceService {
         requireOwnedPlace(request.placeId(), user.userId()).orThrow();
 
         Page<Trip> tripPage = tripPlaceRepository.findTripsByPlaceId(request.pageRequest(), request.placeId(), user.userId());
-        List<TripResponse> trips = tripPage.items().stream().map(this::toTripResponse).toList();
+        List<TripResponse> trips = tripPage.items().stream().map(TripResponse::from).toList();
         return Result.ok(Page.of(trips, request.pageRequest(), tripPage.hasNext()));
     }
 
@@ -209,51 +209,5 @@ public class PlaceServiceImpl implements PlaceService {
         }
         return Result.ok(placeRes.get());
     }
-
-    private TripResponse toTripResponse(Trip trip) {
-        ImageResponse coverImage = trip.getCoverImage() == null ? null : ImageResponse.from(trip.getCoverImage());
-
-        Category category = trip.getCategory();
-        CategoryResponse categoryResponse = category == null ? null : new CategoryResponse(
-                category.getId(),
-                category.getCreatedById(),
-                category.getName(),
-                category.getNameSk(),
-                category.getDescription(),
-                category.getDescriptionSk(),
-                category.getEmojiUnicode(),
-            category.getColor() == null ? null : ColorTheme.from(category.getColor())
-        );
-
-        Set<TagResponse> tagResponses = trip.getTags().stream()
-            .map(tag -> new TagResponse(
-                tag.getId(),
-                tag.getUserId(),
-                tag.getName(),
-                tag.getColor() == null ? null : ColorTheme.from(tag.getColor())
-            ))
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-
-        Set<CountryResponse> countryResponses = trip.getCountries().stream()
-                .map(CountryResponse::from)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-
-        return new TripResponse(
-                trip.getId(),
-                trip.getUserId(),
-                categoryResponse,
-                trip.getTitle(),
-                trip.getDescription(),
-                trip.getStatus(),
-                trip.getStartedAt(),
-                trip.getEndedAt(),
-                trip.getCreatedAt(),
-                trip.getUpdatedAt(),
-                tagResponses,
-                coverImage,
-                countryResponses
-        );
-    }
-
 }
 

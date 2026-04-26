@@ -67,6 +67,7 @@ public class CountriesView extends VBox {
 
     public void clearError() {
         getStyleClass().remove("countries-has-error");
+        searchView.clearError();
         errorLabel.setManaged(false);
         errorLabel.setVisible(false);
         errorLabel.setText("");
@@ -76,6 +77,7 @@ public class CountriesView extends VBox {
         if (!getStyleClass().contains("countries-has-error")) {
             getStyleClass().add("countries-has-error");
         }
+        searchView.showError(message);
         errorLabel.setText(message);
         errorLabel.setManaged(true);
         errorLabel.setVisible(true);

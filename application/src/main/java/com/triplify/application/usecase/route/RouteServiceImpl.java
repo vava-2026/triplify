@@ -71,12 +71,13 @@ public class RouteServiceImpl implements RouteService {
 
     @Override
     public Result<RouteResponse> addRoute(AddRouteRequest request) {
+        log.info("Adding new route with title='{}'", request.title());
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
 
         Route route = new Route(
                 user.userId(),
                 request.title(),
-                normalizeDescription(request.description()),
+                request.description(),
                 calculateLength(List.of())
         );
 
@@ -89,11 +90,12 @@ public class RouteServiceImpl implements RouteService {
 
     @Override
     public Result<RouteResponse> updateRoute(UpdateRouteRequest request) {
+        log.info("Updating route with id='{}', title='{}'", request.id(), request.title());
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
         Route route = requireOwnedRoute(request.id(), user.userId()).orThrow();
         List<RoutePlace> routePlaces = routePlaceRepository.findByRouteId(request.id());
         route.updateTitle(request.title());
-        route.updateDescription(normalizeDescription(request.description()));
+        route.updateDescription(request.description());
         route.updateLength(calculateLength(routePlaces));
 
         replaceCoverImage(route, request.coverImage(), request.title()).orThrow();
@@ -105,6 +107,7 @@ public class RouteServiceImpl implements RouteService {
 
     @Override
     public Result<Void> deleteRoute(DeleteRouteRequest request) {
+        log.info("Deleting route with id='{}'", request.id());
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
         Route route = requireOwnedRoute(request.id(), user.userId()).orThrow();
         if (route.getCoverImage() != null) {
@@ -118,6 +121,7 @@ public class RouteServiceImpl implements RouteService {
 
     @Override
     public Result<RouteResponse> addPlaceToRoute(AddPlaceToRouteRequest request) {
+        log.info("Adding placeId='{}' to routeId='{}'", request.placeId(), request.routeId());
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
         Route route = requireOwnedRoute(request.routeId(), user.userId()).orThrow();
 
@@ -147,6 +151,7 @@ public class RouteServiceImpl implements RouteService {
 
     @Override
     public Result<RouteResponse> deletePlaceFromRoute(DeletePlaceFromRouteRequest request) {
+        log.info("Deleting placeId='{}' from routeId='{}'", request.placeId(), request.routeId());
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
         Route route = requireOwnedRoute(request.routeId(), user.userId()).orThrow();
 
@@ -167,6 +172,7 @@ public class RouteServiceImpl implements RouteService {
 
     @Override
     public Result<RouteResponse> rearrangePlacesInRoute(RearrangePlacesInRouteRequest request) {
+        log.info("Rearranging places in routeId='{}'", request.id());
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
         Route route = requireOwnedRoute(request.id(), user.userId()).orThrow();
 
@@ -177,6 +183,7 @@ public class RouteServiceImpl implements RouteService {
 
         List<RoutePlace> routePlaces = routePlaceRepository.findByRouteId(request.id());
         if (placeIdsInOrder.size() != routePlaces.size()) {
+            log.warn("Route place order does not match current route places for routeId='{}'. placeIdsInOrder={}, routePlaces={}", request.id(), placeIdsInOrder, routePlaces);
             return Result.fail(new ApplicationError.Unexpected("Route place order does not match current route places"));
         }
 
@@ -185,6 +192,7 @@ public class RouteServiceImpl implements RouteService {
                 .map(RoutePlace::getPlaceId)
                 .collect(Collectors.toSet());
         if (requestedIds.size() != placeIdsInOrder.size() || !requestedIds.equals(currentIds)) {
+            log.warn("Route place order does not match current route places for routeId='{}'. requestedIds={}, currentIds={}", request.id(), requestedIds, currentIds);
             return Result.fail(new ApplicationError.Unexpected("Route place order does not match current route places"));
         }
 
@@ -210,12 +218,13 @@ public class RouteServiceImpl implements RouteService {
 
     @Override
     public Result<RouteResponse> getRouteById(GetRouteByIdRequest request) {
+        log.info("Getting route with id='{}'", request.id());
         var routeRes = routeRepository.findById(request.id());
         if (routeRes.isEmpty()) {
             log.warn("Attempt to get non-existing route with id='{}'", request.id());
             return Result.fail(new RouteError.NotFound(request.id().toString()));
         }
-
+        log.info("Got route with id='{}'", request.id());
         return Result.ok(RouteResponse.from(routeRes.get(), routePlaceRepository.findByRouteId(request.id())));
     }
 
@@ -283,10 +292,10 @@ public class RouteServiceImpl implements RouteService {
 
     private double calculateLength(List<RoutePlace> routePlaces) {
         if (routePlaces == null || routePlaces.size() < 2) {
-            return 0D;
+            return 0;
         }
 
-        double totalLength = 0D;
+        double totalLength = 0;
         for (int i = 1; i < routePlaces.size(); i++) {
             Place from = routePlaces.get(i - 1).getPlace();
             Place to = routePlaces.get(i).getPlace();
@@ -302,10 +311,5 @@ public class RouteServiceImpl implements RouteService {
         }
 
         return totalLength;
-    }
-
-
-    private String normalizeDescription(String description) {
-        return Objects.requireNonNullElse(description, "");
     }
 }

@@ -201,3 +201,12 @@
 .app-search-variant-ghost .search-results .list-cell:hover {
     -fx-background-color: -color-surface-dark;
 }
+
+.search-container.search-has-error .search-input-box {
+    -fx-border-color: -color-danger;
+    -fx-border-width: 1.5;
+}
+
+.search-container.search-has-error.search-showing .search-input-box {
+    -fx-border-color: -color-danger -color-danger -color-surface-tint -color-danger;
+}
