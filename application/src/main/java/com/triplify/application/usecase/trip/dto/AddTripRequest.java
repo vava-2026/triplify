@@ -23,12 +23,17 @@ public record AddTripRequest(
 
         @Size(max = DtoConstraints.DESCRIPTION_MAX_LENGTH, message = ValidationMessage.Constants.DESCRIPTION_TOO_LONG)
         String description,
+
         @NotNull(message = ValidationMessage.Constants.REQUIRED)
         StatusEnum status,
+
         Instant startedAt,
         Instant endedAt,
         Set<UUID> tagIds,
-        Set<Path> images,
+        Path coverImage,
+
+        @NotNull(message = ValidationMessage.Constants.REQUIRED)
+        @Size(min = 1, message = ValidationMessage.Constants.AT_LEAST_ONE_COUNTRY_REQUIRED)
         Set<UUID> countryIds
 ) {
 }

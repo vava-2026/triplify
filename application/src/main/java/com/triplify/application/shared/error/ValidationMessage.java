@@ -19,6 +19,7 @@ public final class ValidationMessage {
         public static final String DESCRIPTION_TOO_LONG = "validation.description.too.long";
         public static final String SIGN_UP_INVALID_ROLE = "validation.signUp.invalidRole";
         public static final String SIGN_UP_TERMS_REQUIRED = "validation.signUp.terms.required";
+        public static final String AT_LEAST_ONE_COUNTRY_REQUIRED = "validation.atLeastOneCountryRequired";
 
         private Constants() {
         }

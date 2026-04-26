@@ -1,5 +1,16 @@
 package com.triplify.ui.pages.trips;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.time.Instant;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
+import org.kordamp.ikonli.javafx.FontIcon;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Inject;
 import com.triplify.application.usecase.category.CategoryService;
 import com.triplify.application.usecase.category.dto.CategoryResponse;
@@ -25,9 +36,12 @@ import com.triplify.application.usecase.triproute.dto.TripRouteResponse;
 import com.triplify.domain.model.enums.StatusEnum;
 import com.triplify.domain.model.enums.TripPlaceSourceType;
 import com.triplify.domain.result.Result;
+import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.pages.WindowedPageController;
 import com.triplify.ui.routing.RouteIds;
+import com.triplify.ui.shared.component.button.model.ButtonVariant;
+import com.triplify.ui.shared.component.button.view.AppButtonView;
 import com.triplify.ui.shared.component.categories.model.Categories;
 import com.triplify.ui.shared.component.countries.model.Countries;
 import com.triplify.ui.shared.component.countries.view.CountriesView;
@@ -35,6 +49,8 @@ import com.triplify.ui.shared.component.date_picker.DatePickerItem;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.input_item.TextAreaItem;
 import com.triplify.ui.shared.component.media_card.view.EditorMediaCardView;
+import com.triplify.ui.shared.component.places.model.Places;
+import com.triplify.ui.shared.component.routes.model.Routes;
 import com.triplify.ui.shared.component.search.model.Search;
 import com.triplify.ui.shared.component.search.model.SearchDisplayMode;
 import com.triplify.ui.shared.component.search.view.SearchView;
@@ -42,22 +58,23 @@ import com.triplify.ui.shared.component.section_header.view.SectionHeaderView;
 import com.triplify.ui.shared.component.select.entry.model.Entry;
 import com.triplify.ui.shared.component.select.model.Select;
 import com.triplify.ui.shared.component.select.view.SelectView;
-import com.triplify.ui.shared.component.places.model.Places;
-import com.triplify.ui.shared.component.routes.model.Routes;
 import com.triplify.ui.shared.component.tag_picker.TagPickerItem;
 import com.triplify.ui.shared.component.upload_panel.view.ImageUploadPanelView;
 import com.triplify.ui.shared.model.AppComponentSize;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.toast.ToastService;
+import static com.triplify.ui.shared.util.DisplayUtils.toInstant;
+import static com.triplify.ui.shared.util.DisplayUtils.toLocalDate;
 import com.triplify.ui.shared.util.EditorUtils;
+import static com.triplify.ui.shared.util.EditorUtils.configureButtonIcon;
+import static com.triplify.ui.shared.util.EditorUtils.formatMessage;
+import static com.triplify.ui.shared.util.EditorUtils.installRoundedClip;
+import static com.triplify.ui.shared.util.EditorUtils.normalizeKey;
+import static com.triplify.ui.shared.util.EditorUtils.normalizeNullable;
+import static com.triplify.ui.shared.util.EditorUtils.safeText;
 import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import com.triplify.ui.shared.util.Localization;
-import com.triplify.ui.shared.component.button.model.ButtonVariant;
-import com.triplify.ui.shared.component.button.view.AppButtonView;
 import com.triplify.ui.storage.EditorDraftStorage;
-
-import static com.triplify.ui.shared.util.EditorUtils.*;
-import static com.triplify.ui.shared.util.DisplayUtils.*;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -71,23 +88,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
-import org.kordamp.ikonli.javafx.FontIcon;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import rahulstech.jfx.routing.element.RouterArgument;
-
-import java.io.File;
-import java.nio.file.Path;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class AddTripController extends WindowedPageController {
 
@@ -135,6 +136,7 @@ public class AddTripController extends WindowedPageController {
     @FXML private VBox actionButtonsContainer;
 
     @Inject private ToastService toast;
+    @Inject private ErrorHandler errorHandler;
     @Inject private TripService tripService;
     @Inject private CategoryService categoryService;
     @Inject private TagService tagService;
@@ -163,6 +165,7 @@ public class AddTripController extends WindowedPageController {
     private Categories categoriesComponent;
     private Entry<String> pendingCountryEntry;
     private Select<String> categorySelectModel;
+    private SelectView<String> categorySelectView;
     private StackPane uploadArea;
     private SearchView<RouteItem> routeSearchView;
     private SearchView<PlaceItem> placeSearchView;
@@ -311,51 +314,65 @@ public class AddTripController extends WindowedPageController {
 
     @FXML
     private void onSave() {
-        if (!titleInput.validateRequired()) return;
-        if (selectedCountryIds.isEmpty()) {
-            toast.warning(I18n.t("trip.add.toast.countries.required"));
-            return;
-        }
+        clearFieldErrors();
 
-        String categoryId = resolveSelectedCategoryId();
-        if (categoryId == null) {
-            toast.warning(I18n.t("trip.add.toast.category.required"));
-            return;
-        }
-
-        Set<UUID> tagIds = tagPickerInput.getSelectedTagIds();
-        if (tagIds.isEmpty()) {
-            toast.warning(I18n.t("trip.add.toast.tags.required"));
-            return;
-        }
+        Map<String, Consumer<String>> fieldHandlers = Map.of(
+                "title", message -> titleInput.showError(message),
+                "categoryId", message -> {
+                    if (categorySelectView != null) {
+                        categorySelectView.showError(message);
+                    }
+                },
+                "countryIds", message -> {
+                    if (countrySelectView != null) {
+                        countrySelectView.showError(message);
+                    }
+                }
+        );
 
         String tripTitle = titleInput.getText().trim();
         StatusEnum status = tripStatus != null ? tripStatus : StatusEnum.PLANNED;
         Instant startedAt = toInstant(startDateInput.getValue());
         Instant endedAt = toInstant(endDateInput.getValue());
-
+        UUID categoryId = EditorUtils.parseUUID(resolveSelectedCategoryId());
+        Set<UUID> tagIds = tagPickerInput.getSelectedTagIds();
         Set<UUID> countryIds = selectedCountryIds.stream()
-                .map(UUID::fromString)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-        Set<Path> images = coverImagePath == null || coverImagePath.isBlank()
-                ? Set.of()
-                : Set.of(Path.of(coverImagePath));
+            .map(EditorUtils::parseUUID)
+            .collect(Collectors.toCollection(LinkedHashSet::new));
 
-        var result = createMode
-                ? tripService.addTrip(new AddTripRequest(
-                        UUID.fromString(categoryId), tripTitle,
-                        normalizeNullable(descriptionInput.getText()),
-                        status, startedAt, endedAt, tagIds, images, countryIds))
-                : tripService.updateTrip(new UpdateTripRequest(
-                        UUID.fromString(tripId), UUID.fromString(categoryId), tripTitle,
-                        normalizeNullable(descriptionInput.getText()),
-                        status, startedAt, endedAt, tagIds,
-                        coverImageDirty ? images : null, countryIds));
+        Path coverImage = coverImagePath == null || coverImagePath.isBlank()
+            ? null
+            : Path.of(coverImagePath);
+
+        var result = createMode ?
+                tripService.addTrip(new AddTripRequest(
+                        categoryId,
+                        tripTitle,
+                        descriptionInput.getText(),
+                        status,
+                        startedAt,
+                        endedAt,
+                        tagIds,
+                        coverImage,
+                        countryIds
+                )) :
+                tripService.updateTrip(new UpdateTripRequest(
+                        UUID.fromString(tripId),
+                        categoryId,
+                        tripTitle,
+                        descriptionInput.getText(),
+                        status,
+                        startedAt,
+                        endedAt,
+                        tagIds,
+                        coverImage,
+                        countryIds
+                ));
 
         result.onSuccess(savedTrip -> {
             var relationsResult = syncTripRelations(savedTrip.id());
             if (relationsResult.isFailure()) {
-                toast.error(I18n.t("trip.add.toast.title.saved"), relationsResult.getError().message());
+                errorHandler.handle(relationsResult.getError(), fieldHandlers);
                 return;
             }
             String message = createMode
@@ -365,7 +382,7 @@ public class AddTripController extends WindowedPageController {
             toast.success(I18n.t("trip.add.toast.title.saved"), message);
             getRouter().popBackStack();
         });
-        result.onFailure(error -> toast.error(I18n.t("trip.add.toast.title.saved"), error.message()));
+        result.onFailure(error -> errorHandler.handle(error, fieldHandlers));
     }
 
     @FXML
@@ -411,6 +428,12 @@ public class AddTripController extends WindowedPageController {
         Localization.bindText(placeCreateButton.textProperty(), "trip.add.action.createPlace");
     }
 
+    private void clearFieldErrors() {
+        titleInput.clearError();
+        categorySelectView.clearError();
+        countrySelectView.clearError();
+    }
+
     private void createActionButtons() {
         Button saveButton = AppButtonView.builder(fxmlLoader)
                 .labelBinding(Localization.textBinding("trip.add.action.save"))
@@ -441,7 +464,8 @@ public class AddTripController extends WindowedPageController {
                 .items(categoriesComponent.toEntries(availableCategories))
                 .build();
         categorySelectModel.setSelectedItem(findEntry(categorySelectModel, selectedCategory));
-        categorySelectContainer.getChildren().setAll(createSelectView(categorySelectModel));
+        categorySelectView = createSelectView(categorySelectModel);
+        categorySelectContainer.getChildren().setAll(categorySelectView);
 
         tagPickerInput.setPlaceholderText(I18n.t("trip.add.select.tag"));
         tagPickerInput.setPopupTitle(I18n.t("trip.add.tag.popupTitle"));
@@ -846,7 +870,7 @@ public class AddTripController extends WindowedPageController {
                 ? Set.of()
                 : trip.tags().stream()
                     .map(TagResponse::id)
-                    .filter(id -> id != null)
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toCollection(LinkedHashSet::new))
         );
 
@@ -891,7 +915,7 @@ public class AddTripController extends WindowedPageController {
         }
         result.getValue().stream()
                 .map(TripPlaceResponse::place)
-                .filter(place -> place != null)
+                .filter(Objects::nonNull)
                 .map(this::toManualPlaceItem)
                 .forEach(placeItems::add);
         renderPlaces();
