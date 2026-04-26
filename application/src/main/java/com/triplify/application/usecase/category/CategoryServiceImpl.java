@@ -1,8 +1,6 @@
 package com.triplify.application.usecase.category;
 
 import com.google.inject.Inject;
-import com.triplify.application.error.ApplicationError;
-import com.triplify.application.model.ColorTheme;
 import com.triplify.application.security.Authenticated;
 import com.triplify.application.usecase.category.dto.AddCategoryRequest;
 import com.triplify.application.usecase.category.dto.CategoryResponse;
@@ -53,7 +51,7 @@ public class CategoryServiceImpl implements CategoryService {
         categoryRepository.create(category);
         log.info("Added new category with id='{}', name='{}' by userId='{}'",
                 category.getId(), category.getName(), user.userId());
-        return Result.ok(toResponse(category));
+        return Result.ok(CategoryResponse.from(category));
     }
 
     @Override
@@ -70,21 +68,17 @@ public class CategoryServiceImpl implements CategoryService {
 
         Category category = existing.get();
 
-        try {
-            category.updateName(request.name());
-            category.updateNameSk(request.nameSk());
-            category.updateDescription(request.description());
-            category.updateDescriptionSk(request.descriptionSk());
-            category.updateEmojiUnicode(request.emojiUnicode());
-            category.updateColor(request.color().toColorEnum());
-        } catch (IllegalArgumentException ex) {
-            return Result.fail(new ApplicationError.Unexpected(ex.getMessage()));
-        }
+        category.updateName(request.name());
+        category.updateNameSk(request.nameSk());
+        category.updateDescription(request.description());
+        category.updateDescriptionSk(request.descriptionSk());
+        category.updateEmojiUnicode(request.emojiUnicode());
+        category.updateColor(request.color().toColorEnum());
 
         categoryRepository.update(category);
         log.info("Updated category with id='{}', name='{}' by userId='{}'",
                 category.getId(), category.getName(), user.userId());
-        return Result.ok(toResponse(category));
+        return Result.ok(CategoryResponse.from(category));
     }
 
     @Override
@@ -107,26 +101,9 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public Result<List<CategoryResponse>> getAllCategories() {
         log.debug("Getting all categories");
-        try {
-            List<CategoryResponse> categories = categoryRepository.findAll().stream()
-                    .map(this::toResponse)
-                    .toList();
-            return Result.ok(categories);
-        } catch (Exception ex) {
-            return Result.fail(new ApplicationError.StorageFailure("getAllCategories", ex));
-        }
-    }
-
-    private CategoryResponse toResponse(Category c) {
-        return new CategoryResponse(
-                c.getId(),
-                c.getCreatedById(),
-                c.getName(),
-                c.getNameSk(),
-                c.getDescription(),
-                c.getDescriptionSk(),
-                c.getEmojiUnicode(),
-               ColorTheme.from(c.getColor())
-        );
+        List<CategoryResponse> categories = categoryRepository.findAll().stream()
+                .map(CategoryResponse::from)
+                .toList();
+        return Result.ok(categories);
     }
 }

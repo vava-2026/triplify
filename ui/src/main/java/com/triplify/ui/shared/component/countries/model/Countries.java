@@ -8,6 +8,7 @@ import com.triplify.domain.filter.CountryFilter;
 import com.triplify.domain.pagination.PageRequest;
 import com.triplify.ui.shared.component.select.entry.model.Entry;
 import com.triplify.ui.shared.model.FieldVariant;
+import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.util.Localization;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -60,6 +61,8 @@ public class Countries {
 
         Localization.bindText(placeholder, builder.placeholderKey);
         Localization.bindText(noResult, builder.noResultKey);
+
+        I18n.languageProperty().addListener((obs, oldLang, newLang) -> resetState(activeQuery));
     }
 
     public List<Entry<String>> search(String query) {
@@ -104,7 +107,7 @@ public class Countries {
             var result = countryService.getCountries(request);
             result.onSuccess(page -> {
                 for (var country : page.items()) {
-                    entries.add(Entry.<String>builder(country.id().toString(), country.name()).emoji(country.emojiUnicode()).build());
+                    entries.add(Entry.<String>builder(country.id().toString(), Localization.localize(country)).emoji(country.emojiUnicode()).build());
                 }
             });
             result.onFailure(error -> {
@@ -167,7 +170,7 @@ public class Countries {
             String normalizedName = normalizeCountryName(country.name());
             String normalizedNameSk = normalizeCountryName(country.nameSk());
             if (normalizedCandidates.contains(normalizedName) || normalizedCandidates.contains(normalizedNameSk)) {
-                return Entry.<String>builder(country.id().toString(), country.name()).emoji(country.emojiUnicode()).build();
+                return Entry.<String>builder(country.id().toString(), Localization.localize(country)).emoji(country.emojiUnicode()).build();
             }
         }
 

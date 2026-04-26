@@ -1,6 +1,6 @@
 package com.triplify.application.usecase.tag.dto;
 
-import com.triplify.application.model.ColorTheme;
+import com.triplify.application.shared.ColorTheme;
 import com.triplify.domain.model.Tag;
 
 import java.util.UUID;

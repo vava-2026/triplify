@@ -1,7 +1,7 @@
 package com.triplify.application.usecase.story;
 
 import com.google.inject.Inject;
-import com.triplify.application.error.ApplicationError;
+import com.triplify.application.shared.error.ApplicationError;
 import com.triplify.application.security.Authenticated;
 import com.triplify.application.usecase.session.SessionUser;
 import com.triplify.application.usecase.session.UserSessionContext;

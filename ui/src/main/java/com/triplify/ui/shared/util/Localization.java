@@ -1,7 +1,7 @@
 package com.triplify.ui.shared.util;
 
-import com.triplify.application.localization.LocalizedDescription;
-import com.triplify.application.localization.LocalizedName;
+import com.triplify.application.shared.localization.LocalizedDescription;
+import com.triplify.application.shared.localization.LocalizedName;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.i18n.Language;
 import javafx.beans.binding.Bindings;

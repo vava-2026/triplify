@@ -177,5 +177,5 @@
 .avatar-image {
     -fx-fit-width: 38;
     -fx-fit-height: 38;
-    -fx-preserve-ratio: false;
+    -fx-preserve-ratio: true;
 }

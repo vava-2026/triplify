@@ -30,7 +30,7 @@ public class Country {
     @Setter(AccessLevel.PRIVATE)
     private String emojiUnicode;
 
-    @Setter(AccessLevel.PRIVATE)
+    @Setter
     private boolean isAvailable;
 
     public Country(@NonNull UUID createdById, @NonNull String name, @NonNull String nameSk, @NonNull String emojiUnicode) {

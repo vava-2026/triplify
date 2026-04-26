@@ -1,6 +1,6 @@
 package com.triplify.application.usecase.badge.dto;
 
-import com.triplify.application.error.ValidationMessage;
+import com.triplify.application.shared.error.ValidationMessage;
 import com.triplify.application.usecase.dto.DtoConstraints;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

@@ -1,19 +1,17 @@
 package com.triplify.ui.shared.component.button.model;
 
+import lombok.Getter;
+
+@Getter
 public enum ButtonVariant {
 
     PRIMARY("app-btn-primary"),
-
     SECONDARY("app-btn-secondary"),
-
     DANGER("app-btn-danger"),
-
+    DANGER_OUTLINE("app-btn-danger-outline"),
     GHOST("app-btn-ghost"),
-
-    LOGIN("app-btn-login"),
-
-    SIGN_UP("app-btn-sign-up"),
-
+    PRO("app-btn-pro"),
+    WHITE("app-btn-white"),
     USER("app-btn-user");
 
 
@@ -21,5 +19,4 @@ public enum ButtonVariant {
 
     ButtonVariant(String styleClass) { this.styleClass = styleClass; }
 
-    public String getStyleClass() { return styleClass; }
 }

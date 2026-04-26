@@ -14,7 +14,6 @@
                   iconSize="14"
                   styleClass="editor-section-icon"/>
         <Label fx:id="titleLabel"
-               text="Section"
                styleClass="editor-section-title"/>
     </children>
 </fx:root>

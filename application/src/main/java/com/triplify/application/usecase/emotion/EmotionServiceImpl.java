@@ -19,6 +19,7 @@ import com.triplify.domain.result.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -58,7 +59,7 @@ public class EmotionServiceImpl implements EmotionService {
         emotionRepository.create(emotion);
         log.info("Created emotion id='{}', name='{}' by userId='{}'",
                 emotion.getId(), emotion.getName(), user.userId());
-        return Result.ok(EmotionResponse.fromDomain(emotion));
+        return Result.ok(EmotionResponse.from(emotion));
     }
 
     @Override
@@ -69,7 +70,7 @@ public class EmotionServiceImpl implements EmotionService {
 
         Optional<Emotion> existing = emotionRepository.findById(request.id());
         if (existing.isEmpty()) {
-            logNotFound(request.id());
+            log.warn("Emotion with id='{}' not found", request.id());
             return Result.fail(new EmotionError.NotFound(request.id()));
         }
 
@@ -89,7 +90,7 @@ public class EmotionServiceImpl implements EmotionService {
         emotionRepository.update(emotion);
         log.info("Updated emotion id='{}', name='{}' by userId='{}'",
                 emotion.getId(), emotion.getName(), user.userId());
-        return Result.ok(EmotionResponse.fromDomain(emotion));
+        return Result.ok(EmotionResponse.from(emotion));
     }
 
     @Override
@@ -99,7 +100,7 @@ public class EmotionServiceImpl implements EmotionService {
         log.debug("Deleting emotion id='{}' by userId='{}'", request.id(), user.userId());
 
         if (emotionRepository.findById(request.id()).isEmpty()) {
-            logNotFound(request.id());
+            log.warn("Emotion with id='{}' not found", request.id());
             return Result.fail(new EmotionError.NotFound(request.id()));
         }
 
@@ -113,29 +114,23 @@ public class EmotionServiceImpl implements EmotionService {
         log.debug("Finding emotion by id='{}'", request.id());
         Optional<Emotion> existing = emotionRepository.findById(request.id());
         if (existing.isEmpty()) {
-            logNotFound(request.id());
+            log.warn("Emotion with id='{}' not found", request.id());
             return Result.fail(new EmotionError.NotFound(request.id()));
         }
 
         log.info("Found emotion id='{}'", existing.get().getId());
-        return Result.ok(EmotionResponse.fromDomain(existing.get()));
+        return Result.ok(EmotionResponse.from(existing.get()));
     }
 
     @Override
-    public Result<Page<EmotionResponse>> getAllEmotions(GetAllEmotionsRequest request) {
-        log.debug("Retrieving emotions page={}, size={}",
-                request.pageRequest().page(), request.pageRequest().size());
+    public Result<List<EmotionResponse>> getAllEmotions() {
+        log.debug("Retrieving all emotions");
 
-        Page<EmotionResponse> responses = emotionRepository.findAll(request.pageRequest())
-                .map(p -> p.map(EmotionResponse::fromDomain))
-                .orElseGet(() -> Page.empty(request.pageRequest()));
+        List<EmotionResponse> responses = emotionRepository.findAll().stream()
+                .map(EmotionResponse::from)
+                .toList();
 
-        log.info("Retrieved {} emotions (page={}, hasNext={})",
-                responses.items().size(), responses.page(), responses.hasNext());
+        log.info("Retrieved all emotions. count={}", responses.size());
         return Result.ok(responses);
-    }
-
-    private void logNotFound(UUID id) {
-        log.warn("Emotion with id='{}' not found", id);
     }
 }

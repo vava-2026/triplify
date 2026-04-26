@@ -7,6 +7,13 @@
 
 .header-hbox {
     -fx-padding: 0 35 0 40;
+    -fx-pref-height: -height-topbar;
+    -fx-min-height: -height-topbar;
+    -fx-max-height: -height-topbar;
+}
+
+.header-search-container {
+    -fx-padding: 0 0 0 20;
 }
 
 .header-title {

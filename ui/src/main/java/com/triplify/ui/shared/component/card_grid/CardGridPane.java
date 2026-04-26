@@ -1,6 +1,6 @@
 package com.triplify.ui.shared.component.card_grid;
 
-import com.triplify.application.pagination.Pagination;
+import com.triplify.application.shared.Pagination;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;

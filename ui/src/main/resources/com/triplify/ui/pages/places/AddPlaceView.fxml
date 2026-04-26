@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.lang.String?>
-<?import com.triplify.ui.shared.component.action_buttons.view.EditorActionButtonsView?>
 <?import com.triplify.ui.shared.component.section_header.view.SectionHeaderView?>
 <?import com.triplify.ui.shared.component.upload_panel.view.ImageUploadPanelView?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.FlowPane?>
@@ -29,31 +27,30 @@
                 <FlowPane fx:id="contentFlow" styleClass="add-place-flow">
                     <VBox styleClass="add-place-main-column">
                         <VBox styleClass="page-card,add-place-card" spacing="18">
-                            <SectionHeaderView fx:id="generalSectionHeader" iconLiteral="fth-info" title="General Information"/>
+                            <SectionHeaderView fx:id="generalSectionHeader" iconLiteral="fth-info"/>
 
                             <VBox styleClass="add-place-form-group">
-                                <Label fx:id="placeTitleLabel" text="Place Title *" styleClass="form-label"/>
+                                <Label fx:id="placeTitleLabel" styleClass="form-label"/>
                                 <VBox fx:id="titleInputContainer"/>
                             </VBox>
 
                             <VBox styleClass="add-place-form-group">
-                                <Label fx:id="countryLabel" text="Country *" styleClass="form-label"/>
+                                <Label fx:id="countryLabel" styleClass="form-label"/>
                                 <VBox fx:id="countryInputContainer"/>
                             </VBox>
 
                             <VBox styleClass="add-place-form-group">
-                                <Label fx:id="descriptionLabel" text="Description" styleClass="form-label"/>
+                                <Label fx:id="descriptionLabel" styleClass="form-label"/>
                                 <VBox fx:id="descriptionInputContainer"/>
                             </VBox>
                         </VBox>
 
                         <VBox styleClass="page-card,add-place-card,add-place-map-card" spacing="16">
-                            <SectionHeaderView fx:id="locationSectionHeader" iconLiteral="fth-map-pin" title="Location"/>
+                            <SectionHeaderView fx:id="locationSectionHeader" iconLiteral="fth-map-pin"/>
 
                             <InteractiveMap fx:id="interactiveMap" />
 
                             <Label fx:id="mapHelperLabel"
-                                   text="Click on the map to pick coordinates. Hold the right mouse button to move, use the wheel, pinch, or buttons to zoom, and pan with two-finger touchpad scrolling."
                                    wrapText="true"
                                    styleClass="add-place-helper-text"/>
 
@@ -64,16 +61,10 @@
 
                     <VBox styleClass="add-place-side-column">
                         <VBox styleClass="page-card,add-place-card,add-place-upload-card" spacing="14">
-                            <ImageUploadPanelView fx:id="imageUploadPanel"
-                                                  sectionIconLiteral="fth-image"
-                                                  sectionTitle="Cover Image"
-                                                  uploadTitle="Click to upload&#10;or drag and drop"
-                                                  uploadSubtitle="SVG, PNG, JPEG"/>
+                            <ImageUploadPanelView fx:id="imageUploadPanel"/>
                         </VBox>
 
-                        <EditorActionButtonsView fx:id="actionButtonsView"
-                                                 primaryText="Save Place"
-                                                 secondaryText="Discard Changes"/>
+                        <VBox fx:id="actionButtonsContainer" spacing="12"/>
                     </VBox>
                 </FlowPane>
             </VBox>

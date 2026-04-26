@@ -1,6 +1,6 @@
 package com.triplify.application.usecase.country.dto;
 
-import com.triplify.application.localization.LocalizedName;
+import com.triplify.application.shared.localization.LocalizedName;
 import com.triplify.domain.model.Country;
 
 import java.util.UUID;

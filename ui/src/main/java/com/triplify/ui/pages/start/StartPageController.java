@@ -6,6 +6,7 @@ import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.component.button.model.ButtonVariant;
 import com.triplify.ui.shared.component.button.view.AppButtonView;
+import com.triplify.ui.shared.model.AppComponentSize;
 import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import com.triplify.ui.shared.util.Localization;
 import javafx.fxml.FXML;
@@ -13,6 +14,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
+import javafx.beans.binding.Bindings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
@@ -23,6 +25,7 @@ import java.util.ResourceBundle;
 public class StartPageController extends SimpleLifecycleAwareController implements Initializable {
 
     private static final Logger log = LoggerFactory.getLogger(StartPageController.class);
+    private static final double HERO_BUTTONS_CONTAINER_WIDTH = 320;
 
     @Inject private FxmlLoaderHelper fxmlLoader;
     @Inject private GuardedNavigator guardedNavigator;
@@ -40,9 +43,13 @@ public class StartPageController extends SimpleLifecycleAwareController implemen
 
         heroTitleLine2.getStyleClass().add("start-hero-title-tight");
 
+        heroButtons.setMinWidth(HERO_BUTTONS_CONTAINER_WIDTH);
+        heroButtons.setPrefWidth(HERO_BUTTONS_CONTAINER_WIDTH);
+        heroButtons.setMaxWidth(HERO_BUTTONS_CONTAINER_WIDTH);
+
         Button loginBtn = AppButtonView.builder(fxmlLoader)
-                .variant(ButtonVariant.LOGIN)
                 .labelBinding(Localization.textBinding("start.login"))
+                .size(AppComponentSize.BIG)
                 .onAction(() -> {
                     log.debug("Log In clicked");
                     guardedNavigator.goTo(getRouter(), RouteIds.LOGIN);
@@ -50,13 +57,25 @@ public class StartPageController extends SimpleLifecycleAwareController implemen
                 .build();
 
         Button signUpBtn = AppButtonView.builder(fxmlLoader)
-                .variant(ButtonVariant.SIGN_UP)
                 .labelBinding(Localization.textBinding("start.signUp"))
+                .variant(ButtonVariant.WHITE)
+                .size(AppComponentSize.BIG)
                 .onAction(() -> {
                     log.debug("Sign Up clicked");
                     guardedNavigator.goTo(getRouter(), RouteIds.SIGN_UP);
                 })
                 .build();
+
+        var halfWidth = Bindings.createDoubleBinding(
+                () -> Math.max(0, (heroButtons.getWidth() - heroButtons.getSpacing()) / 2.0),
+                heroButtons.widthProperty(),
+                heroButtons.spacingProperty()
+        );
+
+        loginBtn.prefWidthProperty().bind(halfWidth);
+        loginBtn.maxWidthProperty().bind(halfWidth);
+        signUpBtn.prefWidthProperty().bind(halfWidth);
+        signUpBtn.maxWidthProperty().bind(halfWidth);
 
         heroButtons.getChildren().addAll(loginBtn, signUpBtn);
     }

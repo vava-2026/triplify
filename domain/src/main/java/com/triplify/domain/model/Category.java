@@ -48,14 +48,12 @@ public class Category {
         this.color = color;
     }
 
-    public void updateName(@NonNull String name) throws IllegalArgumentException {
-        if (name.isBlank()) throw new IllegalArgumentException("Name must not be blank.");
+    public void updateName(@NonNull String name) {
         log.debug("Category [{}] name: {} to {}", id, this.name, name);
         setName(name);
     }
 
-    public void updateNameSk(@NonNull String nameSk) throws IllegalArgumentException {
-        if (nameSk.isBlank()) throw new IllegalArgumentException("Slovak name must not be blank.");
+    public void updateNameSk(@NonNull String nameSk) {
         log.debug("Category [{}] nameSk: {} to {}", id, this.nameSk, nameSk);
         setNameSk(nameSk);
     }
