@@ -20,6 +20,7 @@ import com.triplify.ui.shared.component.search.view.SearchView;
 import com.triplify.ui.shared.component.select.entry.model.Entry;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.toast.ToastService;
+import com.triplify.ui.shared.util.EmojiUtil;
 import com.triplify.ui.shared.util.Localization;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
@@ -27,6 +28,8 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -331,8 +334,7 @@ public class CountriesController extends SimpleLifecycleAwareController {
 	}
 
 	private void addCountryCard(CountryResponse country) {
-		Label emoji = new Label(country.emojiUnicode());
-		emoji.getStyleClass().add("countries-item-emoji");
+		ImageView emoji = createEmojiView(country.emojiUnicode());
 
 		Label title = new Label(Localization.localize(country.name(), country.nameSk()));
 		title.getStyleClass().add("countries-item-title");
@@ -364,6 +366,17 @@ public class CountriesController extends SimpleLifecycleAwareController {
 
 		countriesListContainer.getChildren().add(card);
 		countryRowsById.put(country.id(), card);
+	}
+
+	private ImageView createEmojiView(String emojiUnicode) {
+		Image image = EmojiUtil.toImage(emojiUnicode, 20);
+		ImageView emoji = new ImageView(image);
+		emoji.getStyleClass().add("countries-item-emoji");
+		emoji.setFitWidth(20);
+		emoji.setFitHeight(20);
+		emoji.setPreserveRatio(true);
+		emoji.setSmooth(true);
+		return emoji;
 	}
 
 	private void refreshSelectionStyles() {
