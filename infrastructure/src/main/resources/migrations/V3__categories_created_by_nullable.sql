@@ -5,7 +5,7 @@ CREATE TABLE categories (
     id TEXT NOT NULL PRIMARY KEY,
     created_by TEXT
         REFERENCES users(id)
-            ON DELETE RESTRICT ON UPDATE CASCADE,
+            ON DELETE SET NULL ON UPDATE CASCADE,
     name TEXT NOT NULL UNIQUE COLLATE NOCASE,
     name_sk TEXT NOT NULL UNIQUE COLLATE NOCASE,
     description TEXT,

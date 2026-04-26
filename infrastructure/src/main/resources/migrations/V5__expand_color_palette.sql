@@ -4,7 +4,7 @@ CREATE TABLE categories_new (
     id TEXT NOT NULL PRIMARY KEY,
     created_by TEXT
         REFERENCES users(id)
-            ON DELETE RESTRICT ON UPDATE CASCADE,
+            ON DELETE SET NULL ON UPDATE CASCADE,
     name TEXT NOT NULL UNIQUE COLLATE NOCASE,
     name_sk TEXT NOT NULL UNIQUE COLLATE NOCASE,
     description TEXT,
@@ -25,7 +25,7 @@ CREATE TABLE tags_new (
     id TEXT NOT NULL PRIMARY KEY,
     user_id TEXT NOT NULL
       REFERENCES users(id)
-          ON DELETE CASCADE ON UPDATE CASCADE,
+          ON DELETE SET NULL ON UPDATE CASCADE,
     name TEXT NOT NULL COLLATE NOCASE,
     color TEXT NOT NULL DEFAULT 'gray'
       CHECK (color IN ('gray', 'red_dark', 'red', 'rose', 'orange', 'amber', 'yellow', 'golden_brown', 'lime', 'green', 'indigo', 'violet', 'steel_blue', 'teal', 'blue', 'cyan', 'sage', 'brown', 'purple', 'pink')),
