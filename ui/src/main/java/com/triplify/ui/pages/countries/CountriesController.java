@@ -17,6 +17,7 @@ import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.component.button.model.ButtonVariant;
 import com.triplify.ui.shared.component.button.view.AppButtonView;
 import com.triplify.ui.shared.component.card_grid.CardGridPane;
+import com.triplify.ui.shared.component.input_item.EmojiInputItem;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.search.model.Search;
 import com.triplify.ui.shared.component.search.view.SearchView;
@@ -74,7 +75,7 @@ public class CountriesController extends SimpleLifecycleAwareController {
 
 	private InputItem nameInput;
 	private InputItem nameSkInput;
-	private InputItem emojiInput;
+	private EmojiInputItem emojiInput;
     private SearchView<String> searchView;
 
 	private final ObjectProperty<CountryResponse> selectedCountry = new SimpleObjectProperty<>();
@@ -268,7 +269,7 @@ public class CountriesController extends SimpleLifecycleAwareController {
 	private void initializeInputs() {
 		nameInput = new InputItem("countries.input.name", FieldVariant.GHOST);
 		nameSkInput = new InputItem("countries.input.nameSk", FieldVariant.GHOST);
-		emojiInput = new InputItem("countries.input.emoji", FieldVariant.GHOST);
+		emojiInput = new EmojiInputItem("countries.input.emoji", FieldVariant.GHOST);
         searchView = new SearchView<String>(Search.builder(this::search).placeholderKey("countries.search.placeholder").variant(FieldVariant.OUTLINED).build());
 
 		 nameInputContainer.getChildren().setAll(nameInput);

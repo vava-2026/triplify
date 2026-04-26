@@ -3,6 +3,7 @@ package com.triplify.ui.shared.component.input_item;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.util.Localization;
+import javafx.beans.property.StringProperty;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -87,6 +88,10 @@ public class InputItem extends VBox {
             case FILLED -> "input-item--filled";
             case GHOST -> "input-item--ghost";
         };
+    }
+
+    public StringProperty textProperty() {
+        return textField.textProperty();
     }
 
     public String getText() {

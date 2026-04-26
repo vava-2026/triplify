@@ -13,6 +13,7 @@ import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.component.button.model.ButtonVariant;
 import com.triplify.ui.shared.component.button.view.AppButtonView;
 import com.triplify.ui.shared.component.card_grid.CardGridPane;
+import com.triplify.ui.shared.component.input_item.EmojiInputItem;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.input_item.TextAreaItem;
 import com.triplify.ui.shared.component.search.model.Search;
@@ -86,7 +87,7 @@ public class CategoriesController extends SimpleLifecycleAwareController {
     private InputItem nameSkInput;
     private TextAreaItem descriptionInput;
     private TextAreaItem descriptionSkInput;
-    private InputItem emojiInput;
+    private EmojiInputItem emojiInput;
     private SearchView<String> searchView;
     private Select<ColorTheme> colorSelectModel;
     private SelectView<ColorTheme> colorSelectView;
@@ -189,7 +190,7 @@ public class CategoriesController extends SimpleLifecycleAwareController {
         nameSkInput = new InputItem("categories.input.nameSk", FieldVariant.GHOST);
         descriptionInput = new TextAreaItem("categories.input.description", FieldVariant.GHOST);
         descriptionSkInput = new TextAreaItem("categories.input.descriptionSk", FieldVariant.GHOST);
-        emojiInput = new InputItem("categories.input.emoji", FieldVariant.GHOST);
+        emojiInput = new EmojiInputItem("categories.input.emoji", FieldVariant.GHOST);
 
         nameInputContainer.getChildren().setAll(nameInput);
         nameSkInputContainer.getChildren().setAll(nameSkInput);

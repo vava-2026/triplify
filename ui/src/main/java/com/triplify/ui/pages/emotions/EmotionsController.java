@@ -12,12 +12,14 @@ import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.component.button.model.ButtonVariant;
 import com.triplify.ui.shared.component.button.view.AppButtonView;
 import com.triplify.ui.shared.component.card_grid.CardGridPane;
+import com.triplify.ui.shared.component.input_item.EmojiInputItem;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.search.model.Search;
 import com.triplify.ui.shared.component.search.view.SearchView;
 import com.triplify.ui.shared.component.select.entry.model.Entry;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.toast.ToastService;
+import com.triplify.ui.shared.util.EmojiUtil;
 import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import com.triplify.ui.shared.util.Localization;
 import javafx.beans.binding.Bindings;
@@ -26,6 +28,8 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -65,7 +69,7 @@ public class EmotionsController extends SimpleLifecycleAwareController {
 
 	private InputItem nameInput;
 	private InputItem nameSkInput;
-	private InputItem emojiInput;
+	private EmojiInputItem emojiInput;
 	private SearchView<String> searchView;
 
 	private final ObjectProperty<EmotionResponse> selectedEmotion = new SimpleObjectProperty<>();
@@ -159,7 +163,7 @@ public class EmotionsController extends SimpleLifecycleAwareController {
 	private void initializeInputs() {
 		nameInput = new InputItem("emotions.input.name", FieldVariant.GHOST);
 		nameSkInput = new InputItem("emotions.input.nameSk", FieldVariant.GHOST);
-		emojiInput = new InputItem("emotions.input.emoji", FieldVariant.GHOST);
+		emojiInput = new EmojiInputItem("emotions.input.emoji", FieldVariant.GHOST);
 		searchView = new SearchView<>(Search.<String>builder(this::search)
 				.placeholderKey("emotions.search.placeholder")
 				.variant(FieldVariant.OUTLINED)
@@ -312,9 +316,19 @@ public class EmotionsController extends SimpleLifecycleAwareController {
 		return value != null && value.toLowerCase(Locale.ROOT).contains(needle);
 	}
 
+	private ImageView createEmojiView(String emojiUnicode) {
+		Image image = EmojiUtil.toImage(emojiUnicode, 20);
+		ImageView view = new ImageView(image);
+		view.getStyleClass().add("emotions-item-emoji");
+		view.setFitWidth(20);
+		view.setFitHeight(20);
+		view.setPreserveRatio(true);
+		view.setSmooth(true);
+		return view;
+	}
+
 	private Node buildEmotionCard(EmotionResponse emotion) {
-		Label emoji = new Label(emotion.emojiUnicode());
-		emoji.getStyleClass().add("emotions-item-emoji");
+		ImageView emoji = createEmojiView(emotion.emojiUnicode());
 
 		Label title = new Label(Localization.localize(emotion.name(), emotion.nameSk()));
 		title.getStyleClass().add("emotions-item-title");
