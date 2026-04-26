@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.triplify.ui.shared.component.card_grid.CardGridPane?>
+<?import java.lang.String?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<?import javafx.scene.control.ScrollPane?>
+<ScrollPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.triplify.ui.pages.categories.CategoriesController"
+            styleClass="page-root,categories-root"
+            fitToWidth="true"
+            hbarPolicy="NEVER">
+    <stylesheets>
+        <String fx:value="/com/triplify/ui/pages/categories/categories.css"/>
+    </stylesheets>
+
+    <VBox spacing="14" maxWidth="1120" styleClass="categories-content">
+        <GridPane styleClass="categories-layout">
+            <columnConstraints>
+                <ColumnConstraints minWidth="360" prefWidth="360" maxWidth="360" hgrow="NEVER"/>
+                <ColumnConstraints minWidth="520" hgrow="ALWAYS"/>
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints vgrow="ALWAYS"/>
+            </rowConstraints>
+
+            <VBox spacing="14" styleClass="page-card,categories-form-card" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.vgrow="ALWAYS">
+                <HBox styleClass="categories-card-header">
+                    <Label fx:id="formSectionTitleLabel" styleClass="categories-section-title"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="modeBadgeLabel" styleClass="categories-mode-badge"/>
+                </HBox>
+
+                <VBox spacing="6" styleClass="categories-form-group">
+                    <Label fx:id="nameLabel" styleClass="form-label"/>
+                    <VBox fx:id="nameInputContainer"/>
+                </VBox>
+
+                <VBox spacing="6" styleClass="categories-form-group">
+                    <Label fx:id="nameSkLabel" styleClass="form-label"/>
+                    <VBox fx:id="nameSkInputContainer"/>
+                </VBox>
+
+                <VBox spacing="6" styleClass="categories-form-group">
+                    <Label fx:id="descriptionLabel" styleClass="form-label"/>
+                    <VBox fx:id="descriptionInputContainer"/>
+                </VBox>
+
+                <VBox spacing="6" styleClass="categories-form-group">
+                    <Label fx:id="descriptionSkLabel" styleClass="form-label"/>
+                    <VBox fx:id="descriptionSkInputContainer"/>
+                </VBox>
+
+                <VBox spacing="6" styleClass="categories-form-group">
+                    <Label fx:id="emojiLabel" styleClass="form-label"/>
+                    <VBox fx:id="emojiInputContainer"/>
+                </VBox>
+
+                <VBox spacing="6" styleClass="categories-form-group">
+                    <Label fx:id="colorLabel" styleClass="form-label"/>
+                    <VBox fx:id="colorSelectContainer"/>
+                </VBox>
+
+                <HBox spacing="10" styleClass="categories-actions-row">
+                          <VBox fx:id="saveButtonContainer" HBox.hgrow="ALWAYS"/>
+                          <VBox fx:id="clearFormButtonContainer"/>
+                </HBox>
+
+                <HBox spacing="10" styleClass="categories-actions-row">
+                          <VBox fx:id="deleteButtonContainer" HBox.hgrow="ALWAYS"/>
+                </HBox>
+            </VBox>
+
+            <VBox prefHeight="0" spacing="14" styleClass="page-card,categories-list-card" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.hgrow="ALWAYS">
+                <HBox styleClass="categories-card-header">
+                      <Label fx:id="listSectionTitleLabel" styleClass="categories-section-title"/>
+                </HBox>
+
+                <HBox spacing="10" styleClass="categories-search-row">
+                    <HBox fx:id="searchContainer" spacing="10" HBox.hgrow="ALWAYS"/>
+                </HBox>
+
+                <CardGridPane fx:id="categoriesGrid" VBox.vgrow="ALWAYS" styleClass="categories-grid"/>
+            </VBox>
+        </GridPane>
+    </VBox>
+</ScrollPane>

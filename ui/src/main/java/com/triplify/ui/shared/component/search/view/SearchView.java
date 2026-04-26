@@ -7,6 +7,7 @@ import com.triplify.ui.shared.component.search.model.SearchDisplayMode;
 import com.triplify.ui.shared.model.AppComponentSize;
 import com.triplify.ui.shared.model.FieldVariant;
 import javafx.animation.PauseTransition;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -167,7 +168,7 @@ public class SearchView<T> extends VBox {
         }
 
         if (getScene() != null && getScene().getRoot() != null) {
-            getScene().getRoot().requestFocus();
+            Platform.runLater(() -> getScene().getRoot().requestFocus());
         }
     }
 
@@ -226,6 +227,8 @@ public class SearchView<T> extends VBox {
         String normalizedQuery = query == null ? "" : query.trim();
         activeQuery = normalizedQuery;
 
+        List<Entry<T>> results = model.search(normalizedQuery);
+
         if (normalizedQuery.isEmpty() && !model.isShowOnEmptyQuery()) {
             resultsListView.getSelectionModel().clearSelection();
             resultsListView.getItems().clear();
@@ -233,7 +236,6 @@ public class SearchView<T> extends VBox {
             return;
         }
 
-        List<Entry<T>> results = model.search(normalizedQuery);
         resultsListView.getSelectionModel().clearSelection();
         resultsListView.getItems().setAll(results);
         updateListViewHeight();

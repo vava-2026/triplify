@@ -62,7 +62,7 @@ public class CountryServiceImpl implements CountryService {
         Country old = oldRes.get();
         if (old.getCreatedById() == null || !old.getCreatedById().equals(user.userId())) {
             log.warn("Attempted to update country not created by userId='{}' by userId='{}', countryName='{}'", old.getCreatedById(), user.userId(), old.getName());
-            return Result.fail(new CountryError.NotFound(request.id().toString()));
+            return Result.fail(new CountryError.NotOwner(request.id().toString()));
         }
 
         Country updated = new Country(old.getId(), user.userId(), request.name(), request.nameSk(), request.emojiUnicode(), old.isAvailable());
@@ -86,7 +86,7 @@ public class CountryServiceImpl implements CountryService {
         Country old = oldRes.get();
         if (old.getCreatedById() == null || !old.getCreatedById().equals(user.userId())) {
             log.warn("Attempted to delete country not created by userId='{}' by userId='{}', countryName='{}'", old.getCreatedById(), user.userId(), old.getName());
-            return Result.fail(new CountryError.NotFound(request.id().toString()));
+            return Result.fail(new CountryError.NotOwner(request.id().toString()));
         }
 
         countryRepository.delete(old);

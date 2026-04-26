@@ -16,7 +16,6 @@ public class Emotion {
     @NonNull
     private final UUID id;
 
-    @NonNull
     private final UUID createdById;
 
     @NonNull

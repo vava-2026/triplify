@@ -27,6 +27,10 @@ public final class EditorUtils {
         return value == null ? "" : value;
     }
 
+    public static String normalize(String value) {
+        return value == null ? "" : value.trim();
+    }
+
     public static String normalizeNullable(String value) {
         if (value == null) return null;
         String trimmed = value.trim();
