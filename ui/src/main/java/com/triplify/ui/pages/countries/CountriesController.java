@@ -10,6 +10,7 @@ import com.triplify.application.usecase.country.dto.DeleteCountryRequest;
 import com.triplify.application.usecase.country.dto.GetCountriesRequest;
 import com.triplify.application.usecase.country.dto.UnbanCountryRequest;
 import com.triplify.application.usecase.country.dto.UpdateCountryRequest;
+import com.triplify.application.usecase.session.UserSessionContext;
 import com.triplify.domain.filter.CountryFilter;
 import com.triplify.domain.pagination.PageRequest;
 import com.triplify.ui.error.ErrorHandler;
@@ -72,6 +73,7 @@ public class CountriesController extends SimpleLifecycleAwareController {
 	@Inject private ToastService toast;
 	@Inject private ErrorHandler errorHandler;
 	@Inject private FxmlLoaderHelper fxmlLoader;
+	@Inject private UserSessionContext userSessionContext;
 
 	private InputItem nameInput;
 	private InputItem nameSkInput;
@@ -362,10 +364,22 @@ public class CountriesController extends SimpleLifecycleAwareController {
 				country.isAvailable() ? "countries-item-status-active" : "countries-item-status-banned"
 		);
 
+		boolean ownedByCurrentUser = isOwnedByCurrentUser(country);
+		Label ownership = new Label(ownedByCurrentUser
+				? I18n.t("countries.owner.owned")
+				: I18n.t("countries.owner.shared"));
+		ownership.getStyleClass().addAll(
+				"countries-item-owner",
+				ownedByCurrentUser ? "countries-item-owner-owned" : "countries-item-owner-shared"
+		);
+
+		HBox badges = new HBox(6, ownership, status);
+		badges.getStyleClass().add("countries-item-badges");
+
 		Region spacer = new Region();
 		HBox.setHgrow(spacer, Priority.ALWAYS);
 
-		HBox header = new HBox(10, emoji, textBox, spacer, status);
+		HBox header = new HBox(10, emoji, textBox, spacer, badges);
 		header.getStyleClass().add("countries-item-header");
 
 		VBox card = new VBox(header);
@@ -376,6 +390,15 @@ public class CountriesController extends SimpleLifecycleAwareController {
 
 		countryRowsById.put(country.id(), card);
 		return card;
+	}
+
+	private boolean isOwnedByCurrentUser(CountryResponse country) {
+		if (country.createdById() == null) {
+			return false;
+		}
+		return userSessionContext.getCurrent()
+				.map(user -> country.createdById().equals(user.userId()))
+				.orElse(false);
 	}
 
 	private ImageView createEmojiView(String emojiUnicode) {

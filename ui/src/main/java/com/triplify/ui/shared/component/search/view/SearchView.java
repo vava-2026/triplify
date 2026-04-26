@@ -7,6 +7,7 @@ import com.triplify.ui.shared.component.search.model.SearchDisplayMode;
 import com.triplify.ui.shared.model.AppComponentSize;
 import com.triplify.ui.shared.model.FieldVariant;
 import javafx.animation.PauseTransition;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -167,7 +168,7 @@ public class SearchView<T> extends VBox {
         }
 
         if (getScene() != null && getScene().getRoot() != null) {
-            getScene().getRoot().requestFocus();
+            Platform.runLater(() -> getScene().getRoot().requestFocus());
         }
     }
 

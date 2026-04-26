@@ -113,6 +113,10 @@
 	-fx-alignment: center-left;
 }
 
+.countries-item-badges {
+	-fx-alignment: center-right;
+}
+
 .countries-item-emoji {
 	-fx-font-size: 20px;
 }
@@ -137,6 +141,23 @@
 	-fx-font-weight: bold;
 	-fx-padding: 4px 9px;
 	-fx-background-radius: 999px;
+}
+
+.countries-item-owner {
+	-fx-font-size: 11px;
+	-fx-font-weight: bold;
+	-fx-padding: 4px 9px;
+	-fx-background-radius: 999px;
+}
+
+.countries-item-owner-owned {
+	-fx-background-color: -color-primary-light;
+	-fx-text-fill: -color-primary-dark;
+}
+
+.countries-item-owner-shared {
+	-fx-background-color: -color-surface-soft;
+	-fx-text-fill: -color-ink-muted;
 }
 
 .countries-item-status-active {
