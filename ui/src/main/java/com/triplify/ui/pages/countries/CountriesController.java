@@ -1,7 +1,7 @@
 package com.triplify.ui.pages.countries;
 
 import com.google.inject.Inject;
-import com.triplify.application.pagination.Pagination;
+import com.triplify.application.shared.Pagination;
 import com.triplify.application.usecase.country.CountryService;
 import com.triplify.application.usecase.country.dto.AddCountryRequest;
 import com.triplify.application.usecase.country.dto.BanCountryRequest;
@@ -48,7 +48,7 @@ public class CountriesController extends SimpleLifecycleAwareController {
 	private static final int PAGE_SIZE = 8;
 
     @FXML private Label formSectionTitleLabel;
-    // @FXML private Label listSectionTitleLabel;
+    @FXML private Label listSectionTitleLabel;
     @FXML private Label modeBadgeLabel;
 
     @FXML private Label nameLabel;
@@ -279,7 +279,7 @@ public class CountriesController extends SimpleLifecycleAwareController {
 
 	private void bindLocalizedText() {
 		Localization.bindText(formSectionTitleLabel.textProperty(), "countries.section.form");
-		// Localization.bindText(listSectionTitleLabel.textProperty(), "countries.section.list");
+		Localization.bindText(listSectionTitleLabel.textProperty(), "countries.section.list");
 		Localization.bindText(nameLabel.textProperty(), "countries.field.name");
 		Localization.bindText(nameSkLabel.textProperty(), "countries.field.nameSk");
 		Localization.bindText(emojiLabel.textProperty(), "countries.field.emoji");

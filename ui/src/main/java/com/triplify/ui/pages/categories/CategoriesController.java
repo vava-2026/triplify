@@ -1,8 +1,8 @@
 package com.triplify.ui.pages.categories;
 
 import com.google.inject.Inject;
-import com.triplify.application.model.ColorTheme;
-import com.triplify.application.pagination.Pagination;
+import com.triplify.application.shared.ColorTheme;
+import com.triplify.application.shared.Pagination;
 import com.triplify.application.usecase.category.CategoryService;
 import com.triplify.application.usecase.category.dto.AddCategoryRequest;
 import com.triplify.application.usecase.category.dto.CategoryResponse;
@@ -199,6 +199,7 @@ public class CategoriesController extends SimpleLifecycleAwareController {
         searchView = new SearchView<>(Search.<String>builder(this::search)
                 .placeholderKey("categories.search.placeholder")
                 .variant(FieldVariant.OUTLINED)
+                .maxResults(12)
                 .build());
         searchContainer.getChildren().setAll(searchView);
 

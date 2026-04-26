@@ -1,18 +1,12 @@
 package com.triplify.ui.pages.emotions;
 
 import com.google.inject.Inject;
-import com.triplify.application.pagination.Pagination;
-import com.triplify.application.usecase.category.dto.CategoryResponse;
-import com.triplify.application.usecase.country.dto.CountryResponse;
-import com.triplify.application.usecase.country.dto.GetCountriesRequest;
+import com.triplify.application.shared.Pagination;
 import com.triplify.application.usecase.emotion.EmotionService;
 import com.triplify.application.usecase.emotion.dto.CreateEmotionRequest;
 import com.triplify.application.usecase.emotion.dto.DeleteEmotionRequest;
 import com.triplify.application.usecase.emotion.dto.EmotionResponse;
-import com.triplify.application.usecase.emotion.dto.GetAllEmotionsRequest;
 import com.triplify.application.usecase.emotion.dto.UpdateEmotionRequest;
-import com.triplify.domain.filter.CountryFilter;
-import com.triplify.domain.pagination.PageRequest;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.component.button.model.ButtonVariant;
@@ -177,25 +171,14 @@ public class EmotionsController extends SimpleLifecycleAwareController {
 		searchContainer.getChildren().setAll(searchView);
 	}
 
-    // TODO: solve search when the emotion service is fixed
 	private List<Entry<String>> search(String searchQuery) {
-		activeSearchQuery = normalizeNullable(searchQuery);
-        reloadEmotions();
+        activeSearchQuery = searchQuery == null ? "" : searchQuery;
+        emotionsGrid.refresh();
 
-        var request = new GetAllEmotionsRequest(new PageRequest(0, PAGE_SIZE));
-
-        var result = emotionService.getAllEmotions(request);
-        if (result.isSuccess()) {
-            var page = result.getValue();
-
-            return page.items().stream()
-                    .map(emotion -> Entry.builder(emotion.name(), emotion.name()).build())
-                    .toList();
-        }
-        else {
-            errorHandler.handle(result.getError());
-            return Collections.emptyList();
-        }
+        List<EmotionResponse> filtered = filteredEmotions(searchQuery);
+        return filtered.stream()
+                .map(category -> Entry.builder(category.name(), category.name()).build())
+                .toList();
 	}
 
 	private void bindLocalizedText() {
@@ -266,29 +249,36 @@ public class EmotionsController extends SimpleLifecycleAwareController {
 	}
 
 	private CardGridPane.PageResult<EmotionResponse> loadEmotionsPage(int page, int pageSize) {
-        var request = new GetAllEmotionsRequest(
-                new PageRequest(Math.max(0, page - 1), pageSize)
-        );
+        List<EmotionResponse> filtered = filteredEmotions(activeSearchQuery);
 
-        var result = emotionService.getAllEmotions(request);
+        int startIdx = (page - 1) * pageSize;
+        int endIdx = Math.min(startIdx + pageSize, filtered.size());
 
-        if (result.isFailure()) {
-            errorHandler.handle(result.getError());
-            return new CardGridPane.PageResult<>(List.of(), Pagination.request(page, pageSize).withTotals(0));
-        }
+        List<EmotionResponse> pageItems = startIdx < filtered.size()
+                ? filtered.subList(startIdx, endIdx)
+                : List.of();
 
-        var emotionsPage = result.getValue();
-        int totalPages = emotionsPage.hasNext() ? page + 1 : page;
+        int totalPages = (int) Math.ceil((double) filtered.size() / pageSize);
         return new CardGridPane.PageResult<>(
-                emotionsPage.items(),
+                pageItems,
                 new Pagination(page, pageSize, null, totalPages)
         );
 	}
 
 	private void reloadEmotions() {
-		allEmotions.clear();
-		emotionRowsById.clear();
-		emotionsGrid.refresh();
+        var result = emotionService.getAllEmotions();
+            result.onSuccess(emotions -> {
+            allEmotions.clear();
+            allEmotions.addAll(emotions.stream()
+                    .sorted(Comparator.comparing(EmotionResponse::name, String.CASE_INSENSITIVE_ORDER))
+                    .toList());
+            renderFilteredEmotions(activeSearchQuery);
+        });
+            result.onFailure(error -> {
+                allEmotions.clear();
+            renderFilteredEmotions(activeSearchQuery);
+            errorHandler.handle(error);
+        });
 	}
 
 	private void renderFilteredEmotions(String searchQuery) {

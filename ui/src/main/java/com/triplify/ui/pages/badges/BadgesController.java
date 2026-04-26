@@ -1,7 +1,7 @@
 package com.triplify.ui.pages.badges;
 
 import com.google.inject.Inject;
-import com.triplify.application.pagination.Pagination;
+import com.triplify.application.shared.Pagination;
 import com.triplify.application.usecase.badge.BadgeService;
 import com.triplify.application.usecase.badge.dto.AddBadgeRequest;
 import com.triplify.application.usecase.badge.dto.BadgeResponse;
