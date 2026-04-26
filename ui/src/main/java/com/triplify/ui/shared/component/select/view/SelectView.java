@@ -7,6 +7,7 @@ import com.triplify.ui.shared.model.FieldVariant;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.util.StringConverter;
 
@@ -14,6 +15,8 @@ import java.io.IOException;
 import java.net.URL;
 
 public class SelectView<T> extends HBox {
+
+    private static final String ERROR_STYLE_CLASS = "app-select-error";
 
     private static final URL FXML_URL = SelectView.class.getResource("/com/triplify/ui/shared/component/select/view/AppSelect.fxml");
 
@@ -86,9 +89,24 @@ public class SelectView<T> extends HBox {
     private void onSelectionChanged() {
         Entry<T> value = comboBox.getValue();
         if (value != null && model != null) {
+            clearError();
             model.setSelectedItem(value);
             model.triggerSelect(value);
         }
+    }
+
+    public void showError(String message) {
+        if (!comboBox.getStyleClass().contains(ERROR_STYLE_CLASS)) {
+            comboBox.getStyleClass().add(ERROR_STYLE_CLASS);
+        }
+        if (message != null && !message.isBlank()) {
+            comboBox.setTooltip(new Tooltip(message));
+        }
+    }
+
+    public void clearError() {
+        comboBox.getStyleClass().remove(ERROR_STYLE_CLASS);
+        comboBox.setTooltip(null);
     }
 
     public ComboBox<Entry<T>> getComboBox() {

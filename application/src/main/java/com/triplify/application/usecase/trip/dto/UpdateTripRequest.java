@@ -31,7 +31,7 @@ public record UpdateTripRequest(
         Instant startedAt,
         Instant endedAt,
         Set<UUID> tagIds,
-        Set<Path> images,
+        Path coverImage,
         Set<UUID> countryIds
 ) {
 }

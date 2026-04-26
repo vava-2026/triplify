@@ -17,6 +17,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -33,6 +34,7 @@ import java.util.List;
 public class SearchView<T> extends VBox {
 
     private static final double ROW_HEIGHT = 32.0;
+    private static final String ERROR_STYLE_CLASS = "search-has-error";
 
     @FXML @Getter private TextField searchField;
     @FXML private HBox searchBox;
@@ -179,6 +181,7 @@ public class SearchView<T> extends VBox {
         debounce.setOnFinished(e -> runSearch(searchField.getText()));
 
         searchField.textProperty().addListener((obs, oldValue, newValue) -> {
+            clearError();
             if (model.isSearchOnTyping()) {
                 debounce.playFromStart();
             }
@@ -381,5 +384,19 @@ public class SearchView<T> extends VBox {
         resultsListView.setVisible(true);
         resultsListView.setManaged(true);
         showPopup();
+    }
+
+    public void showError(String message) {
+        if (!getStyleClass().contains(ERROR_STYLE_CLASS)) {
+            getStyleClass().add(ERROR_STYLE_CLASS);
+        }
+        if (message != null && !message.isBlank()) {
+            searchField.setTooltip(new Tooltip(message));
+        }
+    }
+
+    public void clearError() {
+        getStyleClass().remove(ERROR_STYLE_CLASS);
+        searchField.setTooltip(null);
     }
 }

@@ -17,6 +17,7 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.Locale;
+import java.util.UUID;
 
 public final class EditorUtils {
 
@@ -37,6 +38,15 @@ public final class EditorUtils {
             return "";
         }
         return value.trim();
+    }
+
+    public static UUID parseUUID(String id) {
+        if (id == null || id.isBlank()) return null;
+        try {
+            return UUID.fromString(id);
+        } catch (IllegalArgumentException ignored) {
+            return null;
+        }
     }
 
     public static String formatMessage(String key, Object... args) {
@@ -178,18 +188,5 @@ public final class EditorUtils {
     @FunctionalInterface
     public interface CoverImageResult {
         void accept(String absolutePath);
-    }
-
-    public static void handleUploadDragOver(DragEvent event, StackPane uploadArea) {
-        if (event.getDragboard().hasFiles() && isSupportedImageFile(event.getDragboard().getFiles().getFirst())) {
-            event.acceptTransferModes(TransferMode.COPY);
-            toggleStyleClass(uploadArea, "editor-upload-area-active", true);
-        }
-        event.consume();
-    }
-
-    public static void handleUploadDragExited(DragEvent event, StackPane uploadArea) {
-        toggleStyleClass(uploadArea, "editor-upload-area-active", false);
-        event.consume();
     }
 }
