@@ -90,7 +90,6 @@ public class CountriesController extends SimpleLifecycleAwareController {
 		buildButtons();
 		configureGrid();
 		bindLocalizedText();
-		// bindState();
 		attachListeners();
 		reloadCountries();
 	}
@@ -119,6 +118,8 @@ public class CountriesController extends SimpleLifecycleAwareController {
 				.labelBinding(Localization.textBinding("countries.action.clear"))
 				.onAction(this::onClearForm)
 				.build();
+		clearBtn.setMaxWidth(Double.MAX_VALUE);
+		HBox.setHgrow(clearBtn, Priority.ALWAYS);
 		clearFormButtonContainer.getChildren().setAll(clearBtn);
 
 		var toggleAvailabilityBtn = AppButtonView.builder(fxmlLoader)
@@ -146,6 +147,8 @@ public class CountriesController extends SimpleLifecycleAwareController {
 				.labelBinding(Localization.textBinding("countries.action.delete"))
 				.onAction(this::onDeleteCountry)
 				.build();
+		deleteBtn.setMaxWidth(Double.MAX_VALUE);
+		HBox.setHgrow(deleteBtn, Priority.ALWAYS);
 		deleteButtonContainer.getChildren().setAll(deleteBtn);
 	}
 
@@ -274,10 +277,10 @@ public class CountriesController extends SimpleLifecycleAwareController {
 		emojiInput = new EmojiInputItem("countries.input.emoji", FieldVariant.GHOST);
         searchView = new SearchView<String>(Search.builder(this::search).placeholderKey("countries.search.placeholder").variant(FieldVariant.OUTLINED).build());
 
-		 nameInputContainer.getChildren().setAll(nameInput);
-		 nameSkInputContainer.getChildren().setAll(nameSkInput);
-		 emojiInputContainer.getChildren().setAll(emojiInput);
-         searchContainer.getChildren().setAll(searchView);
+		nameInputContainer.getChildren().setAll(nameInput);
+		nameSkInputContainer.getChildren().setAll(nameSkInput);
+		emojiInputContainer.getChildren().setAll(emojiInput);
+        searchContainer.getChildren().setAll(searchView);
 	 }
 
 	private void bindLocalizedText() {
@@ -296,11 +299,6 @@ public class CountriesController extends SimpleLifecycleAwareController {
 				I18n.bundleProperty()
 		));
 	}
-
-//	private void bindState() {
-//		toggleAvailabilityButton.disableProperty().bind(selectedCountry.isNull());
-//		deleteButton.disableProperty().bind(selectedCountry.isNull());
-//	}
 
 	private void attachListeners() {
 		selectedCountry.addListener((obs, oldValue, newValue) -> refreshSelectionStyles());

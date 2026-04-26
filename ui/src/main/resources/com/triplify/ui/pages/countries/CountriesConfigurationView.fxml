@@ -54,15 +54,17 @@
 					<VBox fx:id="emojiInputContainer"/>
 				</VBox>
 
-                <HBox spacing="10" styleClass="countries-actions-row">
-                    <VBox fx:id="saveButtonContainer" HBox.hgrow="ALWAYS" />
-                    <VBox fx:id="clearFormButtonContainer"/>
-                </HBox>
+				<GridPane hgap="10" vgap="10" styleClass="countries-actions-grid">
+					<columnConstraints>
+						<ColumnConstraints percentWidth="70" hgrow="ALWAYS"/>
+						<ColumnConstraints percentWidth="30" hgrow="ALWAYS"/>
+					</columnConstraints>
 
-				<HBox spacing="10" styleClass="countries-actions-row">
-					<VBox fx:id="toggleAvailabilityButtonContainer" HBox.hgrow="ALWAYS"/>
-					<VBox fx:id="deleteButtonContainer"/>
-				</HBox>
+					<VBox fx:id="saveButtonContainer" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.hgrow="ALWAYS"/>
+					<VBox fx:id="clearFormButtonContainer" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.hgrow="ALWAYS"/>
+					<VBox fx:id="toggleAvailabilityButtonContainer" GridPane.columnIndex="0" GridPane.rowIndex="1" GridPane.hgrow="ALWAYS"/>
+					<VBox fx:id="deleteButtonContainer" GridPane.columnIndex="1" GridPane.rowIndex="1" GridPane.hgrow="ALWAYS"/>
+				</GridPane>
             </VBox>
 
 			<VBox prefHeight="0" spacing="14" styleClass="page-card,countries-list-card" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.hgrow="ALWAYS">

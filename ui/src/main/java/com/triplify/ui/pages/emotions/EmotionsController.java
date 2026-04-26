@@ -19,6 +19,7 @@ import com.triplify.ui.shared.component.search.view.SearchView;
 import com.triplify.ui.shared.component.select.entry.model.Entry;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.toast.ToastService;
+import com.triplify.ui.shared.util.EditorUtils;
 import com.triplify.ui.shared.util.EmojiUtil;
 import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import com.triplify.ui.shared.util.Localization;
@@ -101,9 +102,9 @@ public class EmotionsController extends SimpleLifecycleAwareController {
 
 		if (creating) {
 			CreateEmotionRequest request = new CreateEmotionRequest(
-					normalize(nameInput.getText()),
-					normalize(nameSkInput.getText()),
-					normalize(emojiInput.getText())
+					EditorUtils.normalize(nameInput.getText()),
+					EditorUtils.normalize(nameSkInput.getText()),
+					EditorUtils.normalize(emojiInput.getText())
 			);
 			var result = emotionService.createEmotion(request);
 			result.onSuccess(emotion -> {
@@ -121,9 +122,9 @@ public class EmotionsController extends SimpleLifecycleAwareController {
 		EmotionResponse existing = selectedEmotion.get();
 		UpdateEmotionRequest request = new UpdateEmotionRequest(
 				existing.id(),
-				normalize(nameInput.getText()),
-				normalize(nameSkInput.getText()),
-				normalize(emojiInput.getText())
+				EditorUtils.normalize(nameInput.getText()),
+				EditorUtils.normalize(nameSkInput.getText()),
+				EditorUtils.normalize(emojiInput.getText())
 		);
 		var result = emotionService.updateEmotion(request);
 		result.onSuccess(emotion -> {
@@ -291,7 +292,7 @@ public class EmotionsController extends SimpleLifecycleAwareController {
 	}
 
 	private List<EmotionResponse> filteredEmotions(String searchQuery) {
-		String needle = normalizeNullable(searchQuery);
+		String needle = EditorUtils.normalizeNullable(searchQuery);
 		String search = needle == null ? null : needle.toLowerCase(Locale.ROOT);
 
 		List<EmotionResponse> filtered = new ArrayList<>();
@@ -399,17 +400,5 @@ public class EmotionsController extends SimpleLifecycleAwareController {
 				"nameSk", message -> nameSkInput.showError(message),
 				"emojiUnicode", message -> emojiInput.showError(message)
 		);
-	}
-
-	private String normalize(String value) {
-		return value == null ? "" : value.trim();
-	}
-
-	private String normalizeNullable(String value) {
-		if (value == null) {
-			return null;
-		}
-		String trimmed = value.trim();
-		return trimmed.isEmpty() ? null : trimmed;
 	}
 }

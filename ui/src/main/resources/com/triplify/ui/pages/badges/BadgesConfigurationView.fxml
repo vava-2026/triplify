@@ -94,7 +94,7 @@
 
             <VBox prefHeight="0" spacing="14" styleClass="page-card,badges-list-card" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.hgrow="ALWAYS">
                 <HBox styleClass="badges-card-header">
-                    <Label styleClass="badges-section-title"/>
+                    <Label fx:id="listSectionTitleLabel" styleClass="badges-section-title"/>
                 </HBox>
 
                 <HBox spacing="10" styleClass="badges-search-row">

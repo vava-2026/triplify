@@ -17,6 +17,7 @@ import com.triplify.ui.shared.component.button.model.ButtonVariant;
 import com.triplify.ui.shared.component.button.view.AppButtonView;
 import com.triplify.ui.shared.component.card_grid.CardGridPane;
 import com.triplify.ui.shared.component.input_item.InputItem;
+import com.triplify.ui.shared.component.input_item.TextAreaItem;
 import com.triplify.ui.shared.component.search.model.Search;
 import com.triplify.ui.shared.component.search.view.SearchView;
 import com.triplify.ui.shared.component.select.entry.model.Entry;
@@ -24,6 +25,7 @@ import com.triplify.ui.shared.component.select.model.Select;
 import com.triplify.ui.shared.component.select.view.SelectView;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.toast.ToastService;
+import com.triplify.ui.shared.util.EditorUtils;
 import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import com.triplify.ui.shared.util.Localization;
 import javafx.beans.binding.Bindings;
@@ -50,6 +52,7 @@ public class BadgesController extends SimpleLifecycleAwareController {
 	private static final int PAGE_SIZE = 8;
 
     @FXML private Label formSectionTitleLabel;
+    @FXML private Label listSectionTitleLabel;
     @FXML private Label modeBadgeLabel;
 
     @FXML private Label nameLabel;
@@ -71,9 +74,9 @@ public class BadgesController extends SimpleLifecycleAwareController {
     @FXML private VBox imagePathInputContainer;
     @FXML private HBox searchContainer;
 
-      @FXML private VBox saveButtonContainer;
-      @FXML private VBox clearFormButtonContainer;
-      @FXML private VBox deleteButtonContainer;
+    @FXML private VBox saveButtonContainer;
+    @FXML private VBox clearFormButtonContainer;
+    @FXML private VBox deleteButtonContainer;
 
 	@FXML private CardGridPane<BadgeResponse> badgesGrid;
 
@@ -84,8 +87,8 @@ public class BadgesController extends SimpleLifecycleAwareController {
 
     private InputItem nameInput;
     private InputItem nameSkInput;
-    private InputItem descriptionInput;
-    private InputItem descriptionSkInput;
+    private TextAreaItem descriptionInput;
+    private TextAreaItem descriptionSkInput;
     private InputItem levelInput;
     private InputItem requiredValueInput;
     private InputItem imagePathInput;
@@ -121,18 +124,11 @@ public class BadgesController extends SimpleLifecycleAwareController {
 
         Integer level = parseInteger(levelInput.getText(), levelInput, "badges.validation.levelNonNegative");
         Integer requiredValue = parseInteger(requiredValueInput.getText(), requiredValueInput, "badges.validation.requiredNonNegative");
-        if (level == null || requiredValue == null) {
-            return;
-        }
 
         BadgeResponse existing = selectedBadge.get();
         boolean creating = existing == null;
 
         UUID groupId = selectedGroupId();
-        if (creating && groupId == null) {
-            toast.warning(I18n.t("badges.validation.selectGroup"));
-            return;
-        }
 
         Path imagePath = parseImagePath(imagePathInput.getText());
         var handlers = buildFieldHandlers();
@@ -141,10 +137,10 @@ public class BadgesController extends SimpleLifecycleAwareController {
             AddBadgeRequest request = new AddBadgeRequest(
                     groupId,
                     imagePath,
-                    normalize(nameInput.getText()),
-                    normalize(nameSkInput.getText()),
-                    normalizeNullable(descriptionInput.getText()),
-                    normalizeNullable(descriptionSkInput.getText()),
+                    EditorUtils.normalize(nameInput.getText()),
+                    EditorUtils.normalize(nameSkInput.getText()),
+                    descriptionInput.getText(),
+                    descriptionSkInput.getText(),
                     level,
                     requiredValue
             );
@@ -162,10 +158,10 @@ public class BadgesController extends SimpleLifecycleAwareController {
         UpdateBadgeRequest request = new UpdateBadgeRequest(
                 existing.id(),
                 imagePath,
-                normalize(nameInput.getText()),
-                normalize(nameSkInput.getText()),
-                normalizeNullable(descriptionInput.getText()),
-                normalizeNullable(descriptionSkInput.getText()),
+                EditorUtils.normalize(nameInput.getText()),
+                EditorUtils.normalize(nameSkInput.getText()),
+                descriptionInput.getText(),
+                descriptionSkInput.getText(),
                 level,
                 requiredValue
         );
@@ -204,8 +200,8 @@ public class BadgesController extends SimpleLifecycleAwareController {
     private void initializeInputs() {
         nameInput = new InputItem("badges.input.name", FieldVariant.GHOST);
         nameSkInput = new InputItem("badges.input.nameSk", FieldVariant.GHOST);
-        descriptionInput = new InputItem("badges.input.description", FieldVariant.GHOST);
-        descriptionSkInput = new InputItem("badges.input.descriptionSk", FieldVariant.GHOST);
+        descriptionInput = new TextAreaItem("badges.input.description", FieldVariant.GHOST);
+        descriptionSkInput = new TextAreaItem("badges.input.descriptionSk", FieldVariant.GHOST);
         levelInput = new InputItem("badges.input.level", FieldVariant.GHOST);
         requiredValueInput = new InputItem("badges.input.requiredValue", FieldVariant.GHOST);
         imagePathInput = new InputItem("badges.input.imagePath", FieldVariant.GHOST);
@@ -234,6 +230,7 @@ public class BadgesController extends SimpleLifecycleAwareController {
 
 	private void bindText() {
 		Localization.bindText(formSectionTitleLabel.textProperty(), "nav.badges");
+        Localization.bindText(listSectionTitleLabel.textProperty(), "badges.section.list");
 		Localization.bindText(nameLabel.textProperty(), "badges.field.name");
 		Localization.bindText(nameSkLabel.textProperty(), "badges.field.nameSk");
 		Localization.bindText(descriptionLabel.textProperty(), "badges.field.description");
@@ -378,8 +375,6 @@ public class BadgesController extends SimpleLifecycleAwareController {
                 groupSelectView.getComboBox().getStyleClass().add("badges-group-select");
             }
         }
-
-        // updateGroupSelectState();
     }
 
     private List<Entry<UUID>> search(String searchQuery) {
@@ -398,7 +393,7 @@ public class BadgesController extends SimpleLifecycleAwareController {
     }
 
     private List<BadgeResponse> filteredBadges(String searchQuery) {
-        String needle = normalizeNullable(searchQuery);
+        String needle = EditorUtils.normalizeNullable(searchQuery);
         String search = needle == null ? null : needle.toLowerCase(Locale.ROOT);
 
         List<BadgeResponse> filtered = new ArrayList<>();
@@ -503,10 +498,10 @@ public class BadgesController extends SimpleLifecycleAwareController {
 
     private void selectBadge(BadgeResponse badge) {
         selectedBadge.set(badge);
-        nameInput.setText(safe(badge.name()));
-        nameSkInput.setText(safe(badge.nameSk()));
-        descriptionInput.setText(safe(badge.description()));
-        descriptionSkInput.setText(safe(badge.descriptionSk()));
+        nameInput.setText(badge.name());
+        nameSkInput.setText(badge.nameSk());
+        descriptionInput.setText(EditorUtils.safeText(badge.description()));
+        descriptionSkInput.setText(EditorUtils.safeText(badge.descriptionSk()));
         levelInput.setText(Integer.toString(badge.level()));
         requiredValueInput.setText(Integer.toString(badge.requiredValue()));
         imagePathInput.setText("");
@@ -541,14 +536,6 @@ public class BadgesController extends SimpleLifecycleAwareController {
             }
         });
     }
-
-
-//    private void updateGroupSelectState() {
-//        if (groupSelectView == null) {
-//            return;
-//        }
-//        groupSelectView.getComboBox().setDisable(selectedBadge.get() != null);
-//    }
 
     private Entry<UUID> findGroupEntry(UUID groupId) {
         if (groupId == null || groupSelectModel == null) {
@@ -597,7 +584,7 @@ public class BadgesController extends SimpleLifecycleAwareController {
     }
 
     private Integer parseInteger(String raw, InputItem input, String errorKey) {
-        String normalized = normalize(raw);
+        String normalized = EditorUtils.normalize(raw);
         if (normalized.isBlank()) {
             input.showError(I18n.t("badges.validation.numberRequired"));
             return null;
@@ -605,10 +592,6 @@ public class BadgesController extends SimpleLifecycleAwareController {
 
         try {
             int value = Integer.parseInt(normalized);
-            if (value < 0) {
-                input.showError(I18n.t(errorKey));
-                return null;
-            }
             return value;
         } catch (NumberFormatException ex) {
             input.showError(I18n.t("badges.validation.invalidNumber"));
@@ -617,7 +600,7 @@ public class BadgesController extends SimpleLifecycleAwareController {
     }
 
     private Path parseImagePath(String value) {
-        String normalized = normalizeNullable(value);
+        String normalized = EditorUtils.normalizeNullable(value);
         if (normalized == null) {
             return null;
         }
@@ -630,8 +613,10 @@ public class BadgesController extends SimpleLifecycleAwareController {
                 "nameSk", message -> nameSkInput.showError(message),
                 "description", message -> descriptionInput.showError(message),
                 "descriptionSk", message -> descriptionSkInput.showError(message),
+                "groupId", message -> groupSelectView.showError(message),
                 "level", message -> levelInput.showError(message),
-                "requiredValue", message -> requiredValueInput.showError(message)
+                "requiredValue", message -> requiredValueInput.showError(message),
+                "imagePath", message -> imagePathInput.showError(message)
         );
     }
 
@@ -640,24 +625,9 @@ public class BadgesController extends SimpleLifecycleAwareController {
         nameSkInput.clearError();
         descriptionInput.clearError();
         descriptionSkInput.clearError();
+        groupSelectView.clearError();
         levelInput.clearError();
         requiredValueInput.clearError();
         imagePathInput.clearError();
-    }
-
-    private String safe(String value) {
-        return value == null ? "" : value;
-    }
-
-    private String normalize(String value) {
-        return value == null ? "" : value.trim();
-    }
-
-    private String normalizeNullable(String value) {
-        if (value == null) {
-            return null;
-        }
-        String trimmed = value.trim();
-        return trimmed.isEmpty() ? null : trimmed;
     }
 }

@@ -23,6 +23,7 @@ import com.triplify.ui.shared.component.select.model.Select;
 import com.triplify.ui.shared.component.select.view.SelectView;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.toast.ToastService;
+import com.triplify.ui.shared.util.EditorUtils;
 import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import com.triplify.ui.shared.util.EmojiUtil;
 import com.triplify.ui.shared.util.Localization;
@@ -117,22 +118,18 @@ public class CategoriesController extends SimpleLifecycleAwareController {
         clearFieldErrors();
 
         ColorTheme selectedColor = selectedColor();
-        if (selectedColor == null) {
-            toast.warning("Please select a color.");
-            return;
-        }
 
         boolean creating = selectedCategory.get() == null;
         var handlers = buildFieldHandlers();
 
         if (creating) {
             AddCategoryRequest request = new AddCategoryRequest(
-                    normalize(nameInput.getText()),
-                    normalize(nameSkInput.getText()),
-                    normalizeNullable(descriptionInput.getText()),
-                    normalizeNullable(descriptionSkInput.getText()),
-                    normalize(emojiInput.getText()),
-                        selectedColor
+                    EditorUtils.normalize(nameInput.getText()),
+                    EditorUtils.normalize(nameSkInput.getText()),
+                    descriptionInput.getText(),
+                    descriptionSkInput.getText(),
+                    EditorUtils.normalize(emojiInput.getText()),
+                    selectedColor
             );
             var result = categoryService.addCategory(request);
             result.onSuccess(category -> {
@@ -147,11 +144,11 @@ public class CategoriesController extends SimpleLifecycleAwareController {
         CategoryResponse existing = selectedCategory.get();
         UpdateCategoryRequest request = new UpdateCategoryRequest(
                 existing.id(),
-                normalize(nameInput.getText()),
-                normalize(nameSkInput.getText()),
-                normalizeNullable(descriptionInput.getText()),
-                normalizeNullable(descriptionSkInput.getText()),
-                normalize(emojiInput.getText()),
+                EditorUtils.normalize(nameInput.getText()),
+                EditorUtils.normalize(nameSkInput.getText()),
+                descriptionInput.getText(),
+                descriptionSkInput.getText(),
+                EditorUtils.normalize(emojiInput.getText()),
                 selectedColor
         );
         var result = categoryService.updateCategory(request);
@@ -330,7 +327,7 @@ public class CategoriesController extends SimpleLifecycleAwareController {
     }
 
     private List<CategoryResponse> filteredCategories(String searchQuery) {
-        String needle = normalizeNullable(searchQuery);
+        String needle = EditorUtils.normalizeNullable(searchQuery);
         String search = needle == null ? null : needle.toLowerCase(Locale.ROOT);
 
         List<CategoryResponse> filtered = new ArrayList<>();
@@ -432,11 +429,11 @@ public class CategoriesController extends SimpleLifecycleAwareController {
 
     private void selectCategory(CategoryResponse category) {
         selectedCategory.set(category);
-        nameInput.setText(safe(category.name()));
-        nameSkInput.setText(safe(category.nameSk()));
-        descriptionInput.setText(safe(category.description()));
-        descriptionSkInput.setText(safe(category.descriptionSk()));
-        emojiInput.setText(safe(category.emojiUnicode()));
+        nameInput.setText(category.name());
+        nameSkInput.setText(category.nameSk());
+        descriptionInput.setText(EditorUtils.safeText(category.description()));
+        descriptionSkInput.setText(EditorUtils.safeText(category.descriptionSk()));
+        emojiInput.setText(EditorUtils.safeText(category.emojiUnicode()));
         colorSelectModel.setSelectedItem(findColorEntry(category.color()));
         clearFieldErrors();
     }
@@ -458,6 +455,7 @@ public class CategoriesController extends SimpleLifecycleAwareController {
         descriptionInput.clearError();
         descriptionSkInput.clearError();
         emojiInput.clearError();
+        colorSelectView.clearError();
     }
 
     private Map<String, Consumer<String>> buildFieldHandlers() {
@@ -466,24 +464,9 @@ public class CategoriesController extends SimpleLifecycleAwareController {
                 "nameSk", message -> nameSkInput.showError(message),
                 "description", message -> descriptionInput.showError(message),
                 "descriptionSk", message -> descriptionSkInput.showError(message),
-                "emojiUnicode", message -> emojiInput.showError(message)
+                "emojiUnicode", message -> emojiInput.showError(message),
+                "color", message -> colorSelectView.showError(message)
         );
-    }
-
-    private String safe(String value) {
-        return value == null ? "" : value;
-    }
-
-    private String normalize(String value) {
-        return value == null ? "" : value.trim();
-    }
-
-    private String normalizeNullable(String value) {
-        if (value == null) {
-            return null;
-        }
-        String trimmed = value.trim();
-        return trimmed.isEmpty() ? null : trimmed;
     }
 
     private String prettifyColor(ColorTheme colorTheme) {

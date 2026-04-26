@@ -31,10 +31,12 @@ public record UpdateBadgeRequest(
         @Size(max = DtoConstraints.DESCRIPTION_MAX_LENGTH, message = ValidationMessage.Constants.DESCRIPTION_TOO_LONG)
         String descriptionSk,
 
+        @NotNull(message = ValidationMessage.Constants.REQUIRED)
         @Min(value = 0, message = ValidationMessage.Constants.NUMBER_MUST_BE_NON_NEGATIVE)
-        int level,
+        Integer level,
 
+        @NotNull(message = ValidationMessage.Constants.REQUIRED)
         @Min(value = 0, message = ValidationMessage.Constants.NUMBER_MUST_BE_NON_NEGATIVE)
-        int requiredValue
+        Integer requiredValue
 ) {
 }
