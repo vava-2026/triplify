@@ -20,7 +20,7 @@ public class WindowedPageController extends SimplePageController {
     }
 
     private void applyWindowedMode() {
-        TriplifyRouterContext context = (TriplifyRouterContext) getRouter().getContext();
+        TriplifyRouterContext context = (TriplifyRouterContext)getRouter().getContext();
         context.setFullScreenContent(false);
     }
 }

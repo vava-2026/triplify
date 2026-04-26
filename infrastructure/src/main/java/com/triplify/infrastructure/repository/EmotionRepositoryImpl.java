@@ -1,8 +1,6 @@
 package com.triplify.infrastructure.repository;
 
 import com.triplify.domain.model.Emotion;
-import com.triplify.domain.pagination.Page;
-import com.triplify.domain.pagination.PageRequest;
 import com.triplify.domain.repository.EmotionRepository;
 import com.triplify.infrastructure.repository.persistence.SQLiteConnectionFactory;
 import org.slf4j.Logger;
@@ -164,9 +162,11 @@ public class EmotionRepositoryImpl implements EmotionRepository {
     }
 
     private Emotion mapRow(ResultSet rs) throws SQLException {
+        String createdByRaw = rs.getString("created_by");
+        UUID createdById = createdByRaw == null || createdByRaw.isBlank() ? null : UUID.fromString(createdByRaw);
         return new Emotion(
                 UUID.fromString(rs.getString("id")),
-                UUID.fromString(rs.getString("created_by")),
+                createdById,
                 rs.getString("name"),
                 rs.getString("name_sk"),
                 rs.getString("emoji_unicode")

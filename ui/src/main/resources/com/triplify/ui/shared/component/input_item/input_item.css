@@ -81,3 +81,8 @@
 .input-action-btn:hover .input-action-icon {
     -fx-icon-color: -color-ink;
 }
+
+.emoji-preview-box {
+    -fx-background-color: -color-primary-light;
+    -fx-background-radius: 10;
+}

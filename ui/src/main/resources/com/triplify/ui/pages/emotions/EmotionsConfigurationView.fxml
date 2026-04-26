@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.triplify.ui.shared.component.card_grid.CardGridPane?>
+<?import java.lang.String?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<?import javafx.scene.control.ScrollPane?>
+<ScrollPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.triplify.ui.pages.emotions.EmotionsController"
+            styleClass="page-root,emotions-root"
+            fitToWidth="true"
+            hbarPolicy="NEVER">
+    <stylesheets>
+        <String fx:value="/com/triplify/ui/pages/emotions/emotions.css"/>
+    </stylesheets>
+
+    <VBox spacing="14" maxWidth="1120" styleClass="emotions-content">
+        <GridPane styleClass="emotions-layout">
+            <columnConstraints>
+                <ColumnConstraints minWidth="330" prefWidth="330" maxWidth="330" hgrow="NEVER"/>
+                <ColumnConstraints minWidth="520" hgrow="ALWAYS"/>
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints vgrow="ALWAYS"/>
+            </rowConstraints>
+
+            <VBox spacing="14" styleClass="page-card,emotions-form-card" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.vgrow="ALWAYS">
+                <HBox styleClass="emotions-card-header">
+                    <Label fx:id="formSectionTitleLabel" styleClass="emotions-section-title"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="modeBadgeLabel" styleClass="emotions-mode-badge"/>
+                </HBox>
+
+                <VBox spacing="6" styleClass="emotions-form-group">
+                    <Label fx:id="nameLabel" styleClass="form-label"/>
+                    <VBox fx:id="nameInputContainer"/>
+                </VBox>
+
+                <VBox spacing="6" styleClass="emotions-form-group">
+                    <Label fx:id="nameSkLabel" styleClass="form-label"/>
+                    <VBox fx:id="nameSkInputContainer"/>
+                </VBox>
+
+                <VBox spacing="6" styleClass="emotions-form-group">
+                    <Label fx:id="emojiLabel" styleClass="form-label"/>
+                    <VBox fx:id="emojiInputContainer"/>
+                </VBox>
+
+                <HBox spacing="10" styleClass="emotions-actions-row">
+                          <VBox fx:id="saveButtonContainer" HBox.hgrow="ALWAYS"/>
+                          <VBox fx:id="clearFormButtonContainer"/>
+                </HBox>
+
+                <HBox spacing="10" styleClass="emotions-actions-row">
+                          <VBox fx:id="deleteButtonContainer" HBox.hgrow="ALWAYS"/>
+                </HBox>
+            </VBox>
+
+            <VBox prefHeight="0" spacing="14" styleClass="page-card,emotions-list-card" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.hgrow="ALWAYS">
+                <HBox styleClass="emotions-card-header">
+                    <Label fx:id="listSectionTitleLabel" styleClass="emotions-section-title"/>
+                </HBox>
+
+                <HBox fx:id="searchContainer" spacing="10" styleClass="emotions-search-row"/>
+
+                <CardGridPane fx:id="emotionsGrid" VBox.vgrow="ALWAYS" styleClass="emotions-grid"/>
+            </VBox>
+        </GridPane>
+    </VBox>
+</ScrollPane>

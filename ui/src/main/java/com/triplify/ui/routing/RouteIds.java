@@ -9,11 +9,9 @@ public final class RouteIds {
     public static final String MY_BADGES = "my_badges";
     public static final String MY_STATISTICS = "my_statistics";
     public static final String CALENDAR = "calendar";
-    public static final String ADMIN_DASHBOARD = "admin_dashboard";
     public static final String COUNTRIES = "countries";
     public static final String CATEGORIES = "categories";
     public static final String EMOTIONS = "emotions";
-    public static final String BADGE_GROUPS = "badge_groups";
     public static final String BADGES = "badges";
     public static final String SETTINGS = "settings";
     public static final String ACCOUNT = "account";
