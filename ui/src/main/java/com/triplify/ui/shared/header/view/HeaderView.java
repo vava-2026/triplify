@@ -61,7 +61,7 @@ public class HeaderView implements Initializable {
                 .onLoadFailed(error -> log.warn("Header trip search failed [code={}, message={}]", error.code(), error.message()))
                 .build();
 
-        Search<TripResponse> search = Search.<TripResponse>builder(query -> toEntries(tripsModel.search(query)))
+        Search<TripResponse> search = Search.builder(query -> toEntries(tripsModel.search(query)))
                 .onLoadMore(query -> toEntries(tripsModel.loadMore(query)))
                 .placeholderKey("search.tripsPlaceholder")
                 .noResultKey("search.noResult")
