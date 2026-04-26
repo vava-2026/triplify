@@ -11,10 +11,13 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<StackPane xmlns="http://javafx.com/javafx"
-           xmlns:fx="http://javafx.com/fxml"
-           fx:controller="com.triplify.ui.pages.emotions.EmotionsController"
-           styleClass="page-root,emotions-root">
+<?import javafx.scene.control.ScrollPane?>
+<ScrollPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.triplify.ui.pages.emotions.EmotionsController"
+            styleClass="page-root,emotions-root"
+            fitToWidth="true"
+            hbarPolicy="NEVER">
     <stylesheets>
         <String fx:value="/com/triplify/ui/pages/emotions/emotions.css"/>
     </stylesheets>
@@ -61,7 +64,7 @@
                 </HBox>
             </VBox>
 
-            <VBox spacing="14" styleClass="page-card,emotions-list-card" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS">
+            <VBox prefHeight="0" spacing="14" styleClass="page-card,emotions-list-card" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.hgrow="ALWAYS">
                 <HBox styleClass="emotions-card-header">
                     <Label fx:id="listSectionTitleLabel" styleClass="emotions-section-title"/>
                 </HBox>
@@ -72,4 +75,4 @@
             </VBox>
         </GridPane>
     </VBox>
-</StackPane>
+</ScrollPane>

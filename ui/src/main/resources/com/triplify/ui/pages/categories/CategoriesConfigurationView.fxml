@@ -11,10 +11,13 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<StackPane xmlns="http://javafx.com/javafx"
-           xmlns:fx="http://javafx.com/fxml"
-           fx:controller="com.triplify.ui.pages.categories.CategoriesController"
-           styleClass="page-root,categories-root">
+<?import javafx.scene.control.ScrollPane?>
+<ScrollPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.triplify.ui.pages.categories.CategoriesController"
+            styleClass="page-root,categories-root"
+            fitToWidth="true"
+            hbarPolicy="NEVER">
     <stylesheets>
         <String fx:value="/com/triplify/ui/pages/categories/categories.css"/>
     </stylesheets>
@@ -76,7 +79,7 @@
                 </HBox>
             </VBox>
 
-            <VBox spacing="14" styleClass="page-card,categories-list-card" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS">
+            <VBox prefHeight="0" spacing="14" styleClass="page-card,categories-list-card" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.hgrow="ALWAYS">
                 <HBox styleClass="categories-card-header">
                       <Label fx:id="listSectionTitleLabel" styleClass="categories-section-title"/>
                 </HBox>
@@ -89,4 +92,4 @@
             </VBox>
         </GridPane>
     </VBox>
-</StackPane>
+</ScrollPane>

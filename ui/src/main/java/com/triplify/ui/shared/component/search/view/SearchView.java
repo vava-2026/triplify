@@ -226,7 +226,6 @@ public class SearchView<T> extends VBox {
         String normalizedQuery = query == null ? "" : query.trim();
         activeQuery = normalizedQuery;
 
-        // IMPORTANT: always run search even if the query is empty, application logic hardly relies on this
         List<Entry<T>> results = model.search(normalizedQuery);
 
         if (normalizedQuery.isEmpty() && !model.isShowOnEmptyQuery()) {
