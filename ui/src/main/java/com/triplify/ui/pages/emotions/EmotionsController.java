@@ -1,27 +1,36 @@
 package com.triplify.ui.pages.emotions;
 
 import com.google.inject.Inject;
+import com.triplify.application.pagination.Pagination;
+import com.triplify.application.usecase.category.dto.CategoryResponse;
+import com.triplify.application.usecase.country.dto.CountryResponse;
+import com.triplify.application.usecase.country.dto.GetCountriesRequest;
 import com.triplify.application.usecase.emotion.EmotionService;
 import com.triplify.application.usecase.emotion.dto.CreateEmotionRequest;
 import com.triplify.application.usecase.emotion.dto.DeleteEmotionRequest;
 import com.triplify.application.usecase.emotion.dto.EmotionResponse;
 import com.triplify.application.usecase.emotion.dto.GetAllEmotionsRequest;
 import com.triplify.application.usecase.emotion.dto.UpdateEmotionRequest;
+import com.triplify.domain.filter.CountryFilter;
 import com.triplify.domain.pagination.PageRequest;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
+import com.triplify.ui.shared.component.button.model.ButtonVariant;
+import com.triplify.ui.shared.component.button.view.AppButtonView;
+import com.triplify.ui.shared.component.card_grid.CardGridPane;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.search.model.Search;
 import com.triplify.ui.shared.component.search.view.SearchView;
 import com.triplify.ui.shared.component.select.entry.model.Entry;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.toast.ToastService;
+import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import com.triplify.ui.shared.util.Localization;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -29,13 +38,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class EmotionsController extends SimpleLifecycleAwareController {
@@ -55,17 +58,16 @@ public class EmotionsController extends SimpleLifecycleAwareController {
 	@FXML private VBox emojiInputContainer;
 	@FXML private HBox searchContainer;
 
-	@FXML private Button saveButton;
-	@FXML private Button clearFormButton;
-	@FXML private Button deleteButton;
-	@FXML private Button loadMoreButton;
+	@FXML private VBox saveButtonContainer;
+	@FXML private VBox clearFormButtonContainer;
+	@FXML private VBox deleteButtonContainer;
 
-	@FXML private VBox emotionsListContainer;
-	@FXML private Label emptyStateLabel;
+	@FXML private CardGridPane<EmotionResponse> emotionsGrid;
 
 	@Inject private EmotionService emotionService;
 	@Inject private ToastService toast;
 	@Inject private ErrorHandler errorHandler;
+	@Inject private FxmlLoaderHelper fxmlLoader;
 
 	private InputItem nameInput;
 	private InputItem nameSkInput;
@@ -75,15 +77,13 @@ public class EmotionsController extends SimpleLifecycleAwareController {
 	private final ObjectProperty<EmotionResponse> selectedEmotion = new SimpleObjectProperty<>();
 	private final Map<UUID, Region> emotionRowsById = new HashMap<>();
 	private final List<EmotionResponse> allEmotions = new ArrayList<>();
-
-	private int nextPage;
-	private boolean hasNextPage;
-	private boolean loading;
 	private String activeSearchQuery = "";
 
 	@FXML
 	public void initialize() {
 		initializeInputs();
+		buildButtons();
+		configureGrid();
 		bindLocalizedText();
 		attachListeners();
 		reloadEmotions();
@@ -161,10 +161,6 @@ public class EmotionsController extends SimpleLifecycleAwareController {
 		result.onFailure(errorHandler::handle);
 	}
 
-	@FXML
-	private void onLoadMore() {
-		loadNextPage();
-	}
 
 	private void initializeInputs() {
 		nameInput = new InputItem("emotions.input.name", FieldVariant.GHOST);
@@ -181,14 +177,25 @@ public class EmotionsController extends SimpleLifecycleAwareController {
 		searchContainer.getChildren().setAll(searchView);
 	}
 
+    // TODO: solve search when the emotion service is fixed
 	private List<Entry<String>> search(String searchQuery) {
-		activeSearchQuery = searchQuery == null ? "" : searchQuery;
-		List<EmotionResponse> filtered = filteredEmotions(searchQuery);
-		renderEmotions(filtered);
+		activeSearchQuery = normalizeNullable(searchQuery);
+        reloadEmotions();
 
-		return filtered.stream()
-				.map(emotion -> Entry.builder(emotion.name(), emotion.name()).build())
-				.toList();
+        var request = new GetAllEmotionsRequest(new PageRequest(0, PAGE_SIZE));
+
+        var result = emotionService.getAllEmotions(request);
+        if (result.isSuccess()) {
+            var page = result.getValue();
+
+            return page.items().stream()
+                    .map(emotion -> Entry.builder(emotion.name(), emotion.name()).build())
+                    .toList();
+        }
+        else {
+            errorHandler.handle(result.getError());
+            return Collections.emptyList();
+        }
 	}
 
 	private void bindLocalizedText() {
@@ -197,18 +204,7 @@ public class EmotionsController extends SimpleLifecycleAwareController {
 		Localization.bindText(nameLabel.textProperty(), "emotions.field.name");
 		Localization.bindText(nameSkLabel.textProperty(), "emotions.field.nameSk");
 		Localization.bindText(emojiLabel.textProperty(), "emotions.field.emoji");
-		Localization.bindText(clearFormButton.textProperty(), "emotions.action.clear");
-		Localization.bindText(deleteButton.textProperty(), "emotions.action.delete");
-		Localization.bindText(loadMoreButton.textProperty(), "emotions.action.loadMore");
-		Localization.bindText(emptyStateLabel.textProperty(), "emotions.empty");
-
-		saveButton.textProperty().bind(Bindings.createStringBinding(
-				() -> selectedEmotion.get() == null
-						? I18n.t("emotions.action.create")
-						: I18n.t("emotions.action.update"),
-				selectedEmotion,
-				I18n.bundleProperty()
-		));
+		emotionsGrid.setEmptyText(I18n.t("emotions.empty"));
 
 		modeBadgeLabel.textProperty().bind(Bindings.createStringBinding(
 				() -> selectedEmotion.get() == null
@@ -219,52 +215,85 @@ public class EmotionsController extends SimpleLifecycleAwareController {
 		));
 	}
 
+	private void buildButtons() {
+		var saveButton = AppButtonView.builder(fxmlLoader)
+				.variant(ButtonVariant.PRIMARY)
+				.labelBinding(Bindings.createStringBinding(
+						() -> selectedEmotion.get() == null
+								? I18n.t("emotions.action.create")
+								: I18n.t("emotions.action.update"),
+						selectedEmotion,
+						I18n.bundleProperty()
+				))
+				.onAction(this::onSaveEmotion)
+				.build();
+		saveButton.setMaxWidth(Double.MAX_VALUE);
+		HBox.setHgrow(saveButton, Priority.ALWAYS);
+		saveButtonContainer.getChildren().setAll(saveButton);
+
+		var clearButton = AppButtonView.builder(fxmlLoader)
+				.variant(ButtonVariant.SECONDARY)
+				.labelBinding(Localization.textBinding("emotions.action.clear"))
+				.onAction(this::onClearForm)
+				.build();
+		clearFormButtonContainer.getChildren().setAll(clearButton);
+
+		var deleteButton = AppButtonView.builder(fxmlLoader)
+				.variant(ButtonVariant.DANGER)
+				.labelBinding(Localization.textBinding("emotions.action.delete"))
+				.onAction(this::onDeleteEmotion)
+				.build();
+		deleteButton.setMaxWidth(Double.MAX_VALUE);
+		HBox.setHgrow(deleteButton, Priority.ALWAYS);
+		deleteButtonContainer.getChildren().setAll(deleteButton);
+	}
+
 	private void attachListeners() {
 		selectedEmotion.addListener((obs, oldValue, newValue) -> refreshSelectionStyles());
-		I18n.languageProperty().addListener((obs, oldValue, newValue) -> renderFilteredEmotions(activeSearchQuery));
+		I18n.languageProperty().addListener((obs, oldValue, newValue) -> {
+			emotionsGrid.setEmptyText(I18n.t("emotions.empty"));
+			renderFilteredEmotions(activeSearchQuery);
+		});
+	}
+
+	private void configureGrid() {
+		emotionsGrid.setPageSize(PAGE_SIZE);
+		emotionsGrid.setMaxColumns(1);
+		emotionsGrid.setMinCardWidth(1);
+		emotionsGrid.setGap(10);
+		emotionsGrid.setPageLoader(this::loadEmotionsPage);
+		emotionsGrid.setCardFactory(this::buildEmotionCard);
+	}
+
+	private CardGridPane.PageResult<EmotionResponse> loadEmotionsPage(int page, int pageSize) {
+        var request = new GetAllEmotionsRequest(
+                new PageRequest(Math.max(0, page - 1), pageSize)
+        );
+
+        var result = emotionService.getAllEmotions(request);
+
+        if (result.isFailure()) {
+            errorHandler.handle(result.getError());
+            return new CardGridPane.PageResult<>(List.of(), Pagination.request(page, pageSize).withTotals(0));
+        }
+
+        var emotionsPage = result.getValue();
+        int totalPages = emotionsPage.hasNext() ? page + 1 : page;
+        return new CardGridPane.PageResult<>(
+                emotionsPage.items(),
+                new Pagination(page, pageSize, null, totalPages)
+        );
 	}
 
 	private void reloadEmotions() {
 		allEmotions.clear();
-		emotionsListContainer.getChildren().clear();
 		emotionRowsById.clear();
-		nextPage = 0;
-		hasNextPage = true;
-		loadMoreButton.setVisible(false);
-		loadMoreButton.setManaged(false);
-		loadNextPage();
-	}
-
-	private void loadNextPage() {
-		if (loading || !hasNextPage) {
-			return;
-		}
-
-		loading = true;
-		loadMoreButton.setDisable(true);
-
-		var result = emotionService.getAllEmotions(new GetAllEmotionsRequest(new PageRequest(nextPage, PAGE_SIZE)));
-		result.onSuccess(page -> {
-			allEmotions.addAll(page.items());
-			allEmotions.sort(Comparator.comparing(EmotionResponse::name, String.CASE_INSENSITIVE_ORDER));
-			nextPage = page.page() + 1;
-			hasNextPage = page.hasNext();
-			renderFilteredEmotions(activeSearchQuery);
-			refreshLoadMoreVisibility();
-		});
-		result.onFailure(error -> {
-			hasNextPage = false;
-			refreshLoadMoreVisibility();
-			errorHandler.handle(error);
-		});
-
-		loading = false;
-		loadMoreButton.setDisable(false);
+		emotionsGrid.refresh();
 	}
 
 	private void renderFilteredEmotions(String searchQuery) {
 		activeSearchQuery = searchQuery == null ? "" : searchQuery;
-		renderEmotions(filteredEmotions(searchQuery));
+		emotionsGrid.refresh();
 	}
 
 	private List<EmotionResponse> filteredEmotions(String searchQuery) {
@@ -293,19 +322,7 @@ public class EmotionsController extends SimpleLifecycleAwareController {
 		return value != null && value.toLowerCase(Locale.ROOT).contains(needle);
 	}
 
-	private void renderEmotions(List<EmotionResponse> emotions) {
-		emotionsListContainer.getChildren().clear();
-		emotionRowsById.clear();
-
-		for (EmotionResponse emotion : emotions) {
-			addEmotionCard(emotion);
-		}
-
-		refreshEmptyState();
-		refreshSelectionStyles();
-	}
-
-	private void addEmotionCard(EmotionResponse emotion) {
+	private Node buildEmotionCard(EmotionResponse emotion) {
 		Label emoji = new Label(emotion.emojiUnicode());
 		emoji.getStyleClass().add("emotions-item-emoji");
 
@@ -326,11 +343,12 @@ public class EmotionsController extends SimpleLifecycleAwareController {
 
 		VBox card = new VBox(header);
 		card.getStyleClass().add("emotions-item");
+		card.setMaxWidth(Double.MAX_VALUE);
 		card.setUserData(emotion.id());
 		card.setOnMouseClicked(event -> selectEmotion(emotion));
 
-		emotionsListContainer.getChildren().add(card);
 		emotionRowsById.put(emotion.id(), card);
+		return card;
 	}
 
 	private void refreshSelectionStyles() {
@@ -348,16 +366,6 @@ public class EmotionsController extends SimpleLifecycleAwareController {
 		});
 	}
 
-	private void refreshEmptyState() {
-		boolean isEmpty = emotionsListContainer.getChildren().isEmpty();
-		emptyStateLabel.setVisible(isEmpty);
-		emptyStateLabel.setManaged(isEmpty);
-	}
-
-	private void refreshLoadMoreVisibility() {
-		loadMoreButton.setVisible(hasNextPage);
-		loadMoreButton.setManaged(hasNextPage);
-	}
 
 	private void selectEmotion(EmotionResponse emotion) {
 		selectedEmotion.set(emotion);

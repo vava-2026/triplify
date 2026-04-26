@@ -22,17 +22,17 @@
     -fx-min-width: 520px;
 }
 
-.badges-list-scroll {
+.badges-grid .card-grid-scroll {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-padding: 0;
 }
 
-.badges-list-scroll > .viewport {
+.badges-grid .card-grid-scroll > .viewport {
     -fx-background-color: transparent;
 }
 
-.badges-list-scroll > .corner {
+.badges-grid .card-grid-scroll > .corner {
     -fx-background-color: transparent;
 }
 

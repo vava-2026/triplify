@@ -22,17 +22,17 @@
     -fx-min-width: 520px;
 }
 
-.categories-list-scroll {
+.categories-grid .card-grid-scroll {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-padding: 0;
 }
 
-.categories-list-scroll > .viewport {
+.categories-grid .card-grid-scroll > .viewport {
     -fx-background-color: transparent;
 }
 
-.categories-list-scroll > .corner {
+.categories-grid .card-grid-scroll > .corner {
     -fx-background-color: transparent;
 }
 

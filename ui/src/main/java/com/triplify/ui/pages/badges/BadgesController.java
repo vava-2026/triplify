@@ -1,6 +1,7 @@
 package com.triplify.ui.pages.badges;
 
 import com.google.inject.Inject;
+import com.triplify.application.pagination.Pagination;
 import com.triplify.application.usecase.badge.BadgeService;
 import com.triplify.application.usecase.badge.dto.AddBadgeRequest;
 import com.triplify.application.usecase.badge.dto.BadgeResponse;
@@ -12,8 +13,9 @@ import com.triplify.application.usecase.badgegroup.dto.BadgeGroupType;
 import com.triplify.application.usecase.image.dto.ImageResponse;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
-import com.triplify.ui.shared.component.badge.view.BadgeView;
-import com.triplify.ui.shared.component.badge.viewmodel.BadgeViewModel;
+import com.triplify.ui.shared.component.button.model.ButtonVariant;
+import com.triplify.ui.shared.component.button.view.AppButtonView;
+import com.triplify.ui.shared.component.card_grid.CardGridPane;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.search.model.Search;
 import com.triplify.ui.shared.component.search.view.SearchView;
@@ -22,13 +24,16 @@ import com.triplify.ui.shared.component.select.model.Select;
 import com.triplify.ui.shared.component.select.view.SelectView;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.toast.ToastService;
+import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import com.triplify.ui.shared.util.Localization;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.image.ImageView;
+import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -41,6 +46,8 @@ import java.util.*;
 import java.util.function.Consumer;
 
 public class BadgesController extends SimpleLifecycleAwareController {
+
+	private static final int PAGE_SIZE = 8;
 
     @FXML private Label formSectionTitleLabel;
     @FXML private Label modeBadgeLabel;
@@ -64,16 +71,16 @@ public class BadgesController extends SimpleLifecycleAwareController {
     @FXML private VBox imagePathInputContainer;
     @FXML private HBox searchContainer;
 
-    @FXML private Button saveButton;
-    @FXML private Button clearFormButton;
-    @FXML private Button deleteButton;
+      @FXML private VBox saveButtonContainer;
+      @FXML private VBox clearFormButtonContainer;
+      @FXML private VBox deleteButtonContainer;
 
-    @FXML private VBox badgesListContainer;
-    @FXML private Label emptyStateLabel;
+	@FXML private CardGridPane<BadgeResponse> badgesGrid;
 
     @Inject private BadgeService badgeService;
     @Inject private ToastService toast;
     @Inject private ErrorHandler errorHandler;
+    @Inject private FxmlLoaderHelper fxmlLoader;
 
     private InputItem nameInput;
     private InputItem nameSkInput;
@@ -93,13 +100,15 @@ public class BadgesController extends SimpleLifecycleAwareController {
 
     private String activeSearchQuery = "";
 
-    @FXML
-    public void initialize() {
-        initializeInputs();
-        bindText();
-        attachListeners();
-        initializeBadgeGroups();
-    }
+	@FXML
+	public void initialize() {
+		initializeInputs();
+        buildButtons();
+		configureGrid();
+		bindText();
+		attachListeners();
+		initializeBadgeGroups();
+	}
 
     @Override
     public void onLifecycleShow() {
@@ -212,6 +221,7 @@ public class BadgesController extends SimpleLifecycleAwareController {
         searchView = new SearchView<>(Search.<UUID>builder(this::search)
                 .placeholderKey("badges.search.placeholder")
                 .variant(FieldVariant.OUTLINED)
+                .maxResults(12)
                 .build());
         if (searchContainer != null) {
             searchContainer.getChildren().setAll(searchView);
@@ -222,43 +232,93 @@ public class BadgesController extends SimpleLifecycleAwareController {
         groupSelectContainer.getChildren().setAll(groupSelectView);
     }
 
-    private void bindText() {
-        Localization.bindText(formSectionTitleLabel.textProperty(), "nav.badges");
-        Localization.bindText(nameLabel.textProperty(), "badges.field.name");
-        Localization.bindText(nameSkLabel.textProperty(), "badges.field.nameSk");
-        Localization.bindText(descriptionLabel.textProperty(), "badges.field.description");
-        Localization.bindText(descriptionSkLabel.textProperty(), "badges.field.descriptionSk");
-        Localization.bindText(groupLabel.textProperty(), "badges.field.group");
-        Localization.bindText(levelLabel.textProperty(), "badges.field.level");
-        Localization.bindText(requiredValueLabel.textProperty(), "badges.field.requiredValue");
-        Localization.bindText(imagePathLabel.textProperty(), "badges.field.imagePath");
-        Localization.bindText(clearFormButton.textProperty(), "badges.action.clear");
-        Localization.bindText(deleteButton.textProperty(), "badges.action.delete");
-        Localization.bindText(emptyStateLabel.textProperty(), "badges.empty");
+	private void bindText() {
+		Localization.bindText(formSectionTitleLabel.textProperty(), "nav.badges");
+		Localization.bindText(nameLabel.textProperty(), "badges.field.name");
+		Localization.bindText(nameSkLabel.textProperty(), "badges.field.nameSk");
+		Localization.bindText(descriptionLabel.textProperty(), "badges.field.description");
+		Localization.bindText(descriptionSkLabel.textProperty(), "badges.field.descriptionSk");
+		Localization.bindText(groupLabel.textProperty(), "badges.field.group");
+		Localization.bindText(levelLabel.textProperty(), "badges.field.level");
+		Localization.bindText(requiredValueLabel.textProperty(), "badges.field.requiredValue");
+		Localization.bindText(imagePathLabel.textProperty(), "badges.field.imagePath");
+		badgesGrid.setEmptyText(I18n.t("badges.empty"));
 
-        saveButton.textProperty().bind(Bindings.createStringBinding(
-                () -> selectedBadge.get() == null ? I18n.t("badges.action.create") : I18n.t("badges.action.update"),
-                selectedBadge,
-                I18n.bundleProperty()
-        ));
+		modeBadgeLabel.textProperty().bind(Bindings.createStringBinding(
+				() -> selectedBadge.get() == null ? I18n.t("badges.mode.create") : I18n.t("badges.mode.edit"),
+				selectedBadge,
+				I18n.bundleProperty()
+		));
+	}
 
-        modeBadgeLabel.textProperty().bind(Bindings.createStringBinding(
-                () -> selectedBadge.get() == null ? I18n.t("badges.mode.create") : I18n.t("badges.mode.edit"),
-                selectedBadge,
-                I18n.bundleProperty()
-        ));
-    }
+  private void buildButtons() {
+    var saveButton = AppButtonView.builder(fxmlLoader)
+        .variant(ButtonVariant.PRIMARY)
+        .labelBinding(Bindings.createStringBinding(
+            () -> selectedBadge.get() == null ? I18n.t("badges.action.create") : I18n.t("badges.action.update"),
+            selectedBadge,
+            I18n.bundleProperty()
+        ))
+        .onAction(this::onSaveBadge)
+        .build();
+    saveButton.setMaxWidth(Double.MAX_VALUE);
+    HBox.setHgrow(saveButton, Priority.ALWAYS);
+    saveButtonContainer.getChildren().setAll(saveButton);
 
-    private void attachListeners() {
-        selectedBadge.addListener((obs, oldValue, newValue) -> {
-            refreshSelectionStyles();
-            // updateGroupSelectState();
-        });
-        I18n.languageProperty().addListener((obs, oldValue, newValue) -> {
-            refreshGroupSelectEntries();
-            renderFilteredBadges(activeSearchQuery);
-        });
-    }
+    var clearButton = AppButtonView.builder(fxmlLoader)
+        .variant(ButtonVariant.SECONDARY)
+        .labelBinding(Localization.textBinding("badges.action.clear"))
+        .onAction(this::onClearForm)
+        .build();
+    clearFormButtonContainer.getChildren().setAll(clearButton);
+
+    var deleteButton = AppButtonView.builder(fxmlLoader)
+        .variant(ButtonVariant.DANGER)
+        .labelBinding(Localization.textBinding("badges.action.delete"))
+        .onAction(this::onDeleteBadge)
+        .build();
+    deleteButton.setMaxWidth(Double.MAX_VALUE);
+    HBox.setHgrow(deleteButton, Priority.ALWAYS);
+    deleteButtonContainer.getChildren().setAll(deleteButton);
+  }
+
+	private void attachListeners() {
+		selectedBadge.addListener((obs, oldValue, newValue) -> {
+			refreshSelectionStyles();
+			// updateGroupSelectState();
+		});
+		I18n.languageProperty().addListener((obs, oldValue, newValue) -> {
+			badgesGrid.setEmptyText(I18n.t("badges.empty"));
+			refreshGroupSelectEntries();
+			renderFilteredBadges(activeSearchQuery);
+		});
+	}
+
+	private void configureGrid() {
+		badgesGrid.setPageSize(PAGE_SIZE);
+		badgesGrid.setMaxColumns(1);
+		badgesGrid.setMinCardWidth(1);
+		badgesGrid.setGap(10);
+		badgesGrid.setPageLoader(this::loadBadgesPage);
+		badgesGrid.setCardFactory(this::buildBadgeCard);
+	}
+
+	private CardGridPane.PageResult<BadgeResponse> loadBadgesPage(int page, int pageSize) {
+		List<BadgeResponse> filtered = filteredBadges(activeSearchQuery);
+
+		int startIdx = (page - 1) * pageSize;
+		int endIdx = Math.min(startIdx + pageSize, filtered.size());
+
+		List<BadgeResponse> pageItems = startIdx < filtered.size()
+				? filtered.subList(startIdx, endIdx)
+				: List.of();
+
+		int totalPages = (int) Math.ceil((double) filtered.size() / pageSize);
+		return new CardGridPane.PageResult<>(
+				pageItems,
+				new Pagination(page, pageSize, null, totalPages)
+		);
+	}
 
     private void initializeBadgeGroups() {
         groupsById.clear();
@@ -324,9 +384,9 @@ public class BadgesController extends SimpleLifecycleAwareController {
 
     private List<Entry<UUID>> search(String searchQuery) {
         activeSearchQuery = searchQuery == null ? "" : searchQuery;
-        List<BadgeResponse> filtered = filteredBadges(searchQuery);
-        renderBadges(filtered);
+        badgesGrid.refresh();
 
+        List<BadgeResponse> filtered = filteredBadges(searchQuery);
         return filtered.stream()
                 .map(badge -> Entry.builder(badge.id(), badge.name()).build())
                 .toList();
@@ -334,7 +394,7 @@ public class BadgesController extends SimpleLifecycleAwareController {
 
     private void renderFilteredBadges(String searchQuery) {
         activeSearchQuery = searchQuery == null ? "" : searchQuery;
-        renderBadges(filteredBadges(searchQuery));
+        badgesGrid.refresh();
     }
 
     private List<BadgeResponse> filteredBadges(String searchQuery) {
@@ -368,24 +428,17 @@ public class BadgesController extends SimpleLifecycleAwareController {
         return value != null && value.toLowerCase(Locale.ROOT).contains(needle);
     }
 
-    private void renderBadges(List<BadgeResponse> badges) {
-        badgesListContainer.getChildren().clear();
-        badgeRowsById.clear();
-
-        for (BadgeResponse badge : badges) {
-            addBadgeCard(badge);
+    private Node buildBadgeCard(BadgeResponse badge) {
+        ImageView preview = new ImageView();
+        String imageUrl = resolveImageUrl(badge.image());
+        if (imageUrl != null) {
+            preview.setImage(new Image(imageUrl, false));
         }
-
-        refreshEmptyState();
-        refreshSelectionStyles();
-    }
-
-    private void addBadgeCard(BadgeResponse badge) {
-        BadgeView preview = new BadgeView();
-        preview.update(toBadgeViewModel(badge));
+        preview.setFitWidth(44);
+        preview.setFitHeight(44);
+        preview.setPreserveRatio(true);
+        preview.setSmooth(true);
         preview.setMouseTransparent(true);
-        preview.setScaleX(0.85);
-        preview.setScaleY(0.85);
 
         Label title = new Label(Localization.localize(badge.name(), badge.nameSk()));
         title.getStyleClass().add("badges-item-title");
@@ -408,11 +461,12 @@ public class BadgesController extends SimpleLifecycleAwareController {
 
         VBox card = new VBox(row);
         card.getStyleClass().add("badges-item");
+        card.setMaxWidth(Double.MAX_VALUE);
         card.setUserData(badge.id());
         card.setOnMouseClicked(event -> selectBadge(badge));
 
-        badgesListContainer.getChildren().add(card);
         badgeRowsById.put(badge.id(), card);
+        return card;
     }
 
     private String buildSubtitle(BadgeResponse badge) {
@@ -424,22 +478,6 @@ public class BadgesController extends SimpleLifecycleAwareController {
             return levelPart + " • " + requiredPart + " • " + description;
         }
         return levelPart + " • " + requiredPart;
-    }
-
-    private BadgeViewModel toBadgeViewModel(BadgeResponse badge) {
-        int requiredValue = badge.requiredValue();
-        return new BadgeViewModel(
-                badge.name(),
-                badge.nameSk(),
-                badge.description(),
-                badge.descriptionSk(),
-                resolveImageUrl(badge.image()),
-                badge.group(),
-                badge.level(),
-                requiredValue,
-                requiredValue,
-                true
-        );
     }
 
     private String resolveImageUrl(ImageResponse image) {
@@ -504,11 +542,6 @@ public class BadgesController extends SimpleLifecycleAwareController {
         });
     }
 
-    private void refreshEmptyState() {
-        boolean isEmpty = badgesListContainer.getChildren().isEmpty();
-        emptyStateLabel.setVisible(isEmpty);
-        emptyStateLabel.setManaged(isEmpty);
-    }
 
 //    private void updateGroupSelectState() {
 //        if (groupSelectView == null) {

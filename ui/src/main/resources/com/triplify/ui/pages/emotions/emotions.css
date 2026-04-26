@@ -22,17 +22,17 @@
 	-fx-min-width: 520px;
 }
 
-.emotions-list-scroll {
+.emotions-grid .card-grid-scroll {
 	-fx-background-color: transparent;
 	-fx-border-color: transparent;
 	-fx-padding: 0;
 }
 
-.emotions-list-scroll > .viewport {
+.emotions-grid .card-grid-scroll > .viewport {
 	-fx-background-color: transparent;
 }
 
-.emotions-list-scroll > .corner {
+.emotions-grid .card-grid-scroll > .corner {
 	-fx-background-color: transparent;
 }
 
@@ -72,7 +72,7 @@
 	-fx-alignment: center-left;
 }
 
-.emotions-list {
+.emotions-grid .card-grid {
 	-fx-padding: 2px 0 2px 0;
 }
 

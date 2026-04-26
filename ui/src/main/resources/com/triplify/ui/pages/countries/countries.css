@@ -22,17 +22,17 @@
 	-fx-min-width: 520px;
 }
 
-.countries-list-scroll {
+.countries-grid .card-grid-scroll {
 	-fx-background-color: transparent;
 	-fx-border-color: transparent;
 	-fx-padding: 0;
 }
 
-.countries-list-scroll > .viewport {
+.countries-grid .card-grid-scroll > .viewport {
 	-fx-background-color: transparent;
 }
 
-.countries-list-scroll > .corner {
+.countries-grid .card-grid-scroll > .corner {
 	-fx-background-color: transparent;
 }
 
@@ -84,7 +84,8 @@
 	-fx-prompt-text-fill: -color-ink-muted;
 }
 
-.countries-list {
+
+.countries-grid .card-grid {
 	-fx-padding: 2px 0 2px 0;
 }
 

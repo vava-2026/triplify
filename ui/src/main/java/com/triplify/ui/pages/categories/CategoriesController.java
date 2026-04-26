@@ -2,6 +2,7 @@ package com.triplify.ui.pages.categories;
 
 import com.google.inject.Inject;
 import com.triplify.application.model.ColorTheme;
+import com.triplify.application.pagination.Pagination;
 import com.triplify.application.usecase.category.CategoryService;
 import com.triplify.application.usecase.category.dto.AddCategoryRequest;
 import com.triplify.application.usecase.category.dto.CategoryResponse;
@@ -9,6 +10,9 @@ import com.triplify.application.usecase.category.dto.DeleteCategoryRequest;
 import com.triplify.application.usecase.category.dto.UpdateCategoryRequest;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
+import com.triplify.ui.shared.component.button.model.ButtonVariant;
+import com.triplify.ui.shared.component.button.view.AppButtonView;
+import com.triplify.ui.shared.component.card_grid.CardGridPane;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.search.model.Search;
 import com.triplify.ui.shared.component.search.view.SearchView;
@@ -17,13 +21,17 @@ import com.triplify.ui.shared.component.select.model.Select;
 import com.triplify.ui.shared.component.select.view.SelectView;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.toast.ToastService;
+import com.triplify.ui.shared.util.FxmlLoaderHelper;
+import com.triplify.ui.shared.util.EmojiUtil;
 import com.triplify.ui.shared.util.Localization;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -41,7 +49,10 @@ import java.util.function.Consumer;
 
 public class CategoriesController extends SimpleLifecycleAwareController {
 
+	private static final int PAGE_SIZE = 8;
+
     @FXML private Label formSectionTitleLabel;
+    @FXML private Label listSectionTitleLabel;
     @FXML private Label modeBadgeLabel;
 
     @FXML private Label nameLabel;
@@ -59,16 +70,16 @@ public class CategoriesController extends SimpleLifecycleAwareController {
     @FXML private VBox colorSelectContainer;
     @FXML private HBox searchContainer;
 
-    @FXML private Button saveButton;
-    @FXML private Button clearFormButton;
-    @FXML private Button deleteButton;
+      @FXML private VBox saveButtonContainer;
+      @FXML private VBox clearFormButtonContainer;
+      @FXML private VBox deleteButtonContainer;
 
-    @FXML private VBox categoriesListContainer;
-    @FXML private Label emptyStateLabel;
+	@FXML private CardGridPane<CategoryResponse> categoriesGrid;
 
     @Inject private CategoryService categoryService;
     @Inject private ToastService toast;
     @Inject private ErrorHandler errorHandler;
+    @Inject private FxmlLoaderHelper fxmlLoader;
 
     private InputItem nameInput;
     private InputItem nameSkInput;
@@ -84,13 +95,15 @@ public class CategoriesController extends SimpleLifecycleAwareController {
     private final Map<UUID, Region> categoryRowsById = new HashMap<>();
     private final List<CategoryResponse> allCategories = new ArrayList<>();
 
-    @FXML
-    public void initialize() {
-        initializeInputs();
-        bindText();
-        attachListeners();
-        reloadCategories();
-    }
+	@FXML
+	public void initialize() {
+		initializeInputs();
+        buildButtons();
+		configureGrid();
+		bindText();
+		attachListeners();
+		reloadCategories();
+	}
 
     @Override
     public void onLifecycleShow() {
@@ -194,36 +207,103 @@ public class CategoriesController extends SimpleLifecycleAwareController {
         colorSelectContainer.getChildren().setAll(colorSelectView);
     }
 
-    private List<Entry<String>> search(String searchQuery) {
-        activeSearchQuery = searchQuery == null ? "" : searchQuery;
-        List<CategoryResponse> filtered = filteredCategories(searchQuery);
-        renderCategories(filtered);
+	private List<Entry<String>> search(String searchQuery) {
+		activeSearchQuery = searchQuery == null ? "" : searchQuery;
+		categoriesGrid.refresh();
 
-        return filtered.stream()
-                .map(category -> Entry.builder(category.name(), category.name()).build())
-                .toList();
-    }
+		List<CategoryResponse> filtered = filteredCategories(searchQuery);
+		return filtered.stream()
+				.map(category -> Entry.builder(category.name(), category.name()).build())
+				.toList();
+	}
 
-    private void bindText() {
-        Localization.bindText(formSectionTitleLabel.textProperty(), "nav.categories");
+	private void bindText() {
+        Localization.bindText(formSectionTitleLabel.textProperty(), "categories.section.form");
+        Localization.bindText(listSectionTitleLabel.textProperty(), "categories.section.list");
+        Localization.bindText(nameLabel.textProperty(), "categories.field.name");
+        Localization.bindText(nameSkLabel.textProperty(), "categories.field.nameSk");
+        Localization.bindText(descriptionLabel.textProperty(), "categories.field.description");
+        Localization.bindText(descriptionSkLabel.textProperty(), "categories.field.descriptionSk");
+        Localization.bindText(emojiLabel.textProperty(), "categories.field.emoji");
+        Localization.bindText(colorLabel.textProperty(), "categories.field.color");
 
-        saveButton.textProperty().bind(Bindings.createStringBinding(
-                () -> selectedCategory.get() == null ? I18n.t("countries.action.create") : I18n.t("countries.action.update"),
+		categoriesGrid.setEmptyText(I18n.t("categories.empty"));
+
+		modeBadgeLabel.textProperty().bind(Bindings.createStringBinding(
+        () -> selectedCategory.get() == null
+            ? I18n.t("categories.mode.create")
+            : I18n.t("categories.mode.edit"),
+				selectedCategory,
+        I18n.bundleProperty()
+		));
+	}
+
+    private void buildButtons() {
+        var saveButton = AppButtonView.builder(fxmlLoader)
+                .variant(ButtonVariant.PRIMARY)
+                .labelBinding(Bindings.createStringBinding(
+                () -> selectedCategory.get() == null
+                    ? I18n.t("categories.action.create")
+                    : I18n.t("categories.action.update"),
                 selectedCategory,
                 I18n.bundleProperty()
-        ));
+                ))
+                .onAction(this::onSaveCategory)
+                .build();
+        saveButton.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(saveButton, Priority.ALWAYS);
+        saveButtonContainer.getChildren().setAll(saveButton);
 
-        modeBadgeLabel.textProperty().bind(Bindings.createStringBinding(
-                () -> selectedCategory.get() == null ? I18n.t("countries.mode.create") : I18n.t("countries.mode.edit"),
-                selectedCategory,
-                I18n.bundleProperty()
-        ));
+        var clearButton = AppButtonView.builder(fxmlLoader)
+                .variant(ButtonVariant.SECONDARY)
+                .labelBinding(Localization.textBinding("categories.action.clear"))
+                .onAction(this::onClearForm)
+                .build();
+        clearFormButtonContainer.getChildren().setAll(clearButton);
+
+        var deleteButton = AppButtonView.builder(fxmlLoader)
+                .variant(ButtonVariant.DANGER)
+                .labelBinding(Localization.textBinding("categories.action.delete"))
+                .onAction(this::onDeleteCategory)
+                .build();
+        deleteButton.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(deleteButton, Priority.ALWAYS);
+        deleteButtonContainer.getChildren().setAll(deleteButton);
     }
 
-    private void attachListeners() {
-        selectedCategory.addListener((obs, oldValue, newValue) -> refreshSelectionStyles());
-        I18n.languageProperty().addListener((obs, oldValue, newValue) -> renderFilteredCategories(activeSearchQuery));
-    }
+	private void attachListeners() {
+		selectedCategory.addListener((obs, oldValue, newValue) -> refreshSelectionStyles());
+		I18n.languageProperty().addListener((obs, oldValue, newValue) -> {
+				categoriesGrid.setEmptyText(I18n.t("categories.empty"));
+				renderFilteredCategories(activeSearchQuery);
+			});
+	}
+
+	private void configureGrid() {
+		categoriesGrid.setPageSize(PAGE_SIZE);
+		categoriesGrid.setMaxColumns(1);
+		categoriesGrid.setMinCardWidth(1);
+		categoriesGrid.setGap(10);
+		categoriesGrid.setPageLoader(this::loadCategoriesPage);
+		categoriesGrid.setCardFactory(this::buildCategoryCard);
+	}
+
+	private CardGridPane.PageResult<CategoryResponse> loadCategoriesPage(int page, int pageSize) {
+		List<CategoryResponse> filtered = filteredCategories(activeSearchQuery);
+
+		int startIdx = (page - 1) * pageSize;
+		int endIdx = Math.min(startIdx + pageSize, filtered.size());
+
+		List<CategoryResponse> pageItems = startIdx < filtered.size()
+				? filtered.subList(startIdx, endIdx)
+				: List.of();
+
+		int totalPages = (int) Math.ceil((double) filtered.size() / pageSize);
+		return new CardGridPane.PageResult<>(
+				pageItems,
+				new Pagination(page, pageSize, null, totalPages)
+		);
+	}
 
     private void reloadCategories() {
         var result = categoryService.getAllCategories();
@@ -243,7 +323,7 @@ public class CategoriesController extends SimpleLifecycleAwareController {
 
     private void renderFilteredCategories(String searchQuery) {
         activeSearchQuery = searchQuery == null ? "" : searchQuery;
-        renderCategories(filteredCategories(searchQuery));
+        categoriesGrid.refresh();
     }
 
     private List<CategoryResponse> filteredCategories(String searchQuery) {
@@ -259,17 +339,6 @@ public class CategoriesController extends SimpleLifecycleAwareController {
         return filtered;
     }
 
-    private void renderCategories(List<CategoryResponse> categories) {
-        categoriesListContainer.getChildren().clear();
-        categoryRowsById.clear();
-
-        for (CategoryResponse category : categories) {
-            addCategoryCard(category);
-        }
-
-        refreshEmptyState();
-        refreshSelectionStyles();
-    }
 
     private boolean matchesSearch(CategoryResponse category, String search) {
         if (search == null) {
@@ -287,9 +356,8 @@ public class CategoriesController extends SimpleLifecycleAwareController {
         return value != null && value.toLowerCase(Locale.ROOT).contains(needle);
     }
 
-    private void addCategoryCard(CategoryResponse category) {
-        Label emoji = new Label(category.emojiUnicode() == null ? "" : category.emojiUnicode());
-        emoji.getStyleClass().add("categories-item-emoji");
+    private Node buildCategoryCard(CategoryResponse category) {
+        ImageView emoji = createEmojiView(category.emojiUnicode());
 
         Label title = new Label(Localization.localize(category.name(), category.nameSk()));
         title.getStyleClass().add("categories-item-title");
@@ -304,6 +372,7 @@ public class CategoriesController extends SimpleLifecycleAwareController {
         Label colorTag = new Label(prettifyColor(category.color()));
         colorTag.getStyleClass().add("categories-item-color");
         colorTag.getStyleClass().add(resolveColorStyleClass(category.color()));
+        colorTag.setMinWidth(Region.USE_PREF_SIZE);
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -313,11 +382,23 @@ public class CategoriesController extends SimpleLifecycleAwareController {
 
         VBox card = new VBox(header);
         card.getStyleClass().add("categories-item");
+        card.setMaxWidth(Double.MAX_VALUE);
         card.setUserData(category.id());
         card.setOnMouseClicked(event -> selectCategory(category));
 
-        categoriesListContainer.getChildren().add(card);
         categoryRowsById.put(category.id(), card);
+        return card;
+    }
+
+    private ImageView createEmojiView(String emojiUnicode) {
+        Image image = EmojiUtil.toImage(emojiUnicode, 20);
+        ImageView emoji = new ImageView(image);
+        emoji.getStyleClass().add("countries-item-emoji");
+        emoji.setFitWidth(20);
+        emoji.setFitHeight(20);
+        emoji.setPreserveRatio(true);
+        emoji.setSmooth(true);
+        return emoji;
     }
 
     private String buildSubtitle(CategoryResponse category) {
@@ -345,11 +426,6 @@ public class CategoriesController extends SimpleLifecycleAwareController {
         });
     }
 
-    private void refreshEmptyState() {
-        boolean isEmpty = categoriesListContainer.getChildren().isEmpty();
-        emptyStateLabel.setVisible(isEmpty);
-        emptyStateLabel.setManaged(isEmpty);
-    }
 
     private void selectCategory(CategoryResponse category) {
         selectedCategory.set(category);
@@ -421,7 +497,7 @@ public class CategoriesController extends SimpleLifecycleAwareController {
     private Select<ColorTheme> createColorSelectModel() {
         List<Entry<ColorTheme>> entries = new ArrayList<>();
         for (ColorTheme colorTheme : ColorTheme.values()) {
-            entries.add(Entry.builder(colorTheme, prettifyColor(colorTheme)).build());
+            entries.add(Entry.builder(colorTheme, prettifyColor(colorTheme)).colorTheme(colorTheme).build());
         }
 
         return Select.<ColorTheme>builder()

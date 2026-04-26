@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import com.triplify.ui.shared.component.card_grid.CardGridPane?>
 <?import java.lang.String?>
-<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
@@ -53,55 +52,23 @@
                 </VBox>
 
                 <HBox spacing="10" styleClass="emotions-actions-row">
-                    <Button fx:id="saveButton"
-                            text="Create"
-                            onAction="#onSaveEmotion"
-                            styleClass="app-btn,app-btn-primary,emotions-grow-btn"
-                            HBox.hgrow="ALWAYS"/>
-                    <Button fx:id="clearFormButton"
-                            text="Clear"
-                            onAction="#onClearForm"
-                            styleClass="app-btn,app-btn-secondary"/>
+                          <VBox fx:id="saveButtonContainer" HBox.hgrow="ALWAYS"/>
+                          <VBox fx:id="clearFormButtonContainer"/>
                 </HBox>
 
                 <HBox spacing="10" styleClass="emotions-actions-row">
-                    <Button fx:id="deleteButton"
-                            text="Delete"
-                            onAction="#onDeleteEmotion"
-                            styleClass="app-btn,app-btn-danger-outline,emotions-grow-btn"
-                            HBox.hgrow="ALWAYS"/>
+                          <VBox fx:id="deleteButtonContainer" HBox.hgrow="ALWAYS"/>
                 </HBox>
             </VBox>
 
             <VBox spacing="14" styleClass="page-card,emotions-list-card" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.hgrow="ALWAYS" GridPane.vgrow="ALWAYS">
                 <HBox styleClass="emotions-card-header">
                     <Label fx:id="listSectionTitleLabel" text="Emotion Directory" styleClass="emotions-section-title"/>
-                    <Region HBox.hgrow="ALWAYS"/>
-                    <Button fx:id="loadMoreButton"
-                            text="Load More"
-                            onAction="#onLoadMore"
-                            styleClass="app-btn,app-btn-ghost"/>
                 </HBox>
 
                 <HBox fx:id="searchContainer" spacing="10" styleClass="emotions-search-row"/>
 
-                <ScrollPane fitToWidth="true"
-                            hbarPolicy="NEVER"
-                            vbarPolicy="AS_NEEDED"
-                            VBox.vgrow="ALWAYS"
-                            styleClass="emotions-list-scroll">
-                    <content>
-                        <VBox spacing="10">
-                            <VBox fx:id="emotionsListContainer" spacing="10" styleClass="emotions-list"/>
-
-                            <Label fx:id="emptyStateLabel"
-                                   text="No emotions found."
-                                   styleClass="emotions-empty"
-                                   visible="false"
-                                   managed="false"/>
-                        </VBox>
-                    </content>
-                </ScrollPane>
+                <CardGridPane fx:id="emotionsGrid" VBox.vgrow="ALWAYS" styleClass="emotions-grid"/>
             </VBox>
         </GridPane>
     </VBox>

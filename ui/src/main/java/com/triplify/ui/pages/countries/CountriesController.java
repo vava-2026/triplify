@@ -1,6 +1,7 @@
 package com.triplify.ui.pages.countries;
 
 import com.google.inject.Inject;
+import com.triplify.application.pagination.Pagination;
 import com.triplify.application.usecase.country.CountryService;
 import com.triplify.application.usecase.country.dto.AddCountryRequest;
 import com.triplify.application.usecase.country.dto.BanCountryRequest;
@@ -10,10 +11,12 @@ import com.triplify.application.usecase.country.dto.GetCountriesRequest;
 import com.triplify.application.usecase.country.dto.UnbanCountryRequest;
 import com.triplify.application.usecase.country.dto.UpdateCountryRequest;
 import com.triplify.domain.filter.CountryFilter;
-import com.triplify.domain.pagination.Page;
 import com.triplify.domain.pagination.PageRequest;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
+import com.triplify.ui.shared.component.button.model.ButtonVariant;
+import com.triplify.ui.shared.component.button.view.AppButtonView;
+import com.triplify.ui.shared.component.card_grid.CardGridPane;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.search.model.Search;
 import com.triplify.ui.shared.component.search.view.SearchView;
@@ -21,16 +24,16 @@ import com.triplify.ui.shared.component.select.entry.model.Entry;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.toast.ToastService;
 import com.triplify.ui.shared.util.EmojiUtil;
+import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import com.triplify.ui.shared.util.Localization;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -57,18 +60,17 @@ public class CountriesController extends SimpleLifecycleAwareController {
     @FXML private VBox emojiInputContainer;
     @FXML private HBox searchContainer;
 
-	@FXML private Button saveButton;
-	@FXML private Button clearFormButton;
-	@FXML private Button toggleAvailabilityButton;
-	@FXML private Button deleteButton;
-    @FXML private Button loadMoreButton;
+	@FXML private VBox saveButtonContainer;
+	@FXML private VBox clearFormButtonContainer;
+	@FXML private VBox toggleAvailabilityButtonContainer;
+	@FXML private VBox deleteButtonContainer;
 
-	@FXML private VBox countriesListContainer;
-	@FXML private Label emptyStateLabel;
+	@FXML private CardGridPane<CountryResponse> countriesGrid;
 
 	@Inject private CountryService countryService;
 	@Inject private ToastService toast;
 	@Inject private ErrorHandler errorHandler;
+	@Inject private FxmlLoaderHelper fxmlLoader;
 
 	private InputItem nameInput;
 	private InputItem nameSkInput;
@@ -77,14 +79,13 @@ public class CountriesController extends SimpleLifecycleAwareController {
 
 	private final ObjectProperty<CountryResponse> selectedCountry = new SimpleObjectProperty<>();
 	private final Map<UUID, Region> countryRowsById = new HashMap<>();
-
-	private int nextPage;
-	private boolean hasNextPage;
-	private boolean loading;
+	private String activeSearchQuery;
 
 	@FXML
 	public void initialize() {
 		initializeInputs();
+		buildButtons();
+		configureGrid();
 		bindLocalizedText();
 		// bindState();
 		attachListeners();
@@ -96,26 +97,68 @@ public class CountriesController extends SimpleLifecycleAwareController {
 		reloadCountries();
 	}
 
+	private void buildButtons() {
+		var saveBtn = AppButtonView.builder(fxmlLoader)
+				.variant(ButtonVariant.PRIMARY)
+				.labelBinding(Bindings.createStringBinding(
+						() -> selectedCountry.get() == null ? I18n.t("countries.action.create") : I18n.t("countries.action.update"),
+						selectedCountry,
+						I18n.bundleProperty()
+				))
+				.onAction(this::onSaveCountry)
+				.build();
+		saveBtn.setMaxWidth(Double.MAX_VALUE);
+		HBox.setHgrow(saveBtn, Priority.ALWAYS);
+		saveButtonContainer.getChildren().setAll(saveBtn);
+
+		var clearBtn = AppButtonView.builder(fxmlLoader)
+				.variant(ButtonVariant.SECONDARY)
+				.labelBinding(Localization.textBinding("countries.action.clear"))
+				.onAction(this::onClearForm)
+				.build();
+		clearFormButtonContainer.getChildren().setAll(clearBtn);
+
+		var toggleAvailabilityBtn = AppButtonView.builder(fxmlLoader)
+				.variant(ButtonVariant.DANGER)
+				.labelBinding(Bindings.createStringBinding(
+						() -> {
+							CountryResponse current = selectedCountry.get();
+							if (current == null || current.isAvailable()) {
+								return I18n.t("countries.action.ban");
+							}
+							return I18n.t("countries.action.unban");
+						},
+						selectedCountry,
+						I18n.bundleProperty()
+				))
+				.onAction(this::onToggleAvailability)
+				.build();
+		toggleAvailabilityBtn.setMaxWidth(Double.MAX_VALUE);
+		HBox.setHgrow(toggleAvailabilityBtn, Priority.ALWAYS);
+		toggleAvailabilityBtn.getStyleClass().add("countries-toggle-availability-btn");
+		toggleAvailabilityButtonContainer.getChildren().setAll(toggleAvailabilityBtn);
+
+		var deleteBtn = AppButtonView.builder(fxmlLoader)
+				.variant(ButtonVariant.DANGER)
+				.labelBinding(Localization.textBinding("countries.action.delete"))
+				.onAction(this::onDeleteCountry)
+				.build();
+		deleteButtonContainer.getChildren().setAll(deleteBtn);
+	}
+
 	private List<Entry<String>> search(String searchQuery) {
+        activeSearchQuery = normalizeNullable(searchQuery);
+        reloadCountries();
+
         var request = new GetCountriesRequest(
                 new PageRequest(0, PAGE_SIZE),
-                new CountryFilter(normalizeNullable(searchQuery), CountryFilter.CountryBanFilter.ALL, false)
+                new CountryFilter(activeSearchQuery, CountryFilter.CountryBanFilter.ALL, false)
         );
 
         var result = countryService.getCountries(request);
         if (result.isSuccess())
         {
             var page = result.getValue();
-
-            // TODO: this is just like reload countries
-            countriesListContainer.getChildren().clear();
-            countryRowsById.clear();
-            nextPage = 0;
-            hasNextPage = true;
-            loadMoreButton.setVisible(false);
-            loadMoreButton.setManaged(false);
-            
-            loadNextPage(searchQuery);
 
             return page.items().stream()
                     .map(country -> Entry.builder(country.name(), country.name()).build())
@@ -222,11 +265,6 @@ public class CountriesController extends SimpleLifecycleAwareController {
 		result.onFailure(errorHandler::handle);
 	}
 
-	 @FXML
-	 private void onLoadMore() {
-		loadNextPage(null);
-	}
-
 	private void initializeInputs() {
 		nameInput = new InputItem("countries.input.name", FieldVariant.GHOST);
 		nameSkInput = new InputItem("countries.input.nameSk", FieldVariant.GHOST);
@@ -240,41 +278,17 @@ public class CountriesController extends SimpleLifecycleAwareController {
 	 }
 
 	private void bindLocalizedText() {
-
 		Localization.bindText(formSectionTitleLabel.textProperty(), "countries.section.form");
 		// Localization.bindText(listSectionTitleLabel.textProperty(), "countries.section.list");
 		Localization.bindText(nameLabel.textProperty(), "countries.field.name");
 		Localization.bindText(nameSkLabel.textProperty(), "countries.field.nameSk");
 		Localization.bindText(emojiLabel.textProperty(), "countries.field.emoji");
-		Localization.bindText(clearFormButton.textProperty(), "countries.action.clear");
-		Localization.bindText(deleteButton.textProperty(), "countries.action.delete");
-		Localization.bindText(loadMoreButton.textProperty(), "countries.action.loadMore");
-//		Localization.bindText(emptyStateLabel.textProperty(), "countries.empty");
-//
-		saveButton.textProperty().bind(Bindings.createStringBinding(
-				() -> selectedCountry.get() == null
-						? I18n.t("countries.action.create")
-						: I18n.t("countries.action.update"),
-				selectedCountry,
-				I18n.bundleProperty()
-		));
+		countriesGrid.setEmptyText(I18n.t("countries.empty"));
 
 		modeBadgeLabel.textProperty().bind(Bindings.createStringBinding(
 				() -> selectedCountry.get() == null
 						? I18n.t("countries.mode.create")
 						: I18n.t("countries.mode.edit"),
-				selectedCountry,
-				I18n.bundleProperty()
-		));
-
-		toggleAvailabilityButton.textProperty().bind(Bindings.createStringBinding(
-				() -> {
-					CountryResponse current = selectedCountry.get();
-					if (current == null || current.isAvailable()) {
-						return I18n.t("countries.action.ban");
-					}
-					return I18n.t("countries.action.unban");
-				},
 				selectedCountry,
 				I18n.bundleProperty()
 		));
@@ -287,53 +301,47 @@ public class CountriesController extends SimpleLifecycleAwareController {
 
 	private void attachListeners() {
 		selectedCountry.addListener((obs, oldValue, newValue) -> refreshSelectionStyles());
-		I18n.languageProperty().addListener((obs, oldValue, newValue) -> reloadCountries());
+		I18n.languageProperty().addListener((obs, oldValue, newValue) -> {
+			countriesGrid.setEmptyText(I18n.t("countries.empty"));
+			reloadCountries();
+		});
 	}
 
 	private void reloadCountries() {
-		countriesListContainer.getChildren().clear();
 		countryRowsById.clear();
-		nextPage = 0;
-		hasNextPage = true;
-		loadMoreButton.setVisible(false);
-		loadMoreButton.setManaged(false);
-		loadNextPage(null);
+		countriesGrid.refresh();
 	}
 
-	private void loadNextPage(String searchQuery) {
-		if (loading || !hasNextPage) {
-			return;
-		}
+	private void configureGrid() {
+		countriesGrid.setPageSize(PAGE_SIZE);
+		countriesGrid.setMaxColumns(1);
+		countriesGrid.setMinCardWidth(1);
+		countriesGrid.setGap(10);
+		countriesGrid.setPageLoader(this::loadCountriesPage);
+		countriesGrid.setCardFactory(this::buildCountryCard);
+	}
 
-		loading = true;
-		loadMoreButton.setDisable(true);
-
+	private CardGridPane.PageResult<CountryResponse> loadCountriesPage(int page, int pageSize) {
 		var request = new GetCountriesRequest(
-				new PageRequest(nextPage, PAGE_SIZE),
-				new CountryFilter(normalizeNullable(searchQuery), CountryFilter.CountryBanFilter.ALL, false)
+				new PageRequest(Math.max(0, page - 1), pageSize),
+				new CountryFilter(activeSearchQuery, CountryFilter.CountryBanFilter.ALL, false)
 		);
 
 		var result = countryService.getCountries(request);
-		result.onSuccess(page -> {
-			page.items().forEach(this::addCountryCard);
-			nextPage = page.page() + 1;
-			hasNextPage = page.hasNext();
-			refreshEmptyState();
-			refreshLoadMoreVisibility();
-			refreshSelectionStyles();
-		});
-		result.onFailure(error -> {
-			hasNextPage = false;
-			refreshEmptyState();
-			refreshLoadMoreVisibility();
-			errorHandler.handle(error);
-		});
+		if (result.isFailure()) {
+			errorHandler.handle(result.getError());
+			return new CardGridPane.PageResult<>(List.of(), Pagination.request(page, pageSize).withTotals(0));
+		}
 
-		loading = false;
-		loadMoreButton.setDisable(false);
+		var countriesPage = result.getValue();
+		int totalPages = countriesPage.hasNext() ? page + 1 : page;
+		return new CardGridPane.PageResult<>(
+				countriesPage.items(),
+				new Pagination(page, pageSize, null, totalPages)
+		);
 	}
 
-	private void addCountryCard(CountryResponse country) {
+	private Node buildCountryCard(CountryResponse country) {
 		ImageView emoji = createEmojiView(country.emojiUnicode());
 
 		Label title = new Label(Localization.localize(country.name(), country.nameSk()));
@@ -361,11 +369,12 @@ public class CountriesController extends SimpleLifecycleAwareController {
 
 		VBox card = new VBox(header);
 		card.getStyleClass().add("countries-item");
+		card.setMaxWidth(Double.MAX_VALUE);
 		card.setUserData(country.id());
 		card.setOnMouseClicked(event -> selectCountry(country));
 
-		countriesListContainer.getChildren().add(card);
 		countryRowsById.put(country.id(), card);
+		return card;
 	}
 
 	private ImageView createEmojiView(String emojiUnicode) {
@@ -394,16 +403,6 @@ public class CountriesController extends SimpleLifecycleAwareController {
 		});
 	}
 
-	private void refreshEmptyState() {
-		boolean isEmpty = countriesListContainer.getChildren().isEmpty();
-		emptyStateLabel.setVisible(isEmpty);
-		emptyStateLabel.setManaged(isEmpty);
-	}
-
-	private void refreshLoadMoreVisibility() {
-		loadMoreButton.setVisible(hasNextPage);
-		loadMoreButton.setManaged(hasNextPage);
-	}
 
 	private void selectCountry(CountryResponse country) {
 		selectedCountry.set(country);
