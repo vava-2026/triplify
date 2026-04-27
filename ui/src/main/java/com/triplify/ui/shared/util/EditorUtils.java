@@ -1,23 +1,23 @@
 package com.triplify.ui.shared.util;
 
-import com.triplify.ui.i18n.I18n;
-import com.triplify.ui.shared.toast.ToastService;
-import javafx.geometry.Rectangle2D;
-import javafx.scene.control.Button;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.DragEvent;
-import javafx.scene.input.TransferMode;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.control.Label;
-import org.kordamp.ikonli.javafx.FontIcon;
-
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.UUID;
+
+import org.kordamp.ikonli.javafx.FontIcon;
+
+import com.triplify.ui.i18n.I18n;
+import com.triplify.ui.shared.toast.ToastService;
+
+import javafx.geometry.Rectangle2D;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.shape.Rectangle;
 
 public final class EditorUtils {
 
@@ -62,20 +62,57 @@ public final class EditorUtils {
         return name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg");
     }
 
-    public static Image loadImage(String imagePath, String defaultImage, Class<?> resourceContext) {
+    public static Image loadImage(
+            String imagePath,
+            String defaultImage,
+            Class<?> resourceContext,
+            Double requestedWidth,
+            Double requestedHeight,
+            Boolean preserveRatio,
+            Boolean smooth
+    ) {
+        boolean hasRequestedSize = requestedWidth != null || requestedHeight != null;
+        double width = requestedWidth == null ? 0.0 : requestedWidth;
+        double height = requestedHeight == null ? 0.0 : requestedHeight;
+        boolean keepRatio = preserveRatio != null && preserveRatio;
+        boolean smoothScaling = smooth == null || smooth;
+
         String resolved = imagePath == null || imagePath.isBlank() ? defaultImage : imagePath;
         if (resolved.startsWith("/")) {
             var resource = resourceContext.getResource(resolved);
             if (resource != null) {
-                return new Image(resource.toExternalForm(), true);
+                return hasRequestedSize
+                        ? new Image(resource.toExternalForm(), width, height, keepRatio, smoothScaling, true)
+                        : new Image(resource.toExternalForm(), true);
             }
         }
+
+        if (resolved.startsWith("file:/") || resolved.matches("^[a-zA-Z][a-zA-Z0-9+.-]*://.*")) {
+            return hasRequestedSize
+                    ? new Image(resolved, width, height, keepRatio, smoothScaling, true)
+                    : new Image(resolved, true);
+        }
+
         File file = new File(resolved);
         if (file.exists()) {
-            return new Image(file.toURI().toString(), true);
+            return hasRequestedSize
+                    ? new Image(file.toURI().toString(), width, height, keepRatio, smoothScaling, true)
+                    : new Image(file.toURI().toString(), true);
         }
         var fallback = resourceContext.getResource(defaultImage);
-        return new Image(fallback.toExternalForm(), true);
+        return hasRequestedSize
+                ? new Image(fallback.toExternalForm(), width, height, keepRatio, smoothScaling, true)
+                : new Image(fallback.toExternalForm(), true);
+    }
+
+    public static Image loadImage(String imagePath, String defaultImage, Class<?> resourceContext, double requestedWidth, double requestedHeight, boolean preserveRatio, boolean smooth) {
+        return loadImage(imagePath, defaultImage, resourceContext,
+                Double.valueOf(requestedWidth), Double.valueOf(requestedHeight),
+                Boolean.valueOf(preserveRatio), Boolean.valueOf(smooth));
+    }
+
+    public static Image loadImage(String imagePath, String defaultImage, Class<?> resourceContext){
+        return loadImage(imagePath, defaultImage, resourceContext, null, null, null, null);
     }
 
     public static void configureButtonIcon(Button button, String iconLiteral, int size, String styleClass) {

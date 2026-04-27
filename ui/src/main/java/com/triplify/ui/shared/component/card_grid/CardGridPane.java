@@ -12,6 +12,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +37,9 @@ public class CardGridPane<T> extends VBox {
     private final StackPane emptyPane;
     private final Label emptyLabel;
 
+    @Setter
     private PageLoader<T> pageLoader;
+    @Setter
     private Function<T, Node> cardFactory;
     private final List<Node> pinnedNodes = new ArrayList<>();
 
@@ -48,6 +51,7 @@ public class CardGridPane<T> extends VBox {
     private double lastViewportWidth = 0;
 
     private double gap = 16;
+    @Setter
     private double minCardWidth = 200;
     private int maxColumns = 5;
     private String emptyText = "Nothing found";
@@ -98,14 +102,6 @@ public class CardGridPane<T> extends VBox {
 
     // ── Configuration ──
 
-    public void setPageLoader(PageLoader<T> pageLoader) {
-        this.pageLoader = pageLoader;
-    }
-
-    public void setCardFactory(Function<T, Node> cardFactory) {
-        this.cardFactory = cardFactory;
-    }
-
     public void setPageSize(int pageSize) {
         this.pageSize = Math.max(1, pageSize);
     }
@@ -114,10 +110,6 @@ public class CardGridPane<T> extends VBox {
         this.gap = gap;
         grid.setHgap(gap);
         grid.setVgap(gap);
-    }
-
-    public void setMinCardWidth(double minCardWidth) {
-        this.minCardWidth = minCardWidth;
     }
 
     public void setMaxColumns(int maxColumns) {
@@ -135,10 +127,6 @@ public class CardGridPane<T> extends VBox {
 
     public void clearPinnedNodes() {
         pinnedNodes.clear();
-    }
-
-    public ScrollPane getScrollPane() {
-        return scrollPane;
     }
 
     // ── Data ──

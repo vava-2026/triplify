@@ -1,4 +1,4 @@
-package com.triplify.application.usecase.dto;
+package com.triplify.application.shared;
 
 public final class DtoConstraints {
 

@@ -28,6 +28,7 @@ import static com.triplify.ui.shared.util.DisplayUtils.*;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -48,8 +49,8 @@ public class MyTripsController extends SimpleLifecycleAwareController {
     @FXML private VBox countryFilterContainer;
     @FXML private VBox categorySelectContainer;
     @FXML private VBox tagSelectContainer;
-    @FXML private javafx.scene.control.ComboBox<String> statusSelect;
-    @FXML private javafx.scene.control.ComboBox<String> startTimeSelect;
+    @FXML private ComboBox<String> statusSelect;
+    @FXML private ComboBox<String> startTimeSelect;
     @FXML private CardGridPane<TripResponse> cardGrid;
 
     @Inject private TripService tripService;

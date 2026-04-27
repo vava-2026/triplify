@@ -1,0 +1,238 @@
+.map-page-root {
+    -fx-background-color: transparent;
+}
+
+.map-container {
+    -fx-background-color: transparent;
+}
+
+.map-search-container {
+    -fx-pref-width: 340px;
+    -fx-max-width: 340px;
+}
+
+.map-filter-toolbar {
+    -fx-background-color: rgba(255, 255, 255, 0.88);
+    -fx-background-radius: 24;
+    -fx-border-radius: 24;
+    -fx-border-color: rgba(0, 0, 0, 0.08);
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.12), 8, 0, 0, 2);
+}
+
+.map-filter-chip {
+    -fx-background-color: transparent;
+    -fx-text-fill: #444;
+    -fx-font-size: 13px;
+    -fx-font-weight: 500;
+    -fx-padding: 6 14 6 14;
+    -fx-background-radius: 20;
+    -fx-cursor: hand;
+}
+
+.map-filter-chip:selected {
+    -fx-background-color: -color-primary;
+    -fx-text-fill: white;
+}
+
+.map-filter-chip:hover:!selected {
+    -fx-background-color: rgba(0, 0, 0, 0.07);
+}
+
+.map-place-marker-icon {
+    -fx-icon-color: white;
+}
+
+.map-place-title {
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.75), 4, 0, 0, 1);
+    -fx-padding: 0 4 0 4;
+    -fx-alignment: CENTER;
+    -fx-max-width: 160px;
+}
+
+.map-place-card {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.22), 14, 0, 0, 3);
+}
+
+.map-place-card-image {
+}
+
+.map-place-card-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #1a1a1a;
+    -fx-padding: 8 10 8 10;
+    -fx-text-overrun: ellipsis;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.map-marker {
+    -fx-background-radius: 50%;
+    -fx-border-radius: 50%;
+    -fx-border-width: 2;
+    -fx-border-color: black;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.25), 4, 0, 0, 1);
+    -fx-cursor: hand;
+    -fx-pref-width: 36px;
+    -fx-pref-height: 36px;
+    -fx-min-width: 36px;
+    -fx-min-height: 36px;
+    -fx-max-width: 36px;
+    -fx-max-height: 36px;
+    -fx-alignment: CENTER;
+}
+
+.map-marker-icon {
+    -fx-icon-color: white;
+}
+
+.map-marker-fallback {
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.map-marker-place {
+    -fx-background-color: -color-primary;
+}
+
+.map-marker-route {
+    -fx-background-color: #2a9d8f;
+}
+
+.map-marker-story {
+    -fx-background-color: #8338ec;
+}
+
+.map-cluster {
+    -fx-background-color: white;
+    -fx-border-color: -color-primary;
+    -fx-border-width: 2.5;
+    -fx-background-radius: 50%;
+    -fx-border-radius: 50%;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.22), 6, 0, 0, 1);
+    -fx-cursor: hand;
+    -fx-alignment: CENTER;
+    -fx-pref-width: 40px;
+    -fx-pref-height: 40px;
+    -fx-min-width: 40px;
+    -fx-min-height: 40px;
+    -fx-max-width: 40px;
+    -fx-max-height: 40px;
+}
+
+.map-cluster-large {
+    -fx-pref-width: 52px;
+    -fx-pref-height: 52px;
+    -fx-min-width: 52px;
+    -fx-min-height: 52px;
+    -fx-max-width: 52px;
+    -fx-max-height: 52px;
+}
+
+.map-cluster-label {
+    -fx-text-fill: -color-primary;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.map-cluster-large .map-cluster-label {
+    -fx-font-size: 14px;
+}
+
+.map-route-polyline {
+    -fx-stroke: #2a9d8f;
+    -fx-stroke-width: 3;
+    -fx-stroke-line-cap: round;
+    -fx-stroke-line-join: round;
+    -fx-opacity: 0.85;
+}
+
+.map-cluster-popup {
+    -fx-alignment: CENTER_RIGHT;
+}
+
+.map-cluster-popup-root {
+    -fx-background-color: white;
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-border-color: rgba(0, 0, 0, 0.08);
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.18), 16, 0, -2, 4);
+}
+
+.map-cluster-popup-header {
+    -fx-border-color: transparent transparent rgba(0, 0, 0, 0.07) transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.map-cluster-popup-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #222;
+}
+
+.map-cluster-popup-close {
+    -fx-background-color: transparent;
+    -fx-text-fill: #666;
+    -fx-padding: 4 6 4 6;
+    -fx-background-radius: 8;
+}
+
+.map-cluster-popup-close:hover {
+    -fx-background-color: rgba(0, 0, 0, 0.07);
+}
+
+.map-cluster-popup-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.map-cluster-popup-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.map-cluster-popup-items {
+    -fx-fill-width: true;
+}
+
+.map-cluster-popup-item {
+    -fx-cursor: hand;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent rgba(0, 0, 0, 0.05) transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.map-cluster-popup-item:hover {
+    -fx-background-color: rgba(47, 102, 144, 0.06);
+}
+
+.map-cluster-popup-item-icon {
+    -fx-icon-color: -color-primary;
+    -fx-icon-size: 14px;
+}
+
+.map-cluster-popup-item-title {
+    -fx-font-size: 13px;
+    -fx-text-fill: #333;
+    -fx-text-overrun: ellipsis;
+}
+
+.map-cluster-popup-load-more {
+    -fx-font-size: 13px;
+    -fx-text-fill: -color-primary;
+    -fx-padding: 10 16 10 16;
+    -fx-alignment: CENTER;
+    -fx-cursor: hand;
+    -fx-background-color: transparent;
+}
+
+.map-cluster-popup-load-more:hover {
+    -fx-background-color: rgba(47, 102, 144, 0.06);
+}

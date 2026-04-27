@@ -25,6 +25,8 @@ import javafx.application.Platform;
 import javafx.beans.binding.BooleanBinding;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
@@ -168,15 +170,15 @@ public class MainApp extends Application {
         topBar.visibleProperty().bind(showIsland);
         topBar.managedProperty().bind(showIsland);
 
-        HBox bottomRow = new HBox(menu, contentArea);
-        bottomRow.getStyleClass().add("app-bottom-row");
-        VBox.setVgrow(bottomRow, Priority.ALWAYS);
+        // topBar and menu float directly over the full-window content area.
+        // topBar is constrained to 70px tall by CSS; menu is constrained to
+        // SIDEBAR_WIDTH by its own preferred size — both only pick where they
+        // have actual visible content, so the rest of the window stays clickable.
+        StackPane.setAlignment(topBar, Pos.TOP_LEFT);
+        StackPane.setAlignment(menu, Pos.TOP_LEFT);
+        StackPane.setMargin(menu, new Insets(70, 0, 0, 0));
 
-        VBox normalLayout = new VBox(topBar, bottomRow);
-        normalLayout.getStyleClass().add("app-root");
-
-        // Root
-        StackPane root = new StackPane(normalLayout);
+        StackPane root = new StackPane(contentArea, topBar, menu);
         root.getStyleClass().add("app-scene-root");
 
         toastService.attach(root);

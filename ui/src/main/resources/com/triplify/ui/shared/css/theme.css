@@ -166,7 +166,8 @@
 
 .page-root {
     -fx-background-color: -color-bg;
-    -fx-padding: 24px 28px;
+    /* top: 70px topbar + 24px spacing; left: 260px sidebar + 28px spacing */
+    -fx-padding: 94px 28px 24px 288px;
 }
 
 .page-title {

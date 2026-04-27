@@ -1,3 +1,7 @@
+INSERT INTO images (id, url, description) VALUES
+    ('40000000-0000-0000-0000-000000000001', 'C:\Users\sladk\Downloads\triplify\ui\src\main\resources\com\triplify\ui\pages\trips\images\default.png', null);
+
+
 CREATE TEMP TABLE tmp_seed_places (
     country_name TEXT NOT NULL,
     place_order INTEGER NOT NULL,
@@ -227,7 +231,7 @@ SELECT
     ) AS id,
     'f1d1a33f-1e7c-4ea1-bb1d-c8f06efb5b5a' AS user_id,
     c.id AS country_id,
-    NULL AS cover_image_id,
+    '40000000-0000-0000-0000-000000000001' AS cover_image_id,
     p.title_en,
     (
         'The stop at ' || p.title_en || ' in ' || p.country_name || ' is designed as a full-day anchor rather than a quick checkbox visit. Start in the early morning with a slow orientation walk around the access streets so you can understand where transit points, pedestrian lanes, and quieter corners are located before peak visitor flow begins. Continue with two focused exploration blocks: first for signature architecture, panoramic viewpoints, and classic photo angles, then for neighborhood texture such as side lanes, local craft storefronts, and food counters where the area feels less staged and more lived-in. Keep a measured pace and avoid rushing transitions, because this stop is meant to be experienced in layers, not consumed in one pass. '
@@ -236,12 +240,12 @@ SELECT
     ) AS description,
     CASE
         WHEN p.place_order IN (1, 11) THEN 0.0
-        ELSE round(cs.base_lat + ((p.place_order - 10) * 0.12), 6)
-    END AS latitude,
+        ELSE round(cs.base_lat + (((RANDOM() % 1000000) / 1000000.0) * 2.0), 6)
+        END AS latitude,
     CASE
         WHEN p.place_order IN (1, 11) THEN 0.0
-        ELSE round(cs.base_lon + ((p.place_order - 10) * 0.12), 6)
-    END AS longitude
+        ELSE round(cs.base_lon + (((RANDOM() % 1000000) / 1000000.0) * 2.0), 6)
+        END AS longitude
 FROM tmp_seed_places p
 INNER JOIN countries c
     ON c.name = p.country_name
