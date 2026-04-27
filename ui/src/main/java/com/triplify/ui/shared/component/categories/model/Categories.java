@@ -4,6 +4,7 @@ import com.triplify.application.usecase.category.CategoryService;
 import com.triplify.application.usecase.category.dto.CategoryResponse;
 import com.triplify.domain.result.Result;
 import com.triplify.ui.shared.component.select.entry.model.Entry;
+import com.triplify.ui.shared.util.Localization;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +34,7 @@ public class Categories {
             if (category == null || category.id() == null || category.name() == null || category.name().isBlank()) {
                 continue;
             }
-            entries.add(Entry.<String>builder(category.id().toString(), category.name())
+            entries.add(Entry.<String>builder(category.id().toString(), Localization.localize(category))
                     .emoji(category.emojiUnicode())
                     .build());
         }

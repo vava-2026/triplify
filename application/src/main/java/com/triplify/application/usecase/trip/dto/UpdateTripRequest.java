@@ -1,6 +1,6 @@
 package com.triplify.application.usecase.trip.dto;
 
-import com.triplify.application.error.ValidationMessage;
+import com.triplify.application.shared.error.ValidationMessage;
 import com.triplify.application.usecase.dto.DtoConstraints;
 import com.triplify.domain.model.enums.StatusEnum;
 import jakarta.validation.constraints.NotBlank;
@@ -31,7 +31,7 @@ public record UpdateTripRequest(
         Instant startedAt,
         Instant endedAt,
         Set<UUID> tagIds,
-        Set<Path> images,
+        Path coverImage,
         Set<UUID> countryIds
 ) {
 }

@@ -2,7 +2,7 @@ package com.triplify.ui.shared.component.countries.view;
 
 import com.triplify.ui.shared.component.countries.model.Countries;
 import com.triplify.ui.shared.component.search.model.Search;
-import com.triplify.ui.shared.component.search.model.SearchSize;
+import com.triplify.ui.shared.model.AppComponentSize;
 import com.triplify.ui.shared.component.search.view.SearchView;
 import com.triplify.ui.shared.component.select.entry.model.Entry;
 import javafx.scene.control.Label;
@@ -32,7 +32,7 @@ public class CountriesView extends VBox {
                 .onLoadMore(model::loadMore)
                 .loadMoreThreshold(0.82)
                 .variant(model.getVariant())
-                .size(SearchSize.MIDDLE)
+                .size(AppComponentSize.MIDDLE)
                 .onResultSelected(this::handleCountrySelected)
                 .build();
 
@@ -67,6 +67,7 @@ public class CountriesView extends VBox {
 
     public void clearError() {
         getStyleClass().remove("countries-has-error");
+        searchView.clearError();
         errorLabel.setManaged(false);
         errorLabel.setVisible(false);
         errorLabel.setText("");
@@ -76,6 +77,7 @@ public class CountriesView extends VBox {
         if (!getStyleClass().contains("countries-has-error")) {
             getStyleClass().add("countries-has-error");
         }
+        searchView.showError(message);
         errorLabel.setText(message);
         errorLabel.setManaged(true);
         errorLabel.setVisible(true);

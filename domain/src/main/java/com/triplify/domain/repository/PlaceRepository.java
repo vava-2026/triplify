@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public interface PlaceRepository {
     Optional<Place> findById(UUID id);
-    Page<Place> findList(PageRequest page, PlaceFilter filter);
+    Page<Place> findList(PageRequest page, PlaceFilter filter, UUID userId);
     void create(Place place);
     void update(Place place);
     void delete(Place place);

@@ -29,10 +29,9 @@ public class BadgeGroup {
     @Setter(AccessLevel.PRIVATE)
     private String descriptionSk;
 
-    @NonNull
     private final UUID createdById;
 
-    public BadgeGroup(@NonNull String name, @NonNull String nameSk, @NonNull UUID createdById) {
+    public BadgeGroup(@NonNull String name, @NonNull String nameSk, UUID createdById) {
         this.id = UUID.randomUUID();
         this.name = name;
         this.nameSk = nameSk;

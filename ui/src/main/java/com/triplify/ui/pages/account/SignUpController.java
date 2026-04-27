@@ -14,6 +14,7 @@ import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.component.button.model.ButtonVariant;
 import com.triplify.ui.shared.component.button.view.AppButtonView;
+import com.triplify.ui.shared.model.AppComponentSize;
 import com.triplify.ui.shared.component.checkbox_item.CheckboxItem;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.input_item.PasswordItem;
@@ -132,11 +133,9 @@ public class SignUpController extends SimpleLifecycleAwareController {
         termsContainer.getChildren().setAll(termsCheckbox);
 
         var signUpButton = AppButtonView.builder(fxmlLoader)
-                .variant(ButtonVariant.LOGIN)
                 .labelBinding(Localization.textBinding("signup.signUp"))
                 .onAction(this::onSignUp)
                 .build();
-        signUpButton.getStyleClass().add("login-submit-button");
         signUpButton.setMaxWidth(Double.MAX_VALUE);
         signUpButtonContainer.getChildren().setAll(signUpButton);
     }

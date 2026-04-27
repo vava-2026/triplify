@@ -1,16 +1,38 @@
 .app-btn {
     -fx-font-family: -font-family-base;
-    -fx-font-size: 14px;
+    -fx-font-size: 16px;
     -fx-font-weight: bold;
     -fx-background-radius: 8;
     -fx-border-radius: 8;
     -fx-cursor: hand;
-    -fx-padding: 10 20 10 20;
+    -fx-padding: 0 20 0 20;
     -fx-min-height: 40;
     -fx-pref-height: 40;
     -fx-alignment: CENTER;
+    -fx-text-alignment: CENTER;
     -fx-content-display: LEFT;
     -fx-graphic-text-gap: 6;
+}
+
+.app-btn-size-small {
+    -fx-font-size: 13px;
+    -fx-padding: 8 16 8 16;
+    -fx-min-height: 34;
+    -fx-pref-height: 34;
+}
+
+.app-btn-size-middle {
+    -fx-font-size: 14px;
+    -fx-padding: 10 20 10 20;
+    -fx-min-height: 40;
+    -fx-pref-height: 40;
+}
+
+.app-btn-size-big {
+    -fx-font-size: 16px;
+    -fx-padding: 0 20 0 20;
+    -fx-min-height: 52;
+    -fx-pref-height: 52;
 }
 
 .app-btn:disabled {
@@ -30,10 +52,6 @@
 
 .app-btn-primary:hover {
     -fx-background-color: -color-primary-hover;
-}
-
-.app-btn-primary:pressed {
-    -fx-background-color: -color-primary-pressed;
 }
 
 .app-btn-secondary {
@@ -130,6 +148,42 @@
     -fx-background-color: -color-primary-light;
 }
 
+.app-btn-white {
+    -fx-background-color: -color-btn-white-bg;
+    -fx-border-color: transparent;
+    -fx-text-fill: -color-btn-white-text;
+}
+
+.app-btn-white .app-btn-icon {
+    -fx-icon-color: -color-btn-white-text;
+}
+
+.app-btn-white:hover {
+    -fx-background-color: -color-btn-white-hover;
+}
+
+.app-btn-white:pressed {
+    -fx-background-color: -color-btn-white-pressed;
+}
+
+.app-btn-white-muted {
+    -fx-background-color: -color-btn-white-muted-bg;
+    -fx-border-color: transparent;
+    -fx-text-fill: -color-btn-white-text;
+}
+
+.app-btn-white-muted .app-btn-icon {
+    -fx-icon-color: -color-btn-white-text;
+}
+
+.app-btn-white-muted:hover {
+    -fx-background-color: -color-btn-white-muted-hover;
+}
+
+.app-btn-white-muted:pressed {
+    -fx-background-color: -color-btn-white-muted-pressed;
+}
+
 .app-btn-tint {
     -fx-background-color: -color-primary-light;
     -fx-border-color: transparent;
@@ -190,6 +244,8 @@
 
 .app-btn-secondary .app-btn-spinner,
 .app-btn-ghost     .app-btn-spinner,
+.app-btn-white     .app-btn-spinner,
+.app-btn-white-muted .app-btn-spinner,
 .app-btn-tint      .app-btn-spinner,
 .app-btn-dashed-tint .app-btn-spinner {
     -fx-progress-color: -color-primary;
@@ -227,6 +283,22 @@
 
 .app-btn-sign-up:hover {
     -fx-background-color: -color-sign-up-hover;
+}
+
+.app-btn-pro {
+    -fx-background-color: -color-pro;
+    -fx-text-fill: -color-on-pro;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-padding: 0 10 0 10;
+    -fx-min-height: 25;
+    -fx-pref-height: 25;
+    -fx-max-height: 25;
+    -fx-alignment: center;
+}
+
+.app-btn-pro:hover {
+    -fx-background-color: -color-pro-hover;
 }
 
 .app-btn-user {

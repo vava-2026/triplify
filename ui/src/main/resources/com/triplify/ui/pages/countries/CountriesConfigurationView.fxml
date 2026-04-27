@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.triplify.ui.shared.component.card_grid.CardGridPane?>
+<?import java.lang.String?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<?import javafx.scene.control.ScrollPane?>
+<ScrollPane xmlns="http://javafx.com/javafx"
+			xmlns:fx="http://javafx.com/fxml"
+			fx:controller="com.triplify.ui.pages.countries.CountriesController"
+			styleClass="page-root,countries-root"
+			fitToWidth="true"
+			hbarPolicy="NEVER">
+	<stylesheets>
+		<String fx:value="/com/triplify/ui/pages/countries/countries.css"/>
+	</stylesheets>
+
+	<VBox spacing="14" maxWidth="1120" styleClass="countries-content">
+		<GridPane styleClass="countries-layout">
+			<columnConstraints>
+				<ColumnConstraints minWidth="330" prefWidth="330" maxWidth="330" hgrow="NEVER"/>
+				<ColumnConstraints minWidth="520" hgrow="ALWAYS"/>
+			</columnConstraints>
+			<rowConstraints>
+				<RowConstraints vgrow="ALWAYS"/>
+			</rowConstraints>
+
+			<VBox spacing="14" styleClass="page-card,countries-form-card" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.vgrow="ALWAYS">
+				<HBox styleClass="countries-card-header">
+					<Label fx:id="formSectionTitleLabel" styleClass="countries-section-title"/>
+					<Region HBox.hgrow="ALWAYS"/>
+					<Label fx:id="modeBadgeLabel" styleClass="countries-mode-badge"/>
+				</HBox>
+
+				<VBox spacing="6" styleClass="countries-form-group">
+                    <Label fx:id="nameLabel"  styleClass="form-label"/>
+                    <VBox fx:id="nameInputContainer"/>
+                </VBox>
+
+				<VBox spacing="6" styleClass="countries-form-group">
+					<Label fx:id="nameSkLabel" styleClass="form-label"/>
+					<VBox fx:id="nameSkInputContainer"/>
+				</VBox>
+
+				<VBox spacing="6" styleClass="countries-form-group">
+					<Label fx:id="emojiLabel" styleClass="form-label"/>
+					<VBox fx:id="emojiInputContainer"/>
+				</VBox>
+
+				<GridPane hgap="10" vgap="10" styleClass="countries-actions-grid">
+					<columnConstraints>
+						<ColumnConstraints percentWidth="70" hgrow="ALWAYS"/>
+						<ColumnConstraints percentWidth="30" hgrow="ALWAYS"/>
+					</columnConstraints>
+
+					<VBox fx:id="saveButtonContainer" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.hgrow="ALWAYS"/>
+					<VBox fx:id="clearFormButtonContainer" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.hgrow="ALWAYS"/>
+					<VBox fx:id="toggleAvailabilityButtonContainer" GridPane.columnIndex="0" GridPane.rowIndex="1" GridPane.hgrow="ALWAYS"/>
+					<VBox fx:id="deleteButtonContainer" GridPane.columnIndex="1" GridPane.rowIndex="1" GridPane.hgrow="ALWAYS"/>
+				</GridPane>
+            </VBox>
+
+			<VBox prefHeight="0" spacing="14" styleClass="page-card,countries-list-card" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.hgrow="ALWAYS">
+				<HBox styleClass="countries-card-header">
+					<Label fx:id="listSectionTitleLabel" styleClass="countries-section-title"/>
+					<Region HBox.hgrow="ALWAYS"/>
+				</HBox>
+
+				<HBox fx:id="searchContainer" spacing="10" styleClass="countries-search-row">
+				</HBox>
+
+				<CardGridPane fx:id="countriesGrid" VBox.vgrow="ALWAYS" styleClass="countries-grid"/>
+			</VBox>
+		</GridPane>
+	</VBox>
+</ScrollPane>

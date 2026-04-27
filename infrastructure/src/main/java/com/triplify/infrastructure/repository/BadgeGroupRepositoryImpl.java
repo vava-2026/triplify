@@ -59,14 +59,18 @@ public class BadgeGroupRepositoryImpl implements BadgeGroupRepository {
     }
 
     private BadgeGroup mapRow(ResultSet rs) throws SQLException {
+        String createdByRaw = rs.getString("created_by");
+        UUID createdById = (createdByRaw == null || createdByRaw.isBlank())
+                ? null
+                : UUID.fromString(createdByRaw);
+
         return new BadgeGroup(
                 UUID.fromString(rs.getString("id")),
                 rs.getString("name"),
                 rs.getString("name_sk"),
                 rs.getString("description"),
                 rs.getString("description_sk"),
-                UUID.fromString(rs.getString("created_by"))
+                createdById
         );
     }
 }
-

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.triplify.ui.shared.component.card_grid.CardGridPane?>
+<?import java.lang.String?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<?import javafx.scene.control.ScrollPane?>
+<ScrollPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.triplify.ui.pages.badges.BadgesController"
+            styleClass="page-root,badges-root"
+            fitToWidth="true"
+            hbarPolicy="NEVER">
+    <stylesheets>
+        <String fx:value="/com/triplify/ui/pages/badges/badges.css"/>
+    </stylesheets>
+
+    <VBox spacing="14" maxWidth="1120" styleClass="badges-content">
+        <GridPane styleClass="badges-layout">
+            <columnConstraints>
+                <ColumnConstraints minWidth="360" prefWidth="360" maxWidth="360" hgrow="NEVER"/>
+                <ColumnConstraints minWidth="520" hgrow="ALWAYS"/>
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints vgrow="ALWAYS"/>
+            </rowConstraints>
+
+            <VBox spacing="14" styleClass="page-card,badges-form-card" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.vgrow="ALWAYS">
+                <HBox styleClass="badges-card-header">
+                    <Label fx:id="formSectionTitleLabel" styleClass="badges-section-title"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="modeBadgeLabel" styleClass="badges-mode-badge"/>
+                </HBox>
+
+                <VBox spacing="6" styleClass="badges-form-group">
+                    <Label fx:id="nameLabel" styleClass="form-label"/>
+                    <VBox fx:id="nameInputContainer"/>
+                </VBox>
+
+                <VBox spacing="6" styleClass="badges-form-group">
+                    <Label fx:id="nameSkLabel" styleClass="form-label"/>
+                    <VBox fx:id="nameSkInputContainer"/>
+                </VBox>
+
+                <VBox spacing="6" styleClass="badges-form-group">
+                    <Label fx:id="descriptionLabel" styleClass="form-label"/>
+                    <VBox fx:id="descriptionInputContainer"/>
+                </VBox>
+
+                <VBox spacing="6" styleClass="badges-form-group">
+                    <Label fx:id="descriptionSkLabel" styleClass="form-label"/>
+                    <VBox fx:id="descriptionSkInputContainer"/>
+                </VBox>
+
+                <VBox spacing="6" styleClass="badges-form-group">
+                    <Label fx:id="groupLabel" styleClass="form-label"/>
+                    <VBox fx:id="groupSelectContainer"/>
+                </VBox>
+
+                <HBox spacing="10">
+                    <VBox spacing="6" styleClass="badges-form-group" HBox.hgrow="ALWAYS">
+                        <Label fx:id="levelLabel" styleClass="form-label"/>
+                        <VBox fx:id="levelInputContainer"/>
+                    </VBox>
+                    <VBox spacing="6" styleClass="badges-form-group" HBox.hgrow="ALWAYS">
+                        <Label fx:id="requiredValueLabel" styleClass="form-label"/>
+                        <VBox fx:id="requiredValueInputContainer"/>
+                    </VBox>
+                </HBox>
+
+                <VBox spacing="6" styleClass="badges-form-group">
+                    <Label fx:id="imagePathLabel" styleClass="form-label"/>
+                    <VBox fx:id="imagePathInputContainer"/>
+                </VBox>
+
+
+
+                <HBox spacing="10" styleClass="badges-actions-row">
+                          <VBox fx:id="saveButtonContainer" HBox.hgrow="ALWAYS"/>
+                          <VBox fx:id="clearFormButtonContainer"/>
+                </HBox>
+
+                <HBox spacing="10" styleClass="badges-actions-row">
+                          <VBox fx:id="deleteButtonContainer" HBox.hgrow="ALWAYS"/>
+                </HBox>
+            </VBox>
+
+            <VBox prefHeight="0" spacing="14" styleClass="page-card,badges-list-card" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.hgrow="ALWAYS">
+                <HBox styleClass="badges-card-header">
+                    <Label fx:id="listSectionTitleLabel" styleClass="badges-section-title"/>
+                </HBox>
+
+                <HBox spacing="10" styleClass="badges-search-row">
+                    <HBox fx:id="searchContainer" spacing="10" HBox.hgrow="ALWAYS"/>
+                </HBox>
+
+                <CardGridPane fx:id="badgesGrid" VBox.vgrow="ALWAYS" styleClass="badges-grid"/>
+            </VBox>
+        </GridPane>
+    </VBox>
+</ScrollPane>

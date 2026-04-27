@@ -76,25 +76,6 @@
     -fx-padding: 20 0 0 0;
 }
 
-.login-submit-button {
-    -fx-min-height: 40;
-    -fx-pref-height: 40;
-    -fx-max-height: 40;
-    -fx-padding: 0 20 0 20;
-}
-
-.login-root .app-btn-login.login-submit-button {
-    -fx-min-height: 40;
-    -fx-pref-height: 40;
-    -fx-max-height: 40;
-    -fx-padding: 0 20 0 20;
-    -fx-min-width: 0;
-    -fx-pref-width: -1;
-}
-
-.login-root .app-btn-login.login-submit-button:hover {
-    -fx-background-color: -color-login-hover;
-}
 
 .login-sign-up-row {
     -fx-spacing: 5;

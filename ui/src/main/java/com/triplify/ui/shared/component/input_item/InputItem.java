@@ -3,6 +3,7 @@ package com.triplify.ui.shared.component.input_item;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.util.Localization;
+import javafx.beans.property.StringProperty;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -89,6 +90,10 @@ public class InputItem extends VBox {
         };
     }
 
+    public StringProperty textProperty() {
+        return textField.textProperty();
+    }
+
     public String getText() {
         return textField.getText();
     }
@@ -101,6 +106,14 @@ public class InputItem extends VBox {
         errorLabel.setText(message);
         errorLabel.setVisible(true);
         errorLabel.setManaged(true);
+        textField.getStyleClass().remove("input-item-error");
+        textField.getStyleClass().add("input-item-error");
+    }
+
+    public void showErrorHighlightOnly() {
+        errorLabel.setText("");
+        errorLabel.setVisible(false);
+        errorLabel.setManaged(false);
         textField.getStyleClass().remove("input-item-error");
         textField.getStyleClass().add("input-item-error");
     }

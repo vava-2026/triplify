@@ -24,13 +24,22 @@
     -color-primary-light: #ecf3f9;
     -color-primary-hover: #2a5a80;
     -color-primary-pressed: #24506f;
+    -color-primary-hover-strong: #225379;
 
     -color-danger: #c0392b;
     -color-danger-hover: #a83224;
     -color-danger-pressed: #95291e;
 
+    -color-pro: #e53935;
+    -color-pro-hover: #B41D19;
+    -color-on-pro: #ecf3f9;
+
     -color-on-primary: #ecf3f9;
     -color-on-surface: white;
+    -color-ink-muted-soft: #9d9d9d;
+    -color-shadow-ink-soft: rgba(12, 12, 13, 0.05);
+    -color-overlay-modal: rgba(15, 23, 42, 0.62);
+    -color-shadow-modal: rgba(15, 23, 42, 0.28);
 
     -color-start-bg: #06070e;
 
@@ -40,6 +49,13 @@
     -color-sign-up: #d9e0e6;
     -color-sign-up-hover: #bbbec1;
     -color-on-sign-up: #000000;
+    -color-btn-white-bg: #d9e0e6;
+    -color-btn-white-hover: #d1d9df;
+    -color-btn-white-pressed: #c5ced6;
+    -color-btn-white-muted-bg: #bbbec1;
+    -color-btn-white-muted-hover: #b2b6ba;
+    -color-btn-white-muted-pressed: #a8adb2;
+    -color-btn-white-text: #111111;
 
     -color-theme-red-dark-bg: #F5C1C1;
     -color-theme-red-dark-fg: #B71C1C;

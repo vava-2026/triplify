@@ -1,7 +1,7 @@
 package com.triplify.ui.pages.trips;
 
 import com.google.inject.Inject;
-import com.triplify.application.pagination.Pagination;
+import com.triplify.application.shared.Pagination;
 import com.triplify.application.usecase.category.CategoryService;
 import com.triplify.application.usecase.category.dto.CategoryResponse;
 import com.triplify.application.usecase.country.CountryService;
@@ -22,7 +22,6 @@ import com.triplify.ui.shared.component.select.model.Select;
 import com.triplify.ui.shared.component.select.view.SelectView;
 import com.triplify.ui.shared.component.trip.view.TripCardView;
 import com.triplify.ui.shared.model.FieldVariant;
-import com.triplify.ui.shared.util.DisplayUtils;
 
 import static com.triplify.ui.shared.util.DisplayUtils.*;
 
@@ -39,7 +38,6 @@ import rahulstech.jfx.routing.element.RouterArgument;
 import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.*;
 
 public class MyTripsController extends SimpleLifecycleAwareController {
@@ -282,25 +280,17 @@ public class MyTripsController extends SimpleLifecycleAwareController {
         List<String> tags = new ArrayList<>();
         tags.add(ALL_OPTION);
 
-        PageRequest pageRequest = PageRequest.defaultRequest();
-        while (true) {
-            var result = tagService.getTags(new GetTagsRequest(pageRequest, null));
-            if (result.isFailure()) {
-                log.warn("Failed to load tags for My Trips filters: {}", result.getError().message());
-                return List.copyOf(new LinkedHashSet<>(tags));
-            }
+        var result = tagService.getTags(GetTagsRequest.defaultRequest());
+        if (result.isFailure()) {
+            log.warn("Failed to load tags for My Trips filters: {}", result.getError().message());
+            return List.copyOf(new LinkedHashSet<>(tags));
+        }
 
-            for (TagResponse tag : result.getValue().items()) {
-                if (tag == null || tag.name() == null || tag.name().isBlank()) {
-                    continue;
-                }
-                tags.add(tag.name().trim());
+        for (TagResponse tag : result.getValue()) {
+            if (tag == null || tag.name() == null || tag.name().isBlank()) {
+                continue;
             }
-
-            if (!result.getValue().hasNext()) {
-                break;
-            }
-            pageRequest = pageRequest.next();
+            tags.add(tag.name().trim());
         }
 
         return List.copyOf(new LinkedHashSet<>(tags));

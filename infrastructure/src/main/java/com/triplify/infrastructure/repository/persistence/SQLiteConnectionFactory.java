@@ -304,7 +304,7 @@ public class SQLiteConnectionFactory {
         } catch (IOException e) {
             throw new RuntimeException("Failed to create SQLite parent directory: " + dbPath, e);
         }
-        return "jdbc:sqlite:" + dbPath;
+        return "jdbc:sqlite:" + dbPath + "?foreign_keys=on";
     }
 
     private static Path resolveDbPath() {

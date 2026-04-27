@@ -10,11 +10,12 @@ import com.triplify.application.usecase.place.dto.UpdatePlaceRequest;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.map.InteractiveMap;
 import com.triplify.ui.error.ErrorHandler;
-import com.triplify.ui.routing.TriplifyRouterContext;
+import com.triplify.ui.pages.WindowedPageController;
+import com.triplify.ui.shared.component.button.model.ButtonVariant;
+import com.triplify.ui.shared.component.button.view.AppButtonView;
 import com.triplify.ui.shared.component.countries.model.Countries;
 import com.triplify.ui.shared.component.countries.view.CountriesView;
 import com.triplify.ui.storage.EditorDraftStorage;
-import com.triplify.ui.shared.component.action_buttons.view.EditorActionButtonsView;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.component.section_header.view.SectionHeaderView;
 import com.triplify.ui.shared.component.input_item.TextAreaItem;
@@ -22,9 +23,8 @@ import com.triplify.ui.shared.component.upload_panel.view.ImageUploadPanelView;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.toast.ToastService;
 import com.triplify.ui.shared.util.EditorUtils;
+import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import com.triplify.ui.shared.util.Localization;
-
-import static com.triplify.ui.shared.util.EditorUtils.*;
 
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
@@ -35,11 +35,9 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ContextMenuEvent;
-import javafx.scene.input.DragEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
-import javafx.scene.input.TransferMode;
 import javafx.scene.input.ZoomEvent;
 import javafx.scene.Node;
 import javafx.scene.layout.FlowPane;
@@ -48,21 +46,24 @@ import javafx.scene.layout.VBox;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
-import org.kordamp.ikonli.javafx.FontIcon;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rahulstech.jfx.routing.element.RouterArgument;
-import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-public class AddPlaceController extends SimpleLifecycleAwareController {
+public class AddPlaceController extends WindowedPageController {
 
     private static final double DEFAULT_LATITUDE = 48.1485965;
     private static final double DEFAULT_LONGITUDE = 17.1077477;
+
+    private static final Logger log = LoggerFactory.getLogger(AddPlaceController.class);
 
     @FXML private VBox contentContainer;
     @FXML private FlowPane contentFlow;
@@ -83,12 +84,13 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     @FXML private InteractiveMap interactiveMap;
     @FXML private Label selectedCoordinatesLabel;
 
-    @FXML private EditorActionButtonsView actionButtonsView;
+    @FXML private VBox actionButtonsContainer;
 
     @Inject private PlaceService placeService;
     @Inject private CountryService countryService;
     @Inject private ToastService toast;
     @Inject private ErrorHandler errorHandler;
+    @Inject private FxmlLoaderHelper fxmlLoader;
 
     private String tripName;
     private String returnTarget;
@@ -108,21 +110,18 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
 
     @FXML
     public void initialize() {
+        log.info("Initializing AddPlaceController");
         titleInput = new InputItem("input.placeholder.placeTitle", FieldVariant.GHOST);
-        if (countryService == null) {
-            InputItem placeholderCountryInput = new InputItem("input.placeholder.country", FieldVariant.GHOST);
-            placeholderCountryInput.setDisable(true);
-            countryInputContainer.getChildren().add(placeholderCountryInput);
-        } else {
-            countriesView = new CountriesView(
-                    Countries.builder(countryService)
-                            .variant(FieldVariant.GHOST)
-                            .searchOnTyping(true)
-                            .onLoadFailed(errorHandler::handle)
-                            .build()
-            );
-            countryInputContainer.getChildren().add(countriesView);
-        }
+
+        countriesView = new CountriesView(
+                Countries.builder(countryService)
+                        .variant(FieldVariant.GHOST)
+                        .searchOnTyping(true)
+                        .onLoadFailed(errorHandler::handle)
+                        .build()
+        );
+        countryInputContainer.getChildren().add(countriesView);
+
         descriptionInput = new TextAreaItem("input.placeholder.placeDescription", FieldVariant.GHOST);
         titleInputContainer.getChildren().add(titleInput);
         descriptionInputContainer.getChildren().add(descriptionInput);
@@ -132,65 +131,75 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         selectedImageLabel = imageUploadPanel.getSelectedImageLabel();
 
         contentFlow.prefWrapLengthProperty().bind(contentContainer.widthProperty());
-        initializeCoverPreview();
+        EditorUtils.initializeCoverPreview(coverPreview, uploadArea);
         bindUploadPanelHandlers();
 
-        configureButtonIcon(actionButtonsView.getPrimaryButton(), "fth-save", 15, "app-btn-icon");
-        configureButtonIcon(actionButtonsView.getSecondaryButton(), "fth-trash-2", 15, "app-btn-icon");
-        actionButtonsView.getPrimaryButton().setOnAction(event -> onSave());
-        actionButtonsView.getSecondaryButton().setOnAction(event -> onDiscard());
 
-        installRoundedClip(uploadArea, 16);
-        installRoundedClip(interactiveMap, 18);
+        Button saveButton = AppButtonView.builder(fxmlLoader)
+                .labelBinding(Localization.textBinding("place.add.action.save"))
+                .variant(ButtonVariant.PRIMARY)
+                .icon("fth-save")
+                .onAction(this::onSave)
+                .build();
+        saveButton.setMaxWidth(Double.MAX_VALUE);
+
+        Button discardButton = AppButtonView.builder(fxmlLoader)
+                .labelBinding(Localization.textBinding("place.add.action.discard"))
+                .variant(ButtonVariant.DANGER_OUTLINE)
+                .icon("fth-trash-2")
+                .onAction(this::onDiscard)
+                .build();
+        discardButton.setMaxWidth(Double.MAX_VALUE);
+
+        actionButtonsContainer.getChildren().setAll(saveButton, discardButton);
+
+
+        EditorUtils.installRoundedClip(uploadArea, 16);
+        EditorUtils.installRoundedClip(interactiveMap, 18);
 
         bindLocalizedText();
         initializeMap();
         updateSelectedCoordinatesLabel();
         I18n.bundleProperty().addListener((obs, oldBundle, newBundle) -> updateSelectedCoordinatesLabel());
+        log.info("Initialized AddPlaceController");
     }
 
     @Override
     public void onLifecycleInitialize() {
+        log.info("Getting AddPlaceController attributes");
+        resetFormState();
         RouterArgument data = getRouter().getCurrentData();
-        tripName = data == null ? null : data.getValue("tripName");
-        returnTarget = data == null ? null : data.getValue("editorReturnTarget");
-        placeId = data == null ? null : data.getValue("placeId");
+        if (data == null) {
+            log.warn("No router data found for AddPlaceController – this may cause issues with returning to the correct place after saving an edit");
+            return;
+        }
+        tripName = data.getValue("tripName");
+        returnTarget = data.getValue("editorReturnTarget");
+        placeId = data.getValue("placeId");
         editMode = placeId != null && !placeId.isBlank();
+        log.info("AddPlaceController attributes retrieved");
     }
 
     @Override
-    public void onLifecycleShow() {
-        updateFullScreenMode(false);
+    protected void onWindowedShow() {
         if (editMode && !placeLoaded) {
             loadPlaceForEdit();
         }
-    }
-
-    @Override
-    public void onLifecycleHide() {
-        updateFullScreenMode(false);
-    }
-
-    @Override
-    public void onLifecycleDestroy() {
-        updateFullScreenMode(false);
     }
 
     @FXML
     private void onSave() {
         clearFieldErrors();
 
-        String countryId = normalize(countriesView == null ? null : countriesView.getSelectedCountryId());
-        java.nio.file.Path coverImage = coverImagePath == null ? null : java.nio.file.Path.of(coverImagePath);
-        String title = normalize(titleInput.getText());
-        String description = normalizeNullable(descriptionInput.getText());
+        String countryId = countriesView.getSelectedCountryId();
+        Path coverImage = coverImagePath == null ? null : Path.of(coverImagePath);
+        String title = titleInput.getText().trim();
+        String description = descriptionInput.getText();
 
-        Map<String, Consumer<String>> fieldHandlers = countriesView == null
-                ? Map.of("title", message -> titleInput.showError(message))
-                : Map.of(
-                        "title", message -> titleInput.showError(message),
-                        "countryId", message -> countriesView.showError(message)
-                );
+        Map<String, Consumer<String>> fieldHandlers = Map.of(
+                "title", message -> titleInput.showError(message),
+                "countryId", message -> countriesView.showError(message)
+        );
 
         var result = editMode
                 ? placeService.updatePlace(new UpdatePlaceRequest(
@@ -214,11 +223,10 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
             if (returnTarget != null && !returnTarget.isBlank()) {
                 EditorDraftStorage.savePendingPlace(returnTarget, place);
             }
-            String message = editMode
-                    ? I18n.t("place.edit.toast.saved.body")
-                    : tripName == null || tripName.isBlank()
-                    ? I18n.t("place.add.toast.saved.body")
-                    : formatMessage("place.add.toast.saved.body.trip", tripName);
+            String message = I18n.t("place.edit.toast.saved.body");
+            if (editMode && (tripName != null && !tripName.isBlank())) {
+                message = EditorUtils.formatMessage("place.edit.toast.saved.body.trip", tripName);
+            }
             toast.success(I18n.t("place.add.toast.saved.title"), message);
             getRouter().popBackStack();
         });
@@ -235,7 +243,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         FileChooser chooser = new FileChooser();
         chooser.setTitle(I18n.t("place.add.dialog.cover.title"));
         chooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter(I18n.t("place.add.dialog.cover.filter"), "*.png", "*.jpg", "*.jpeg", "*.svg")
+                new FileChooser.ExtensionFilter(I18n.t("place.add.dialog.cover.filter"), "*.png", "*.jpg", "*.jpeg")
         );
 
         File file = chooser.showOpenDialog(uploadArea.getScene() == null ? null : uploadArea.getScene().getWindow());
@@ -244,46 +252,13 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         }
     }
 
-    @FXML
-    private void onUploadDragOver(DragEvent event) {
-        if (event.getDragboard().hasFiles() && isSupportedImageFile(event.getDragboard().getFiles().getFirst())) {
-            event.acceptTransferModes(TransferMode.COPY);
-            toggleStyleClass(uploadArea, "editor-upload-area-active", true);
-        }
-        event.consume();
-    }
-
-    @FXML
-    private void onUploadDragExited(DragEvent event) {
-        toggleStyleClass(uploadArea, "editor-upload-area-active", false);
-        event.consume();
-    }
-
-    @FXML
-    private void onUploadDragDropped(DragEvent event) {
-        boolean completed = false;
-        if (event.getDragboard().hasFiles()) {
-            File file = event.getDragboard().getFiles().getFirst();
-            if (isSupportedImageFile(file)) {
-                handleCoverImage(file);
-                completed = true;
-            }
-        }
-
-        toggleStyleClass(uploadArea, "editor-upload-area-active", false);
-        event.setDropCompleted(completed);
-        event.consume();
-    }
-
     private void clearFieldErrors() {
         titleInput.clearError();
-        if (countriesView != null) {
-            countriesView.clearError();
-        }
+        countriesView.clearError();
     }
 
     private void handleCoverImage(File file) {
-        if (!isSupportedImageFile(file)) {
+        if (!EditorUtils.isSupportedImageFile(file)) {
             toast.warning(I18n.t("place.add.toast.image.unsupported"));
             return;
         }
@@ -292,16 +267,6 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         selectedImageLabel.setText(file.getName());
         selectedImageLabel.setVisible(true);
         selectedImageLabel.setManaged(true);
-
-        if (isVectorImage(file)) {
-            coverPreview.setImage(null);
-            coverPreview.setViewport(null);
-            coverPreview.setVisible(false);
-            coverPreview.setManaged(false);
-            uploadPlaceholder.setVisible(true);
-            uploadPlaceholder.setManaged(true);
-            return;
-        }
 
         Image image = new Image(file.toURI().toString(), true);
         image.errorProperty().addListener((obs, oldVal, isError) -> {
@@ -312,26 +277,19 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
                 coverPreview.setManaged(false);
                 uploadPlaceholder.setVisible(true);
                 uploadPlaceholder.setManaged(true);
+                log.warn("Failed to load cover image preview", image.getException());
                 toast.warning(I18n.t("place.add.toast.image.previewUnavailable"));
             }
         });
         image.progressProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal.doubleValue() >= 1.0 && !image.isError()) {
-                setCoverPreviewImage(image);
+                EditorUtils.setCoverPreviewImage(coverPreview, uploadArea, image);
                 coverPreview.setVisible(true);
                 coverPreview.setManaged(false);
                 uploadPlaceholder.setVisible(false);
                 uploadPlaceholder.setManaged(false);
             }
         });
-    }
-
-    private void initializeCoverPreview() {
-        EditorUtils.initializeCoverPreview(coverPreview, uploadArea);
-    }
-
-    private void setCoverPreviewImage(Image image) {
-        EditorUtils.setCoverPreviewImage(coverPreview, uploadArea, image);
     }
 
     private void initializeMap() {
@@ -343,7 +301,7 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
             }
         });
         interactiveMap.selectedCountryNameProperty().addListener((obs, oldVal, newVal) -> {
-            if (countriesView != null && newVal != null && !newVal.isBlank()) {
+            if (newVal != null && !newVal.isBlank()) {
                 countriesView.selectCountryByName(newVal);
             }
         });
@@ -353,17 +311,20 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
     }
 
     private void loadPlaceForEdit() {
+        log.debug("Loading place for edit with ID: {}", placeId);
         var result = placeService.getPlaceById(new GetPlaceByIdRequest(UUID.fromString(placeId)));
         if (result.isFailure()) {
+            log.error("Failed to load place for edit: {}", result.getError());
             errorHandler.handle(result.getError());
             getRouter().popBackStack();
             return;
         }
+        log.debug("Place data loaded successfully for place ID: {}", placeId);
 
         var place = result.getValue();
-        titleInput.setText(place.title() == null ? "" : place.title());
+        titleInput.setText(place.title());
         descriptionInput.setText(place.description() == null ? "" : place.description());
-        if (countriesView != null && place.country() != null && place.country().name() != null) {
+        if (place.country() != null && place.country().name() != null) {
             countriesView.selectCountryByName(place.country().name());
         }
 
@@ -379,27 +340,19 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
             selectedImageLabel.setVisible(true);
             selectedImageLabel.setManaged(true);
 
-            if (isVectorImage(new File(coverImagePath))) {
-                coverPreview.setImage(null);
-                coverPreview.setVisible(false);
-                coverPreview.setManaged(false);
-                uploadPlaceholder.setVisible(true);
-                uploadPlaceholder.setManaged(true);
-            } else {
-                setCoverPreviewImage(new Image(new File(coverImagePath).toURI().toString(), true));
-                coverPreview.setVisible(true);
-                coverPreview.setManaged(false);
-                uploadPlaceholder.setVisible(false);
-                uploadPlaceholder.setManaged(false);
-            }
+            EditorUtils.setCoverPreviewImage(coverPreview, uploadArea, new Image(new File(coverImagePath).toURI().toString(), true));
+            coverPreview.setVisible(true);
+            coverPreview.setManaged(false);
+            uploadPlaceholder.setVisible(false);
+            uploadPlaceholder.setManaged(false);
         }
-
         placeLoaded = true;
+        log.debug("Place loaded successfully for place ID: {}", placeId);
     }
 
     private void updateSelectedCoordinatesLabel() {
         selectedCoordinatesLabel.setText(
-                String.format(Locale.US, I18n.t("place.add.coordinates.format"), selectedLatitude, selectedLongitude)
+                String.format(I18n.t("place.add.coordinates.format"), selectedLatitude, selectedLongitude)
         );
     }
 
@@ -413,31 +366,58 @@ public class AddPlaceController extends SimpleLifecycleAwareController {
         Localization.bindText(imageUploadPanel.sectionTitleProperty(), "place.add.section.cover");
         Localization.bindText(imageUploadPanel.uploadTitleProperty(), "place.add.upload.title");
         Localization.bindText(imageUploadPanel.uploadSubtitleProperty(), "place.add.upload.subtitle");
-        Localization.bindText(actionButtonsView.primaryTextProperty(), "place.add.action.save");
-        Localization.bindText(actionButtonsView.secondaryTextProperty(), "place.add.action.discard");
     }
-
-
 
     private void bindUploadPanelHandlers() {
-        uploadArea.setOnMouseClicked(event -> onChooseCoverImage());
-        uploadArea.setOnDragOver(this::onUploadDragOver);
-        uploadArea.setOnDragExited(this::onUploadDragExited);
-        uploadArea.setOnDragDropped(this::onUploadDragDropped);
+        imageUploadPanel.setOnUploadClicked(event -> onChooseCoverImage());
+        imageUploadPanel.setOnImageFileSelected(this::handleCoverImage);
+        imageUploadPanel.setOnUnsupportedImageFile(file -> toast.warning(I18n.t("place.add.toast.image.unsupported")));
+        imageUploadPanel.installDefaultImageDragAndDrop();
     }
 
+    private void resetFormState() {
+        tripName = null;
+        returnTarget = null;
+        placeId = null;
+        editMode = false;
+        placeLoaded = false;
+        coverImagePath = null;
+        selectedLatitude = DEFAULT_LATITUDE;
+        selectedLongitude = DEFAULT_LONGITUDE;
 
+        if (titleInput != null) {
+            titleInput.setText("");
+            titleInput.clearError();
+        }
+        if (descriptionInput != null) {
+            descriptionInput.setText("");
+            descriptionInput.clearError();
+        }
+        if (countriesView != null) {
+            countriesView.clearSearch();
+            countriesView.clearError();
+        }
 
-    private void updateFullScreenMode(boolean fullScreen) {
-        TriplifyRouterContext context = (TriplifyRouterContext) getRouter().getContext();
-        context.setFullScreenContent(fullScreen);
-    }
+        if (coverPreview != null) {
+            coverPreview.setImage(null);
+            coverPreview.setViewport(null);
+            coverPreview.setVisible(false);
+            coverPreview.setManaged(false);
+        }
+        if (uploadPlaceholder != null) {
+            uploadPlaceholder.setVisible(true);
+            uploadPlaceholder.setManaged(true);
+        }
+        if (selectedImageLabel != null) {
+            selectedImageLabel.setText("");
+            selectedImageLabel.setVisible(false);
+            selectedImageLabel.setManaged(false);
+        }
 
-    private String normalize(String value) {
-        return value == null ? null : value.trim();
-    }
-
-    private double clamp(double value, double min, double max) {
-        return Math.max(min, Math.min(max, value));
+        if (interactiveMap != null) {
+            interactiveMap.setMapCenter(DEFAULT_LATITUDE, DEFAULT_LONGITUDE);
+            interactiveMap.setPinPosition(DEFAULT_LATITUDE, DEFAULT_LONGITUDE);
+        }
+        updateSelectedCoordinatesLabel();
     }
 }

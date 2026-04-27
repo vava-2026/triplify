@@ -19,18 +19,18 @@ public class DatabaseMigrationInitializer {
             new MigrationStep(1, "migrations/initial.sql"),
             new MigrationStep(2, "migrations/V2__countries_created_by_nullable.sql"),
             new MigrationStep(3, "seeders/country_seeder.sql"),
-            new MigrationStep(4, "migrations/V3__trip_places_source_tracking.sql"),
-            new MigrationStep(5, "migrations/V4__categories_created_by_nullable.sql"),
+            new MigrationStep(4, "migrations/V3__categories_created_by_nullable.sql"),
+            new MigrationStep(5, "migrations/V4__trip_places_source_tracking.sql"),
             new MigrationStep(6, "seeders/category_seeder.sql"),
-            new MigrationStep(7, "migrations/V7__expand_color_palette.sql"),
-            new MigrationStep(8, "migrations/V8__badges_created_by_not_null.sql"),
+            new MigrationStep(7, "migrations/V5__expand_color_palette.sql"),
+            new MigrationStep(8, "migrations/V6__badges_created_by_not_null.sql"),
             new MigrationStep(9, "seeders/badge_group_seeder.sql"),
             new MigrationStep(10, "seeders/badge_image_seeder.sql"),
             new MigrationStep(11, "seeders/badge_seeder.sql"),
-            new MigrationStep(12, "migrations/V7__seed_default_tags.sql"),
-            new MigrationStep(13, "seeders/user_seeder.sql"),
-            new MigrationStep(14, "seeders/place_seeder.sql"),
-            new MigrationStep(15, "seeders/route_seeder.sql")
+            new MigrationStep(12, "seeders/user_seeder.sql"),
+            new MigrationStep(13, "seeders/place_seeder.sql"),
+            new MigrationStep(14, "seeders/route_seeder.sql"),
+            new MigrationStep(15, "seeders/emotion_seeder.sql")
     );
 
     public void initialize() {
