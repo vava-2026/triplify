@@ -1,7 +1,7 @@
 package com.triplify.application.usecase.trip;
 
 import com.google.inject.Inject;
-import com.triplify.application.model.ColorTheme;
+import com.triplify.application.shared.ColorTheme;
 import com.triplify.application.security.Authenticated;
 import com.triplify.application.usecase.category.dto.CategoryResponse;
 import com.triplify.application.usecase.country.dto.CountryResponse;
@@ -31,7 +31,6 @@ import com.triplify.domain.model.Tag;
 import com.triplify.domain.model.Trip;
 import com.triplify.domain.model.enums.StatusEnum;
 import com.triplify.domain.pagination.Page;
-import com.triplify.domain.pagination.PageRequest;
 import com.triplify.domain.repository.CategoryRepository;
 import com.triplify.domain.repository.CountryRepository;
 import com.triplify.domain.repository.TagRepository;
@@ -118,7 +117,7 @@ public class TripServiceImpl implements TripService {
         tripRepository.replaceTagIds(trip.getId(), toIdSet(relations.tags()));
         tripRepository.replaceCountryIds(trip.getId(), toIdSet(relations.countries()));
 
-        updateTripCoverImage(trip.getId(), request.images(), null).orThrow();
+        updateTripCoverImage(trip.getId(), request.coverImage(), null).orThrow();
 
         log.info("Added trip id='{}', title='{}' by userId='{}'", trip.getId(), trip.getTitle(), user.userId());
         return getTripById(new GetTripByIdRequest(trip.getId()));
@@ -164,7 +163,7 @@ public class TripServiceImpl implements TripService {
 
         updateTripCoverImage(
                 updatedTrip.getId(),
-                request.images(),
+            request.coverImage(),
                 existing.getCoverImageId()
         ).orThrow();
 
@@ -330,25 +329,12 @@ public class TripServiceImpl implements TripService {
         return Result.ok();
     }
 
-    private Result<Void> updateTripCoverImage(UUID tripId, Set<Path> requestedImages, UUID existingCoverImageId) {
-        if (requestedImages == null) {
+    private Result<Void> updateTripCoverImage(UUID tripId, Path requestedCoverImage, UUID existingCoverImageId) {
+        if (requestedCoverImage == null) {
             return Result.ok();
         }
 
-        Path newCoverPath = requestedImages.stream()
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElse(null);
-
-        if (newCoverPath == null) {
-            tripRepository.updateCoverImageId(tripId, null);
-            if (existingCoverImageId != null) {
-                imageService.deleteImage(new DeleteImageRequest(existingCoverImageId)).orThrow();
-            }
-            return Result.ok();
-        }
-
-        Result<ImageResponse> imageResult = imageService.addImage(new AddImageRequest(newCoverPath, DEFAULT_IMAGE_DESCRIPTION + tripId));
+        Result<ImageResponse> imageResult = imageService.addImage(new AddImageRequest(requestedCoverImage, DEFAULT_IMAGE_DESCRIPTION + tripId));
         if (imageResult.isFailure()) {
             return Result.fail(imageResult.getError());
         }

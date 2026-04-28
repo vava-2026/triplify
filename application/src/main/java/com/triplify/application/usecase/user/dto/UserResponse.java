@@ -18,7 +18,7 @@ public record UserResponse(
         ImageResponse avatar = null;
         if (user.getAvatarImageId() != null) {
             avatar = new ImageResponse(
-                    user.getAvatarImageId().toString(),
+                    user.getAvatarImageId(),
                     user.getAvatarImage() != null ? user.getAvatarImage().getUrl() : null,
                     user.getAvatarImage() != null ? user.getAvatarImage().getDescription() : null,
                     user.getAvatarImage() != null ? user.getAvatarImage().getUploadedAt() : null

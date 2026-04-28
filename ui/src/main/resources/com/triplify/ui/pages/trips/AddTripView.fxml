@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import com.triplify.ui.shared.component.action_buttons.view.EditorActionButtonsView?>
 <?import com.triplify.ui.shared.component.section_header.view.SectionHeaderView?>
 <?import com.triplify.ui.shared.component.tag_picker.TagPickerItem?>
 <?import com.triplify.ui.shared.component.upload_panel.view.ImageUploadPanelView?>
@@ -27,38 +26,37 @@
                         <VBox styleClass="page-card,trip-editor-card" spacing="18">
                             <SectionHeaderView fx:id="generalSectionHeader"
                                                iconLiteral="fth-info"
-                                               title="General Information"/>
+                                               />
 
                             <VBox styleClass="trip-editor-form-group">
-                                <Label fx:id="tripTitleLabel" text="Trip Title *" styleClass="form-label"/>
+                                <Label fx:id="tripTitleLabel" styleClass="form-label"/>
                                 <VBox fx:id="titleInputContainer"/>
                             </VBox>
 
                             <VBox styleClass="trip-editor-form-group">
-                                <Label fx:id="countriesLabel" text="Countries *" styleClass="form-label"/>
+                                <Label fx:id="countriesLabel" styleClass="form-label"/>
                                 <FlowPane fx:id="countriesFlow" styleClass="trip-editor-chip-flow"/>
                                 <HBox styleClass="trip-editor-inline-row">
                                     <VBox fx:id="countrySelectContainer" HBox.hgrow="ALWAYS"/>
                                     <Button fx:id="addCountryButton"
                                             onAction="#onAddCountry"
-                                            text="Add Country"
                                             styleClass="app-btn,app-btn-secondary,trip-editor-inline-button"/>
                                 </HBox>
                             </VBox>
 
                             <HBox styleClass="trip-editor-date-row">
                                 <VBox HBox.hgrow="ALWAYS" styleClass="trip-editor-form-group">
-                                    <Label fx:id="startDateLabel" text="Start Date" styleClass="form-label"/>
+                                    <Label fx:id="startDateLabel" styleClass="form-label"/>
                                     <VBox fx:id="startDateContainer"/>
                                 </VBox>
                                 <VBox HBox.hgrow="ALWAYS" styleClass="trip-editor-form-group">
-                                    <Label fx:id="endDateLabel" text="End Date" styleClass="form-label"/>
+                                    <Label fx:id="endDateLabel" styleClass="form-label"/>
                                     <VBox fx:id="endDateContainer"/>
                                 </VBox>
                             </HBox>
 
                             <VBox styleClass="trip-editor-form-group">
-                                <Label fx:id="descriptionLabel" text="Description" styleClass="form-label"/>
+                                <Label fx:id="descriptionLabel" styleClass="form-label"/>
                                 <VBox fx:id="descriptionInputContainer"/>
                             </VBox>
                         </VBox>
@@ -66,14 +64,13 @@
                         <VBox styleClass="page-card,trip-editor-card" spacing="16">
                             <SectionHeaderView fx:id="routesSectionHeader"
                                                iconLiteral="fth-map"
-                                               title="Planned Routes"/>
+                                               />
 
                             <FlowPane fx:id="routeListContainer" styleClass="trip-editor-routes-flow"/>
 
                             <Button fx:id="addRouteButton"
                                     maxWidth="Infinity"
                                     onAction="#onAddRoute"
-                                    text="Add Route"
                                     styleClass="app-btn,app-btn-dashed-tint,trip-editor-add-action-button"/>
 
                             <VBox fx:id="routePickerContainer"
@@ -84,7 +81,6 @@
                                 <Button fx:id="routeCreateButton"
                                         maxWidth="Infinity"
                                         onAction="#onCreateRoute"
-                                        text="Create Route"
                                         styleClass="app-btn,app-btn-tint,trip-editor-picker-create-button"/>
                             </VBox>
                         </VBox>
@@ -92,14 +88,13 @@
                         <VBox styleClass="page-card,trip-editor-card" spacing="16">
                             <SectionHeaderView fx:id="placesSectionHeader"
                                                iconLiteral="fth-map-pin"
-                                               title="Places to Visit"/>
+                                               />
 
                             <FlowPane fx:id="placesFlow" styleClass="trip-editor-places-flow"/>
 
                             <Button fx:id="addPlaceButton"
                                     maxWidth="Infinity"
                                     onAction="#onAddPlace"
-                                    text="Add Place"
                                     styleClass="app-btn,app-btn-dashed-tint,trip-editor-add-action-button"/>
 
                             <VBox fx:id="placePickerContainer"
@@ -110,7 +105,6 @@
                                 <Button fx:id="placeCreateButton"
                                         maxWidth="Infinity"
                                         onAction="#onCreatePlace"
-                                        text="Create Place"
                                         styleClass="app-btn,app-btn-tint,trip-editor-picker-create-button"/>
                             </VBox>
                         </VBox>
@@ -119,33 +113,28 @@
                     <VBox styleClass="trip-editor-side-column">
                         <VBox styleClass="page-card,trip-editor-card,trip-editor-upload-card" spacing="14">
                             <ImageUploadPanelView fx:id="imageUploadPanel"
-                                                  sectionIconLiteral="fth-image"
-                                                  sectionTitle="Cover Image"
-                                                  uploadTitle="Click to upload&#10;or drag and drop"
-                                                  uploadSubtitle="SVG, PNG, JPEG"/>
+                                                  sectionIconLiteral="fth-image"/>
                         </VBox>
 
                         <VBox styleClass="page-card,trip-editor-card" spacing="18">
                             <SectionHeaderView fx:id="metaSectionHeader"
                                                iconLiteral="fth-tag"
-                                               title="Categories &amp; Tags"/>
+                                               />
 
                             <VBox styleClass="trip-editor-form-group">
-                                <Label fx:id="categoryLabel" text="Category" styleClass="form-label"/>
+                                <Label fx:id="categoryLabel" styleClass="form-label"/>
                                 <VBox fx:id="categorySelectContainer"/>
                             </VBox>
 
                             <VBox styleClass="trip-editor-form-group">
-                                <Label fx:id="tagsLabel" text="Tags" styleClass="form-label"/>
+                                <Label fx:id="tagsLabel" styleClass="form-label"/>
                                 <TagPickerItem fx:id="tagPickerInput"
                                                placeholderKey="trip.add.select.tag"
                                                popupTitleKey="trip.add.tag.popupTitle"/>
                             </VBox>
                         </VBox>
 
-                        <EditorActionButtonsView fx:id="actionButtonsView"
-                                                 primaryTextKey="trip.add.action.save"
-                                                 secondaryTextKey="trip.add.action.discard"/>
+                        <VBox fx:id="actionButtonsContainer" spacing="12"/>
                     </VBox>
                 </FlowPane>
             </VBox>

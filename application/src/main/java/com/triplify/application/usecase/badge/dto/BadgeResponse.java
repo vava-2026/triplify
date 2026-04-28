@@ -1,7 +1,7 @@
 package com.triplify.application.usecase.badge.dto;
 
-import com.triplify.application.localization.LocalizedDescription;
-import com.triplify.application.localization.LocalizedName;
+import com.triplify.application.shared.localization.LocalizedDescription;
+import com.triplify.application.shared.localization.LocalizedName;
 import com.triplify.application.usecase.badgegroup.dto.BadgeGroupType;
 import com.triplify.application.usecase.image.dto.ImageResponse;
 import com.triplify.domain.model.Badge;

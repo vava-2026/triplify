@@ -1,7 +1,7 @@
 package com.triplify.ui.error;
 
 import com.google.inject.Inject;
-import com.triplify.application.error.ApplicationError;
+import com.triplify.application.shared.error.ApplicationError;
 import com.triplify.domain.error.AppError;
 import com.triplify.domain.error.CountryError;
 import com.triplify.domain.error.FieldViolation;

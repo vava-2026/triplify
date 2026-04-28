@@ -1,6 +1,6 @@
 package com.triplify.application.usecase.place.dto;
 
-import com.triplify.application.error.ValidationMessage;
+import com.triplify.application.shared.error.ValidationMessage;
 import com.triplify.application.usecase.dto.DtoConstraints;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;

@@ -37,9 +37,9 @@ CREATE TABLE users (
 
 CREATE TABLE emotions (
     id         TEXT NOT NULL PRIMARY KEY,
-    created_by TEXT NOT NULL
+    created_by TEXT
       REFERENCES users(id)
-          ON DELETE RESTRICT ON UPDATE CASCADE,
+          ON DELETE SET NULL ON UPDATE CASCADE,
     name       TEXT NOT NULL UNIQUE COLLATE NOCASE,
     name_sk    TEXT NOT NULL UNIQUE COLLATE NOCASE,
     emoji_unicode TEXT NOT NULL
@@ -88,7 +88,7 @@ CREATE TABLE places (
     id             TEXT NOT NULL PRIMARY KEY,
     user_id        TEXT NOT NULL
         REFERENCES users(id)
-            ON DELETE RESTRICT ON UPDATE CASCADE,
+            ON DELETE CASCADE ON UPDATE CASCADE,
     country_id     TEXT NOT NULL
         REFERENCES countries(id)
             ON DELETE RESTRICT ON UPDATE CASCADE,
@@ -115,7 +115,7 @@ CREATE TABLE trips (
     id          TEXT NOT NULL PRIMARY KEY,
     user_id     TEXT NOT NULL
        REFERENCES users(id)
-           ON DELETE RESTRICT ON UPDATE CASCADE,
+           ON DELETE CASCADE ON UPDATE CASCADE,
     category_id TEXT
        REFERENCES categories(id)
            ON DELETE SET NULL ON UPDATE CASCADE,
@@ -142,7 +142,7 @@ CREATE TABLE routes (
     id             TEXT NOT NULL PRIMARY KEY,
     user_id        TEXT NOT NULL
         REFERENCES users(id)
-            ON DELETE RESTRICT ON UPDATE CASCADE,
+            ON DELETE CASCADE ON UPDATE CASCADE,
     cover_image_id TEXT
         REFERENCES images(id)
             ON DELETE SET NULL ON UPDATE CASCADE,
@@ -164,7 +164,7 @@ CREATE TABLE trip_routes (
          ON DELETE CASCADE ON UPDATE CASCADE,
     route_id   TEXT    NOT NULL
      REFERENCES routes(id)
-         ON DELETE RESTRICT ON UPDATE CASCADE,
+         ON DELETE CASCADE ON UPDATE CASCADE,
     "order"    INTEGER NOT NULL DEFAULT 0 CHECK ("order" >= 0),
     status     TEXT    NOT NULL DEFAULT 'planned'
      CHECK (status IN ('planned', 'ongoing', 'visited', 'canceled')),
@@ -188,7 +188,7 @@ CREATE TABLE trip_places (
          ON DELETE CASCADE ON UPDATE CASCADE,
     place_id   TEXT NOT NULL
      REFERENCES places(id)
-         ON DELETE RESTRICT ON UPDATE CASCADE,
+         ON DELETE CASCADE ON UPDATE CASCADE,
     visit_date TEXT CHECK (visit_date IS NULL OR datetime(visit_date) IS NOT NULL),  -- added per ERD
     created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
      CHECK (datetime(created_at) IS NOT NULL),
@@ -207,7 +207,7 @@ CREATE TABLE route_places (
           ON DELETE CASCADE ON UPDATE CASCADE,
     place_id   TEXT    NOT NULL
       REFERENCES places(id)
-          ON DELETE RESTRICT ON UPDATE CASCADE,
+          ON DELETE CASCADE ON UPDATE CASCADE,
     "order"    INTEGER NOT NULL DEFAULT 0 CHECK ("order" >= 0),
     created_at TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
       CHECK (datetime(created_at) IS NOT NULL),
@@ -223,7 +223,7 @@ CREATE TABLE stories (
     id             TEXT NOT NULL PRIMARY KEY,
     user_id        TEXT NOT NULL
      REFERENCES users(id)
-         ON DELETE RESTRICT ON UPDATE CASCADE,
+         ON DELETE CASCADE ON UPDATE CASCADE,
     trip_id        TEXT
      REFERENCES trips(id)
          ON DELETE SET NULL ON UPDATE CASCADE,
@@ -381,63 +381,6 @@ CREATE TABLE story_images (
     PRIMARY KEY (story_id, image_id)
 );
 CREATE INDEX idx_story_images_story_id ON story_images(story_id);
-
--- Updated_at triggers
-CREATE TRIGGER trg_users_updated_at
-    AFTER UPDATE ON users FOR EACH ROW
-    WHEN OLD.updated_at = NEW.updated_at
-BEGIN
-    UPDATE users SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
-    WHERE id = OLD.id;
-END;
-
-CREATE TRIGGER trg_places_updated_at
-    AFTER UPDATE ON places FOR EACH ROW
-    WHEN OLD.updated_at = NEW.updated_at
-BEGIN
-    UPDATE places SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
-    WHERE id = OLD.id;
-END;
-
-CREATE TRIGGER trg_trips_updated_at
-    AFTER UPDATE ON trips FOR EACH ROW
-    WHEN OLD.updated_at = NEW.updated_at
-BEGIN
-    UPDATE trips SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
-    WHERE id = OLD.id;
-END;
-
-CREATE TRIGGER trg_routes_updated_at
-    AFTER UPDATE ON routes FOR EACH ROW
-    WHEN OLD.updated_at = NEW.updated_at
-BEGIN
-    UPDATE routes SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
-    WHERE id = OLD.id;
-END;
-
-CREATE TRIGGER trg_trip_routes_updated_at
-    AFTER UPDATE ON trip_routes FOR EACH ROW
-    WHEN OLD.updated_at = NEW.updated_at
-BEGIN
-    UPDATE trip_routes SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
-    WHERE id = OLD.id;
-END;
-
-CREATE TRIGGER trg_trip_places_updated_at
-    AFTER UPDATE ON trip_places FOR EACH ROW
-    WHEN OLD.updated_at = NEW.updated_at
-BEGIN
-    UPDATE trip_places SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
-    WHERE id = OLD.id;
-END;
-
-CREATE TRIGGER trg_route_places_updated_at
-    AFTER UPDATE ON route_places FOR EACH ROW
-    WHEN OLD.updated_at = NEW.updated_at
-BEGIN
-    UPDATE route_places SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
-    WHERE id = OLD.id;
-END;
 
 -- SpatiaLite triggers for updating internal column for Places table
 CREATE TRIGGER trg_places_geom_insert

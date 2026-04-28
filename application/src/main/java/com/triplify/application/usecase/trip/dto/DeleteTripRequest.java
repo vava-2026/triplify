@@ -1,6 +1,6 @@
 package com.triplify.application.usecase.trip.dto;
 
-import com.triplify.application.error.ValidationMessage;
+import com.triplify.application.shared.error.ValidationMessage;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.UUID;

@@ -14,6 +14,27 @@
     -fx-graphic-text-gap: 6;
 }
 
+.app-btn-size-small {
+    -fx-font-size: 13px;
+    -fx-padding: 8 16 8 16;
+    -fx-min-height: 34;
+    -fx-pref-height: 34;
+}
+
+.app-btn-size-middle {
+    -fx-font-size: 14px;
+    -fx-padding: 10 20 10 20;
+    -fx-min-height: 40;
+    -fx-pref-height: 40;
+}
+
+.app-btn-size-big {
+    -fx-font-size: 16px;
+    -fx-padding: 0 20 0 20;
+    -fx-min-height: 52;
+    -fx-pref-height: 52;
+}
+
 .app-btn:disabled {
     -fx-opacity: 0.45;
     -fx-cursor:  default;
@@ -127,6 +148,42 @@
     -fx-background-color: -color-primary-light;
 }
 
+.app-btn-white {
+    -fx-background-color: -color-btn-white-bg;
+    -fx-border-color: transparent;
+    -fx-text-fill: -color-btn-white-text;
+}
+
+.app-btn-white .app-btn-icon {
+    -fx-icon-color: -color-btn-white-text;
+}
+
+.app-btn-white:hover {
+    -fx-background-color: -color-btn-white-hover;
+}
+
+.app-btn-white:pressed {
+    -fx-background-color: -color-btn-white-pressed;
+}
+
+.app-btn-white-muted {
+    -fx-background-color: -color-btn-white-muted-bg;
+    -fx-border-color: transparent;
+    -fx-text-fill: -color-btn-white-text;
+}
+
+.app-btn-white-muted .app-btn-icon {
+    -fx-icon-color: -color-btn-white-text;
+}
+
+.app-btn-white-muted:hover {
+    -fx-background-color: -color-btn-white-muted-hover;
+}
+
+.app-btn-white-muted:pressed {
+    -fx-background-color: -color-btn-white-muted-pressed;
+}
+
 .app-btn-tint {
     -fx-background-color: -color-primary-light;
     -fx-border-color: transparent;
@@ -187,6 +244,8 @@
 
 .app-btn-secondary .app-btn-spinner,
 .app-btn-ghost     .app-btn-spinner,
+.app-btn-white     .app-btn-spinner,
+.app-btn-white-muted .app-btn-spinner,
 .app-btn-tint      .app-btn-spinner,
 .app-btn-dashed-tint .app-btn-spinner {
     -fx-progress-color: -color-primary;

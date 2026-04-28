@@ -2,6 +2,7 @@ package com.triplify.ui.shared.component.search.model;
 
 import com.triplify.ui.shared.component.select.entry.model.Entry;
 import com.triplify.ui.shared.component.search.model.SearchDisplayMode;
+import com.triplify.ui.shared.model.AppComponentSize;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.util.Localization;
 import javafx.beans.property.SimpleStringProperty;
@@ -24,7 +25,7 @@ public class Search<T> {
     @Getter private final boolean searchOnTyping;
     @Getter private final boolean showOnEmptyQuery;
     @Getter private final double loadMoreThreshold;
-    @Getter private final SearchSize size;
+    @Getter private final AppComponentSize size;
     @Getter private final SearchDisplayMode displayMode;
     @Getter private final Consumer<Entry<T>> onResultSelected;
     @Getter private final FieldVariant variant;
@@ -87,7 +88,7 @@ public class Search<T> {
         static private final int DEFAULT_MAX_RESULTS = 0;
         static private final int DEFAULT_MAX_VISIBLE_RESULTS = 0;
         static private final double DEFAULT_LOAD_MORE_THRESHOLD = 0.82;
-        static private final SearchSize DEFAULT_SIZE = SearchSize.SMALL;
+        static private final AppComponentSize DEFAULT_SIZE = AppComponentSize.SMALL;
         static private final SearchDisplayMode DEFAULT_DISPLAY_MODE = SearchDisplayMode.POPUP;
         static private final FieldVariant DEFAULT_VARIANT = FieldVariant.FILLED;
 
@@ -103,7 +104,7 @@ public class Search<T> {
         private boolean searchOnTyping = true;
         private boolean showOnEmptyQuery = false;
         private double loadMoreThreshold = DEFAULT_LOAD_MORE_THRESHOLD;
-        private SearchSize size = DEFAULT_SIZE;
+        private AppComponentSize size = DEFAULT_SIZE;
         private Function<String, List<Entry<T>>> loadMoreFunction;
 
         private Builder(Function<String, List<Entry<T>>> searchFunction) {
@@ -151,7 +152,7 @@ public class Search<T> {
             return this;
         }
 
-        public Builder<T> size(SearchSize size) {
+        public Builder<T> size(AppComponentSize size) {
             this.size = size == null ? DEFAULT_SIZE : size;
             return this;
         }

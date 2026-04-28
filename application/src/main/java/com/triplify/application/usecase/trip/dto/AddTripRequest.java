@@ -1,6 +1,6 @@
 package com.triplify.application.usecase.trip.dto;
 
-import com.triplify.application.error.ValidationMessage;
+import com.triplify.application.shared.error.ValidationMessage;
 import com.triplify.application.usecase.dto.DtoConstraints;
 import com.triplify.domain.model.enums.StatusEnum;
 import jakarta.validation.constraints.NotBlank;
@@ -23,12 +23,17 @@ public record AddTripRequest(
 
         @Size(max = DtoConstraints.DESCRIPTION_MAX_LENGTH, message = ValidationMessage.Constants.DESCRIPTION_TOO_LONG)
         String description,
+
         @NotNull(message = ValidationMessage.Constants.REQUIRED)
         StatusEnum status,
+
         Instant startedAt,
         Instant endedAt,
         Set<UUID> tagIds,
-        Set<Path> images,
+        Path coverImage,
+
+        @NotNull(message = ValidationMessage.Constants.REQUIRED)
+        @Size(min = 1, message = ValidationMessage.Constants.AT_LEAST_ONE_COUNTRY_REQUIRED)
         Set<UUID> countryIds
 ) {
 }

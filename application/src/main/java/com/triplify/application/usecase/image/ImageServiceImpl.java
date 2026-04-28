@@ -1,7 +1,7 @@
 package com.triplify.application.usecase.image;
 
 import com.google.inject.Inject;
-import com.triplify.application.error.ApplicationError;
+import com.triplify.application.shared.error.ApplicationError;
 import com.triplify.application.usecase.image.dto.AddImageRequest;
 import com.triplify.application.usecase.image.dto.DeleteImageRequest;
 import com.triplify.application.usecase.image.dto.GetImageByIdRequest;
@@ -53,7 +53,7 @@ public class ImageServiceImpl implements ImageService {
             image.updateDescription(request.description());
             imageRepository.save(image);
             log.info("Image added: id={}", image.getId());
-            return Result.ok(toResponse(image));
+            return Result.ok(ImageResponse.from(image));
         } catch (RuntimeException e) {
             log.error("Failed to add image from path '{}'", sourcePath, e);
             return Result.fail(new ApplicationError.StorageFailure("addImage", e));
@@ -65,7 +65,7 @@ public class ImageServiceImpl implements ImageService {
         UUID id = request.id();
 
         return imageRepository.findById(id)
-                .map(image -> Result.ok(toResponse(image)))
+                .map(image -> Result.ok(ImageResponse.from(image)))
                 .orElseGet(() -> Result.fail(new ImageError.NotFound(id.toString())));
     }
 
@@ -85,7 +85,7 @@ public class ImageServiceImpl implements ImageService {
                     filter != null ? filter.uploadedTo() : null,
                     orderBy != null && orderBy.uploadTimeAsc()
             );
-            return Result.ok(page.map(this::toResponse));
+            return Result.ok(page.map(ImageResponse::from));
         } catch (RuntimeException e) {
             log.error("Failed to query images", e);
             return Result.fail(new ApplicationError.StorageFailure("getImages", e));
@@ -137,7 +137,7 @@ public class ImageServiceImpl implements ImageService {
             }
 
             log.info("Image updated: id={}", image.getId());
-            return Result.ok(toResponse(image));
+            return Result.ok(ImageResponse.from(image));
         } catch (RuntimeException e) {
             // Best-effort rollback for newly stored replacement file.
             if (newStoredPath != null) {
@@ -250,14 +250,5 @@ public class ImageServiceImpl implements ImageService {
         int dot = filename.lastIndexOf('.');
         if (dot < 0 || dot == filename.length() - 1) return "";
         return filename.substring(dot + 1).toLowerCase(Locale.ROOT);
-    }
-
-    private ImageResponse toResponse(Image image) {
-        return new ImageResponse(
-                image.getId(),
-                image.getUrl(),
-                image.getDescription(),
-                image.getUploadedAt()
-        );
     }
 }

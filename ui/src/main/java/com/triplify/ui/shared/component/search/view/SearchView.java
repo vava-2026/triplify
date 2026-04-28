@@ -4,9 +4,10 @@ import com.triplify.ui.shared.component.select.entry.model.Entry;
 import com.triplify.ui.shared.component.select.entry.view.EntryCell;
 import com.triplify.ui.shared.component.search.model.Search;
 import com.triplify.ui.shared.component.search.model.SearchDisplayMode;
-import com.triplify.ui.shared.component.search.model.SearchSize;
+import com.triplify.ui.shared.model.AppComponentSize;
 import com.triplify.ui.shared.model.FieldVariant;
 import javafx.animation.PauseTransition;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -17,6 +18,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -33,6 +35,7 @@ import java.util.List;
 public class SearchView<T> extends VBox {
 
     private static final double ROW_HEIGHT = 32.0;
+    private static final String ERROR_STYLE_CLASS = "search-has-error";
 
     @FXML @Getter private TextField searchField;
     @FXML private HBox searchBox;
@@ -48,7 +51,7 @@ public class SearchView<T> extends VBox {
     private PauseTransition debounce;
 
     private FieldVariant lastVariant = null;
-    private SearchSize lastSize = null;
+    private AppComponentSize lastSize = null;
     private boolean isFocused = false;
     private ScrollBar verticalScrollBar;
     private String activeQuery = "";
@@ -165,7 +168,7 @@ public class SearchView<T> extends VBox {
         }
 
         if (getScene() != null && getScene().getRoot() != null) {
-            getScene().getRoot().requestFocus();
+            Platform.runLater(() -> getScene().getRoot().requestFocus());
         }
     }
 
@@ -179,6 +182,7 @@ public class SearchView<T> extends VBox {
         debounce.setOnFinished(e -> runSearch(searchField.getText()));
 
         searchField.textProperty().addListener((obs, oldValue, newValue) -> {
+            clearError();
             if (model.isSearchOnTyping()) {
                 debounce.playFromStart();
             }
@@ -223,6 +227,8 @@ public class SearchView<T> extends VBox {
         String normalizedQuery = query == null ? "" : query.trim();
         activeQuery = normalizedQuery;
 
+        List<Entry<T>> results = model.search(normalizedQuery);
+
         if (normalizedQuery.isEmpty() && !model.isShowOnEmptyQuery()) {
             resultsListView.getSelectionModel().clearSelection();
             resultsListView.getItems().clear();
@@ -230,7 +236,6 @@ public class SearchView<T> extends VBox {
             return;
         }
 
-        List<Entry<T>> results = model.search(normalizedQuery);
         resultsListView.getSelectionModel().clearSelection();
         resultsListView.getItems().setAll(results);
         updateListViewHeight();
@@ -324,24 +329,25 @@ public class SearchView<T> extends VBox {
         };
     }
 
-    private void applySize(SearchSize size) {
+    private void applySize(AppComponentSize size) {
         if (lastSize == size) return;
         if (lastSize != null) {
             String cls = toStyleClass(lastSize);
             getStyleClass().remove(cls);
             popupContent.getStyleClass().remove(cls);
         }
-        SearchSize effective = size == null ? SearchSize.SMALL : size;
+        AppComponentSize effective = size == null ? AppComponentSize.SMALL : size;
         String cls = toStyleClass(effective);
         getStyleClass().add(cls);
         popupContent.getStyleClass().add(cls);
         lastSize = effective;
     }
 
-    private static String toStyleClass(SearchSize size) {
+    private static String toStyleClass(AppComponentSize size) {
         return switch (size) {
             case SMALL -> "app-search-size-small";
             case MIDDLE -> "app-search-size-middle";
+            case BIG -> "app-search-size-big";
         };
     }
 
@@ -378,5 +384,19 @@ public class SearchView<T> extends VBox {
         resultsListView.setVisible(true);
         resultsListView.setManaged(true);
         showPopup();
+    }
+
+    public void showError(String message) {
+        if (!getStyleClass().contains(ERROR_STYLE_CLASS)) {
+            getStyleClass().add(ERROR_STYLE_CLASS);
+        }
+        if (message != null && !message.isBlank()) {
+            searchField.setTooltip(new Tooltip(message));
+        }
+    }
+
+    public void clearError() {
+        getStyleClass().remove(ERROR_STYLE_CLASS);
+        searchField.setTooltip(null);
     }
 }

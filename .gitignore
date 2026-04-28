@@ -19,7 +19,8 @@ build/
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
-
+*.md
+!README.md
 ### Eclipse ###
 .apt_generated
 .classpath

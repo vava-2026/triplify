@@ -1,7 +1,7 @@
 package com.triplify.application.usecase.badgegroup.dto;
 
-import com.triplify.application.localization.LocalizedDescription;
-import com.triplify.application.localization.LocalizedName;
+import com.triplify.application.shared.localization.LocalizedDescription;
+import com.triplify.application.shared.localization.LocalizedName;
 import com.triplify.domain.model.BadgeGroup;
 
 import java.util.UUID;
