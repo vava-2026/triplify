@@ -278,10 +278,8 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         }
 
         RouterArgument args = new RouterArgument();
-        args.addArgument("tripId", UUID.randomUUID().toString());
-        args.addArgument("tripName", route.title() == null ? "" : route.title());
         args.addArgument("routeId", route.id().toString());
-        getRouter().moveto(RouteIds.ADD_ROUTE, args);
+        getRouter().moveto(RouteIds.ROUTE_DETAILS, args);
     }
 
     private String imagePath(PlaceResponse place) {
