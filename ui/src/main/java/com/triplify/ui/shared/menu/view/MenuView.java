@@ -156,7 +156,7 @@ public class MenuView implements Initializable {
         avatarImageView.setClip(new Circle(19, 19, 19));
 
         if (currentUser.avatarImageId() != null) {
-            var avatarResult = imageService.getImageById(new GetImageByIdRequest(currentUser.avatarImageId().toString()));
+            var avatarResult = imageService.getImageById(new GetImageByIdRequest(currentUser.avatarImageId()));
             avatarResult.onSuccess(image -> applyAvatarImage(image.url()));
             avatarResult.onFailure(error -> {
                 log.debug("Avatar image not available for user '{}'", username);

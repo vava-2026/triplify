@@ -1,8 +1,8 @@
 package com.triplify.application.usecase.user;
 
 import com.google.inject.Inject;
-import com.triplify.application.error.ApplicationError;
 import com.triplify.application.security.Authenticated;
+import com.triplify.application.shared.error.ApplicationError;
 import com.triplify.application.usecase.image.ImageService;
 import com.triplify.application.usecase.image.dto.AddImageRequest;
 import com.triplify.application.usecase.image.dto.ImageResponse;
@@ -81,7 +81,7 @@ public class UserServiceImpl implements UserService {
 
         ImageResponse image = imageResult.getValue();
 
-        user.updateAvatar(java.util.UUID.fromString(image.id()));
+        user.updateAvatar(image.id());
         userRepository.update(user);
 
         log.info("Updated avatar for user id='{}'", user.getId());
