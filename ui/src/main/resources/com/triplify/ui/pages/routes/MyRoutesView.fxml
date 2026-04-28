@@ -9,18 +9,14 @@
 
 <StackPane xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
-           fx:controller="com.triplify.ui.pages.trips.MyTripsController"
+           fx:controller="com.triplify.ui.pages.routes.MyRoutesController"
            styleClass="page-root">
     <VBox spacing="16">
-        <FlowPane styleClass="trips-toolbar">
-            <VBox fx:id="countryFilterContainer" prefWidth="170"/>
-            <VBox fx:id="categorySelectContainer" prefWidth="130"/>
-            <VBox fx:id="tagSelectContainer" prefWidth="120"/>
-            <VBox fx:id="statusSelectContainer" prefWidth="130"/>
-            <VBox fx:id="startTimeSelectContainer" prefWidth="150"/>
+        <FlowPane hgap="10" vgap="10" alignment="CENTER_LEFT">
+            <VBox fx:id="searchContainer" prefWidth="240"/>
             <HBox styleClass="trips-sort">
                 <Label fx:id="sortByLabel" styleClass="trips-sort-label"/>
-                <VBox fx:id="sortSelectContainer" prefWidth="150"/>
+                <VBox fx:id="sortSelectContainer" prefWidth="160"/>
             </HBox>
         </FlowPane>
 

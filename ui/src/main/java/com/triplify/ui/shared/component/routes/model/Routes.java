@@ -66,7 +66,7 @@ public class Routes {
         try {
             String nameFilter = activeQuery.isBlank() ? null : activeQuery;
             GetRoutesRequest.Filter filter = nameFilter == null ? null : new GetRoutesRequest.Filter(nameFilter);
-            var request = new GetRoutesRequest(new PageRequest(nextPage, pageSize), filter);
+            var request = new GetRoutesRequest(new PageRequest(nextPage, pageSize), filter, null);
             var result = routeService.getRoutes(request);
             result.onSuccess(page -> {
                 entries.addAll(page.items());

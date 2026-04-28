@@ -12,6 +12,7 @@ import com.triplify.application.usecase.trip.TripService;
 import com.triplify.application.usecase.trip.dto.TripResponse;
 import com.triplify.domain.model.enums.StatusEnum;
 import com.triplify.domain.pagination.PageRequest;
+import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.shared.component.categories.model.Categories;
 import com.triplify.ui.shared.component.card_grid.CardGridPane;
@@ -22,13 +23,13 @@ import com.triplify.ui.shared.component.select.model.Select;
 import com.triplify.ui.shared.component.select.view.SelectView;
 import com.triplify.ui.shared.component.trip.view.TripCardView;
 import com.triplify.ui.shared.model.FieldVariant;
+import com.triplify.ui.shared.util.Localization;
 
 import static com.triplify.ui.shared.util.DisplayUtils.*;
 
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -49,17 +50,23 @@ public class MyTripsController extends SimpleLifecycleAwareController {
     @FXML private VBox countryFilterContainer;
     @FXML private VBox categorySelectContainer;
     @FXML private VBox tagSelectContainer;
-    @FXML private ComboBox<String> statusSelect;
-    @FXML private ComboBox<String> startTimeSelect;
+    @FXML private VBox statusSelectContainer;
+    @FXML private VBox startTimeSelectContainer;
+    @FXML private Label sortByLabel;
+    @FXML private VBox sortSelectContainer;
     @FXML private CardGridPane<TripResponse> cardGrid;
 
     @Inject private TripService tripService;
     @Inject private CountryService countryService;
     @Inject private CategoryService categoryService;
     @Inject private TagService tagService;
+
     private Categories categoriesComponent;
     private Select<String> categorySelectModel;
     private Select<String> tagSelectModel;
+    private Select<StatusEnum> statusSelectModel;
+    private Select<String> startTimeSelectModel;
+    private Select<Boolean> sortByModel;
     private CountriesView countryFilterView;
     private List<CategoryResponse> availableCategories = List.of();
 
@@ -101,24 +108,52 @@ public class MyTripsController extends SimpleLifecycleAwareController {
         categoriesComponent = Categories.builder(categoryService).build();
         categorySelectModel = createCategorySelectModel(loadCategoryFilterEntries(), "Category");
         tagSelectModel = createSelectModelFromValues(loadTagFilterValues(), "Tags");
-        statusSelect.setItems(javafx.collections.FXCollections.observableArrayList(
-                "All",
-                StatusEnum.VISITED.getLabel(),
-                StatusEnum.PLANNED.getLabel(),
-                StatusEnum.ONGOING.getLabel(),
-                StatusEnum.CANCELED.getLabel()
-        ));
-        startTimeSelect.setItems(javafx.collections.FXCollections.observableArrayList(
-                "Any time", "Next 30 days", "Next 6 months", "Next year"
-        ));
 
-        statusSelect.getSelectionModel().selectFirst();
-        startTimeSelect.getSelectionModel().selectFirst();
+        statusSelectModel = Select.<StatusEnum>builder()
+                .placeholder(I18n.t("trips.filter.status"))
+                .variant(FieldVariant.FILLED)
+                .items(List.of(
+                        Entry.builder((StatusEnum) null, Localization.textBinding("trips.filter.all")).build(),
+                        Entry.builder(StatusEnum.PLANNED, Localization.textBinding("trip.status.planned")).build(),
+                        Entry.builder(StatusEnum.ONGOING, Localization.textBinding("trip.status.ongoing")).build(),
+                        Entry.builder(StatusEnum.VISITED, Localization.textBinding("trip.status.visited")).build(),
+                        Entry.builder(StatusEnum.CANCELED, Localization.textBinding("trip.status.canceled")).build()
+                ))
+                .build();
+
+        startTimeSelectModel = Select.<String>builder()
+                .placeholder(I18n.t("trips.filter.startTime"))
+                .variant(FieldVariant.FILLED)
+                .items(List.of(
+                        Entry.builder((String) null, Localization.textBinding("trips.filter.time.anyTime")).build(),
+                        Entry.builder("next30days", Localization.textBinding("trips.filter.time.next30days")).build(),
+                        Entry.builder("next6months", Localization.textBinding("trips.filter.time.next6months")).build(),
+                        Entry.builder("nextYear", Localization.textBinding("trips.filter.time.nextYear")).build()
+                ))
+                .build();
+
+        sortByModel = Select.<Boolean>builder()
+                .placeholder(I18n.t("trips.sort.newestFirst"))
+                .variant(FieldVariant.FILLED)
+                .items(List.of(
+                        Entry.builder(false, Localization.textBinding("trips.sort.newestFirst")).build(),
+                        Entry.builder(true, Localization.textBinding("trips.sort.oldestFirst")).build()
+                ))
+                .build();
+
         selectFirst(categorySelectModel);
         selectFirst(tagSelectModel);
+        selectFirst(statusSelectModel);
+        selectFirst(startTimeSelectModel);
+        selectFirst(sortByModel);
 
         categorySelectContainer.getChildren().setAll(createFilterSelectView(categorySelectModel, 130));
         tagSelectContainer.getChildren().setAll(createFilterSelectView(tagSelectModel, 120));
+        statusSelectContainer.getChildren().setAll(createFilterSelectView(statusSelectModel, 130));
+        startTimeSelectContainer.getChildren().setAll(createFilterSelectView(startTimeSelectModel, 150));
+        sortSelectContainer.getChildren().setAll(createFilterSelectView(sortByModel, 150));
+
+        Localization.bindText(sortByLabel.textProperty(), "trips.sort.label");
     }
 
     private void configureGrid() {
@@ -134,26 +169,34 @@ public class MyTripsController extends SimpleLifecycleAwareController {
     private void attachListeners() {
         categorySelectModel.selectedItemProperty().addListener((obs, oldV, newV) -> cardGrid.refresh());
         tagSelectModel.selectedItemProperty().addListener((obs, oldV, newV) -> cardGrid.refresh());
-        statusSelect.valueProperty().addListener((obs, oldV, newV) -> cardGrid.refresh());
-        startTimeSelect.valueProperty().addListener((obs, oldV, newV) -> cardGrid.refresh());
+        statusSelectModel.selectedItemProperty().addListener((obs, oldV, newV) -> cardGrid.refresh());
+        startTimeSelectModel.selectedItemProperty().addListener((obs, oldV, newV) -> cardGrid.refresh());
+        sortByModel.selectedItemProperty().addListener((obs, oldV, newV) -> cardGrid.refresh());
     }
 
     private CardGridPane.PageResult<TripResponse> loadTripsPage(int page, int pageSize) {
-        StatusEnum statusFilter = StatusEnum.fromLabel(statusSelect.getValue());
+        StatusEnum statusFilter = statusSelectModel.getSelectedItem() != null
+                ? statusSelectModel.getSelectedItem().getValue()
+                : null;
 
         Instant now = Instant.now();
         Instant startedFrom = null;
         Instant startedTo = null;
-        String startTimeFilter = normalizeStartTime(startTimeSelect.getValue());
-        if (startTimeFilter != null) {
+        String startTimeKey = startTimeSelectModel.getSelectedItem() != null
+                ? startTimeSelectModel.getSelectedItem().getValue()
+                : null;
+        if (startTimeKey != null) {
             startedFrom = now;
-            startedTo = switch (startTimeFilter) {
-                case "Next 30 days" -> now.plusSeconds(30L * 24 * 60 * 60);
-                case "Next 6 months" -> now.plusSeconds(183L * 24 * 60 * 60);
-                case "Next year" -> now.plusSeconds(365L * 24 * 60 * 60);
+            startedTo = switch (startTimeKey) {
+                case "next30days" -> now.plusSeconds(30L * 24 * 60 * 60);
+                case "next6months" -> now.plusSeconds(183L * 24 * 60 * 60);
+                case "nextYear" -> now.plusSeconds(365L * 24 * 60 * 60);
                 default -> null;
             };
         }
+
+        boolean sortAsc = sortByModel.getSelectedItem() != null
+                && Boolean.TRUE.equals(sortByModel.getSelectedItem().getValue());
 
         var request = new com.triplify.application.usecase.trip.dto.GetTripsRequest(
                 new PageRequest(Math.max(0, page - 1), pageSize),
@@ -166,7 +209,7 @@ public class MyTripsController extends SimpleLifecycleAwareController {
                         startedFrom,
                         startedTo
                 ),
-                new com.triplify.application.usecase.trip.dto.GetTripsRequest.OrderBy(false)
+                new com.triplify.application.usecase.trip.dto.GetTripsRequest.OrderBy(sortAsc)
         );
 
         var result = tripService.getTrips(request);
@@ -212,15 +255,8 @@ public class MyTripsController extends SimpleLifecycleAwareController {
 
     private void openTrip(TripResponse trip) {
         RouterArgument args = new RouterArgument();
-        args.addArgument("tripId", trip.id());
-        args.addArgument("tripStatus", trip.status());
-        getRouter().moveto(RouteIds.ADD_TRIP, args);
-    }
-
-    private boolean matchesText(String actual, String expected) {
-        if (expected == null || expected.isBlank()) return true;
-        if (actual == null) return false;
-        return actual.toLowerCase(Locale.ROOT).contains(expected.toLowerCase(Locale.ROOT));
+        args.addArgument("tripId", trip.id().toString());
+        getRouter().moveto(RouteIds.TRIP_DETAILS, args);
     }
 
     private boolean matchesTag(java.util.Set<TagResponse> tags, String expected) {
@@ -237,12 +273,6 @@ public class MyTripsController extends SimpleLifecycleAwareController {
         if (value == null) return null;
         String trimmed = value.trim();
         return trimmed.equalsIgnoreCase("All") ? null : trimmed;
-    }
-
-    private String normalizeStartTime(String value) {
-        if (value == null) return null;
-        String trimmed = value.trim();
-        return trimmed.equalsIgnoreCase("Any time") ? null : trimmed;
     }
 
     private Select<String> createSelectModelFromValues(List<String> values, String placeholder) {
@@ -297,8 +327,8 @@ public class MyTripsController extends SimpleLifecycleAwareController {
         return List.copyOf(new LinkedHashSet<>(tags));
     }
 
-    private SelectView<String> createFilterSelectView(Select<String> model, double width) {
-        SelectView<String> view = new SelectView<>();
+    private <T> SelectView<T> createFilterSelectView(Select<T> model, double width) {
+        SelectView<T> view = new SelectView<>();
         view.update(model);
         view.setPrefWidth(width);
         view.setMaxWidth(width);
@@ -308,7 +338,7 @@ public class MyTripsController extends SimpleLifecycleAwareController {
         return view;
     }
 
-    private void selectFirst(Select<String> model) {
+    private <T> void selectFirst(Select<T> model) {
         if (model != null && !model.getItems().isEmpty()) {
             model.setSelectedItem(model.getItems().get(0));
         }

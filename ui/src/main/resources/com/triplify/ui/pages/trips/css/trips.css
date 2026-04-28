@@ -1,10 +1,6 @@
 .trips-toolbar {
-    -fx-spacing: 12px;
-    -fx-alignment: center-left;
-}
-
-.trips-filters {
-    -fx-spacing: 10px;
+    -fx-hgap: 10px;
+    -fx-vgap: 10px;
     -fx-alignment: center-left;
 }
 
