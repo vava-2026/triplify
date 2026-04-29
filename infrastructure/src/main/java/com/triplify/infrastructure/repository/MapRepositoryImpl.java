@@ -27,7 +27,6 @@ public class MapRepositoryImpl implements MapRepository {
     public MapRepositoryImpl() {
     }
 
-    // Sub-query fragments conditionally included based on filter
     private static final String PLACES_SUB = """
             SELECT p.id, 'PLACE' AS object_type, p.title,
                    p.latitude, p.longitude,
@@ -52,7 +51,6 @@ public class MapRepositoryImpl implements MapRepository {
                AND AVG(p.longitude) BETWEEN ? AND ?
             """;
 
-    // Stories: resolve coords via TripPlace > TripRoute centroid > Trip centroid
     private static final String STORIES_SUB = """
             SELECT s.id, 'STORY' AS object_type, s.title,
                    COALESCE(tp_pl.latitude,  tr_c.lat,  trip_c.lat)  AS latitude,
@@ -105,7 +103,6 @@ public class MapRepositoryImpl implements MapRepository {
         if (places) {
             subQueries.add(PLACES_SUB);
             params.add(userId.toString());
-            // BuildMbr expects (minX=minLon, minY=minLat, maxX=maxLon, maxY=maxLat)
             params.add(minLongitude);
             params.add(minLatitude);
             params.add(maxLongitude);

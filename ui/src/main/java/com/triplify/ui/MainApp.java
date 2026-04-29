@@ -67,7 +67,6 @@ public class MainApp extends Application {
         log.info("App launched");
         userSessionContext.load();
 
-        // Sidebar island
         FxmlLoadResult<Node, SidebarIslandView> islandResult = fxml.load("/com/triplify/ui/shared/menu/view/SidebarIsland.fxml");
         Node island = islandResult.node();
         SidebarIslandView islandView = islandResult.controller();
@@ -77,7 +76,6 @@ public class MainApp extends Application {
         islandPane.setMinWidth(MenuView.SIDEBAR_WIDTH);
         islandPane.setMaxWidth(MenuView.SIDEBAR_WIDTH);
 
-        // Sidebar menu
         FxmlLoadResult<Node, MenuView> menuResult = fxml.load("/com/triplify/ui/shared/menu/view/MenuView.fxml");
         Node menu = menuResult.node();
         MenuView menuView = menuResult.controller();
@@ -88,7 +86,6 @@ public class MainApp extends Application {
             }
         });
 
-        // Header
         FxmlLoadResult<Node, HeaderView> headerResult = fxml.load("/com/triplify/ui/shared/header/view/HeaderView.fxml");
         Node header = headerResult.node();
         HeaderView headerView = headerResult.controller();
@@ -101,7 +98,6 @@ public class MainApp extends Application {
             }
         });
 
-        // Router content area
         TriplifyRouterContext routerContext = new TriplifyRouterContext(injectorRef);
         RouterStackPane contentArea = new RouterStackPane();
 
@@ -146,7 +142,6 @@ public class MainApp extends Application {
         header.visibleProperty().bind(showHeader);
         header.managedProperty().bind(showHeader);
 
-        // Router navigation
         contentArea.routerProperty().addListener((obs, oldRouter, newRouter) -> {
             router = newRouter;
             log.info("Router initialized: {}", newRouter != null ? "ready" : "null");
@@ -171,24 +166,12 @@ public class MainApp extends Application {
         topBar.visibleProperty().bind(showIsland);
         topBar.managedProperty().bind(showIsland);
 
-        // topBar and menu float directly over the full-window content area.
-        // topBar is constrained to 70px tall by CSS; menu is constrained to
-        // SIDEBAR_WIDTH by its own preferred size — both only pick where they
-        // have actual visible content, so the rest of the window stays clickable.
         StackPane.setAlignment(topBar, Pos.TOP_LEFT);
         StackPane.setAlignment(menu, Pos.TOP_LEFT);
         StackPane.setMargin(menu, new Insets(70, 0, 0, 0));
         StackPane root = new StackPane(contentArea, topBar, menu);
         root.getStyleClass().add("app-scene-root");
 
-        // Map page: contentArea fills the full window; topBar and menu float over it.
-        // All other pages: constrain contentArea's bounds so page content lands below the
-        // topBar and to the right of the menu — replicating the old HBox reflow.
-        // Padding cannot be used because RouterStackPane overrides layoutChildren and sizes
-        // its children to fill the pane, ignoring StackPane insets. Instead we bind the
-        // pref/max size directly and use BOTTOM_RIGHT alignment so the position follows.
-        // With BOTTOM_RIGHT: x = root.width - contentArea.width = leftOffset
-        //                    y = root.height - contentArea.height = topOffset
         BooleanBinding isMapPage = Bindings.createBooleanBinding(
                 () -> {
                     AppPage page = routerContext.getCurrentPage();
@@ -211,7 +194,6 @@ public class MainApp extends Application {
 
         toastService.attach(root);
 
-        // Scene
         Scene scene = new Scene(root, 1280, 800);
 
         URL themeUrl = getClass().getResource("/com/triplify/ui/shared/css/theme.css");

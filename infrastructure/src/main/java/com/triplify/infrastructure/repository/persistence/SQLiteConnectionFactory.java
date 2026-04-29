@@ -117,7 +117,7 @@ public class SQLiteConnectionFactory {
             stmt.execute("SELECT spatialite_version()");
             return;
         } catch (SQLException ignored) {
-            // SpatiaLite is not loaded on this physical connection yet.
+
         }
 
         if (extractedBundle == null) {
@@ -151,7 +151,6 @@ public class SQLiteConnectionFactory {
         config.setIdleTimeout(120_000);
         config.setMaxLifetime(0);
 
-        // Keep defaults stable for SQLite semantics.
         config.setAutoCommit(true);
         config.setConnectionTestQuery("SELECT 1");
         config.setConnectionInitSql("PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;");
