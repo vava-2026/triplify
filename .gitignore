@@ -12,6 +12,7 @@ build/
 .idea/modules.xml
 .idea/jarRepositories.xml
 .idea/compiler.xml
+.idea/dataSources.xml
 .idea/libraries/
 *.iws
 *.iml
@@ -19,6 +20,7 @@ build/
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+
 *.md
 !README.md
 ### Eclipse ###
@@ -45,3 +47,4 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+.idea/copilotDiffState.xml

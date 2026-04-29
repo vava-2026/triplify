@@ -1,29 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.control.ComboBox?>
 <?import com.triplify.ui.shared.component.card_grid.CardGridPane?>
 
 <StackPane xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
            fx:controller="com.triplify.ui.pages.trips.MyTripsController"
            styleClass="page-root">
-    <VBox spacing="16" maxWidth="1080">
-        <Label text="My Trips" styleClass="page-title"/>
-        <Label text="Plan and review your upcoming journeys." styleClass="page-subtitle"/>
-
-        <HBox styleClass="trips-toolbar">
-            <HBox styleClass="trips-filters">
-                <VBox fx:id="countryFilterContainer" prefWidth="170"/>
-                <VBox fx:id="categorySelectContainer" prefWidth="130"/>
-                <VBox fx:id="tagSelectContainer" prefWidth="120"/>
-                <ComboBox fx:id="statusSelect" promptText="Status" styleClass="trips-filter" prefWidth="120"/>
-                <ComboBox fx:id="startTimeSelect" promptText="Start Time" styleClass="trips-filter" prefWidth="140"/>
+    <VBox spacing="16">
+        <FlowPane styleClass="trips-toolbar">
+            <VBox fx:id="countryFilterContainer" prefWidth="200"/>
+            <VBox fx:id="categorySelectContainer" prefWidth="160"/>
+            <VBox fx:id="tagSelectContainer" prefWidth="200"/>
+            <VBox fx:id="statusSelectContainer" prefWidth="160"/>
+            <VBox fx:id="startTimeSelectContainer" prefWidth="180"/>
+            <HBox styleClass="trips-sort">
+                <Label fx:id="sortByLabel" styleClass="trips-sort-label"/>
+                <VBox fx:id="sortSelectContainer" prefWidth="180"/>
             </HBox>
-        </HBox>
+        </FlowPane>
 
         <CardGridPane fx:id="cardGrid" VBox.vgrow="ALWAYS"/>
     </VBox>

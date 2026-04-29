@@ -17,16 +17,14 @@ import com.triplify.ui.map.InteractiveMap;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.shared.component.detail_actions.view.DetailActionButtonsView;
 import com.triplify.ui.shared.component.empty_state.view.EmptyStateCardView;
-import com.triplify.ui.shared.component.route.view.RouteCardView;
+import com.triplify.ui.pages.routes.view.RouteCardView;
 import com.triplify.ui.shared.component.section_header.view.SectionHeaderView;
-import com.triplify.ui.shared.component.trip.view.TripCardView;
+import com.triplify.ui.pages.trips.view.TripCardView;
 import com.triplify.ui.shared.toast.ToastService;
-import com.triplify.ui.shared.util.DisplayUtils;
 import com.triplify.ui.shared.util.EditorUtils;
 import com.triplify.ui.shared.util.Localization;
 
 import static com.triplify.ui.shared.util.DisplayUtils.*;
-import static com.triplify.ui.shared.util.EditorUtils.*;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -211,7 +209,7 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
 
         for (TripResponse trip : trips) {
             String dateRange = formatDateRange(toLocalDate(trip.startedAt()), toLocalDate(trip.endedAt()));
-            TripCardView card = TripCardView.createForDetails(
+            TripCardView card = TripCardView.create(
                     trip,
                     dateRange,
                     () -> openTrip(trip)
@@ -228,7 +226,7 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         }
 
         for (RouteResponse route : routes) {
-            RouteCardView card = RouteCardView.createForDetails(route, () -> openRoute(route));
+            RouteCardView card = RouteCardView.create(route, () -> openRoute(route));
             associatedRoutesFlow.getChildren().add((Region) card.getRoot());
         }
     }
@@ -278,10 +276,8 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         }
 
         RouterArgument args = new RouterArgument();
-        args.addArgument("tripId", UUID.randomUUID().toString());
-        args.addArgument("tripName", route.title() == null ? "" : route.title());
         args.addArgument("routeId", route.id().toString());
-        getRouter().moveto(RouteIds.ADD_ROUTE, args);
+        getRouter().moveto(RouteIds.ROUTE_DETAILS, args);
     }
 
     private String imagePath(PlaceResponse place) {
