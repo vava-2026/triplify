@@ -22,11 +22,12 @@ import com.triplify.ui.shared.util.FxmlLoaderHelper;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
-import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
@@ -177,9 +178,36 @@ public class MainApp extends Application {
         StackPane.setAlignment(topBar, Pos.TOP_LEFT);
         StackPane.setAlignment(menu, Pos.TOP_LEFT);
         StackPane.setMargin(menu, new Insets(70, 0, 0, 0));
-
         StackPane root = new StackPane(contentArea, topBar, menu);
         root.getStyleClass().add("app-scene-root");
+
+        // Map page: contentArea fills the full window; topBar and menu float over it.
+        // All other pages: constrain contentArea's bounds so page content lands below the
+        // topBar and to the right of the menu — replicating the old HBox reflow.
+        // Padding cannot be used because RouterStackPane overrides layoutChildren and sizes
+        // its children to fill the pane, ignoring StackPane insets. Instead we bind the
+        // pref/max size directly and use BOTTOM_RIGHT alignment so the position follows.
+        // With BOTTOM_RIGHT: x = root.width - contentArea.width = leftOffset
+        //                    y = root.height - contentArea.height = topOffset
+        BooleanBinding isMapPage = Bindings.createBooleanBinding(
+                () -> {
+                    AppPage page = routerContext.getCurrentPage();
+                    return page != null && RouteIds.MAP.equals(page.getRouteId());
+                },
+                routerContext.currentPageProperty());
+        var menuCollapsed = menuView.getViewModel().collapsedProperty();
+        var leftOffset = Bindings.createDoubleBinding(
+                () -> !isMapPage.get() && showMenu.get() && !menuCollapsed.get()
+                        ? MenuView.SIDEBAR_WIDTH : 0.0,
+                isMapPage, showMenu, menuCollapsed);
+        var topOffset = Bindings.createDoubleBinding(
+                () -> !isMapPage.get() && showHeader.get() ? 70.0 : 0.0,
+                isMapPage, showHeader);
+        contentArea.prefWidthProperty().bind(root.widthProperty().subtract(leftOffset));
+        contentArea.prefHeightProperty().bind(root.heightProperty().subtract(topOffset));
+        contentArea.maxWidthProperty().bind(contentArea.prefWidthProperty());
+        contentArea.maxHeightProperty().bind(contentArea.prefHeightProperty());
+        StackPane.setAlignment(contentArea, Pos.BOTTOM_RIGHT);
 
         toastService.attach(root);
 

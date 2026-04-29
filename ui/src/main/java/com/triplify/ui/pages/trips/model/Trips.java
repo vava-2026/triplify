@@ -1,4 +1,4 @@
-package com.triplify.ui.shared.component.trips.model;
+package com.triplify.ui.pages.trips.model;
 
 import com.triplify.application.usecase.trip.TripService;
 import com.triplify.application.usecase.trip.dto.GetTripsRequest;

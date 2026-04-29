@@ -13,6 +13,8 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import lombok.Setter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +26,8 @@ import java.util.function.Function;
  * @param <T> the item type
  */
 public class CardGridPane<T> extends VBox {
+
+    private static final Logger log = LoggerFactory.getLogger(CardGridPane.class);
 
     @FunctionalInterface
     public interface PageLoader<T> {
@@ -80,7 +84,7 @@ public class CardGridPane<T> extends VBox {
         scrollPane.getStyleClass().add("card-grid-scroll");
         VBox.setVgrow(scrollPane, Priority.ALWAYS);
 
-        getChildren().addAll(emptyPane, scrollPane);
+        getChildren().add(scrollPane);
 
         scrollPane.vvalueProperty().addListener((obs, oldV, newV) -> {
             if (newV != null && newV.doubleValue() >= 0.85) {
@@ -95,12 +99,10 @@ public class CardGridPane<T> extends VBox {
                 if (cols != currentColumns) {
                     currentColumns = cols;
                 }
-                relayout();
+                relayout(false);
             }
         });
     }
-
-    // ── Configuration ──
 
     public void setPageSize(int pageSize) {
         this.pageSize = Math.max(1, pageSize);
@@ -125,12 +127,6 @@ public class CardGridPane<T> extends VBox {
         pinnedNodes.add(node);
     }
 
-    public void clearPinnedNodes() {
-        pinnedNodes.clear();
-    }
-
-    // ── Data ──
-
     private final List<Node> cardNodes = new ArrayList<>();
 
     public void refresh() {
@@ -152,7 +148,8 @@ public class CardGridPane<T> extends VBox {
 
         if (items == null || items.isEmpty()) {
             hasMore = false;
-            if (page == 1 && cardNodes.isEmpty() && pinnedNodes.isEmpty()) {
+            if (page == 1 && cardNodes.isEmpty()) {
+                log.debug("No items found for page {}", page);
                 showEmpty(true);
             }
             loading = false;
@@ -165,7 +162,7 @@ public class CardGridPane<T> extends VBox {
         }
 
         updatePagination(result.pagination());
-        relayout();
+        relayout(false);
         loading = false;
         ensureScrollable();
     }
@@ -192,8 +189,6 @@ public class CardGridPane<T> extends VBox {
         });
     }
 
-    // ── Layout ──
-
     private int computeColumns(double availableWidth) {
         if (availableWidth <= 0) return 1;
         double usable = availableWidth - grid.getPadding().getLeft() - grid.getPadding().getRight();
@@ -201,7 +196,7 @@ public class CardGridPane<T> extends VBox {
         return Math.min(cols, maxColumns);
     }
 
-    private void relayout() {
+    private void relayout(boolean showEmpty) {
         grid.getChildren().clear();
         grid.getColumnConstraints().clear();
 
@@ -222,7 +217,10 @@ public class CardGridPane<T> extends VBox {
 
         List<Node> all = new ArrayList<>(pinnedNodes.size() + cardNodes.size());
         all.addAll(pinnedNodes);
-        all.addAll(cardNodes);
+        if (!showEmpty) {
+            all.addAll(cardNodes);
+        }
+        all.add(emptyPane);
 
         int row = 0;
         int col = 0;
@@ -240,7 +238,6 @@ public class CardGridPane<T> extends VBox {
     private void showEmpty(boolean show) {
         emptyPane.setVisible(show);
         emptyPane.setManaged(show);
-        scrollPane.setVisible(!show);
-        scrollPane.setManaged(!show);
+        relayout(true);
     }
 }

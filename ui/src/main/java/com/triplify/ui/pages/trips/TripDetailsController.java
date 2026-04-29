@@ -20,8 +20,7 @@ import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.shared.component.detail_actions.view.DetailActionButtonsView;
 import com.triplify.ui.shared.component.empty_state.view.EmptyStateCardView;
-import com.triplify.ui.shared.component.route.view.RouteCardView;
-import javafx.scene.layout.Priority;
+import com.triplify.ui.pages.routes.view.RouteCardView;
 import com.triplify.ui.shared.component.section_header.view.SectionHeaderView;
 import com.triplify.ui.shared.toast.ToastService;
 import com.triplify.ui.shared.util.DisplayUtils;
@@ -223,7 +222,7 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
     }
 
     private VBox buildTripRouteCard(TripRouteResponse tripRoute, UUID forTripId) {
-        RouteCardView routeCard = RouteCardView.createForDetails(
+        RouteCardView routeCard = RouteCardView.create(
                 tripRoute.route(), () -> openRoute(tripRoute.route()));
 
         ComboBox<StatusEnum> statusCombo = new ComboBox<>(

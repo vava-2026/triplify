@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
@@ -8,7 +9,7 @@
 
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.triplify.ui.shared.component.trip.view.TripCardView"
+      fx:controller="com.triplify.ui.pages.trips.view.TripCardView"
       fx:id="root"
       styleClass="trip-card">
     <StackPane fx:id="media" styleClass="trip-card-media">
@@ -16,7 +17,13 @@
     </StackPane>
     <VBox spacing="6" styleClass="trip-card-body">
         <Label fx:id="titleLabel" styleClass="trip-title"/>
-        <Label fx:id="categoryLabel" styleClass="trip-category"/>
+        <VBox fillWidth="false">
+        <HBox fx:id="categoryRow" spacing="6" alignment="CENTER_LEFT" styleClass="trip-category-row">
+            <ImageView fx:id="categoryEmojiView" fitWidth="18" fitHeight="18" preserveRatio="true"
+                       visible="false" managed="false"/>
+            <Label fx:id="categoryLabel" styleClass="trip-category-value"/>
+        </HBox>
+        </VBox>
         <HBox spacing="6" styleClass="trip-date-row">
             <FontIcon iconLiteral="fth-calendar" iconSize="14" styleClass="trip-date-icon"/>
             <Label fx:id="dateLabel" styleClass="trip-date"/>

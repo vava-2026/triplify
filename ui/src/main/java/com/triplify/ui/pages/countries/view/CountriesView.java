@@ -1,6 +1,7 @@
-package com.triplify.ui.shared.component.countries.view;
+package com.triplify.ui.pages.countries.view;
 
-import com.triplify.ui.shared.component.countries.model.Countries;
+import com.triplify.ui.i18n.I18n;
+import com.triplify.ui.pages.countries.model.Countries;
 import com.triplify.ui.shared.component.search.model.Search;
 import com.triplify.ui.shared.model.AppComponentSize;
 import com.triplify.ui.shared.component.search.view.SearchView;
@@ -45,6 +46,7 @@ public class CountriesView extends VBox {
         getChildren().setAll(searchView, errorLabel);
 
         bindSelectionResetOnTyping();
+        bindLanguageSync();
     }
 
     public String getSelectedCountryId() {
@@ -88,6 +90,18 @@ public class CountriesView extends VBox {
         model.selectResult(countryEntry);
     }
 
+    private void bindLanguageSync() {
+        I18n.languageProperty().addListener((obs, oldLang, newLang) -> {
+            if (selectedEntry == null) return;
+            updatingSelection = true;
+            try {
+                searchView.getSearchField().setText(selectedEntry.getLabel());
+            } finally {
+                updatingSelection = false;
+            }
+        });
+    }
+
     private void bindSelectionResetOnTyping() {
         searchView.getSearchField().textProperty().addListener((obs, oldValue, newValue) -> {
             if (updatingSelection) {
@@ -95,6 +109,7 @@ public class CountriesView extends VBox {
             }
             if (selectedEntry != null && (newValue == null || !newValue.equals(selectedEntry.getLabel()))) {
                 selectedEntry = null;
+                model.selectResult(null);
             }
         });
     }

@@ -1,8 +1,12 @@
-package com.triplify.ui.shared.component.trip.view;
+package com.triplify.ui.pages.trips.view;
 
+import com.triplify.application.usecase.category.dto.CategoryResponse;
 import com.triplify.application.usecase.trip.dto.TripResponse;
 import com.triplify.domain.model.enums.StatusEnum;
 import com.triplify.ui.i18n.I18n;
+import com.triplify.ui.shared.util.DisplayUtils;
+import com.triplify.ui.shared.util.EditorUtils;
+import com.triplify.ui.shared.util.Localization;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.WeakChangeListener;
 import javafx.fxml.FXML;
@@ -11,43 +15,30 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundImage;
-import javafx.scene.layout.BackgroundPosition;
-import javafx.scene.layout.BackgroundRepeat;
-import javafx.scene.layout.BackgroundSize;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.layout.Region;
 import lombok.Setter;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class TripCardView implements Initializable {
-
-    private static final double DETAILS_CARD_WIDTH = 257;
-
     private static final URL FXML_URL = TripCardView.class.getResource(
-            "/com/triplify/ui/shared/component/trip/view/TripCard.fxml"
+            "/com/triplify/ui/pages/trips/TripCard.fxml"
     );
 
-    private static final Map<String, Image> IMAGE_CACHE = new ConcurrentHashMap<>();
-    private static final int MAX_IMAGE_WIDTH = 600;
-    private static final int MAX_IMAGE_HEIGHT = 400;
-
-    private static final BackgroundSize COVER_SIZE = new BackgroundSize(
-            1, 1, true, true, false, true
-    );
+    private static final int CATEGORY_EMOJI_SIZE = 18;
 
     @FXML private VBox root;
     @FXML private StackPane media;
     @FXML private Label statusLabel;
     @FXML private Label titleLabel;
+    @FXML private HBox categoryRow;
+    @FXML private ImageView categoryEmojiView;
     @FXML private Label categoryLabel;
     @FXML private Label dateLabel;
 
@@ -64,13 +55,7 @@ public class TripCardView implements Initializable {
         media.setMaxWidth(Double.MAX_VALUE);
         media.minHeightProperty().set(Region.USE_PREF_SIZE);
         media.maxHeightProperty().set(Region.USE_PREF_SIZE);
-
-        Rectangle clip = new Rectangle();
-        clip.widthProperty().bind(media.widthProperty());
-        clip.heightProperty().bind(media.heightProperty());
-        clip.setArcWidth(24);
-        clip.setArcHeight(24);
-        media.setClip(clip);
+        EditorUtils.installRoundedClip(media, 12);
 
         root.setOnMouseClicked(event -> {
             if (onOpen != null) {
@@ -88,33 +73,12 @@ public class TripCardView implements Initializable {
     public void setTrip(TripResponse trip, String dateRange) {
         if (trip == null) return;
         titleLabel.setText(trip.title());
-        categoryLabel.setText(trip.category() == null ? "" : trip.category().name());
+        bindCategoryChip(trip.category());
         dateLabel.setText(dateRange);
 
-        media.getStyleClass().removeIf(style -> style.startsWith("trip-cover-"));
-
-        String coverUrl = resolveCoverUrl(trip);
-        boolean imageApplied = false;
-        if (coverUrl != null && !coverUrl.isBlank()) {
-            Image image = resolveImage(coverUrl);
-            if (image != null && !image.isError()) {
-                imageApplied = true;
-                BackgroundImage bg = new BackgroundImage(
-                        image,
-                        BackgroundRepeat.NO_REPEAT,
-                        BackgroundRepeat.NO_REPEAT,
-                        BackgroundPosition.CENTER,
-                        COVER_SIZE
-                );
-                media.setBackground(new Background(bg));
-            }
-        }
-
-        if (!imageApplied) {
-            media.setBackground(null);
-            media.setStyle(null);
-            media.getStyleClass().add("trip-cover-default");
-        }
+        String coverUrl = DisplayUtils.deriveCoverUrl(trip.coverImage());
+        Image image = EditorUtils.resolveCoverImage(coverUrl);
+        EditorUtils.applyCoverBackground(media, image);
 
         currentStatus = trip.status();
         applyStatus(currentStatus);
@@ -129,11 +93,28 @@ public class TripCardView implements Initializable {
         }
     }
 
-    private String resolveCoverUrl(TripResponse trip) {
-        if (trip.coverImage() == null || trip.coverImage().url() == null) {
-            return null;
+    private void bindCategoryChip(CategoryResponse category) {
+        categoryLabel.textProperty().unbind();
+        Localization.bindLocalizedText(categoryLabel.textProperty(), category);
+
+        boolean rowVisible = category != null;
+        if (categoryRow != null) {
+            categoryRow.setVisible(rowVisible);
+            categoryRow.setManaged(rowVisible);
         }
-        return trip.coverImage().url().toUri().toString();
+
+        if (categoryEmojiView == null) {
+            return;
+        }
+
+        if (!rowVisible) {
+            categoryEmojiView.setVisible(false);
+            categoryEmojiView.setManaged(false);
+            categoryEmojiView.setImage(null);
+            return;
+        }
+
+        EditorUtils.applyEmojiImage(categoryEmojiView, category.emojiUnicode(), CATEGORY_EMOJI_SIZE);
     }
 
     private String resolveStatusLabel(StatusEnum status) {
@@ -160,18 +141,6 @@ public class TripCardView implements Initializable {
         };
     }
 
-    private Image resolveImage(String coverUrl) {
-        return IMAGE_CACHE.computeIfAbsent(coverUrl, url -> {
-            String resolved = url;
-            if (url.startsWith("/")) {
-                URL resource = getClass().getResource(url);
-                if (resource == null) return null;
-                resolved = resource.toExternalForm();
-            }
-            return new Image(resolved, MAX_IMAGE_WIDTH, MAX_IMAGE_HEIGHT, true, true);
-        });
-    }
-
     public static TripCardView create(TripResponse trip, String dateRange, Runnable onOpen) {
         if (FXML_URL == null) throw new IllegalStateException("TripCard.fxml not found");
         FXMLLoader loader = new FXMLLoader(FXML_URL);
@@ -183,14 +152,6 @@ public class TripCardView implements Initializable {
         TripCardView view = loader.getController();
         view.setOnOpen(onOpen);
         view.setTrip(trip, dateRange);
-        return view;
-    }
-
-    public static TripCardView createForDetails(TripResponse trip, String dateRange, Runnable onOpen) {
-        TripCardView view = create(trip, dateRange, onOpen);
-        view.root.setMinWidth(DETAILS_CARD_WIDTH);
-        view.root.setPrefWidth(DETAILS_CARD_WIDTH);
-        view.root.setMaxWidth(DETAILS_CARD_WIDTH);
         return view;
     }
 }

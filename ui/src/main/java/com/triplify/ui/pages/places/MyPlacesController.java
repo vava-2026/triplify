@@ -10,10 +10,10 @@ import com.triplify.domain.filter.PlaceFilter;
 import com.triplify.domain.pagination.PageRequest;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.shared.component.card_grid.CardGridPane;
-import com.triplify.ui.shared.component.countries.model.Countries;
-import com.triplify.ui.shared.component.countries.view.CountriesView;
+import com.triplify.ui.pages.countries.model.Countries;
+import com.triplify.ui.pages.countries.view.CountriesView;
 import com.triplify.ui.shared.component.input_item.InputItem;
-import com.triplify.ui.shared.component.place.view.PlaceCardView;
+import com.triplify.ui.pages.places.view.PlaceCardView;
 import com.triplify.ui.shared.model.FieldVariant;
 
 import javafx.animation.PauseTransition;
@@ -81,13 +81,11 @@ public class MyPlacesController extends SimpleLifecycleAwareController {
         Countries countryFilterModel = Countries.builder(countryService)
                 .placeholderKey("input.placeholder.country")
                 .noResultKey("search.noResult")
-                .variant(FieldVariant.FILLED)
                 .searchOnTyping(true)
                 .onResultSelected(entry -> cardGrid.refresh())
                 .onLoadFailed(error -> log.warn("Failed to load country filter options: {}", error.code()))
                 .build();
         countryFilterView = new CountriesView(countryFilterModel);
-        countryFilterView.getStyleClass().add("trips-country-filter");
         countryFilterContainer.getChildren().setAll(countryFilterView);
     }
 
@@ -125,7 +123,7 @@ public class MyPlacesController extends SimpleLifecycleAwareController {
     }
 
     private Node buildPlaceCard(PlaceResponse place) {
-        PlaceCardView card = PlaceCardView.createForDetails(place, () -> openPlace(place));
+        PlaceCardView card = PlaceCardView.create(place, () -> openPlace(place));
         return card.getRoot();
     }
 

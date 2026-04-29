@@ -35,7 +35,7 @@ public class DatabaseMigrationInitializer {
     );
 
     public void initialize() {
-        try (Connection connection = SQLiteConnectionFactory.getConnection()) {
+        try (Connection connection = SQLiteConnectionFactory.getSpatialConnection()) {
             int userVersion = readUserVersion(connection);
             if (userVersion >= CURRENT_SCHEMA_VERSION) {
                 logger.info("SQLite schema already initialized; skipping migrations");

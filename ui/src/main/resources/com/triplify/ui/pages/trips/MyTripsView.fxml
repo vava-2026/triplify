@@ -13,14 +13,14 @@
            styleClass="page-root">
     <VBox spacing="16">
         <FlowPane styleClass="trips-toolbar">
-            <VBox fx:id="countryFilterContainer" prefWidth="170"/>
-            <VBox fx:id="categorySelectContainer" prefWidth="130"/>
-            <VBox fx:id="tagSelectContainer" prefWidth="120"/>
-            <VBox fx:id="statusSelectContainer" prefWidth="130"/>
-            <VBox fx:id="startTimeSelectContainer" prefWidth="150"/>
+            <VBox fx:id="countryFilterContainer" prefWidth="200"/>
+            <VBox fx:id="categorySelectContainer" prefWidth="160"/>
+            <VBox fx:id="tagSelectContainer" prefWidth="200"/>
+            <VBox fx:id="statusSelectContainer" prefWidth="160"/>
+            <VBox fx:id="startTimeSelectContainer" prefWidth="180"/>
             <HBox styleClass="trips-sort">
                 <Label fx:id="sortByLabel" styleClass="trips-sort-label"/>
-                <VBox fx:id="sortSelectContainer" prefWidth="150"/>
+                <VBox fx:id="sortSelectContainer" prefWidth="180"/>
             </HBox>
         </FlowPane>
 

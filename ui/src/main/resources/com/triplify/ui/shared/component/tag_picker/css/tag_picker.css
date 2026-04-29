@@ -278,3 +278,41 @@
     -fx-border-color: -color-theme-gray-fg;
     -fx-text-fill: -color-theme-gray-fg;
 }
+
+/* ── Variants ─────────────────────────────────────────────── */
+
+.app-tag-picker-variant-filled .app-tag-picker-shell {
+    -fx-background-color: -color-surface;
+    -fx-border-color: transparent;
+    -fx-border-width: 1px;
+}
+
+.app-tag-picker-variant-filled .app-tag-picker-shell.app-tag-picker-shell-open {
+    -fx-background-color: -color-surface;
+    -fx-border-color: -color-surface-tint;
+    -fx-border-width: 0 0 1 0;
+}
+
+.app-tag-picker-variant-outlined .app-tag-picker-shell {
+    -fx-background-color: -color-on-surface;
+    -fx-border-color: -color-primary;
+    -fx-border-width: 1px;
+}
+
+.app-tag-picker-variant-outlined .app-tag-picker-shell.app-tag-picker-shell-open {
+    -fx-background-color: -color-on-surface;
+    -fx-border-color: -color-primary;
+    -fx-border-width: 1px;
+}
+
+.app-tag-picker-variant-ghost .app-tag-picker-shell {
+    -fx-background-color: -color-primary-light;
+    -fx-border-color: transparent;
+    -fx-border-width: 1px;
+}
+
+.app-tag-picker-variant-ghost .app-tag-picker-shell.app-tag-picker-shell-open {
+    -fx-background-color: -color-primary-light;
+    -fx-border-color: -color-surface-tint;
+    -fx-border-width: 0 0 1 0;
+}

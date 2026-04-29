@@ -19,7 +19,7 @@
             vbarPolicy="AS_NEEDED"
             styleClass="page-scroll">
     <stylesheets>
-        <String fx:value="/com/triplify/ui/pages/routes/add_route.css"/>
+        <String fx:value="/com/triplify/ui/pages/routes/css/add_route.css"/>
     </stylesheets>
     <content>
         <StackPane styleClass="page-root,add-route-root">

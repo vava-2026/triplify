@@ -4,13 +4,14 @@ import com.triplify.domain.model.enums.StatusEnum;
 
 import java.time.Instant;
 import java.util.Set;
+import java.util.UUID;
 
 public record TripFilter(
         String name,
         String countryId,
         StatusEnum status,
         String categoryId,
-        Set<String> tagIds,
+        Set<UUID> tagIds,
         Instant startedFrom,
         Instant startedTo
 ) {

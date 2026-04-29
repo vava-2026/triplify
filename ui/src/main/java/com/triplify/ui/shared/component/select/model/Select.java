@@ -1,10 +1,14 @@
 package com.triplify.ui.shared.component.select.model;
 
 import com.triplify.ui.shared.component.select.entry.model.Entry;
+import com.triplify.ui.shared.model.AppComponentSize;
 import com.triplify.ui.shared.model.FieldVariant;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.List;
 
 public class Select<T> {
@@ -14,8 +18,12 @@ public class Select<T> {
     private final ObjectProperty<Entry<T>> selectedItem = new SimpleObjectProperty<>(null);
     private final ListProperty<Entry<T>> items = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ObjectProperty<FieldVariant> variant = new SimpleObjectProperty<>(FieldVariant.FILLED);
+    private final ObjectProperty<AppComponentSize> size = new SimpleObjectProperty<>(AppComponentSize.MIDDLE);
+    @Setter
+    @Getter
     private String emoji = null;
 
+    @Setter
     private java.util.function.Consumer<Entry<T>> onSelect = null;
 
     public StringProperty placeholderProperty() {
@@ -78,16 +86,16 @@ public class Select<T> {
         variant.set(v);
     }
 
-    public String getEmoji() {
-        return emoji;
+    public ObjectProperty<AppComponentSize> sizeProperty() {
+        return size;
     }
 
-    public void setEmoji(String emoji) {
-        this.emoji = emoji;
+    public AppComponentSize getSize() {
+        return size.get();
     }
 
-    public void setOnSelect(java.util.function.Consumer<Entry<T>> r) {
-        this.onSelect = r;
+    public void setSize(AppComponentSize v) {
+        size.set(v);
     }
 
     public void triggerSelect(Entry<T> value) {
@@ -104,6 +112,7 @@ public class Select<T> {
         private Entry<T> selectedItem = null;
         private ObservableList<Entry<T>> items = FXCollections.observableArrayList();
         private FieldVariant variant = FieldVariant.FILLED;
+        private AppComponentSize size = AppComponentSize.MIDDLE;
         private String emoji = null;
         private java.util.function.Consumer<Entry<T>> onSelect = null;
 
@@ -139,6 +148,11 @@ public class Select<T> {
             return this;
         }
 
+        public Builder<T> size(AppComponentSize size) {
+            this.size = size == null ? AppComponentSize.MIDDLE : size;
+            return this;
+        }
+
         public Builder<T> emoji(String emoji) {
             this.emoji = emoji;
             return this;
@@ -156,6 +170,7 @@ public class Select<T> {
             select.setSelectedItem(selectedItem);
             select.setItems(items);
             select.setVariant(variant);
+            select.setSize(size);
             select.setEmoji(emoji);
             select.setOnSelect(onSelect);
             return select;

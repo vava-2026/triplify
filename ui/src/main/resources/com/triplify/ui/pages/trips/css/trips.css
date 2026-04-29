@@ -117,12 +117,20 @@
     -fx-font-weight: bold;
 }
 
-.trip-category {
+.trip-category-row {
+    -fx-alignment: center-left;
+    -fx-spacing: 6;
+    -fx-background-color: -color-surface-tint;
+    -fx-background-radius: 8px;
+    -fx-pref-height: 36px;
+    -fx-padding: 0px 8px;
+}
+
+.trip-category-value {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
     -fx-text-fill: -color-ink-muted;
     -fx-font-size: 14px;
-    -fx-background-color: -color-surface-tint;
-    -fx-background-radius: 999px;
-    -fx-padding: 2px 8px;
 }
 
 .trip-date-row {

@@ -17,7 +17,7 @@ import com.triplify.ui.routing.AppPage;
 import com.triplify.ui.shared.component.search.model.Search;
 import com.triplify.ui.shared.component.search.view.SearchView;
 import com.triplify.ui.shared.component.select.entry.model.Entry;
-import com.triplify.ui.shared.component.trips.model.Trips;
+import com.triplify.ui.pages.trips.model.Trips;
 import com.triplify.ui.shared.header.viewmodel.HeaderViewModel;
 import com.triplify.ui.shared.model.FieldVariant;
 

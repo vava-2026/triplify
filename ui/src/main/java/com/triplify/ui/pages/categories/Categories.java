@@ -1,4 +1,4 @@
-package com.triplify.ui.shared.component.categories.model;
+package com.triplify.ui.pages.categories;
 
 import com.triplify.application.usecase.category.CategoryService;
 import com.triplify.application.usecase.category.dto.CategoryResponse;

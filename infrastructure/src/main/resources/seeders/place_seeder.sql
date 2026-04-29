@@ -1,5 +1,5 @@
 INSERT INTO images (id, url, description) VALUES
-    ('40000000-0000-0000-0000-000000000001', 'C:\Users\sladk\Downloads\triplify\ui\src\main\resources\com\triplify\ui\pages\trips\images\default.png', null);
+    ('40000000-0000-0000-0000-000000000001', 'C:\Users\sladk\AppData\Roaming\Triplify\images\default.png', null);
 
 
 CREATE TEMP TABLE tmp_seed_places (

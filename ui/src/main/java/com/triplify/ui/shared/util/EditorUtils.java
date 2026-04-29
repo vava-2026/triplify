@@ -3,7 +3,9 @@ package com.triplify.ui.shared.util;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.kordamp.ikonli.javafx.FontIcon;
 
@@ -15,11 +17,19 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundImage;
+import javafx.scene.layout.BackgroundPosition;
+import javafx.scene.layout.BackgroundRepeat;
+import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 
 public final class EditorUtils {
+
+    private static final Map<String, Image> COVER_IMAGE_CACHE = new ConcurrentHashMap<>();
+    private static final BackgroundSize CARD_COVER_SIZE = new BackgroundSize(1, 1, true, true, false, true);
 
     private EditorUtils() {}
 
@@ -229,5 +239,45 @@ public final class EditorUtils {
     @FunctionalInterface
     public interface CoverImageResult {
         void accept(String absolutePath);
+    }
+
+    public static String safeText(String value, String fallback) {
+        return value == null || value.isBlank() ? fallback : value;
+    }
+
+    public static Image resolveCoverImage(String coverUrl) {
+        if (coverUrl == null || coverUrl.isBlank()) return null;
+        return COVER_IMAGE_CACHE.computeIfAbsent(coverUrl, url -> new Image(url, 600, 400, true, true));
+    }
+
+    public static void applyCoverBackground(StackPane media, Image image) {
+        media.getStyleClass().removeIf(s -> s.startsWith("trip-cover-"));
+        if (image != null && !image.isError()) {
+            media.setBackground(new Background(new BackgroundImage(
+                image, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT,
+                BackgroundPosition.CENTER, CARD_COVER_SIZE
+            )));
+        } else {
+            media.setBackground(null);
+            media.setStyle(null);
+            media.getStyleClass().add("trip-cover-default");
+        }
+    }
+
+    public static void applyEmojiImage(ImageView view, String emojiUnicode, int size) {
+        if (emojiUnicode == null || emojiUnicode.isBlank()) {
+            view.setImage(null);
+            view.setVisible(false);
+            view.setManaged(false);
+            return;
+        }
+        Image img = EmojiUtil.toImage(emojiUnicode.trim(), size);
+        boolean show = img != null && !img.isError();
+        view.setFitWidth(size);
+        view.setFitHeight(size);
+        view.setPreserveRatio(true);
+        view.setVisible(show);
+        view.setManaged(show);
+        view.setImage(show ? img : null);
     }
 }

@@ -6,22 +6,24 @@ import com.triplify.application.usecase.category.CategoryService;
 import com.triplify.application.usecase.category.dto.CategoryResponse;
 import com.triplify.application.usecase.country.CountryService;
 import com.triplify.application.usecase.tag.TagService;
-import com.triplify.application.usecase.tag.dto.GetTagsRequest;
 import com.triplify.application.usecase.tag.dto.TagResponse;
 import com.triplify.application.usecase.trip.TripService;
+import com.triplify.application.usecase.trip.dto.GetTripsRequest;
 import com.triplify.application.usecase.trip.dto.TripResponse;
 import com.triplify.domain.model.enums.StatusEnum;
 import com.triplify.domain.pagination.PageRequest;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.routing.RouteIds;
-import com.triplify.ui.shared.component.categories.model.Categories;
+import com.triplify.ui.pages.categories.Categories;
 import com.triplify.ui.shared.component.card_grid.CardGridPane;
-import com.triplify.ui.shared.component.countries.model.Countries;
-import com.triplify.ui.shared.component.countries.view.CountriesView;
+import com.triplify.ui.shared.component.tag_picker.TagPickerItem;
+import com.triplify.ui.pages.countries.model.Countries;
+import com.triplify.ui.pages.countries.view.CountriesView;
 import com.triplify.ui.shared.component.select.entry.model.Entry;
 import com.triplify.ui.shared.component.select.model.Select;
 import com.triplify.ui.shared.component.select.view.SelectView;
-import com.triplify.ui.shared.component.trip.view.TripCardView;
+import com.triplify.ui.pages.trips.view.TripCardView;
+import com.triplify.ui.shared.model.AppComponentSize;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.util.Localization;
 
@@ -63,7 +65,7 @@ public class MyTripsController extends SimpleLifecycleAwareController {
 
     private Categories categoriesComponent;
     private Select<String> categorySelectModel;
-    private Select<String> tagSelectModel;
+    private TagPickerItem tagFilterPicker;
     private Select<StatusEnum> statusSelectModel;
     private Select<String> startTimeSelectModel;
     private Select<Boolean> sortByModel;
@@ -96,22 +98,28 @@ public class MyTripsController extends SimpleLifecycleAwareController {
         Countries countryFilterModel = Countries.builder(countryService)
                 .placeholderKey("input.placeholder.country")
                 .noResultKey("search.noResult")
-                .variant(FieldVariant.FILLED)
                 .searchOnTyping(true)
                 .onResultSelected(entry -> cardGrid.refresh())
                 .onLoadFailed(error -> log.warn("Failed to load country filter options: {}", error.code()))
                 .build();
         countryFilterView = new CountriesView(countryFilterModel);
-        countryFilterView.getStyleClass().add("trips-country-filter");
         countryFilterContainer.getChildren().setAll(countryFilterView);
 
         categoriesComponent = Categories.builder(categoryService).build();
         categorySelectModel = createCategorySelectModel(loadCategoryFilterEntries(), "Category");
-        tagSelectModel = createSelectModelFromValues(loadTagFilterValues(), "Tags");
+
+        tagFilterPicker = new TagPickerItem();
+        tagFilterPicker.setVariant(FieldVariant.FILLED);
+        tagFilterPicker.setAllowCustomTags(false);
+        tagFilterPicker.setPlaceholderKey("trips.filter.tag");
+        tagFilterPicker.setPopupTitleKey("trip.add.tag.popupTitle");
+        tagFilterPicker.setMaxWidth(Double.MAX_VALUE);
+        tagFilterPicker.setOnSelectionChanged(selectedIds -> cardGrid.refresh());
+        tagFilterPicker.configureTagService(tagService, error -> log.warn("Tag operation failed in trips filter: {}", error));
 
         statusSelectModel = Select.<StatusEnum>builder()
                 .placeholder(I18n.t("trips.filter.status"))
-                .variant(FieldVariant.FILLED)
+                .size(AppComponentSize.BIG)
                 .items(List.of(
                         Entry.builder((StatusEnum) null, Localization.textBinding("trips.filter.all")).build(),
                         Entry.builder(StatusEnum.PLANNED, Localization.textBinding("trip.status.planned")).build(),
@@ -123,7 +131,7 @@ public class MyTripsController extends SimpleLifecycleAwareController {
 
         startTimeSelectModel = Select.<String>builder()
                 .placeholder(I18n.t("trips.filter.startTime"))
-                .variant(FieldVariant.FILLED)
+                .size(AppComponentSize.BIG)
                 .items(List.of(
                         Entry.builder((String) null, Localization.textBinding("trips.filter.time.anyTime")).build(),
                         Entry.builder("next30days", Localization.textBinding("trips.filter.time.next30days")).build(),
@@ -134,7 +142,7 @@ public class MyTripsController extends SimpleLifecycleAwareController {
 
         sortByModel = Select.<Boolean>builder()
                 .placeholder(I18n.t("trips.sort.newestFirst"))
-                .variant(FieldVariant.FILLED)
+                .size(AppComponentSize.BIG)
                 .items(List.of(
                         Entry.builder(false, Localization.textBinding("trips.sort.newestFirst")).build(),
                         Entry.builder(true, Localization.textBinding("trips.sort.oldestFirst")).build()
@@ -142,16 +150,15 @@ public class MyTripsController extends SimpleLifecycleAwareController {
                 .build();
 
         selectFirst(categorySelectModel);
-        selectFirst(tagSelectModel);
         selectFirst(statusSelectModel);
         selectFirst(startTimeSelectModel);
         selectFirst(sortByModel);
 
-        categorySelectContainer.getChildren().setAll(createFilterSelectView(categorySelectModel, 130));
-        tagSelectContainer.getChildren().setAll(createFilterSelectView(tagSelectModel, 120));
-        statusSelectContainer.getChildren().setAll(createFilterSelectView(statusSelectModel, 130));
-        startTimeSelectContainer.getChildren().setAll(createFilterSelectView(startTimeSelectModel, 150));
-        sortSelectContainer.getChildren().setAll(createFilterSelectView(sortByModel, 150));
+        categorySelectContainer.getChildren().setAll(createFilterSelectView(categorySelectModel, 160));
+        tagSelectContainer.getChildren().setAll(tagFilterPicker);
+        statusSelectContainer.getChildren().setAll(createFilterSelectView(statusSelectModel, 160));
+        startTimeSelectContainer.getChildren().setAll(createFilterSelectView(startTimeSelectModel, 180));
+        sortSelectContainer.getChildren().setAll(createFilterSelectView(sortByModel, 180));
 
         Localization.bindText(sortByLabel.textProperty(), "trips.sort.label");
     }
@@ -168,7 +175,6 @@ public class MyTripsController extends SimpleLifecycleAwareController {
 
     private void attachListeners() {
         categorySelectModel.selectedItemProperty().addListener((obs, oldV, newV) -> cardGrid.refresh());
-        tagSelectModel.selectedItemProperty().addListener((obs, oldV, newV) -> cardGrid.refresh());
         statusSelectModel.selectedItemProperty().addListener((obs, oldV, newV) -> cardGrid.refresh());
         startTimeSelectModel.selectedItemProperty().addListener((obs, oldV, newV) -> cardGrid.refresh());
         sortByModel.selectedItemProperty().addListener((obs, oldV, newV) -> cardGrid.refresh());
@@ -197,19 +203,20 @@ public class MyTripsController extends SimpleLifecycleAwareController {
 
         boolean sortAsc = sortByModel.getSelectedItem() != null
                 && Boolean.TRUE.equals(sortByModel.getSelectedItem().getValue());
+        Set<UUID> selectedTagIds = tagFilterPicker == null ? Set.of() : tagFilterPicker.getSelectedTagIds();
 
-        var request = new com.triplify.application.usecase.trip.dto.GetTripsRequest(
+        var request = new GetTripsRequest(
                 new PageRequest(Math.max(0, page - 1), pageSize),
-                new com.triplify.application.usecase.trip.dto.GetTripsRequest.Filter(
+                new GetTripsRequest.Filter(
                         null,
                         normalizeFilter(countryFilterView == null ? null : countryFilterView.getSelectedCountryId()),
                         statusFilter,
                         normalizeFilter(selectedValue(categorySelectModel)),
-                        null,
+                        selectedTagIds,
                         startedFrom,
                         startedTo
                 ),
-                new com.triplify.application.usecase.trip.dto.GetTripsRequest.OrderBy(sortAsc)
+                new GetTripsRequest.OrderBy(sortAsc)
         );
 
         var result = tripService.getTrips(request);
@@ -218,12 +225,8 @@ public class MyTripsController extends SimpleLifecycleAwareController {
             return new CardGridPane.PageResult<>(List.of(), Pagination.request(page, pageSize).withTotals(0));
         }
 
-        List<TripResponse> trips = result.getValue().items().stream()
-                .filter(trip -> matchesTag(trip.tags(), normalizeFilter(selectedValue(tagSelectModel))))
-                .toList();
-
         int totalPages = result.getValue().hasNext() ? page + 1 : page;
-        return new CardGridPane.PageResult<>(trips, new Pagination(page, pageSize, null, totalPages));
+        return new CardGridPane.PageResult<>(result.getValue().items(), new Pagination(page, pageSize, null, totalPages));
     }
 
     private Node buildTripCard(TripResponse trip) {
@@ -259,14 +262,13 @@ public class MyTripsController extends SimpleLifecycleAwareController {
         getRouter().moveto(RouteIds.TRIP_DETAILS, args);
     }
 
-    private boolean matchesTag(java.util.Set<TagResponse> tags, String expected) {
-        if (expected == null || expected.isBlank()) return true;
+    private boolean matchesTagIds(Set<TagResponse> tags, Set<UUID> selectedIds) {
+        if (selectedIds == null || selectedIds.isEmpty()) return true;
         if (tags == null || tags.isEmpty()) return false;
-        String normalized = expected.toLowerCase(Locale.ROOT);
         return tags.stream()
-                .map(TagResponse::name)
+                .map(TagResponse::id)
                 .filter(Objects::nonNull)
-                .anyMatch(tag -> tag.toLowerCase(Locale.ROOT).contains(normalized));
+                .anyMatch(selectedIds::contains);
     }
 
     private String normalizeFilter(String value) {
@@ -275,18 +277,10 @@ public class MyTripsController extends SimpleLifecycleAwareController {
         return trimmed.equalsIgnoreCase("All") ? null : trimmed;
     }
 
-    private Select<String> createSelectModelFromValues(List<String> values, String placeholder) {
-        return Select.<String>builder()
-                .placeholder(placeholder)
-                .variant(FieldVariant.FILLED)
-                .items(values.stream().map(this::toEntry).toList())
-                .build();
-    }
-
     private Select<String> createCategorySelectModel(List<Entry<String>> entries, String placeholder) {
         return Select.<String>builder()
                 .placeholder(placeholder)
-                .variant(FieldVariant.FILLED)
+                .size(AppComponentSize.BIG)
                 .items(entries)
                 .build();
     }
@@ -305,26 +299,6 @@ public class MyTripsController extends SimpleLifecycleAwareController {
 
         availableCategories = result.getValue();
         return categoriesComponent.toEntriesWithAll(availableCategories, ALL_OPTION);
-    }
-
-    private List<String> loadTagFilterValues() {
-        List<String> tags = new ArrayList<>();
-        tags.add(ALL_OPTION);
-
-        var result = tagService.getTags(GetTagsRequest.defaultRequest());
-        if (result.isFailure()) {
-            log.warn("Failed to load tags for My Trips filters: {}", result.getError().message());
-            return List.copyOf(new LinkedHashSet<>(tags));
-        }
-
-        for (TagResponse tag : result.getValue()) {
-            if (tag == null || tag.name() == null || tag.name().isBlank()) {
-                continue;
-            }
-            tags.add(tag.name().trim());
-        }
-
-        return List.copyOf(new LinkedHashSet<>(tags));
     }
 
     private <T> SelectView<T> createFilterSelectView(Select<T> model, double width) {

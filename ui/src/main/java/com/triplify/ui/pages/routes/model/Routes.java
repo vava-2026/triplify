@@ -1,37 +1,36 @@
-package com.triplify.ui.shared.component.places.model;
+package com.triplify.ui.pages.routes.model;
 
-import com.triplify.application.usecase.place.PlaceService;
-import com.triplify.application.usecase.place.dto.GetPlacesRequest;
-import com.triplify.application.usecase.place.dto.PlaceResponse;
+import com.triplify.application.usecase.route.RouteService;
+import com.triplify.application.usecase.route.dto.GetRoutesRequest;
+import com.triplify.application.usecase.route.dto.RouteResponse;
 import com.triplify.domain.error.AppError;
-import com.triplify.domain.filter.PlaceFilter;
 import com.triplify.domain.pagination.PageRequest;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class Places {
+public class Routes {
 
     private static final int DEFAULT_PAGE_SIZE = 20;
 
-    private final PlaceService placeService;
+    private final RouteService routeService;
     private final Consumer<AppError> onLoadFailed;
     private final int pageSize;
 
-    private final List<PlaceResponse> entries = new ArrayList<>();
+    private final List<RouteResponse> entries = new ArrayList<>();
     private String activeQuery = "";
     private int nextPage = 0;
     private boolean hasMore = true;
     private boolean loading = false;
 
-    private Places(Builder builder) {
-        this.placeService = builder.placeService;
+    private Routes(Builder builder) {
+        this.routeService = builder.routeService;
         this.onLoadFailed = builder.onLoadFailed;
         this.pageSize = builder.pageSize;
     }
 
-    public List<PlaceResponse> search(String query) {
+    public List<RouteResponse> search(String query) {
         String normalized = normalize(query);
         if (!normalized.equals(activeQuery)) {
             resetState(normalized);
@@ -42,7 +41,7 @@ public class Places {
         return List.copyOf(entries);
     }
 
-    public List<PlaceResponse> loadMore(String query) {
+    public List<RouteResponse> loadMore(String query) {
         String normalized = normalize(query);
         if (!normalized.equals(activeQuery)) {
             return search(normalized);
@@ -66,8 +65,9 @@ public class Places {
         loading = true;
         try {
             String nameFilter = activeQuery.isBlank() ? null : activeQuery;
-            var request = new GetPlacesRequest(new PageRequest(nextPage, pageSize), new PlaceFilter(nameFilter, null));
-            var result = placeService.getPlaces(request);
+            GetRoutesRequest.Filter filter = nameFilter == null ? null : new GetRoutesRequest.Filter(nameFilter);
+            var request = new GetRoutesRequest(new PageRequest(nextPage, pageSize), filter, null);
+            var result = routeService.getRoutes(request);
             result.onSuccess(page -> {
                 entries.addAll(page.items());
                 hasMore = page.hasNext();
@@ -95,17 +95,17 @@ public class Places {
         return query == null ? "" : query.trim();
     }
 
-    public static Builder builder(PlaceService placeService) {
-        return new Builder(placeService);
+    public static Builder builder(RouteService routeService) {
+        return new Builder(routeService);
     }
 
     public static class Builder {
-        private final PlaceService placeService;
+        private final RouteService routeService;
         private Consumer<AppError> onLoadFailed;
         private int pageSize = DEFAULT_PAGE_SIZE;
 
-        private Builder(PlaceService placeService) {
-            this.placeService = placeService;
+        private Builder(RouteService routeService) {
+            this.routeService = routeService;
         }
 
         public Builder onLoadFailed(Consumer<AppError> onLoadFailed) {
@@ -118,8 +118,8 @@ public class Places {
             return this;
         }
 
-        public Places build() {
-            return new Places(this);
+        public Routes build() {
+            return new Routes(this);
         }
     }
 }

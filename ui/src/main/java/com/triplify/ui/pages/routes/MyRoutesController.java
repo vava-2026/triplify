@@ -10,10 +10,11 @@ import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.shared.component.card_grid.CardGridPane;
 import com.triplify.ui.shared.component.input_item.InputItem;
-import com.triplify.ui.shared.component.route.view.RouteCardView;
+import com.triplify.ui.pages.routes.view.RouteCardView;
 import com.triplify.ui.shared.component.select.entry.model.Entry;
 import com.triplify.ui.shared.component.select.model.Select;
 import com.triplify.ui.shared.component.select.view.SelectView;
+import com.triplify.ui.shared.model.AppComponentSize;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.util.Localization;
 
@@ -81,7 +82,7 @@ public class MyRoutesController extends SimpleLifecycleAwareController {
 
         sortByModel = Select.<Boolean>builder()
                 .placeholder(I18n.t("routes.sort.shortestFirst"))
-                .variant(FieldVariant.FILLED)
+                .size(AppComponentSize.BIG)
                 .items(List.of(
                         Entry.builder(true, Localization.textBinding("routes.sort.shortestFirst")).build(),
                         Entry.builder(false, Localization.textBinding("routes.sort.longestFirst")).build()
@@ -137,7 +138,7 @@ public class MyRoutesController extends SimpleLifecycleAwareController {
     }
 
     private Node buildRouteCard(RouteResponse route) {
-        RouteCardView card = RouteCardView.createForDetails(route, () -> openRoute(route));
+        RouteCardView card = RouteCardView.create(route, () -> openRoute(route));
         return card.getRoot();
     }
 

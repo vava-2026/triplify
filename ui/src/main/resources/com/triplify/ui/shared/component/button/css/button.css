@@ -16,14 +16,14 @@
 
 .app-btn-size-small {
     -fx-font-size: 13px;
-    -fx-padding: 8 16 8 16;
+    -fx-padding: 0 16 0 16;
     -fx-min-height: 34;
     -fx-pref-height: 34;
 }
 
 .app-btn-size-middle {
     -fx-font-size: 14px;
-    -fx-padding: 10 20 10 20;
+    -fx-padding: 0 20 0 20;
     -fx-min-height: 40;
     -fx-pref-height: 40;
 }

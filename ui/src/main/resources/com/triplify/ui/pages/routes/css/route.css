@@ -27,6 +27,10 @@
     -fx-text-fill: -color-ink;
 }
 
+.route-card-places-row {
+    -fx-alignment: center-left;
+}
+
 .route-card-distance-row {
     -fx-alignment: center-left;
 }

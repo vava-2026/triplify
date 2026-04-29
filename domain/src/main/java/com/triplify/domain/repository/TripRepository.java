@@ -11,7 +11,7 @@ import java.util.UUID;
 
 public interface TripRepository {
     Optional<Trip> findById(UUID id);
-    Page<Trip> findList(PageRequest pageRequest, TripFilter filter, boolean startTimeAsc);
+    Page<Trip> findList(PageRequest pageRequest, TripFilter filter, boolean startTimeAsc, UUID userId);
     void create(Trip trip);
     void update(Trip trip);
     void delete(Trip trip);

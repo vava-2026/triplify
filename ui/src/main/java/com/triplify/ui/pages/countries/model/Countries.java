@@ -1,4 +1,4 @@
-package com.triplify.ui.shared.component.countries.model;
+package com.triplify.ui.pages.countries.model;
 
 import com.triplify.application.usecase.country.CountryService;
 import com.triplify.application.usecase.country.dto.GetCountriesRequest;
@@ -107,7 +107,7 @@ public class Countries {
             var result = countryService.getCountries(request);
             result.onSuccess(page -> {
                 for (var country : page.items()) {
-                    entries.add(Entry.<String>builder(country.id().toString(), Localization.localize(country)).emoji(country.emojiUnicode()).build());
+                    entries.add(Entry.<String>builder(country.id().toString(), Localization.localizedBinding(country)).emoji(country.emojiUnicode()).build());
                 }
             });
             result.onFailure(error -> {
@@ -130,7 +130,7 @@ public class Countries {
     }
 
     public void selectResult(Entry<String> result) {
-        if (onResultSelected != null && result != null) {
+        if (onResultSelected != null) {
             onResultSelected.accept(result);
         }
     }
@@ -170,7 +170,7 @@ public class Countries {
             String normalizedName = normalizeCountryName(country.name());
             String normalizedNameSk = normalizeCountryName(country.nameSk());
             if (normalizedCandidates.contains(normalizedName) || normalizedCandidates.contains(normalizedNameSk)) {
-                return Entry.<String>builder(country.id().toString(), Localization.localize(country)).emoji(country.emojiUnicode()).build();
+                return Entry.<String>builder(country.id().toString(), Localization.localizedBinding(country)).emoji(country.emojiUnicode()).build();
             }
         }
 
