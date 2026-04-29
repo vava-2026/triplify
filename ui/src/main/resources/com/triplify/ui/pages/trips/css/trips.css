@@ -183,37 +183,6 @@
 
 /* ── Create Trip Card ── */
 
-.trip-create-card {
-    -fx-background-color: -color-surface;
-    -fx-background-radius: 14px;
-    -fx-border-color: -color-create-border;
-    -fx-border-radius: 14px;
-    -fx-border-width: 2px;
-    -fx-border-style: segments(8, 6);
-    -fx-effect: -shadow-card;
-    -fx-cursor: hand;
-    -fx-alignment: center;
-    -fx-padding: 12px;
-    -fx-pref-height: 353px;
-    -fx-min-height: 353px;
-    -fx-max-height: 353px;
-}
-
-.trip-create-icon {
-    -fx-icon-color: -color-primary;
-    -fx-icon-size: 18px;
-}
-
-.trip-create-title {
-    -fx-text-fill: -color-ink;
-    -fx-font-weight: bold;
-}
-
-.trip-create-subtitle {
-    -fx-text-fill: -color-ink-muted;
-    -fx-font-size: 12px;
-}
-
 /* ── Cover Fallback ── */
 
 .trip-cover-default {

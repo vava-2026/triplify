@@ -9,6 +9,7 @@ import com.triplify.application.usecase.place.dto.PlaceResponse;
 import com.triplify.domain.filter.PlaceFilter;
 import com.triplify.domain.pagination.PageRequest;
 import com.triplify.ui.routing.RouteIds;
+import com.triplify.ui.shared.component.add_card.view.AddCardView;
 import com.triplify.ui.shared.component.card_grid.CardGridPane;
 import com.triplify.ui.pages.countries.model.Countries;
 import com.triplify.ui.pages.countries.view.CountriesView;
@@ -18,13 +19,9 @@ import com.triplify.ui.shared.model.FieldVariant;
 
 import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Label;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
-import org.kordamp.ikonli.javafx.FontIcon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rahulstech.jfx.routing.element.RouterArgument;
@@ -94,7 +91,7 @@ public class MyPlacesController extends SimpleLifecycleAwareController {
         cardGrid.setMaxColumns(4);
         cardGrid.setPageSize(8);
         cardGrid.setEmptyText("No places found");
-        cardGrid.addPinnedNode(buildCreatePlaceCard());
+        cardGrid.addPinnedNode(new AddCardView("place.add.card.title", "place.add.card.subtitle", this::onCreatePlace));
         cardGrid.setCardFactory(this::buildPlaceCard);
         cardGrid.setPageLoader(this::loadPlacesPage);
     }
@@ -127,26 +124,6 @@ public class MyPlacesController extends SimpleLifecycleAwareController {
         return card.getRoot();
     }
 
-    private Node buildCreatePlaceCard() {
-        StackPane card = new StackPane();
-        card.getStyleClass().add("trip-create-card");
-        card.setMaxWidth(Double.MAX_VALUE);
-        card.setOnMouseClicked(event -> onCreatePlace());
-
-        VBox content = new VBox(6);
-        content.setAlignment(Pos.CENTER);
-        FontIcon icon = new FontIcon("fth-plus");
-        icon.getStyleClass().add("trip-create-icon");
-
-        Label title = new Label("Add New Place");
-        title.getStyleClass().add("trip-create-title");
-        Label subtitle = new Label("Save a location to your collection");
-        subtitle.getStyleClass().add("trip-create-subtitle");
-
-        content.getChildren().addAll(icon, title, subtitle);
-        card.getChildren().add(content);
-        return card;
-    }
 
     private void openPlace(PlaceResponse place) {
         if (place == null || place.id() == null) return;
