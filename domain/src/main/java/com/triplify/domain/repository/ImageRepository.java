@@ -35,4 +35,8 @@ public interface ImageRepository {
     void update(Image image);
 
     void delete(UUID id);
+
+    void linkToOwner(UUID imageId, UUID ownerId, String ownerType);
+
+    void unlinkFromOwner(UUID imageId, UUID ownerId, String ownerType);
 }

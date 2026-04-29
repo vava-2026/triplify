@@ -1,6 +1,10 @@
 package com.triplify.ui.pages.trips;
 
 import com.google.inject.Inject;
+import com.triplify.application.usecase.image.ImageService;
+import com.triplify.application.usecase.image.dto.GetImagesRequest;
+import com.triplify.application.usecase.image.dto.ImageOwnerType;
+import com.triplify.application.usecase.image.dto.ImageResponse;
 import com.triplify.application.usecase.story.StoryService;
 import com.triplify.application.usecase.story.dto.GetStoriesRequest;
 import com.triplify.application.usecase.story.dto.StoryResponse;
@@ -17,7 +21,12 @@ import com.triplify.domain.model.enums.StatusEnum;
 import com.triplify.domain.pagination.PageRequest;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
+import com.triplify.ui.pages.images.ImageFormModalView;
+import com.triplify.ui.pages.images.ImageViewModalView;
+import com.triplify.ui.pages.images.view.ImageCardView;
 import com.triplify.ui.routing.RouteIds;
+import com.triplify.ui.shared.component.add_card.view.AddCardView;
+import com.triplify.ui.shared.component.card_grid.CardGridPane;
 import com.triplify.ui.shared.component.detail_actions.view.DetailActionButtonsView;
 import com.triplify.ui.shared.component.empty_state.view.EmptyStateCardView;
 import com.triplify.ui.pages.routes.view.RouteCardView;
@@ -25,6 +34,7 @@ import com.triplify.ui.shared.component.section_header.view.SectionHeaderView;
 import com.triplify.ui.shared.toast.ToastService;
 import com.triplify.ui.shared.util.DisplayUtils;
 import com.triplify.ui.shared.util.EditorUtils;
+import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import com.triplify.ui.shared.util.Localization;
 
 import static com.triplify.ui.shared.util.DisplayUtils.toLocalDate;
@@ -76,18 +86,24 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
     @FXML private SectionHeaderView routesHeader;
     @FXML private SectionHeaderView placesHeader;
     @FXML private SectionHeaderView storiesHeader;
+    @FXML private SectionHeaderView imagesHeader;
     @FXML private FlowPane routesFlow;
     @FXML private FlowPane placesFlow;
     @FXML private FlowPane storiesFlow;
+    @FXML private CardGridPane<ImageResponse> imagesGrid;
 
     @Inject private TripService tripService;
     @Inject private TripRouteService tripRouteService;
     @Inject private TripPlaceService tripPlaceService;
     @Inject private StoryService storyService;
+    @Inject private ImageService imageService;
     @Inject private ToastService toast;
     @Inject private ErrorHandler errorHandler;
+    @Inject private FxmlLoaderHelper fxmlLoader;
 
     private String tripId;
+    private ImageFormModalView imageFormModal;
+    private ImageViewModalView imageViewModal;
 
     @FXML
     public void initialize() {
@@ -113,6 +129,32 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         actionButtonsView.getSecondaryButton().setOnAction(e -> onDeleteTrip());
         configureButtonIcon(actionButtonsView.getPrimaryButton(), "fth-edit-3", "app-btn-icon");
         configureButtonIcon(actionButtonsView.getSecondaryButton(), "fth-trash-2", "app-btn-icon");
+
+        Localization.bindText(imagesHeader.titleProperty(), "trip.details.section.images");
+        setupImagesGrid();
+    }
+
+    private void setupImagesGrid() {
+        imagesGrid.setManualLoadMore(true);
+        imagesGrid.setMinCardWidth(220);
+        imagesGrid.setMaxColumns(4);
+        imagesGrid.setPageSize(8);
+        imagesGrid.setEmptyText(I18n.t("trip.details.empty.images"));
+
+        imageFormModal = new ImageFormModalView(fxmlLoader, imageService, errorHandler);
+        imageViewModal = new ImageViewModalView(imageService, errorHandler);
+
+        AddCardView addCard = new AddCardView(
+                "images.add.card.title",
+                "images.add.card.subtitle",
+                this::openAddImageModal
+        );
+        imagesGrid.addPinnedNode(addCard);
+
+        imagesGrid.setCardFactory(image -> {
+            ImageCardView card = ImageCardView.create(image, () -> openImageViewModal(image));
+            return card.getRoot();
+        });
     }
 
     @Override
@@ -205,6 +247,47 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         renderRoutes(routes, trip.id());
         renderPlaces(places);
         renderStories(stories, trip.id());
+        setupImageLoader(trip.id());
+    }
+
+    private void setupImageLoader(UUID forTripId) {
+        imagesGrid.setPageLoader((page, size) -> {
+            var result = imageService.getImages(new GetImagesRequest(
+                    new PageRequest(page - 1, size),
+                    new GetImagesRequest.Filter(forTripId.toString(), ImageOwnerType.TRIP, null, null),
+                    null
+            ));
+            if (result.isFailure()) {
+                log.warn("Failed to load trip images: {}", result.getError().message());
+                return new CardGridPane.PageResult<>(List.of(), null);
+            }
+            var domainPage = result.getValue();
+            int totalPages = domainPage.hasNext() ? page + 1 : page;
+            com.triplify.application.shared.Pagination pagination =
+                    new com.triplify.application.shared.Pagination(page, size, null, totalPages);
+            return new CardGridPane.PageResult<>(domainPage.items(), pagination);
+        });
+        imagesGrid.refresh();
+    }
+
+    private void openAddImageModal() {
+        if (tripId == null || tripId.isBlank()) return;
+        UUID uuid = UUID.fromString(tripId);
+        imageFormModal.show(
+                contentContainer.getScene().getWindow(),
+                uuid,
+                ImageOwnerType.TRIP,
+                null,
+                image -> imagesGrid.refresh()
+        );
+    }
+
+    private void openImageViewModal(ImageResponse image) {
+        imageViewModal.show(
+                contentContainer.getScene().getWindow(),
+                image,
+                deleted -> imagesGrid.refresh()
+        );
     }
 
     private void renderRoutes(List<TripRouteResponse> routes, UUID forTripId) {

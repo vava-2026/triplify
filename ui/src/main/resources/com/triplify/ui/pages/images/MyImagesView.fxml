@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import com.triplify.ui.shared.component.card_grid.CardGridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.triplify.ui.pages.images.MyImagesController"
+           styleClass="page-root">
+    <stylesheets>
+        <String fx:value="/com/triplify/ui/pages/images/css/images.css"/>
+        <String fx:value="/com/triplify/ui/pages/trips/css/trips.css"/>
+    </stylesheets>
+    <VBox spacing="16">
+        <HBox fx:id="typeFilterContainer" styleClass="images-toolbar" spacing="10"/>
+        <CardGridPane fx:id="cardGrid" VBox.vgrow="ALWAYS"/>
+    </VBox>
+</StackPane>

@@ -1,6 +1,11 @@
 package com.triplify.ui.shared.component.card_grid;
 
 import com.triplify.application.shared.Pagination;
+import com.triplify.ui.i18n.I18n;
+import com.triplify.ui.shared.component.button.model.ButtonVariant;
+import com.triplify.ui.shared.component.button.view.AppButtonView;
+import com.triplify.ui.shared.util.FxmlLoaderHelper;
+import com.triplify.ui.shared.util.Localization;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -9,6 +14,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -60,6 +66,10 @@ public class CardGridPane<T> extends VBox {
     private int maxColumns = 5;
     private String emptyText = "Nothing found";
 
+    private boolean manualLoadMore = false;
+    private HBox loadMoreFooter;
+    private Label loadMoreButton;
+
     public CardGridPane() {
         getStyleClass().add("card-grid-root");
 
@@ -77,6 +87,17 @@ public class CardGridPane<T> extends VBox {
         emptyPane.setVisible(false);
         emptyPane.setManaged(false);
 
+        loadMoreButton = new Label();
+        loadMoreButton.getStyleClass().addAll("card-grid-load-more-btn");
+        Localization.bindText(loadMoreButton.textProperty(), "common.loadMore");
+        loadMoreButton.setOnMouseClicked(e -> loadNextPage());
+
+        loadMoreFooter = new HBox(loadMoreButton);
+        loadMoreFooter.setAlignment(Pos.CENTER);
+        loadMoreFooter.setPadding(new Insets(8, 0, 8, 0));
+        loadMoreFooter.setVisible(false);
+        loadMoreFooter.setManaged(false);
+
         scrollPane = new ScrollPane(grid);
         scrollPane.setFitToWidth(true);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
@@ -84,10 +105,10 @@ public class CardGridPane<T> extends VBox {
         scrollPane.getStyleClass().add("card-grid-scroll");
         VBox.setVgrow(scrollPane, Priority.ALWAYS);
 
-        getChildren().add(scrollPane);
+        getChildren().addAll(scrollPane, loadMoreFooter);
 
         scrollPane.vvalueProperty().addListener((obs, oldV, newV) -> {
-            if (newV != null && newV.doubleValue() >= 0.85) {
+            if (!manualLoadMore && newV != null && newV.doubleValue() >= 0.85) {
                 loadNextPage();
             }
         });
@@ -102,6 +123,10 @@ public class CardGridPane<T> extends VBox {
                 relayout(false);
             }
         });
+    }
+
+    public void setManualLoadMore(boolean enabled) {
+        this.manualLoadMore = enabled;
     }
 
     public void setPageSize(int pageSize) {
@@ -135,6 +160,7 @@ public class CardGridPane<T> extends VBox {
         loading = false;
         cardNodes.clear();
         scrollPane.setVvalue(0);
+        setLoadMoreVisible(false);
         showEmpty(false);
         loadNextPage();
     }
@@ -142,6 +168,7 @@ public class CardGridPane<T> extends VBox {
     private void loadNextPage() {
         if (loading || !hasMore || pageLoader == null || cardFactory == null) return;
         loading = true;
+        setLoadMoreVisible(false);
 
         PageResult<T> result = pageLoader.load(page, pageSize);
         List<T> items = result.items();
@@ -164,7 +191,11 @@ public class CardGridPane<T> extends VBox {
         updatePagination(result.pagination());
         relayout(false);
         loading = false;
-        ensureScrollable();
+        if (!manualLoadMore) {
+            ensureScrollable();
+        } else {
+            setLoadMoreVisible(hasMore);
+        }
     }
 
     private void updatePagination(Pagination pagination) {
@@ -175,6 +206,11 @@ public class CardGridPane<T> extends VBox {
         int totalPages = pagination.totalPages() == null ? 1 : pagination.totalPages();
         hasMore = pagination.page() < totalPages;
         page = pagination.page() + 1;
+    }
+
+    private void setLoadMoreVisible(boolean visible) {
+        loadMoreFooter.setVisible(visible);
+        loadMoreFooter.setManaged(visible);
     }
 
     private void ensureScrollable() {

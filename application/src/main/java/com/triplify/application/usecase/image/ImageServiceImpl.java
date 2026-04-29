@@ -6,7 +6,9 @@ import com.triplify.application.usecase.image.dto.AddImageRequest;
 import com.triplify.application.usecase.image.dto.DeleteImageRequest;
 import com.triplify.application.usecase.image.dto.GetImageByIdRequest;
 import com.triplify.application.usecase.image.dto.GetImagesRequest;
+import com.triplify.application.usecase.image.dto.ImageOwnerType;
 import com.triplify.application.usecase.image.dto.ImageResponse;
+import com.triplify.application.usecase.image.dto.LinkImageRequest;
 import com.triplify.application.usecase.image.dto.UpdateImageRequest;
 import com.triplify.domain.error.ImageError;
 import com.triplify.domain.model.Image;
@@ -179,6 +181,32 @@ public class ImageServiceImpl implements ImageService {
 
         log.info("Image deleted: id={}", id);
         return Result.ok();
+    }
+
+    @Override
+    public Result<Void> linkImage(LinkImageRequest request) {
+        UUID imageId = request.imageId();
+        UUID ownerId = request.ownerId();
+        ImageOwnerType ownerType = request.ownerType();
+
+        if (imageRepository.findById(imageId).isEmpty()) {
+            return Result.fail(new ImageError.NotFound(imageId.toString()));
+        }
+
+        try {
+            imageRepository.linkToOwner(imageId, ownerId, ownerType.name());
+
+            if ((ownerType == ImageOwnerType.TRIP_PLACE || ownerType == ImageOwnerType.TRIP_ROUTE)
+                    && request.tripId() != null) {
+                imageRepository.linkToOwner(imageId, request.tripId(), ImageOwnerType.TRIP.name());
+            }
+
+            log.info("Image linked: imageId={} ownerId={} ownerType={}", imageId, ownerId, ownerType);
+            return Result.ok();
+        } catch (RuntimeException e) {
+            log.error("Failed to link image id='{}' to owner='{}' type='{}'", imageId, ownerId, ownerType, e);
+            return Result.fail(new ApplicationError.StorageFailure("linkImage", e));
+        }
     }
 
     private Result<Void> validateImageFile(Path imageFile) {

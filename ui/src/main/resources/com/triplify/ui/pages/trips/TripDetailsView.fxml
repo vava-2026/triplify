@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.lang.String?>
+<?import com.triplify.ui.shared.component.card_grid.CardGridPane?>
 <?import com.triplify.ui.shared.component.detail_actions.view.DetailActionButtonsView?>
 <?import com.triplify.ui.shared.component.section_header.view.SectionHeaderView?>
 <?import javafx.scene.control.Button?>
@@ -22,6 +23,7 @@
     <stylesheets>
         <String fx:value="/com/triplify/ui/pages/places/place_details.css"/>
         <String fx:value="/com/triplify/ui/pages/trips/css/trips.css"/>
+        <String fx:value="/com/triplify/ui/pages/images/css/images.css"/>
     </stylesheets>
     <content>
         <StackPane styleClass="page-root,place-details-root">
@@ -82,6 +84,12 @@
                         <VBox styleClass="page-card,place-details-card" spacing="16">
                             <SectionHeaderView fx:id="storiesHeader" iconLiteral="fth-book-open"/>
                             <FlowPane fx:id="storiesFlow" styleClass="place-details-grid"/>
+                        </VBox>
+
+                        <VBox styleClass="page-card,place-details-card" spacing="12">
+                            <SectionHeaderView fx:id="imagesHeader" iconLiteral="fth-image"/>
+                            <CardGridPane fx:id="imagesGrid"
+                                         minHeight="200" prefHeight="360" maxHeight="360"/>
                         </VBox>
                     </VBox>
                 </VBox>
