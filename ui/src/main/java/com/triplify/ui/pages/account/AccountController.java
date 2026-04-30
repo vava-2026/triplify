@@ -73,6 +73,7 @@ public class AccountController extends SimpleLifecycleAwareController {
     @FXML private HBox profileNameEditorRow;
     @FXML private StackPane profileNameInputContainer;
     @FXML private StackPane profileNameSaveButtonContainer;
+    @FXML private StatisticsController statisticsSectionController;
 
     @Inject private ToastService toast;
     @Inject private AuthService authService;
@@ -149,6 +150,10 @@ public class AccountController extends SimpleLifecycleAwareController {
 
     @Override
     public void onLifecycleShow() {
+        if (statisticsSectionController != null) {
+            statisticsSectionController.onLifecycleShow();
+        }
+
         refreshProfileHero();
         loadBadges();
     }

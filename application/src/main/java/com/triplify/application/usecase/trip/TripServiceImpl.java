@@ -12,6 +12,8 @@ import com.triplify.application.usecase.image.dto.GetImageByIdRequest;
 import com.triplify.application.usecase.image.dto.ImageResponse;
 import com.triplify.application.usecase.session.SessionUser;
 import com.triplify.application.usecase.session.UserSessionContext;
+import com.triplify.application.usecase.statistic.StatisticService;
+import com.triplify.application.usecase.statistic.dto.IncrementStatisticRequest;
 import com.triplify.application.usecase.tag.dto.TagResponse;
 import com.triplify.application.usecase.trip.dto.AddTripRequest;
 import com.triplify.application.usecase.trip.dto.DeleteTripRequest;
@@ -30,6 +32,7 @@ import com.triplify.domain.model.Country;
 import com.triplify.domain.model.Tag;
 import com.triplify.domain.model.Trip;
 import com.triplify.domain.model.enums.StatusEnum;
+import com.triplify.domain.model.enums.StatisticType;
 import com.triplify.domain.pagination.Page;
 import com.triplify.domain.repository.CategoryRepository;
 import com.triplify.domain.repository.CountryRepository;
@@ -62,6 +65,7 @@ public class TripServiceImpl implements TripService {
     private final TagRepository tagRepository;
     private final UserSessionContext userSessionContext;
     private final ImageService imageService;
+    private final StatisticService statisticService;
 
     @Inject
     TripServiceImpl(
@@ -70,7 +74,8 @@ public class TripServiceImpl implements TripService {
             CountryRepository countryRepository,
             TagRepository tagRepository,
             UserSessionContext userSessionContext,
-            ImageService imageService
+                ImageService imageService,
+                StatisticService statisticService
     ) {
         this.tripRepository = tripRepository;
         this.categoryRepository = categoryRepository;
@@ -78,6 +83,7 @@ public class TripServiceImpl implements TripService {
         this.tagRepository = tagRepository;
         this.userSessionContext = userSessionContext;
         this.imageService = imageService;
+        this.statisticService = statisticService;
     }
 
     @Override
@@ -118,6 +124,17 @@ public class TripServiceImpl implements TripService {
         tripRepository.replaceCountryIds(trip.getId(), toIdSet(relations.countries()));
 
         updateTripCoverImage(trip.getId(), request.coverImage(), null).orThrow();
+        statisticService.incrementStatistic(new IncrementStatisticRequest(user.userId(), StatisticType.TOTAL_TRIPS)).orThrow();
+        if (request.countryIds() != null && !request.countryIds().isEmpty()) {
+            statisticService.incrementStatistic(new IncrementStatisticRequest(user.userId(), StatisticType.COUNTRIES_VISITED, request.countryIds().size())).orThrow();
+        }
+        long travelDays = java.time.temporal.ChronoUnit.DAYS.between(
+                request.startedAt().atZone(ZoneOffset.UTC).toLocalDate(),
+                request.endedAt().atZone(ZoneOffset.UTC).toLocalDate()
+        ) + 1;
+        if (travelDays > 0) {
+            statisticService.incrementStatistic(new IncrementStatisticRequest(user.userId(), StatisticType.TRAVEL_DAYS, travelDays)).orThrow();
+        }
 
         log.info("Added trip id='{}', title='{}' by userId='{}'", trip.getId(), trip.getTitle(), user.userId());
         return getTripById(new GetTripByIdRequest(trip.getId()));

@@ -16,5 +16,6 @@ public sealed interface DomainError extends AppError permits
         TripPlaceError,
         TripRouteError,
         StoryError,
-        ImageError {
+        ImageError,
+        StatisticError {
 }

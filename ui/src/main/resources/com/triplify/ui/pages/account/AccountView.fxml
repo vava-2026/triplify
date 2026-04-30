@@ -24,7 +24,7 @@
     </stylesheets>
     <ScrollPane fitToWidth="true" fitToHeight="true" hbarPolicy="NEVER" vbarPolicy="NEVER" styleClass="page-scroll">
             <StackPane styleClass="account-scroll-content">
-            <VBox spacing="14" styleClass="account-page-content" maxWidth="1060">
+            <VBox spacing="30" styleClass="account-page-content" minWidth="960" maxWidth="1060">
                 <HBox styleClass="profile-hero-card" fillHeight="false">
                     <HBox alignment="CENTER_LEFT" spacing="35" fillHeight="false">
                         <StackPane styleClass="profile-avatar-circle">
@@ -73,6 +73,8 @@
 
                     <StackPane fx:id="logoutButtonContainer" alignment="CENTER_RIGHT"/>
                 </HBox>
+
+                <fx:include fx:id="statisticsSection" source="StatisticsView.fxml" VBox.vgrow="ALWAYS"/>
 
                 <VBox>
                     <GridPane fx:id="badgesGrid" styleClass="badges-grid">

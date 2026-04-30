@@ -8,8 +8,12 @@ import com.triplify.application.usecase.image.dto.GetImageByIdRequest;
 import com.triplify.application.usecase.image.dto.GetImagesRequest;
 import com.triplify.application.usecase.image.dto.ImageResponse;
 import com.triplify.application.usecase.image.dto.UpdateImageRequest;
+import com.triplify.application.usecase.session.UserSessionContext;
+import com.triplify.application.usecase.statistic.StatisticService;
+import com.triplify.application.usecase.statistic.dto.IncrementStatisticRequest;
 import com.triplify.domain.error.ImageError;
 import com.triplify.domain.model.Image;
+import com.triplify.domain.model.enums.StatisticType;
 import com.triplify.domain.pagination.Page;
 import com.triplify.domain.repository.ImageRepository;
 import com.triplify.domain.result.Result;
@@ -35,11 +39,15 @@ public class ImageServiceImpl implements ImageService {
 
     private final ImageRepository imageRepository;
     private final ImageStorageService imageStorageService;
+    private final StatisticService statisticService;
+    private final UserSessionContext sessionContext;
 
     @Inject
-    public ImageServiceImpl(ImageRepository imageRepository, ImageStorageService imageStorageService) {
+    public ImageServiceImpl(ImageRepository imageRepository, ImageStorageService imageStorageService, StatisticService statisticService, UserSessionContext sessionContext) {
         this.imageRepository = imageRepository;
         this.imageStorageService = imageStorageService;
+        this.statisticService = statisticService;
+        this.sessionContext = sessionContext;
     }
 
     @Override
@@ -52,6 +60,9 @@ public class ImageServiceImpl implements ImageService {
             Image image = new Image(storedPath);
             image.updateDescription(request.description());
             imageRepository.save(image);
+            if (request.description() == null || !request.description().startsWith("Badge image for ")) {
+                statisticService.incrementStatistic(new IncrementStatisticRequest(sessionContext.getCurrent().orElseThrow().userId(), StatisticType.PHOTOS_UPLOADED)).orThrow();
+            }
             log.info("Image added: id={}", image.getId());
             return Result.ok(ImageResponse.from(image));
         } catch (RuntimeException e) {
