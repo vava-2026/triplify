@@ -1,44 +1,40 @@
 package com.triplify.ui.shared.component.button.view;
 
-import com.triplify.ui.i18n.I18n;
+import com.triplify.ui.shared.component.button.model.ButtonVariant;
+import com.triplify.ui.shared.util.FxmlLoaderHelper;
+import com.triplify.ui.shared.util.Localization;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
-import java.net.URL;
-import java.util.ResourceBundle;
-
-public class ConfirmDialogView implements Initializable {
+public class ConfirmDialogView {
 
     @FXML private Label messageLabel;
-    @FXML private Button cancelBtn;
-    @FXML private Button confirmBtn;
+    @FXML private HBox actionsBox;
 
     private Runnable onConfirmed;
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        cancelBtn.textProperty().bind(
-                javafx.beans.binding.Bindings.createStringBinding(
-                        () -> I18n.t("button.cancel"), I18n.bundleProperty()));
-        confirmBtn.textProperty().bind(
-                javafx.beans.binding.Bindings.createStringBinding(
-                        () -> I18n.t("button.confirm"), I18n.bundleProperty()));
-    }
-
-    public void configure(String message, Runnable onConfirmed) {
+    public void configure(String message, Runnable onConfirmed, FxmlLoaderHelper fxmlLoader) {
         this.onConfirmed = onConfirmed;
         messageLabel.setText(message);
+
+        Button cancelBtn = AppButtonView.builder(fxmlLoader)
+                .variant(ButtonVariant.SECONDARY)
+                .labelBinding(Localization.textBinding("button.cancel"))
+                .onAction(this::close)
+                .build();
+
+        Button confirmBtn = AppButtonView.builder(fxmlLoader)
+                .variant(ButtonVariant.DANGER)
+                .labelBinding(Localization.textBinding("button.confirm"))
+                .onAction(this::onConfirm)
+                .build();
+
+        actionsBox.getChildren().setAll(cancelBtn, confirmBtn);
     }
 
-    @FXML
-    private void onCancel() {
-        close();
-    }
-
-    @FXML
     private void onConfirm() {
         close();
         if (onConfirmed != null) onConfirmed.run();
@@ -49,4 +45,3 @@ public class ConfirmDialogView implements Initializable {
         stage.close();
     }
 }
-

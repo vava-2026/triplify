@@ -15,6 +15,7 @@ import com.triplify.domain.pagination.PageRequest;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.pages.categories.Categories;
+import com.triplify.ui.shared.component.add_card.view.AddCardView;
 import com.triplify.ui.shared.component.card_grid.CardGridPane;
 import com.triplify.ui.shared.component.tag_picker.TagPickerItem;
 import com.triplify.ui.pages.countries.model.Countries;
@@ -30,12 +31,9 @@ import com.triplify.ui.shared.util.Localization;
 import static com.triplify.ui.shared.util.DisplayUtils.*;
 
 import javafx.fxml.FXML;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import org.kordamp.ikonli.javafx.FontIcon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rahulstech.jfx.routing.element.RouterArgument;
@@ -165,10 +163,10 @@ public class MyTripsController extends SimpleLifecycleAwareController {
 
     private void configureGrid() {
         cardGrid.setMinCardWidth(220);
-        cardGrid.setMaxColumns(4);
+        cardGrid.setMaxColumns(5);
         cardGrid.setPageSize(8);
-        cardGrid.setEmptyText("No trips found");
-        cardGrid.addPinnedNode(buildCreateTripCard());
+        cardGrid.setEmptyTextKey("trips.empty");
+        cardGrid.addPinnedNode(new AddCardView("trip.add.card.title", "trip.add.card.subtitle", this::onCreateTrip));
         cardGrid.setCardFactory(this::buildTripCard);
         cardGrid.setPageLoader(this::loadTripsPage);
     }
@@ -235,26 +233,6 @@ public class MyTripsController extends SimpleLifecycleAwareController {
         return card.getRoot();
     }
 
-    private Node buildCreateTripCard() {
-        StackPane card = new StackPane();
-        card.getStyleClass().add("trip-create-card");
-        card.setMaxWidth(Double.MAX_VALUE);
-        card.setOnMouseClicked(event -> onCreateTrip());
-
-        VBox content = new VBox(6);
-        content.setAlignment(Pos.CENTER);
-        FontIcon icon = new FontIcon("fth-plus");
-        icon.getStyleClass().add("trip-create-icon");
-
-        Label title = new Label("Create New Trip");
-        title.getStyleClass().add("trip-create-title");
-        Label subtitle = new Label("Plan your next journey");
-        subtitle.getStyleClass().add("trip-create-subtitle");
-
-        content.getChildren().addAll(icon, title, subtitle);
-        card.getChildren().add(content);
-        return card;
-    }
 
     private void openTrip(TripResponse trip) {
         RouterArgument args = new RouterArgument();

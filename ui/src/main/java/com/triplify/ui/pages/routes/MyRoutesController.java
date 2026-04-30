@@ -8,6 +8,7 @@ import com.triplify.application.usecase.route.dto.RouteResponse;
 import com.triplify.domain.pagination.PageRequest;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.routing.RouteIds;
+import com.triplify.ui.shared.component.add_card.view.AddCardView;
 import com.triplify.ui.shared.component.card_grid.CardGridPane;
 import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.pages.routes.view.RouteCardView;
@@ -20,13 +21,10 @@ import com.triplify.ui.shared.util.Localization;
 
 import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
-import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
-import org.kordamp.ikonli.javafx.FontIcon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rahulstech.jfx.routing.element.RouterArgument;
@@ -104,11 +102,11 @@ public class MyRoutesController extends SimpleLifecycleAwareController {
     }
 
     private void configureGrid() {
-        cardGrid.setMinCardWidth(257);
-        cardGrid.setMaxColumns(4);
+        cardGrid.setMinCardWidth(220);
+        cardGrid.setMaxColumns(5);
         cardGrid.setPageSize(8);
-        cardGrid.setEmptyText("No routes found");
-        cardGrid.addPinnedNode(buildCreateRouteCard());
+        cardGrid.setEmptyTextKey("routes.empty");
+        cardGrid.addPinnedNode(new AddCardView("route.add.card.title", "route.add.card.subtitle", this::onCreateRoute));
         cardGrid.setCardFactory(this::buildRouteCard);
         cardGrid.setPageLoader(this::loadRoutesPage);
     }
@@ -142,26 +140,6 @@ public class MyRoutesController extends SimpleLifecycleAwareController {
         return card.getRoot();
     }
 
-    private Node buildCreateRouteCard() {
-        StackPane card = new StackPane();
-        card.getStyleClass().add("trip-create-card");
-        card.setMaxWidth(Double.MAX_VALUE);
-        card.setOnMouseClicked(event -> onCreateRoute());
-
-        VBox content = new VBox(6);
-        content.setAlignment(Pos.CENTER);
-        FontIcon icon = new FontIcon("fth-plus");
-        icon.getStyleClass().add("trip-create-icon");
-
-        Label title = new Label("Create New Route");
-        title.getStyleClass().add("trip-create-title");
-        Label subtitle = new Label("Plan your next journey");
-        subtitle.getStyleClass().add("trip-create-subtitle");
-
-        content.getChildren().addAll(icon, title, subtitle);
-        card.getChildren().add(content);
-        return card;
-    }
 
     private void openRoute(RouteResponse route) {
         if (route == null || route.id() == null) return;

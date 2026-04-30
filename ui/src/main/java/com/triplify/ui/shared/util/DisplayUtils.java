@@ -2,7 +2,11 @@ package com.triplify.ui.shared.util;
 
 import com.triplify.application.usecase.country.dto.CountryResponse;
 import com.triplify.application.usecase.image.dto.ImageResponse;
+import com.triplify.application.usecase.place.dto.PlaceResponse;
 import com.triplify.domain.model.enums.StatusEnum;
+import javafx.scene.control.Label;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -52,5 +56,23 @@ public final class DisplayUtils {
     public static String deriveCoverUrl(ImageResponse coverImage) {
         if (coverImage == null || coverImage.url() == null) return null;
         return coverImage.url().toUri().toString();
+    }
+
+    public static void bindCountry(HBox countryRow, Label label, ImageView emojiView, CountryResponse country, int emojiSize) {
+        label.textProperty().unbind();
+        Localization.bindLocalizedText(label.textProperty(), country);
+
+        boolean hasCountry = country != null;
+        countryRow.setVisible(hasCountry);
+        countryRow.setManaged(hasCountry);
+
+        if (!hasCountry) {
+            emojiView.setVisible(false);
+            emojiView.setManaged(false);
+            emojiView.setImage(null);
+            return;
+        }
+
+        EditorUtils.applyEmojiImage(emojiView, country.emojiUnicode(), emojiSize);
     }
 }

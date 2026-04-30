@@ -110,6 +110,20 @@ public enum AppPage {
             EnumSet.noneOf(RoleEnum.class),
             false
     ),
+    MY_IMAGES(
+            RouteIds.MY_IMAGES,
+            "nav.myImages",
+            "fth-image",
+            EnumSet.of(RoleEnum.USER, RoleEnum.PRO_USER),
+            true,
+            false,
+            true,
+            false,
+            false,
+            null,
+            EnumSet.noneOf(RoleEnum.class),
+            false
+    ),
     TRIP_DETAILS(
             RouteIds.TRIP_DETAILS,
             "page.tripDetails",

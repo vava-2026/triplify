@@ -73,6 +73,10 @@
                  fxml="com/triplify/ui/pages/trips/MyTripsView.fxml"
                  singleTop="true"/>
 
+    <destination id="my_images"
+                 fxml="com/triplify/ui/pages/images/MyImagesView.fxml"
+                 singleTop="true"/>
+
     <destination id="my_badges"
                  fxml="com/triplify/ui/pages/placeholder/PlaceholderPageView.fxml"
                  singleTop="true"/>

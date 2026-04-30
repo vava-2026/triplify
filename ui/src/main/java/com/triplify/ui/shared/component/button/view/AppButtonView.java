@@ -12,7 +12,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ProgressIndicator;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -61,6 +61,7 @@ public class AppButtonView implements Initializable {
         private boolean disabled = false;
         private boolean requireConfirm = false;
         private String confirmMessage = "Are you sure?";
+        private ObservableValue<String> confirmMessageBinding = null;
         private Runnable onAction = null;
 
         private Builder(FxmlLoaderHelper fxmlLoader) { this.fxmlLoader = fxmlLoader; }
@@ -72,6 +73,7 @@ public class AppButtonView implements Initializable {
         public Builder icon(String iconLiteral) { this.icon = iconLiteral; return this; }
         public Builder disabled(boolean v) { this.disabled = v; return this; }
         public Builder requireConfirm(String msg) { this.requireConfirm = true; this.confirmMessage = msg; return this; }
+        public Builder requireConfirm(ObservableValue<String> msgBinding) { this.requireConfirm = true; this.confirmMessageBinding = msgBinding; return this; }
         public Builder onAction(Runnable r) { this.onAction = r; return this; }
 
         public Button build() {
@@ -82,14 +84,14 @@ public class AppButtonView implements Initializable {
             if (FXML_URL == null) throw new IllegalStateException("AppButton.fxml not found");
             FxmlLoadResult<?, AppButtonView> result = fxmlLoader.load(FXML_URL);
             AppButtonView view = result.controller();
-            view.configure(label, labelBinding, variant, size, icon, disabled, requireConfirm, confirmMessage, onAction);
+            view.configure(label, labelBinding, variant, size, icon, disabled, requireConfirm, confirmMessage, confirmMessageBinding, onAction);
             return view;
         }
     }
 
     private void configure(String label, ObservableValue<String> labelBinding, ButtonVariant variant, AppComponentSize size, String iconLiteral,
                            boolean disabled, boolean requireConfirm, String confirmMessage,
-                           Runnable onAction) {
+                           ObservableValue<String> confirmMessageBinding, Runnable onAction) {
         viewModel = new AppButtonViewModel();
         viewModel.setLabel(label);
         viewModel.setVariant(variant);
@@ -97,7 +99,11 @@ public class AppButtonView implements Initializable {
         viewModel.setIcon(iconLiteral);
         viewModel.setDisabled(disabled);
         viewModel.setRequireConfirm(requireConfirm);
-        viewModel.setConfirmMessage(confirmMessage);
+        if (confirmMessageBinding != null) {
+            viewModel.confirmMessageProperty().bind(confirmMessageBinding);
+        } else {
+            viewModel.setConfirmMessage(confirmMessage);
+        }
         viewModel.setOnAction(onAction);
 
         if (CSS_URL != null) {
@@ -149,23 +155,31 @@ public class AppButtonView implements Initializable {
 
     private void showConfirmDialog() {
         if (DIALOG_FXML_URL == null) return;
-        FxmlLoadResult<VBox, ConfirmDialogView> result = fxmlLoader.load(DIALOG_FXML_URL);
-        VBox content = result.node();
+        FxmlLoadResult<StackPane, ConfirmDialogView> result = fxmlLoader.load(DIALOG_FXML_URL);
+        StackPane content = result.node();
         ConfirmDialogView dialogView = result.controller();
-        dialogView.configure(viewModel.getConfirmMessage(), viewModel::execute);
+        dialogView.configure(viewModel.getConfirmMessage(), viewModel::execute, fxmlLoader);
 
         Scene scene = new Scene(content);
+        scene.setFill(javafx.scene.paint.Color.TRANSPARENT);
         if (CSS_URL != null) scene.getStylesheets().add(CSS_URL.toExternalForm());
         if (button.getScene() != null) {
             scene.getStylesheets().addAll(button.getScene().getStylesheets());
         }
 
-        Stage dialog = new Stage(StageStyle.UTILITY);
+        Stage dialog = new Stage(StageStyle.TRANSPARENT);
         dialog.initModality(Modality.APPLICATION_MODAL);
-        if (button.getScene() != null) {
-            dialog.initOwner(button.getScene().getWindow());
+        if (button.getScene() != null && button.getScene().getWindow() != null) {
+            javafx.stage.Window owner = button.getScene().getWindow();
+            dialog.initOwner(owner);
+            double width = owner.getWidth() > 0 ? owner.getWidth() : 1280;
+            double height = owner.getHeight() > 0 ? owner.getHeight() : 800;
+            content.setPrefSize(width, height);
+            dialog.setX(owner.getX());
+            dialog.setY(owner.getY());
+            dialog.setWidth(width);
+            dialog.setHeight(height);
         }
-        dialog.setResizable(false);
         dialog.setScene(scene);
         dialog.showAndWait();
     }

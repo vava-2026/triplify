@@ -67,7 +67,7 @@ public class PlaceCardView implements Initializable {
         EditorUtils.applyCoverBackground(media, EditorUtils.resolveCoverImage(coverUrl));
 
         titleLabel.setText(EditorUtils.safeText(place.title(), "Untitled place"));
-        bindCountry(place);
+        DisplayUtils.bindCountry(countryRow, countryLabel, countryEmojiView, place.country(), COUNTRY_EMOJI_SIZE);
         coordLabel.setText(String.format(java.util.Locale.US, "%.4f, %.4f", place.latitude(), place.longitude()));
     }
 
@@ -85,23 +85,5 @@ public class PlaceCardView implements Initializable {
         view.setOnOpen(onOpen);
         view.setPlace(place);
         return view;
-    }
-
-    private void bindCountry(PlaceResponse place) {
-        countryLabel.textProperty().unbind();
-        Localization.bindLocalizedText(countryLabel.textProperty(), place.country());
-
-        boolean hasCountry = place.country() != null;
-        countryRow.setVisible(hasCountry);
-        countryRow.setManaged(hasCountry);
-
-        if (!hasCountry) {
-            countryEmojiView.setVisible(false);
-            countryEmojiView.setManaged(false);
-            countryEmojiView.setImage(null);
-            return;
-        }
-
-        EditorUtils.applyEmojiImage(countryEmojiView, place.country().emojiUnicode(), COUNTRY_EMOJI_SIZE);
     }
 }
