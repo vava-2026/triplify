@@ -22,6 +22,7 @@ import com.triplify.ui.shared.component.section_header.view.SectionHeaderView;
 import com.triplify.ui.pages.trips.view.TripCardView;
 import com.triplify.ui.shared.toast.ToastService;
 import com.triplify.ui.shared.util.EditorUtils;
+import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import com.triplify.ui.shared.util.Localization;
 
 import static com.triplify.ui.shared.util.DisplayUtils.*;
@@ -69,6 +70,7 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
     @Inject private PlaceService placeService;
     @Inject private ToastService toast;
     @Inject private ErrorHandler errorHandler;
+    @Inject private FxmlLoaderHelper fxmlLoader;
 
     private String placeId;
 
@@ -94,12 +96,8 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         installRoundedPaneClip(placeMap, 20);
         placeMap.setSelectionEnabled(false);
         placeMap.setControlsVisible(false);
-        Localization.bindText(actionButtonsView.getPrimaryButton().textProperty(), "place.details.action.edit");
-        Localization.bindText(actionButtonsView.getSecondaryButton().textProperty(), "place.details.action.delete");
-        actionButtonsView.getPrimaryButton().setOnAction(event -> onEditPlace());
-        actionButtonsView.getSecondaryButton().setOnAction(event -> onDeletePlace());
-        configureButtonIcon(actionButtonsView.getPrimaryButton(), "fth-edit-3", "app-btn-icon");
-        configureButtonIcon(actionButtonsView.getSecondaryButton(), "fth-trash-2", "app-btn-icon");
+        actionButtonsView.configurePrimary(fxmlLoader, Localization.textBinding("place.details.action.edit"), "fth-edit-3", this::onEditPlace);
+        actionButtonsView.configureDelete(fxmlLoader, Localization.textBinding("place.details.action.delete"), "fth-trash-2", Localization.textBinding("place.details.action.delete.confirm"), this::onDeletePlace);
     }
 
     @Override

@@ -12,6 +12,7 @@ import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.shared.component.detail_actions.view.DetailActionButtonsView;
 import com.triplify.ui.shared.component.section_header.view.SectionHeaderView;
 import com.triplify.ui.shared.toast.ToastService;
+import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import com.triplify.ui.shared.util.Localization;
 
 import static com.triplify.ui.shared.util.EditorUtils.configureButtonIcon;
@@ -48,6 +49,7 @@ public class StoryDetailsController extends SimpleLifecycleAwareController {
     @Inject private StoryService storyService;
     @Inject private ToastService toast;
     @Inject private ErrorHandler errorHandler;
+    @Inject private FxmlLoaderHelper fxmlLoader;
 
     private String storyId;
 
@@ -58,12 +60,8 @@ public class StoryDetailsController extends SimpleLifecycleAwareController {
         Localization.bindText(descriptionTitleLabel.textProperty(), "story.details.description");
         Localization.bindText(contextHeader.titleProperty(), "story.details.section.context");
 
-        Localization.bindText(actionButtonsView.getPrimaryButton().textProperty(), "story.details.action.edit");
-        Localization.bindText(actionButtonsView.getSecondaryButton().textProperty(), "story.details.action.delete");
-        actionButtonsView.getPrimaryButton().setOnAction(e -> onEditStory());
-        actionButtonsView.getSecondaryButton().setOnAction(e -> onDeleteStory());
-        configureButtonIcon(actionButtonsView.getPrimaryButton(), "fth-edit-3", "app-btn-icon");
-        configureButtonIcon(actionButtonsView.getSecondaryButton(), "fth-trash-2", "app-btn-icon");
+        actionButtonsView.configurePrimary(fxmlLoader, Localization.textBinding("story.details.action.edit"), "fth-edit-3", this::onEditStory);
+        actionButtonsView.configureDelete(fxmlLoader, Localization.textBinding("story.details.action.delete"), "fth-trash-2", Localization.textBinding("story.details.action.delete.confirm"), this::onDeleteStory);
     }
 
     @Override

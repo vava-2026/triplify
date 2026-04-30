@@ -16,6 +16,7 @@ import com.triplify.ui.shared.component.empty_state.view.EmptyStateCardView;
 import com.triplify.ui.shared.component.section_header.view.SectionHeaderView;
 import com.triplify.ui.shared.toast.ToastService;
 import com.triplify.ui.shared.util.EditorUtils;
+import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import com.triplify.ui.shared.util.Localization;
 
 import static com.triplify.ui.shared.util.EditorUtils.installRoundedClip;
@@ -62,6 +63,7 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
     @Inject private RouteService routeService;
     @Inject private ToastService toast;
     @Inject private ErrorHandler errorHandler;
+    @Inject private FxmlLoaderHelper fxmlLoader;
 
     private String routeId;
 
@@ -83,12 +85,8 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
         routeMap.setSelectionEnabled(false);
         routeMap.setControlsVisible(false);
 
-        Localization.bindText(actionButtonsView.getPrimaryButton().textProperty(), "route.details.action.edit");
-        Localization.bindText(actionButtonsView.getSecondaryButton().textProperty(), "route.details.action.delete");
-        actionButtonsView.getPrimaryButton().setOnAction(e -> onEditRoute());
-        actionButtonsView.getSecondaryButton().setOnAction(e -> onDeleteRoute());
-        configureButtonIcon(actionButtonsView.getPrimaryButton(), "fth-edit-3", "app-btn-icon");
-        configureButtonIcon(actionButtonsView.getSecondaryButton(), "fth-trash-2", "app-btn-icon");
+        actionButtonsView.configurePrimary(fxmlLoader, Localization.textBinding("route.details.action.edit"), "fth-edit-3", this::onEditRoute);
+        actionButtonsView.configureDelete(fxmlLoader, Localization.textBinding("route.details.action.delete"), "fth-trash-2", Localization.textBinding("route.details.action.delete.confirm"), this::onDeleteRoute);
     }
 
     @Override

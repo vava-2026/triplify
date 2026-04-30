@@ -15,17 +15,16 @@
           alignment="CENTER"
           spacing="20"
           prefWidth="340"
-          maxWidth="340">
+          maxWidth="340"
+          prefHeight="200"
+          maxHeight="200">
         <padding>
             <Insets top="28" right="28" bottom="28" left="28"/>
         </padding>
 
         <Label fx:id="messageLabel" styleClass="confirm-dialog-message" wrapText="true" maxWidth="Infinity"/>
 
-        <HBox spacing="12" alignment="CENTER_RIGHT">
-            <Button fx:id="cancelBtn" styleClass="app-btn app-btn-secondary" mnemonicParsing="false" onAction="#onCancel"/>
-            <Button fx:id="confirmBtn" styleClass="app-btn app-btn-primary" mnemonicParsing="false" onAction="#onConfirm"/>
-        </HBox>
+        <HBox fx:id="actionsBox" spacing="12" alignment="CENTER_RIGHT"/>
     </VBox>
 
 </StackPane>

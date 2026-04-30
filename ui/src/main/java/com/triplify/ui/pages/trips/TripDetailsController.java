@@ -123,12 +123,8 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         heroImageView.fitHeightProperty().bind(heroContainer.heightProperty());
         installRoundedClip(heroContainer, 28);
 
-        Localization.bindText(actionButtonsView.getPrimaryButton().textProperty(), "trip.details.action.edit");
-        Localization.bindText(actionButtonsView.getSecondaryButton().textProperty(), "trip.details.action.delete");
-        actionButtonsView.getPrimaryButton().setOnAction(e -> onEditTrip());
-        actionButtonsView.getSecondaryButton().setOnAction(e -> onDeleteTrip());
-        configureButtonIcon(actionButtonsView.getPrimaryButton(), "fth-edit-3", "app-btn-icon");
-        configureButtonIcon(actionButtonsView.getSecondaryButton(), "fth-trash-2", "app-btn-icon");
+        actionButtonsView.configurePrimary(fxmlLoader, Localization.textBinding("trip.details.action.edit"), "fth-edit-3", this::onEditTrip);
+        actionButtonsView.configureDelete(fxmlLoader, Localization.textBinding("trip.details.action.delete"), "fth-trash-2", Localization.textBinding("trip.details.action.delete.confirm"), this::onDeleteTrip);
 
         Localization.bindText(imagesHeader.titleProperty(), "trip.details.section.images");
         setupImagesGrid();
