@@ -164,6 +164,100 @@ public class TripRepositoryImpl implements TripRepository {
     }
 
     @Override
+    public List<Trip> findOverlappingWithMonth(Instant monthStart, Instant monthEnd, UUID userId, StatusEnum status) {
+        StringBuilder sql = new StringBuilder(TRIP_WITH_CATEGORY_SELECT)
+                .append("""
+                        WHERE t.user_id = ?
+                          AND (
+                            (t.started_at IS NOT NULL AND t.ended_at IS NOT NULL
+                              AND t.started_at < ? AND t.ended_at > ?)
+                            OR (t.started_at IS NOT NULL AND t.ended_at IS NULL
+                              AND t.started_at >= ? AND t.started_at < ?)
+                            OR (t.started_at IS NULL AND t.ended_at IS NOT NULL
+                              AND t.ended_at >= ? AND t.ended_at < ?)
+                          )
+                        """);
+
+        List<Object> params = new ArrayList<>();
+        params.add(userId.toString());
+        params.add(monthEnd.toString());
+        params.add(monthStart.toString());
+        params.add(monthStart.toString());
+        params.add(monthEnd.toString());
+        params.add(monthStart.toString());
+        params.add(monthEnd.toString());
+
+        if (status != null) {
+            sql.append("AND t.status = ? ");
+            params.add(status.getValue());
+        }
+
+        sql.append("ORDER BY COALESCE(t.started_at, t.ended_at) ASC");
+
+        try (Connection conn = SQLiteConnectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                List<Trip> trips = new ArrayList<>();
+                while (rs.next()) {
+                    trips.add(mapTrip(rs));
+                }
+                return hydrateTrips(conn, trips);
+            }
+        } catch (SQLException e) {
+            log.error("Failed to find trips overlapping month start='{}' end='{}'", monthStart, monthEnd, e);
+            throw new RuntimeException("Database error while finding trips for calendar", e);
+        }
+    }
+
+    @Override
+    public Page<Trip> findUndated(PageRequest pageRequest, UUID userId, StatusEnum status) {
+        StringBuilder sql = new StringBuilder(TRIP_WITH_CATEGORY_SELECT)
+                .append("WHERE t.user_id = ? AND t.started_at IS NULL AND t.ended_at IS NULL ");
+
+        List<Object> params = new ArrayList<>();
+        params.add(userId.toString());
+
+        if (status != null) {
+            sql.append("AND t.status = ? ");
+            params.add(status.getValue());
+        }
+
+        sql.append("ORDER BY t.created_at DESC LIMIT ? OFFSET ?");
+        params.add(pageRequest.size() + 1);
+        params.add(pageRequest.offset());
+
+        try (Connection conn = SQLiteConnectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                List<Trip> trips = new ArrayList<>();
+                while (rs.next()) {
+                    trips.add(mapTrip(rs));
+                }
+
+                boolean hasNext = trips.size() > pageRequest.size();
+                if (hasNext) {
+                    trips.removeLast();
+                }
+
+                return Page.of(hydrateTrips(conn, trips), pageRequest, hasNext);
+            }
+        } catch (SQLException e) {
+            log.error("Failed to find undated trips for userId='{}'", userId, e);
+            throw new RuntimeException("Database error while finding undated trips", e);
+        }
+    }
+
+    @Override
     public void create(Trip trip) {
         String sql = """
             INSERT INTO trips (

@@ -1,43 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.lang.String?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.FlowPane?>
-<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
-<?import org.kordamp.ikonli.javafx.FontIcon?>
+<?import com.triplify.ui.shared.component.card_grid.CardGridPane?>
 
-<StackPane xmlns="http://javafx.com/javafx"
-           xmlns:fx="http://javafx.com/fxml"
-           fx:controller="com.triplify.ui.pages.SimplePageController"
-           styleClass="page-root">
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.triplify.ui.pages.calendar.CalendarController"
+            styleClass="calendar-root">
     <stylesheets>
         <String fx:value="/com/triplify/ui/pages/calendar/calendar.css"/>
     </stylesheets>
-    <VBox spacing="14" maxWidth="980" styleClass="calendar-content">
-        <Label text="Calendar" styleClass="page-title"/>
-        <Label text="Keep track of travel dates and reminders." styleClass="page-subtitle"/>
 
-        <VBox styleClass="page-card,calendar-panel">
-            <FlowPane hgap="16" vgap="16" styleClass="calendar-date-grid">
-                <VBox styleClass="calendar-date-field">
-                    <Label text="Start Date" styleClass="calendar-field-label"/>
-                    <HBox styleClass="calendar-date-shell">
-                        <TextField promptText="dd/mm/yyyy" styleClass="calendar-date-input" HBox.hgrow="ALWAYS"/>
-                        <FontIcon iconLiteral="fth-calendar" iconSize="14" styleClass="calendar-date-icon"/>
-                    </HBox>
-                </VBox>
-
-                <VBox styleClass="calendar-date-field">
-                    <Label text="End Date" styleClass="calendar-field-label"/>
-                    <HBox styleClass="calendar-date-shell">
-                        <TextField promptText="mm/dd/yyyy" styleClass="calendar-date-input" HBox.hgrow="ALWAYS"/>
-                        <FontIcon iconLiteral="fth-calendar" iconSize="14" styleClass="calendar-date-icon"/>
-                    </HBox>
-                </VBox>
-            </FlowPane>
+    <top>
+        <VBox styleClass="calendar-header">
+            <HBox fx:id="navBar" styleClass="calendar-nav-bar" alignment="CENTER_LEFT" spacing="8">
+                <Button fx:id="prevMonthBtn" styleClass="nav-btn" text="&lt;"/>
+                <Label fx:id="monthYearLabel" styleClass="month-year-label" HBox.hgrow="ALWAYS" maxWidth="Infinity" alignment="CENTER"/>
+                <Button fx:id="nextMonthBtn" styleClass="nav-btn" text="&gt;"/>
+            </HBox>
+            <GridPane fx:id="dayHeaderRow" styleClass="day-header-row"/>
         </VBox>
-    </VBox>
-</StackPane>
+    </top>
+
+    <center>
+        <ScrollPane fx:id="calendarScroll" fitToWidth="true" styleClass="calendar-scroll" BorderPane.alignment="CENTER">
+            <GridPane fx:id="calendarGrid" styleClass="calendar-grid" maxWidth="Infinity"/>
+        </ScrollPane>
+    </center>
+
+    <right>
+        <VBox styleClass="calendar-side-panel" prefWidth="300" spacing="10">
+            <VBox fx:id="selectedTripPanel" styleClass="selected-trip-panel" managed="false" visible="false" spacing="8">
+                <ImageView fx:id="selectedCoverImage" fitWidth="260" preserveRatio="true"/>
+                <Label fx:id="selectedTripTitle" styleClass="selected-title" wrapText="true"/>
+                <Label fx:id="selectedCategoryChip" styleClass="category-chip"/>
+            </VBox>
+            <Separator/>
+            <Label fx:id="undatedTitleLabel" styleClass="side-panel-section-label"/>
+            <CardGridPane fx:id="undatedTripsGrid" VBox.vgrow="ALWAYS"/>
+        </VBox>
+    </right>
+</BorderPane>
