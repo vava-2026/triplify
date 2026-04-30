@@ -1,30 +1,31 @@
 package com.triplify.ui.shared.component.card_grid;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+
+import org.kordamp.ikonli.javafx.FontIcon;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.triplify.application.shared.Pagination;
+import com.triplify.ui.shared.util.Localization;
+
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import lombok.Setter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
-
-/**
- * Reusable responsive card grid with automatic scroll-based pagination.
- *
- * @param <T> the item type
- */
 public class CardGridPane<T> extends VBox {
 
     private static final Logger log = LoggerFactory.getLogger(CardGridPane.class);
@@ -58,7 +59,11 @@ public class CardGridPane<T> extends VBox {
     @Setter
     private double minCardWidth = 200;
     private int maxColumns = 5;
-    private String emptyText = "Nothing found";
+
+    @Setter
+    private boolean manualLoadMore = false;
+    private HBox loadMoreFooter;
+    private Label loadMoreLabel;
 
     public CardGridPane() {
         getStyleClass().add("card-grid-root");
@@ -69,13 +74,33 @@ public class CardGridPane<T> extends VBox {
         grid.setVgap(gap);
         grid.setPadding(new Insets(4, 2, 10, 2));
 
-        emptyLabel = new Label(emptyText);
+        emptyLabel = new Label();
         emptyLabel.getStyleClass().addAll("card-grid-empty", "page-subtitle");
+        Localization.bindText(emptyLabel.textProperty(), "common.notFound");
         emptyPane = new StackPane(emptyLabel);
         emptyPane.setAlignment(Pos.CENTER);
         emptyPane.setMinHeight(120);
         emptyPane.setVisible(false);
         emptyPane.setManaged(false);
+
+        loadMoreLabel = new Label();
+        loadMoreLabel.getStyleClass().add("card-grid-load-more-text");
+        Localization.bindText(loadMoreLabel.textProperty(), "common.loadMore");
+
+        FontIcon arrowIcon = new FontIcon("fth-chevron-down");
+        arrowIcon.getStyleClass().add("card-grid-load-more-arrow");
+
+        VBox loadMoreBtn = new VBox(4, loadMoreLabel, arrowIcon);
+        loadMoreBtn.setAlignment(Pos.CENTER);
+        loadMoreBtn.getStyleClass().add("card-grid-load-more-btn");
+        loadMoreBtn.setCursor(Cursor.HAND);
+        loadMoreBtn.setOnMouseClicked(e -> loadNextPage());
+
+        loadMoreFooter = new HBox(loadMoreBtn);
+        loadMoreFooter.setAlignment(Pos.CENTER);
+        loadMoreFooter.setPadding(new Insets(12, 0, 16, 0));
+        loadMoreFooter.setVisible(false);
+        loadMoreFooter.setManaged(false);
 
         scrollPane = new ScrollPane(grid);
         scrollPane.setFitToWidth(true);
@@ -84,10 +109,10 @@ public class CardGridPane<T> extends VBox {
         scrollPane.getStyleClass().add("card-grid-scroll");
         VBox.setVgrow(scrollPane, Priority.ALWAYS);
 
-        getChildren().add(scrollPane);
+        getChildren().addAll(scrollPane, loadMoreFooter);
 
         scrollPane.vvalueProperty().addListener((obs, oldV, newV) -> {
-            if (newV != null && newV.doubleValue() >= 0.85) {
+            if (!manualLoadMore && newV != null && newV.doubleValue() >= 0.85) {
                 loadNextPage();
             }
         });
@@ -104,6 +129,14 @@ public class CardGridPane<T> extends VBox {
         });
     }
 
+    public void setVScrollPolicy(ScrollPane.ScrollBarPolicy policy) {
+        scrollPane.setVbarPolicy(policy);
+    }
+
+    public void setLoadMoreKey(String i18nKey) {
+        Localization.bindText(loadMoreLabel.textProperty(), i18nKey);
+    }
+
     public void setPageSize(int pageSize) {
         this.pageSize = Math.max(1, pageSize);
     }
@@ -118,9 +151,8 @@ public class CardGridPane<T> extends VBox {
         this.maxColumns = Math.max(1, maxColumns);
     }
 
-    public void setEmptyText(String text) {
-        this.emptyText = text;
-        emptyLabel.setText(text);
+    public void setEmptyTextKey(String i18nKey) {
+        Localization.bindText(emptyLabel.textProperty(), i18nKey);
     }
 
     public void addPinnedNode(Node node) {
@@ -135,6 +167,7 @@ public class CardGridPane<T> extends VBox {
         loading = false;
         cardNodes.clear();
         scrollPane.setVvalue(0);
+        setLoadMoreVisible(false);
         showEmpty(false);
         loadNextPage();
     }
@@ -142,6 +175,7 @@ public class CardGridPane<T> extends VBox {
     private void loadNextPage() {
         if (loading || !hasMore || pageLoader == null || cardFactory == null) return;
         loading = true;
+        setLoadMoreVisible(false);
 
         PageResult<T> result = pageLoader.load(page, pageSize);
         List<T> items = result.items();
@@ -164,7 +198,11 @@ public class CardGridPane<T> extends VBox {
         updatePagination(result.pagination());
         relayout(false);
         loading = false;
-        ensureScrollable();
+        if (!manualLoadMore) {
+            ensureScrollable();
+        } else {
+            setLoadMoreVisible(hasMore);
+        }
     }
 
     private void updatePagination(Pagination pagination) {
@@ -175,6 +213,11 @@ public class CardGridPane<T> extends VBox {
         int totalPages = pagination.totalPages() == null ? 1 : pagination.totalPages();
         hasMore = pagination.page() < totalPages;
         page = pagination.page() + 1;
+    }
+
+    private void setLoadMoreVisible(boolean visible) {
+        loadMoreFooter.setVisible(visible);
+        loadMoreFooter.setManaged(visible);
     }
 
     private void ensureScrollable() {

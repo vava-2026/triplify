@@ -11,7 +11,6 @@
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.triplify.ui.pages.places.view.PlaceCardView"
       fx:id="root"
-      spacing="0"
       styleClass="route-card">
     <StackPane fx:id="media" styleClass="trip-card-media"/>
 
@@ -19,7 +18,7 @@
         <Label fx:id="titleLabel" styleClass="route-card-title" wrapText="true"/>
         <HBox fx:id="countryRow" spacing="6" alignment="CENTER_LEFT" styleClass="route-card-places-row">
             <ImageView fx:id="countryEmojiView" fitWidth="18" fitHeight="18" preserveRatio="true"
-                       smooth="true" visible="false" managed="false"/>
+                       visible="false" managed="false"/>
             <Label fx:id="countryLabel" styleClass="route-card-places"/>
         </HBox>
         <HBox spacing="6" styleClass="route-card-distance-row">

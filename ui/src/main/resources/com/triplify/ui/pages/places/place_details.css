@@ -9,15 +9,8 @@
 }
 
 .place-details-hero {
-    -fx-min-height: 320px;
-    -fx-pref-height: 320px;
-    -fx-max-height: 320px;
     -fx-background-color: transparent;
     -fx-background-radius: 28px;
-}
-
-.place-details-hero-image {
-    -fx-smooth: true;
 }
 
 .place-details-hero-overlay {
@@ -29,8 +22,7 @@
 
 .place-details-hero-copy {
     -fx-alignment: bottom-left;
-    -fx-max-width: 540px;
-    -fx-padding: 192px 0 0;
+    -fx-padding: 400px 0 0 0;
 }
 
 .place-details-back-button {

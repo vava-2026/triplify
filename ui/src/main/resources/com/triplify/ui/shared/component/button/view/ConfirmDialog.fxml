@@ -1,22 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 
-<VBox xmlns="http://javafx.com/javafx"
-      xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.triplify.ui.shared.component.button.view.ConfirmDialogView"
-      styleClass="confirm-dialog"
-      spacing="20"
-      alignment="CENTER"
-      prefWidth="340">
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.triplify.ui.shared.component.button.view.ConfirmDialogView"
+           styleClass="confirm-dialog-root">
 
-    <Label fx:id="messageLabel" styleClass="confirm-dialog-message" wrapText="true" />
+    <Region styleClass="confirm-dialog-backdrop" maxWidth="Infinity" maxHeight="Infinity"/>
 
-    <HBox spacing="12" alignment="CENTER_RIGHT">
-        <Button fx:id="cancelBtn" styleClass="app-btn app-btn-secondary" mnemonicParsing="false" onAction="#onCancel" />
-        <Button fx:id="confirmBtn" styleClass="app-btn app-btn-primary" mnemonicParsing="false" onAction="#onConfirm" />
-    </HBox>
+    <VBox styleClass="confirm-dialog-card"
+          alignment="CENTER"
+          spacing="20"
+          prefWidth="340"
+          maxWidth="340"
+          prefHeight="200"
+          maxHeight="200">
+        <padding>
+            <Insets top="28" right="28" bottom="28" left="28"/>
+        </padding>
 
-</VBox>
+        <Label fx:id="messageLabel" styleClass="confirm-dialog-message" wrapText="true" maxWidth="Infinity"/>
 
+        <HBox fx:id="actionsBox" spacing="12" alignment="CENTER_RIGHT"/>
+    </VBox>
+
+</StackPane>

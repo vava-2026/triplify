@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.lang.String?>
+<?import com.triplify.ui.shared.component.card_grid.CardGridPane?>
 <?import com.triplify.ui.map.InteractiveMap?>
 <?import com.triplify.ui.shared.component.detail_actions.view.DetailActionButtonsView?>
 <?import com.triplify.ui.shared.component.section_header.view.SectionHeaderView?>
@@ -71,7 +72,7 @@
                         <VBox styleClass="place-details-trips-section" spacing="12">
                             <SectionHeaderView fx:id="placesHeader"
                                                iconLiteral="fth-map-pin"/>
-                            <FlowPane fx:id="placesFlow" styleClass="place-details-grid"/>
+                            <CardGridPane fx:id="placesGrid" minHeight="160" prefHeight="280" maxHeight="280"/>
                         </VBox>
                     </VBox>
                 </VBox>

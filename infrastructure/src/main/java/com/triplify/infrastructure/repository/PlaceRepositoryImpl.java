@@ -110,7 +110,7 @@ public class PlaceRepositoryImpl implements PlaceRepository {
         String sql = "INSERT INTO places (id, user_id, country_id, cover_image_id, title, description, latitude, longitude) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-        try (Connection conn = SQLiteConnectionFactory.getConnection();
+        try (Connection conn = SQLiteConnectionFactory.getSpatialConnection();
             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, place.getId().toString());
@@ -153,7 +153,7 @@ public class PlaceRepositoryImpl implements PlaceRepository {
                 "SET user_id = ?, country_id = ?, cover_image_id = ?, title = ?, description = ?, latitude = ?, longitude = ? " +
                 "WHERE id = ?";
 
-        try (Connection conn = SQLiteConnectionFactory.getConnection();
+        try (Connection conn = SQLiteConnectionFactory.getSpatialConnection();
             PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, place.getUserId().toString());

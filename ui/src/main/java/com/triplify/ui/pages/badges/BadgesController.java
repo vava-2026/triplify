@@ -239,7 +239,7 @@ public class BadgesController extends SimpleLifecycleAwareController {
 		Localization.bindText(levelLabel.textProperty(), "badges.field.level");
 		Localization.bindText(requiredValueLabel.textProperty(), "badges.field.requiredValue");
 		Localization.bindText(imagePathLabel.textProperty(), "badges.field.imagePath");
-		badgesGrid.setEmptyText(I18n.t("badges.empty"));
+		badgesGrid.setEmptyTextKey("badges.empty");
 
 		modeBadgeLabel.textProperty().bind(Bindings.createStringBinding(
 				() -> selectedBadge.get() == null ? I18n.t("badges.mode.create") : I18n.t("badges.mode.edit"),
@@ -285,7 +285,7 @@ public class BadgesController extends SimpleLifecycleAwareController {
 			// updateGroupSelectState();
 		});
 		I18n.languageProperty().addListener((obs, oldValue, newValue) -> {
-			badgesGrid.setEmptyText(I18n.t("badges.empty"));
+			badgesGrid.setEmptyTextKey("badges.empty");
 			refreshGroupSelectEntries();
 			renderFilteredBadges(activeSearchQuery);
 		});
