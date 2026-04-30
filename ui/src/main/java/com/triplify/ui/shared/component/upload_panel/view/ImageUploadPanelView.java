@@ -50,6 +50,9 @@ public class ImageUploadPanelView extends VBox {
     @FXML private Label uploadSubtitleLabel;
     @Getter
     @FXML private Label selectedImageLabel;
+    @FXML private VBox selectedMetaBox;
+    @FXML private Label selectedStatusLabel;
+    @FXML private Label selectedExpiryLabel;
 
     private final StringProperty sectionIconLiteral = new SimpleStringProperty(this, "sectionIconLiteral", "fth-image");
     private final StringProperty uploadIconLiteral = new SimpleStringProperty(this, "uploadIconLiteral", "fth-image");
@@ -171,6 +174,24 @@ public class ImageUploadPanelView extends VBox {
     public void showSelectedImageText(boolean visible) {
         selectedImageLabel.setVisible(visible);
         selectedImageLabel.setManaged(visible);
+    }
+
+    public void setSelectedStatusText(String text) {
+        selectedStatusLabel.setText(text);
+    }
+
+    public void setSelectedExpiryText(String text) {
+        selectedExpiryLabel.setText(text);
+    }
+
+    public void showSelectedExpiry(boolean visible) {
+        selectedExpiryLabel.setVisible(visible);
+        selectedExpiryLabel.setManaged(visible);
+    }
+
+    public void showSelectedMeta(boolean visible) {
+        selectedMetaBox.setVisible(visible);
+        selectedMetaBox.setManaged(visible);
     }
 
     public void setPreviewVisible(boolean visible) {

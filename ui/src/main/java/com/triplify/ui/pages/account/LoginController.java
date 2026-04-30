@@ -5,6 +5,7 @@ import com.triplify.application.usecase.auth.AuthService;
 import com.triplify.application.usecase.auth.dto.LogInRequest;
 import com.triplify.application.usecase.session.UserSessionContext;
 import com.triplify.domain.result.Result;
+import com.triplify.domain.error.AuthError;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.i18n.Language;
@@ -124,10 +125,17 @@ public class LoginController extends SimpleLifecycleAwareController {
             toast.success("Welcome back, " + user.username() + "!");
             guardedNavigator.openDefault(getRouter());
         });
-        result.onFailure(error -> errorHandler.handle(error, java.util.Map.of(
+        result.onFailure(error -> {
+            if (error instanceof AuthError.LicenseExpired) {
+                toast.error(I18n.t("error.auth.license.expired"));
+                guardedNavigator.goTo(getRouter(), RouteIds.LICENSE_EXPIRED);
+                return;
+            }
+            errorHandler.handle(error, java.util.Map.of(
                 "email", message -> emailInput.showError(message),
                 "password", message -> passwordInput.showError(message)
-        )));
+            ));
+        });
     }
 
     private void clearFieldErrors() {

@@ -75,11 +75,15 @@ public class AppButtonView implements Initializable {
         public Builder onAction(Runnable r) { this.onAction = r; return this; }
 
         public Button build() {
+            return buildView().getButton();
+        }
+
+        public AppButtonView buildView() {
             if (FXML_URL == null) throw new IllegalStateException("AppButton.fxml not found");
             FxmlLoadResult<?, AppButtonView> result = fxmlLoader.load(FXML_URL);
             AppButtonView view = result.controller();
             view.configure(label, labelBinding, variant, size, icon, disabled, requireConfirm, confirmMessage, onAction);
-            return view.getButton();
+            return view;
         }
     }
 
