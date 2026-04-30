@@ -151,8 +151,7 @@ public class MainApp extends Application {
             if (router != null && !initialNavigationHandled) {
                 initialNavigationHandled = true;
                 if (userSessionContext.getCurrent().isPresent()) {
-                    AppPage defaultPage = pageAccessService.getDefaultPage(userSessionContext.getCurrent());
-                    router.setHomeDestination(defaultPage.getRouteId());
+                    router.setHomeDestination(guardedNavigator.resolveLandingRouteId());
                 }
                 Platform.runLater(() -> {
                     guardedNavigator.syncContext(router);

@@ -22,6 +22,7 @@ public final class RouteIds {
     public static final String ADD_ROUTE = "add_route";
     public static final String LOGIN = "login";
     public static final String SIGN_UP = "sign_up";
+    public static final String LICENSE_EXPIRED = "license-expired";
 
     private RouteIds() {}
 }

@@ -1,12 +1,14 @@
 package com.triplify.application.usecase.auth;
 
 import com.google.inject.Inject;
+import com.triplify.application.license.LicenseManager;
 import com.triplify.application.usecase.auth.dto.LogInRequest;
 import com.triplify.application.usecase.auth.dto.SignUpRequest;
 import com.triplify.application.usecase.session.SessionUser;
 import com.triplify.application.usecase.session.UserSessionContext;
 import com.triplify.domain.error.AuthError;
 import com.triplify.domain.model.User;
+import com.triplify.domain.model.enums.RoleEnum;
 import com.triplify.domain.repository.UserRepository;
 import com.triplify.domain.result.Result;
 import org.slf4j.Logger;
@@ -18,12 +20,14 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final com.triplify.domain.service.PasswordEncoder passwordEncoder;
     private final UserSessionContext sessionContext;
+    private final LicenseManager licenseManager;
 
     @Inject
-    public AuthServiceImpl(UserRepository userRepository, com.triplify.domain.service.PasswordEncoder passwordEncoder, UserSessionContext sessionContext) {
+    public AuthServiceImpl(UserRepository userRepository, com.triplify.domain.service.PasswordEncoder passwordEncoder, UserSessionContext sessionContext, LicenseManager licenseManager) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.sessionContext = sessionContext;
+        this.licenseManager = licenseManager;
     }
 
     @Override
@@ -72,6 +76,22 @@ public class AuthServiceImpl implements AuthService {
         if (!passwordEncoder.matches(rawPassword, user.getPasswordHash())) {
             log.info("Invalid password attempt for username='{}'", user.getUsername());
             return Result.fail(new AuthError.InvalidCredentials());
+        }
+
+        if (user.getRole() == RoleEnum.PRO_USER) {
+            LicenseManager.LicenseCheckResult lcr = licenseManager.checkStoredLicense(user.getId().toString());
+            if (lcr.status != LicenseManager.CheckStatus.VALID) {
+                user.promoteRole(RoleEnum.USER);
+                userRepository.update(user);
+                sessionContext.set(new SessionUser(
+                        user.getId(),
+                        user.getUsername(),
+                        user.getEmail(),
+                        user.getRole(),
+                        user.getAvatarImageId()));
+                sessionContext.save();
+                return Result.fail(new AuthError.LicenseExpired());
+            }
         }
 
         log.info("User '{}' authenticated successfully", user.getUsername());

@@ -41,7 +41,10 @@
 
             <VBox HBox.hgrow="ALWAYS">
                 <Label fx:id="accountNameLabel" styleClass="account-name" />
-                <Label fx:id="accountRole" styleClass="account-role" />
+                <HBox spacing="3" alignment="CENTER_LEFT">
+                    <Label fx:id="accountProTag" styleClass="account-pro-tag" visible="false" managed="false" />
+                    <Label fx:id="accountRole" styleClass="account-role" />
+                </HBox>
             </VBox>
         </HBox>
     </VBox>

@@ -1,6 +1,7 @@
 package com.triplify.ui.pages.account;
 
 import com.google.inject.Inject;
+import com.triplify.application.license.LicenseManager;
 import com.triplify.application.usecase.auth.AuthService;
 import com.triplify.application.usecase.badge.BadgeService;
 import com.triplify.application.usecase.badge.dto.BadgeResponse;
@@ -83,13 +84,21 @@ public class AccountController extends SimpleLifecycleAwareController {
     @Inject private GuardedNavigator guardedNavigator;
     @Inject private PageAccessService pageAccessService;
     @Inject private FxmlLoaderHelper fxmlLoader;
+    @Inject private LicenseManager licenseManager;
 
     private InputItem profileNameInput;
     private LicenseModalView licenseModal;
 
     @FXML
     public void initialize() {
-        licenseModal = new LicenseModalView(fxmlLoader);
+        licenseModal = new LicenseModalView(
+                fxmlLoader,
+                licenseManager,
+                userService,
+                userSessionContext,
+                toast,
+            errorHandler,
+            this::refreshProfileHero);
         setupAvatarButton();
         setupLogoutButton();
         setupProfileNameEditor();
@@ -147,6 +156,9 @@ public class AccountController extends SimpleLifecycleAwareController {
     private void refreshProfileHero() {
         if (userSessionContext.isLoggedIn()) {
             SessionUser user = userSessionContext.getCurrent().orElseThrow();
+            if (redirectToExpiredLicensePageIfNeeded(user)) {
+                return;
+            }
             renderProfileHero(user);
         } else {
             clearProfileHero();
@@ -257,9 +269,11 @@ public class AccountController extends SimpleLifecycleAwareController {
             return;
         }
 
+        String labelKey = role == RoleEnum.PRO_USER ? "Pro" : "account.upgrade";
+
         Button upgradeButton = AppButtonView.builder(fxmlLoader)
                 .variant(ButtonVariant.PRO)
-                .labelBinding(Bindings.createStringBinding(() -> I18n.t("account.upgrade"), I18n.bundleProperty()))
+                .labelBinding(Bindings.createStringBinding(() -> I18n.t(labelKey), I18n.bundleProperty()))
                 .build();
 
         upgradeButton.setFocusTraversable(false);
@@ -280,6 +294,20 @@ public class AccountController extends SimpleLifecycleAwareController {
         hideNameEditor();
         upgradeButtonContainer.getChildren().clear();
         showInitialAvatar();
+    }
+
+    private boolean redirectToExpiredLicensePageIfNeeded(SessionUser user) {
+        if (user.role() != RoleEnum.PRO_USER) {
+            return false;
+        }
+
+        LicenseManager.CheckStatus status = licenseManager.checkStoredLicense(user.userId().toString()).status;
+        if (status == LicenseManager.CheckStatus.VALID) {
+            return false;
+        }
+
+        guardedNavigator.goTo(getRouter(), RouteIds.LICENSE_EXPIRED);
+        return true;
     }
 
     private void onEditName() {
