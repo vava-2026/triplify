@@ -49,6 +49,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
@@ -170,7 +171,7 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         imagesGrid.setEmptyTextKey("trip.details.empty.images");
 
         imageFormModal = new ImageFormModalView(fxmlLoader, imageService, errorHandler);
-        imageViewModal = new ImageViewModalView(imageService, errorHandler);
+        imageViewModal = new ImageViewModalView(imageService, errorHandler, fxmlLoader);
 
         AddCardView addCard = new AddCardView(
                 "images.add.card.title",
@@ -317,6 +318,7 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
             return new CardGridPane.PageResult<>(domainPage.items(),
                     new Pagination(page, size, null, totalPages));
         });
+        imagesGrid.setVScrollPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         imagesGrid.refresh();
     }
 

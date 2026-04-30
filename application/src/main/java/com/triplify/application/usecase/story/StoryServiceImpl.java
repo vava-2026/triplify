@@ -220,7 +220,9 @@ public class StoryServiceImpl implements StoryService {
     }
 
     private StoryResponse toResponse(Story story) {
+        SessionUser user = sessionContext.getCurrent().orElseThrow();
         Page<Image> imagesPage = imageRepository.findAll(
+                user.userId(),
                 new PageRequest(0, DEFAULT_PAGE_SIZE),
                 story.getId().toString(),
                 ImageOwnerType.STORY,

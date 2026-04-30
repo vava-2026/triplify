@@ -80,13 +80,14 @@ public class ImageServiceImpl implements ImageService {
     @Override
     @Authenticated
     public Result<Page<ImageResponse>> getImages(GetImagesRequest request) {
-        log.info("Getting images with page='{}', size='{}', orderBy='{}'", request.pageRequest().page(), request.pageRequest().size(), request.orderBy());
+        log.info("Getting images with page='{}', filter='{}', size='{}', orderBy='{}'", request.pageRequest().page(), request.filter(), request.pageRequest().size(), request.orderBy());
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
         GetImagesRequest.Filter filter = request.filter();
         GetImagesRequest.OrderBy orderBy = request.orderBy();
 
 
         Page<Image> page = imageRepository.findAll(
+                user.userId(),
                 request.pageRequest(),
                 request.filter().ownerId(),
                 filter.ownerType(),
