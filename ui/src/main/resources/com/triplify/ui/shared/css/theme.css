@@ -1,14 +1,16 @@
 @import url("/com/triplify/ui/shared/component/entry/css/entry.css");
 @import url("/com/triplify/ui/shared/component/select/css/select.css");
 @import url("/com/triplify/ui/shared/component/search/css/search.css");
-@import url("/com/triplify/ui/shared/component/countries/css/countries.css");
 @import url("/com/triplify/ui/shared/component/button/css/button.css");
 @import url("/com/triplify/ui/shared/component/input_item/input_item.css");
 @import url("/com/triplify/ui/shared/component/checkbox_item/checkbox_item.css");
 @import url("/com/triplify/ui/shared/component/date_picker/css/date_picker.css");
 @import url("/com/triplify/ui/shared/component/tag_picker/css/tag_picker.css");
+@import url("/com/triplify/ui/pages/routes/css/route.css");
+
 @import url("/com/triplify/ui/shared/toast/toast.css");
 @import url("/com/triplify/ui/pages/trips/css/trips.css");
+@import url("/com/triplify/ui/pages/routes/css/add_route.css");
 
 .root {
     -color-bg: #f0f0f0;
@@ -166,7 +168,8 @@
 
 .page-root {
     -fx-background-color: -color-bg;
-    -fx-padding: 24px 28px;
+    /* top: 70px topbar + 24px spacing; left: 260px sidebar + 28px spacing */
+    -fx-padding: 24px;
 }
 
 .page-title {

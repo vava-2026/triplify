@@ -65,7 +65,7 @@ public class RouteRepositoryImpl implements RouteRepository {
     }
 
     @Override
-    public Page<Route> findList(PageRequest page, String name, UUID userId) {
+    public Page<Route> findList(PageRequest page, String name, boolean lengthAsc, UUID userId) {
         StringBuilder sql = new StringBuilder(ROUTE_WITH_IMAGE_SELECT).append(" WHERE r.user_id = ? ");
         List<Object> params = new ArrayList<>();
         params.add(userId.toString());
@@ -75,7 +75,7 @@ public class RouteRepositoryImpl implements RouteRepository {
             params.add("%" + name + "%");
         }
 
-        sql.append("ORDER BY r.updated_at DESC ");
+        sql.append(lengthAsc ? "ORDER BY r.length ASC " : "ORDER BY r.length DESC ");
         sql.append("LIMIT ? OFFSET ?");
         params.add(page.size() + 1);
         params.add(page.offset());

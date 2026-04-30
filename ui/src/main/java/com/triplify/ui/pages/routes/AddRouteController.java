@@ -3,7 +3,7 @@ package com.triplify.ui.pages.routes;
 import com.google.inject.Inject;
 import com.triplify.application.usecase.place.PlaceService;
 import com.triplify.application.usecase.place.dto.PlaceResponse;
-import com.triplify.ui.shared.component.places.model.Places;
+import com.triplify.ui.pages.places.model.Places;
 import com.triplify.application.usecase.route.RouteService;
 import com.triplify.application.usecase.route.dto.AddPlaceToRouteRequest;
 import com.triplify.application.usecase.route.dto.AddRouteRequest;

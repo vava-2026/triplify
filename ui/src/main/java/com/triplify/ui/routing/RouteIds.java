@@ -20,6 +20,9 @@ public final class RouteIds {
     public static final String ADD_PLACE = "add_place";
     public static final String PLACE_DETAILS = "place_details";
     public static final String ADD_ROUTE = "add_route";
+    public static final String ROUTE_DETAILS = "route_details";
+    public static final String ADD_STORY = "add_story";
+    public static final String STORY_DETAILS = "story_details";
     public static final String LOGIN = "login";
     public static final String SIGN_UP = "sign_up";
     public static final String LICENSE_EXPIRED = "license-expired";
