@@ -1,25 +1,35 @@
 package com.triplify.ui.shared.util;
 
-import com.triplify.ui.i18n.I18n;
-import com.triplify.ui.shared.toast.ToastService;
-import javafx.geometry.Rectangle2D;
-import javafx.scene.control.Button;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.DragEvent;
-import javafx.scene.input.TransferMode;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.control.Label;
-import org.kordamp.ikonli.javafx.FontIcon;
-
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.kordamp.ikonli.javafx.FontIcon;
+
+import com.triplify.ui.i18n.I18n;
+import com.triplify.ui.shared.toast.ToastService;
+
+import javafx.geometry.Rectangle2D;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundImage;
+import javafx.scene.layout.BackgroundPosition;
+import javafx.scene.layout.BackgroundRepeat;
+import javafx.scene.layout.BackgroundSize;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.shape.Rectangle;
 
 public final class EditorUtils {
+
+    private static final Map<String, Image> COVER_IMAGE_CACHE = new ConcurrentHashMap<>();
+    private static final BackgroundSize CARD_COVER_SIZE = new BackgroundSize(1, 1, true, true, false, true);
 
     private EditorUtils() {}
 
@@ -62,20 +72,57 @@ public final class EditorUtils {
         return name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg");
     }
 
-    public static Image loadImage(String imagePath, String defaultImage, Class<?> resourceContext) {
+    public static Image loadImage(
+            String imagePath,
+            String defaultImage,
+            Class<?> resourceContext,
+            Double requestedWidth,
+            Double requestedHeight,
+            Boolean preserveRatio,
+            Boolean smooth
+    ) {
+        boolean hasRequestedSize = requestedWidth != null || requestedHeight != null;
+        double width = requestedWidth == null ? 0.0 : requestedWidth;
+        double height = requestedHeight == null ? 0.0 : requestedHeight;
+        boolean keepRatio = preserveRatio != null && preserveRatio;
+        boolean smoothScaling = smooth == null || smooth;
+
         String resolved = imagePath == null || imagePath.isBlank() ? defaultImage : imagePath;
         if (resolved.startsWith("/")) {
             var resource = resourceContext.getResource(resolved);
             if (resource != null) {
-                return new Image(resource.toExternalForm(), true);
+                return hasRequestedSize
+                        ? new Image(resource.toExternalForm(), width, height, keepRatio, smoothScaling, true)
+                        : new Image(resource.toExternalForm(), true);
             }
         }
+
+        if (resolved.startsWith("file:/") || resolved.matches("^[a-zA-Z][a-zA-Z0-9+.-]*://.*")) {
+            return hasRequestedSize
+                    ? new Image(resolved, width, height, keepRatio, smoothScaling, true)
+                    : new Image(resolved, true);
+        }
+
         File file = new File(resolved);
         if (file.exists()) {
-            return new Image(file.toURI().toString(), true);
+            return hasRequestedSize
+                    ? new Image(file.toURI().toString(), width, height, keepRatio, smoothScaling, true)
+                    : new Image(file.toURI().toString(), true);
         }
         var fallback = resourceContext.getResource(defaultImage);
-        return new Image(fallback.toExternalForm(), true);
+        return hasRequestedSize
+                ? new Image(fallback.toExternalForm(), width, height, keepRatio, smoothScaling, true)
+                : new Image(fallback.toExternalForm(), true);
+    }
+
+    public static Image loadImage(String imagePath, String defaultImage, Class<?> resourceContext, double requestedWidth, double requestedHeight, boolean preserveRatio, boolean smooth) {
+        return loadImage(imagePath, defaultImage, resourceContext,
+                Double.valueOf(requestedWidth), Double.valueOf(requestedHeight),
+                Boolean.valueOf(preserveRatio), Boolean.valueOf(smooth));
+    }
+
+    public static Image loadImage(String imagePath, String defaultImage, Class<?> resourceContext){
+        return loadImage(imagePath, defaultImage, resourceContext, null, null, null, null);
     }
 
     public static void configureButtonIcon(Button button, String iconLiteral, int size, String styleClass) {
@@ -192,5 +239,45 @@ public final class EditorUtils {
     @FunctionalInterface
     public interface CoverImageResult {
         void accept(String absolutePath);
+    }
+
+    public static String safeText(String value, String fallback) {
+        return value == null || value.isBlank() ? fallback : value;
+    }
+
+    public static Image resolveCoverImage(String coverUrl) {
+        if (coverUrl == null || coverUrl.isBlank()) return null;
+        return COVER_IMAGE_CACHE.computeIfAbsent(coverUrl, url -> new Image(url, 600, 400, true, true));
+    }
+
+    public static void applyCoverBackground(StackPane media, Image image) {
+        media.getStyleClass().removeIf(s -> s.startsWith("trip-cover-"));
+        if (image != null && !image.isError()) {
+            media.setBackground(new Background(new BackgroundImage(
+                image, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT,
+                BackgroundPosition.CENTER, CARD_COVER_SIZE
+            )));
+        } else {
+            media.setBackground(null);
+            media.setStyle(null);
+            media.getStyleClass().add("trip-cover-default");
+        }
+    }
+
+    public static void applyEmojiImage(ImageView view, String emojiUnicode, int size) {
+        if (emojiUnicode == null || emojiUnicode.isBlank()) {
+            view.setImage(null);
+            view.setVisible(false);
+            view.setManaged(false);
+            return;
+        }
+        Image img = EmojiUtil.toImage(emojiUnicode.trim(), size);
+        boolean show = img != null && !img.isError();
+        view.setFitWidth(size);
+        view.setFitHeight(size);
+        view.setPreserveRatio(true);
+        view.setVisible(show);
+        view.setManaged(show);
+        view.setImage(show ? img : null);
     }
 }

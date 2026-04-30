@@ -23,6 +23,7 @@ import com.triplify.application.usecase.tag.dto.GetTagsRequest;
 import com.triplify.application.usecase.tag.dto.TagResponse;
 import com.triplify.domain.pagination.PageRequest;
 import com.triplify.ui.i18n.I18n;
+import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.util.Localization;
 
 import javafx.beans.InvalidationListener;
@@ -86,6 +87,7 @@ public class TagPickerItem extends VBox {
     private Window trackedWindow;
     private boolean allowCustomTags = true;
     private TagService tagService;
+    private FieldVariant lastVariant = null;
 
     public TagPickerItem() {
         FXMLLoader loader = new FXMLLoader(FXML_URL);
@@ -351,7 +353,9 @@ public class TagPickerItem extends VBox {
     }
 
     private void renderPopupList() {
-        popupTitleLabel.setText(popupTitle);
+        if (!popupTitleLabel.textProperty().isBound()) {
+            popupTitleLabel.setText(popupTitle);
+        }
         popupChipFlow.getChildren().clear();
         popupContent.getChildren().clear();
 
@@ -686,6 +690,37 @@ public class TagPickerItem extends VBox {
         if (popup.isShowing()) {
             renderPopupList();
         }
+    }
+
+    public void setOnSelectionChanged(Consumer<Set<UUID>> onSelectionChanged) {
+        this.onSelectionChanged = onSelectionChanged;
+    }
+
+    public void setVariant(FieldVariant variant) {
+        applyVariant(variant);
+    }
+
+    public FieldVariant getVariant() {
+        return lastVariant;
+    }
+
+    private void applyVariant(FieldVariant variant) {
+        if (lastVariant == variant) return;
+        if (lastVariant != null) {
+            getStyleClass().remove(toVariantStyleClass(lastVariant));
+        }
+        if (variant != null) {
+            getStyleClass().add(toVariantStyleClass(variant));
+        }
+        lastVariant = variant;
+    }
+
+    private static String toVariantStyleClass(FieldVariant variant) {
+        return switch (variant) {
+            case OUTLINED -> "app-tag-picker-variant-outlined";
+            case FILLED -> "app-tag-picker-variant-filled";
+            case GHOST -> "app-tag-picker-variant-ghost";
+        };
     }
 
     private record TagItem(UUID id, String name) {

@@ -3,6 +3,7 @@ package com.triplify.ui.shared.component.select.view;
 import com.triplify.ui.shared.component.select.entry.model.Entry;
 import com.triplify.ui.shared.component.select.entry.view.EntryCell;
 import com.triplify.ui.shared.component.select.model.Select;
+import com.triplify.ui.shared.model.AppComponentSize;
 import com.triplify.ui.shared.model.FieldVariant;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -24,6 +25,7 @@ public class SelectView<T> extends HBox {
 
     private Select<T> model;
     private FieldVariant lastVariant = null;
+    private AppComponentSize lastSize = null;
 
     public SelectView() {
         FXMLLoader loader = new FXMLLoader(FXML_URL);
@@ -56,8 +58,10 @@ public class SelectView<T> extends HBox {
         }
 
         applyVariant(select.getVariant());
+        applySize(select.getSize());
 
         select.variantProperty().addListener((obs, oldVal, newVal) -> applyVariant(newVal));
+        select.sizeProperty().addListener((obs, oldVal, newVal) -> applySize(newVal));
 
         comboBox.showingProperty().addListener((obs, wasShowing, isShowing) -> {
             if (!isShowing && comboBox.getScene() != null) {
@@ -74,6 +78,14 @@ public class SelectView<T> extends HBox {
         };
     }
 
+    private static String toSizeClass(AppComponentSize size) {
+        return switch (size) {
+            case SMALL -> "app-select-size-small";
+            case MIDDLE -> "app-select-size-middle";
+            case BIG -> "app-select-size-big";
+        };
+    }
+
     private void applyVariant(FieldVariant variant) {
         if (lastVariant == variant) return;
         if (lastVariant != null) {
@@ -83,6 +95,16 @@ public class SelectView<T> extends HBox {
             comboBox.getStyleClass().add(toStyleClass(variant));
         }
         lastVariant = variant;
+    }
+
+    private void applySize(AppComponentSize size) {
+        AppComponentSize effective = size == null ? AppComponentSize.MIDDLE : size;
+        if (lastSize == effective) return;
+        if (lastSize != null) {
+            comboBox.getStyleClass().remove(toSizeClass(lastSize));
+        }
+        comboBox.getStyleClass().add(toSizeClass(effective));
+        lastSize = effective;
     }
 
     @FXML

@@ -92,9 +92,10 @@ public class TripRepositoryImpl implements TripRepository {
     }
 
     @Override
-    public Page<Trip> findList(PageRequest pageRequest, TripFilter filter, boolean startTimeAsc) {
-        StringBuilder sql = new StringBuilder(TRIP_WITH_CATEGORY_SELECT).append(" WHERE 1=1 ");
+    public Page<Trip> findList(PageRequest pageRequest, TripFilter filter, boolean startTimeAsc, UUID userId) {
+        StringBuilder sql = new StringBuilder(TRIP_WITH_CATEGORY_SELECT).append(" WHERE t.user_id = ? ");
         List<Object> params = new ArrayList<>();
+        params.add(userId.toString());
 
         if (filter != null) {
             if (filter.name() != null && !filter.name().isBlank()) {
@@ -122,9 +123,9 @@ public class TripRepositoryImpl implements TripRepository {
                 params.add(filter.startedTo().toString());
             }
             if (filter.tagIds() != null) {
-                for (String tagId : filter.tagIds()) {
+                for (UUID tagId : filter.tagIds()) {
                     sql.append("AND EXISTS (SELECT 1 FROM trip_tags tt WHERE tt.trip_id = t.id AND tt.tag_id = ?) ");
-                    params.add(tagId);
+                    params.add(tagId.toString());
                 }
             }
         }

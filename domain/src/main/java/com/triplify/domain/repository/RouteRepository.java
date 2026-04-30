@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public interface RouteRepository {
     Optional<Route> findById(UUID id);
-    Page<Route> findList(PageRequest page, String name, UUID userId);
+    Page<Route> findList(PageRequest page, String name, boolean lengthAsc, UUID userId);
     void create(Route route);
     void update(Route route);
     void delete(Route route);

@@ -249,25 +249,29 @@ public class TripServiceImpl implements TripService {
 
     @Override
     public Result<Page<TripResponse>> getTrips(GetTripsRequest request) {
+        UUID userId = userSessionContext.getCurrent().orElseThrow().userId();
+        log.info("Getting trips for userId='{}', page='{}', size='{}', orderBy='{}'", userId, request.pageRequest().page(), request.pageRequest().size(), request.orderBy());
         GetTripsRequest.Filter filter = request.filter();
         TripFilter tripFilter = new TripFilter(
-                filter != null ? filter.name() : null,
-                filter != null ? filter.countryId() : null,
-                filter != null ? filter.status() : null,
-                filter != null ? filter.categoryId() : null,
-                filter != null ? filter.tagIds() : null,
-                filter != null ? filter.startedFrom() : null,
-                filter != null ? filter.startedTo() : null
+                filter.name(),
+                filter.countryId(),
+                filter.status(),
+                filter.categoryId(),
+                filter.tagIds(),
+                filter.startedFrom(),
+                filter.startedTo()
         );
 
         boolean startTimeAsc = request.orderBy() != null && request.orderBy().startTimeDirectionAsc();
-        Page<Trip> tripsPage = tripRepository.findList(request.pageRequest(), tripFilter, startTimeAsc);
+        Page<Trip> tripsPage = tripRepository.findList(request.pageRequest(), tripFilter, startTimeAsc, userId);
 
         List<TripResponse> responses = new ArrayList<>(tripsPage.items().size());
         for (Trip trip : tripsPage.items()) {
             responses.add(toResponse(trip).orThrow());
         }
 
+
+        log.info("Got {} trips for userId='{}'", tripsPage.items().size(), userId);
         return Result.ok(new Page<>(responses, tripsPage.page(), tripsPage.size(), tripsPage.hasNext()));
     }
 
