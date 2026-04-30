@@ -29,6 +29,7 @@ public class NavButtonView implements Initializable {
     @FXML private Button button;
     @FXML private FontIcon icon;
     @FXML private Label label;
+    @FXML private Label proTag;
 
     private NavButtonViewModel viewModel;
     private Runnable onSelect;
@@ -73,6 +74,9 @@ public class NavButtonView implements Initializable {
         icon.setIconLiteral(page.getIcon());
         icon.setIconSize(18);
         label.textProperty().bind(viewModel.labelBinding());
+        proTag.setText("Pro");
+        proTag.setVisible(page.isPro());
+        proTag.setManaged(page.isPro());
     }
 
     @FXML

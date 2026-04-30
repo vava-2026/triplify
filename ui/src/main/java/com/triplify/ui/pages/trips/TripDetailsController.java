@@ -4,7 +4,7 @@ import com.google.inject.Inject;
 import com.triplify.application.shared.Pagination;
 import com.triplify.application.usecase.image.ImageService;
 import com.triplify.application.usecase.image.dto.GetImagesRequest;
-import com.triplify.application.usecase.image.dto.ImageOwnerType;
+import com.triplify.domain.model.enums.ImageOwnerType;
 import com.triplify.application.usecase.image.dto.ImageResponse;
 import com.triplify.application.usecase.story.StoryService;
 import com.triplify.application.usecase.story.dto.GetStoriesRequest;
@@ -166,7 +166,7 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         imagesGrid.setManualLoadMore(true);
         imagesGrid.setMinCardWidth(220);
         imagesGrid.setMaxColumns(4);
-        imagesGrid.setPageSize(8);
+        imagesGrid.setPageSize(7);
         imagesGrid.setEmptyTextKey("trip.details.empty.images");
 
         imageFormModal = new ImageFormModalView(fxmlLoader, imageService, errorHandler);

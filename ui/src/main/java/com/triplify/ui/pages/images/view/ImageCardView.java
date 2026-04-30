@@ -1,6 +1,7 @@
 package com.triplify.ui.pages.images.view;
 
 import com.triplify.application.usecase.image.dto.ImageResponse;
+import com.triplify.ui.shared.util.DisplayUtils;
 import com.triplify.ui.shared.util.EditorUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -46,7 +47,7 @@ public class ImageCardView implements Initializable {
         if (image == null) return;
 
         if (image.url() != null) {
-            Image cover = EditorUtils.resolveCoverImage(image.url().toString());
+            Image cover = EditorUtils.resolveCoverImage(image.url().toUri().toString());
             EditorUtils.applyCoverBackground(media, cover);
         }
 

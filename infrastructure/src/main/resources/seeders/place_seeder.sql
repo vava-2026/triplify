@@ -238,14 +238,8 @@ SELECT
         || 'Plan a mid-day recovery window with shaded seating, water refill points, and one flexible meal break close to the central walking zone. In the afternoon, shift attention to spaces that become most atmospheric when crowds thin and light softens, including terraces, river edges, courtyards, or market streets depending on local layout. The route structure around this stop includes intentional buffer for queue delays, weather changes, and short detours, so small schedule adjustments do not break the rest of the day. If conditions are ideal, reserve an optional sunset loop followed by a final evening pass through the most walkable district segment before transfer. '
         || 'For seeded planning consistency, this record keeps practical timing assumptions while still leaving room for spontaneous choices and personal interests. Treat ' || p.title_en || ' as a complete destination in ' || p.country_name || ', not just a photo checkpoint, and the experience will feel richer, calmer, and noticeably more memorable from morning through late evening.'
     ) AS description,
-    CASE
-        WHEN p.place_order IN (1, 11) THEN 0.0
-        ELSE round(cs.base_lat + (((RANDOM() % 1000000) / 1000000.0) * 2.0), 6)
-        END AS latitude,
-    CASE
-        WHEN p.place_order IN (1, 11) THEN 0.0
-        ELSE round(cs.base_lon + (((RANDOM() % 1000000) / 1000000.0) * 2.0), 6)
-        END AS longitude
+    round(cs.base_lat + (((RANDOM() % 1000000) / 1000000.0) * 2.0), 6) AS latitude,
+    round(cs.base_lon + (((RANDOM() % 1000000) / 1000000.0) * 2.0), 6) AS longitude
 FROM tmp_seed_places p
 INNER JOIN countries c
     ON c.name = p.country_name

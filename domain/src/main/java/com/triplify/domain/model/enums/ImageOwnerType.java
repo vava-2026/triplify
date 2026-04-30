@@ -1,4 +1,4 @@
-package com.triplify.application.usecase.image.dto;
+package com.triplify.domain.model.enums;
 
 public enum ImageOwnerType {
     TRIP,

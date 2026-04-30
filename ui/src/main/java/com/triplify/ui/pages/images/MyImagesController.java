@@ -4,7 +4,7 @@ import com.google.inject.Inject;
 import com.triplify.application.shared.Pagination;
 import com.triplify.application.usecase.image.ImageService;
 import com.triplify.application.usecase.image.dto.GetImagesRequest;
-import com.triplify.application.usecase.image.dto.ImageOwnerType;
+import com.triplify.domain.model.enums.ImageOwnerType;
 import com.triplify.application.usecase.image.dto.ImageResponse;
 import com.triplify.domain.pagination.PageRequest;
 import com.triplify.ui.error.ErrorHandler;
@@ -37,7 +37,6 @@ public class MyImagesController extends SimpleLifecycleAwareController {
     @Inject private FxmlLoaderHelper fxmlLoader;
 
     private ImageOwnerType selectedType = null;
-    private ImageFormModalView imageFormModal;
     private ImageViewModalView imageViewModal;
 
     @FXML
@@ -69,12 +68,11 @@ public class MyImagesController extends SimpleLifecycleAwareController {
     }
 
     private void configureGrid() {
-        imageFormModal = new ImageFormModalView(fxmlLoader, imageService, errorHandler);
+        log.info("Configuring image grid");
         imageViewModal = new ImageViewModalView(imageService, errorHandler);
 
-        cardGrid.setManualLoadMore(true);
         cardGrid.setMinCardWidth(220);
-        cardGrid.setMaxColumns(4);
+        cardGrid.setMaxColumns(5);
         cardGrid.setPageSize(12);
         cardGrid.setEmptyTextKey("images.empty");
 
@@ -83,6 +81,7 @@ public class MyImagesController extends SimpleLifecycleAwareController {
             return card.getRoot();
         });
 
+        log.info("Configuring page loader for image grid");
         cardGrid.setPageLoader((page, size) -> {
             var result = imageService.getImages(new GetImagesRequest(
                     new PageRequest(page - 1, size),
