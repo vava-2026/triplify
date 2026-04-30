@@ -97,7 +97,7 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
         placesGrid.setMinCardWidth(560);
         placesGrid.setMaxColumns(1);
         placesGrid.setLoadMoreKey("route.details.show.more.places");
-        placesGrid.setEmptyText(I18n.t("route.details.empty.places"));
+        placesGrid.setEmptyTextKey("route.details.empty.places");
         placesGrid.setCardFactory(place -> {
             int idx = placeIndexCounter.incrementAndGet();
             return buildPlaceRow(place, idx);

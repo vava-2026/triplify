@@ -76,7 +76,7 @@ public class MyImagesController extends SimpleLifecycleAwareController {
         cardGrid.setMinCardWidth(220);
         cardGrid.setMaxColumns(4);
         cardGrid.setPageSize(12);
-        cardGrid.setEmptyText(I18n.t("images.empty"));
+        cardGrid.setEmptyTextKey("images.empty");
 
         cardGrid.setCardFactory(image -> {
             ImageCardView card = ImageCardView.create(image, () -> openImageViewModal(image));

@@ -163,9 +163,9 @@ public class MyTripsController extends SimpleLifecycleAwareController {
 
     private void configureGrid() {
         cardGrid.setMinCardWidth(220);
-        cardGrid.setMaxColumns(4);
+        cardGrid.setMaxColumns(5);
         cardGrid.setPageSize(8);
-        cardGrid.setEmptyText("No trips found");
+        cardGrid.setEmptyTextKey("trips.empty");
         cardGrid.addPinnedNode(new AddCardView("trip.add.card.title", "trip.add.card.subtitle", this::onCreateTrip));
         cardGrid.setCardFactory(this::buildTripCard);
         cardGrid.setPageLoader(this::loadTripsPage);

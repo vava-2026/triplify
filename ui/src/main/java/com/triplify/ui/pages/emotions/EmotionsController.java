@@ -192,7 +192,7 @@ public class EmotionsController extends SimpleLifecycleAwareController {
 		Localization.bindText(nameLabel.textProperty(), "emotions.field.name");
 		Localization.bindText(nameSkLabel.textProperty(), "emotions.field.nameSk");
 		Localization.bindText(emojiLabel.textProperty(), "emotions.field.emoji");
-		emotionsGrid.setEmptyText(I18n.t("emotions.empty"));
+		emotionsGrid.setEmptyTextKey("emotions.empty");
 
 		modeBadgeLabel.textProperty().bind(Bindings.createStringBinding(
 				() -> selectedEmotion.get() == null
@@ -239,7 +239,7 @@ public class EmotionsController extends SimpleLifecycleAwareController {
 	private void attachListeners() {
 		selectedEmotion.addListener((obs, oldValue, newValue) -> refreshSelectionStyles());
 		I18n.languageProperty().addListener((obs, oldValue, newValue) -> {
-			emotionsGrid.setEmptyText(I18n.t("emotions.empty"));
+			emotionsGrid.setEmptyTextKey("emotions.empty");
 			renderFilteredEmotions(activeSearchQuery);
 		});
 	}

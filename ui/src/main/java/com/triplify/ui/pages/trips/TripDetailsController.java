@@ -141,7 +141,7 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         routesGrid.setMinCardWidth(220);
         routesGrid.setMaxColumns(3);
         routesGrid.setLoadMoreKey("trip.details.show.more.routes");
-        routesGrid.setEmptyText(I18n.t("trip.details.empty.routes"));
+        routesGrid.setEmptyTextKey("trip.details.empty.routes");
     }
 
     private void setupPlacesGrid() {
@@ -150,7 +150,7 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         placesGrid.setMinCardWidth(180);
         placesGrid.setMaxColumns(4);
         placesGrid.setLoadMoreKey("trip.details.show.more.places");
-        placesGrid.setEmptyText(I18n.t("trip.details.empty.places"));
+        placesGrid.setEmptyTextKey("trip.details.empty.places");
     }
 
     private void setupStoriesGrid() {
@@ -159,7 +159,7 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         storiesGrid.setMinCardWidth(220);
         storiesGrid.setMaxColumns(3);
         storiesGrid.setLoadMoreKey("trip.details.show.more.stories");
-        storiesGrid.setEmptyText(I18n.t("trip.details.empty.stories"));
+        storiesGrid.setEmptyTextKey("trip.details.empty.stories");
     }
 
     private void setupImagesGrid() {
@@ -167,7 +167,7 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         imagesGrid.setMinCardWidth(220);
         imagesGrid.setMaxColumns(4);
         imagesGrid.setPageSize(8);
-        imagesGrid.setEmptyText(I18n.t("trip.details.empty.images"));
+        imagesGrid.setEmptyTextKey("trip.details.empty.images");
 
         imageFormModal = new ImageFormModalView(fxmlLoader, imageService, errorHandler);
         imageViewModal = new ImageViewModalView(imageService, errorHandler);

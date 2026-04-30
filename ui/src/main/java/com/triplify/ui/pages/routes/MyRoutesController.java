@@ -102,10 +102,10 @@ public class MyRoutesController extends SimpleLifecycleAwareController {
     }
 
     private void configureGrid() {
-        cardGrid.setMinCardWidth(257);
-        cardGrid.setMaxColumns(4);
+        cardGrid.setMinCardWidth(220);
+        cardGrid.setMaxColumns(5);
         cardGrid.setPageSize(8);
-        cardGrid.setEmptyText("No routes found");
+        cardGrid.setEmptyTextKey("routes.empty");
         cardGrid.addPinnedNode(new AddCardView("route.add.card.title", "route.add.card.subtitle", this::onCreateRoute));
         cardGrid.setCardFactory(this::buildRouteCard);
         cardGrid.setPageLoader(this::loadRoutesPage);

@@ -22,6 +22,7 @@ import com.triplify.ui.pages.routes.view.RouteCardView;
 import com.triplify.ui.shared.component.section_header.view.SectionHeaderView;
 import com.triplify.ui.pages.trips.view.TripCardView;
 import com.triplify.ui.shared.toast.ToastService;
+import com.triplify.ui.shared.util.DisplayUtils;
 import com.triplify.ui.shared.util.EditorUtils;
 import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import com.triplify.ui.shared.util.Localization;
@@ -31,30 +32,30 @@ import static com.triplify.ui.shared.util.DisplayUtils.*;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.shape.Rectangle;
 import org.kordamp.ikonli.javafx.FontIcon;
 import rahulstech.jfx.routing.element.RouterArgument;
 import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 
+import java.util.List;
 import java.util.UUID;
 
 public class PlaceDetailsController extends SimpleLifecycleAwareController {
 
+    private static final int COUNTRY_EMOJI_SIZE = 18;
     private static final String DEFAULT_IMAGE = "/com/triplify/ui/pages/trips/images/one.png";
 
     @FXML private VBox contentContainer;
     @FXML private StackPane heroContainer;
+    @FXML private ImageView heroImageView;
     @FXML private FlowPane topRowFlow;
     @FXML private Button backButton;
-    @FXML private ImageView heroImageView;
     @FXML private Label placeTitleLabel;
-    @FXML private Label placeCountryLabel;
+
     @FXML private Label descriptionTitleLabel;
     @FXML private Label descriptionValueLabel;
     @FXML private Label mapTitleLabel;
@@ -67,6 +68,10 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
     @FXML private CardGridPane<RouteResponse> routesGrid;
     @FXML private CardGridPane<StoryResponse> storiesGrid;
 
+    @FXML private HBox countryRow;
+    @FXML private ImageView countryEmojiView;
+    @FXML private Label countryLabel;
+
     @Inject private PlaceService placeService;
     @Inject private ToastService toast;
     @Inject private ErrorHandler errorHandler;
@@ -76,7 +81,10 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
 
     @FXML
     public void initialize() {
-        configureButtonIcon(backButton, "fth-chevron-left", "place-details-back-icon");
+        FontIcon icon = new FontIcon("fth-chevron-left");
+        icon.setIconSize(16);
+        icon.getStyleClass().add("place-details-back-icon");
+        backButton.setGraphic(icon);
         Localization.bindText(backButton.textProperty(), "place.details.back");
         Localization.bindText(descriptionTitleLabel.textProperty(), "place.details.description");
         Localization.bindText(mapTitleLabel.textProperty(), "place.details.map");
@@ -86,11 +94,10 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
 
         topRowFlow.prefWrapLengthProperty().bind(contentContainer.widthProperty());
 
-        heroImageView.fitWidthProperty().bind(heroContainer.widthProperty());
-        heroImageView.fitHeightProperty().bind(heroContainer.heightProperty());
-        installRoundedPaneClip(heroContainer, 28);
-        installRoundedImageClip(heroImageView, 28);
-        installRoundedPaneClip(placeMap, 20);
+        EditorUtils.installRoundedClip(heroContainer, 28);
+        EditorUtils.initializeCoverPreview(heroImageView, heroContainer);
+        EditorUtils.installRoundedClip(placeMap, 20);
+
         placeMap.setSelectionEnabled(false);
         placeMap.setControlsVisible(false);
         actionButtonsView.configurePrimary(fxmlLoader, Localization.textBinding("place.details.action.edit"), "fth-edit-3", this::onEditPlace);
@@ -103,23 +110,26 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         tripsGrid.setManualLoadMore(true);
         tripsGrid.setPageSize(8);
         tripsGrid.setMinCardWidth(220);
-        tripsGrid.setMaxColumns(3);
+        tripsGrid.setMaxColumns(5);
         tripsGrid.setLoadMoreKey("place.details.show.more.trips");
-        tripsGrid.setEmptyText(I18n.t("place.details.empty.trips"));
+        tripsGrid.setEmptyTextKey("place.details.empty.trips");
+        tripsGrid.setVScrollPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
         routesGrid.setManualLoadMore(true);
         routesGrid.setPageSize(8);
         routesGrid.setMinCardWidth(220);
-        routesGrid.setMaxColumns(3);
+        routesGrid.setMaxColumns(5);
         routesGrid.setLoadMoreKey("place.details.show.more.routes");
-        routesGrid.setEmptyText(I18n.t("place.details.empty.routes"));
+        routesGrid.setEmptyTextKey("place.details.empty.routes");
+        routesGrid.setVScrollPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
         storiesGrid.setManualLoadMore(true);
         storiesGrid.setPageSize(8);
         storiesGrid.setMinCardWidth(220);
-        storiesGrid.setMaxColumns(3);
+        storiesGrid.setMaxColumns(5);
         storiesGrid.setLoadMoreKey("place.details.show.more.stories");
-        storiesGrid.setEmptyText(I18n.t("place.details.empty.stories"));
+        storiesGrid.setEmptyTextKey("place.details.empty.stories");
+        storiesGrid.setVScrollPolicy(ScrollPane.ScrollBarPolicy.NEVER);
     }
 
     @Override
@@ -187,10 +197,16 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
     }
 
     private void bind(PlaceResponse place) {
-        heroImageView.setImage(loadImage(imagePath(place)));
-        placeTitleLabel.setText(safeText(place.title(), I18n.t("trip.add.fallback.place")));
-        placeCountryLabel.setText(place.country() == null ? "" : safeText(place.country().name(), ""));
-        descriptionValueLabel.setText(safeText(place.description(), I18n.t("place.details.empty.description")));
+        if (place.coverImage() != null) {
+            String coverUrl = DisplayUtils.deriveCoverUrl(place.coverImage());
+            Image image = EditorUtils.loadImage(coverUrl, DEFAULT_IMAGE, PlaceDetailsController.class);
+            EditorUtils.setCoverPreviewImage(heroImageView, heroContainer, image);
+        }
+
+        placeTitleLabel.setText(place.title());
+        descriptionValueLabel.setText(EditorUtils.safeText(place.description(), I18n.t("place.details.empty.description")));
+
+        DisplayUtils.bindCountry(countryRow, countryLabel, countryEmojiView, place.country(), COUNTRY_EMOJI_SIZE);
 
         placeMap.setMapCenter(place.latitude(), place.longitude());
         placeMap.setPinPosition(place.latitude(), place.longitude());
@@ -203,7 +219,7 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         });
         tripsGrid.setPageLoader((page, size) -> {
             var r = placeService.getPlaceTrips(new GetPlaceTripsRequest(placeUuid, new PageRequest(page - 1, size)));
-            if (r.isFailure()) return new CardGridPane.PageResult<>(java.util.List.of(), null);
+            if (r.isFailure()) return new CardGridPane.PageResult<>(List.of(), null);
             var p = r.getValue();
             return new CardGridPane.PageResult<>(p.items(),
                     new Pagination(page, size, null, p.hasNext() ? page + 1 : page));
@@ -213,7 +229,7 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         routesGrid.setCardFactory(route -> (Region) RouteCardView.create(route, () -> openRoute(route)).getRoot());
         routesGrid.setPageLoader((page, size) -> {
             var r = placeService.getPlaceRoutes(new GetPlaceRoutesRequest(placeUuid, new PageRequest(page - 1, size)));
-            if (r.isFailure()) return new CardGridPane.PageResult<>(java.util.List.of(), null);
+            if (r.isFailure()) return new CardGridPane.PageResult<>(List.of(), null);
             var p = r.getValue();
             return new CardGridPane.PageResult<>(p.items(),
                     new Pagination(page, size, null, p.hasNext() ? page + 1 : page));
@@ -221,7 +237,7 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         routesGrid.refresh();
 
         storiesGrid.setCardFactory(story -> new Label());
-        storiesGrid.setPageLoader((page, size) -> new CardGridPane.PageResult<>(java.util.List.of(), null));
+        storiesGrid.setPageLoader((page, size) -> new CardGridPane.PageResult<>(List.of(), null));
         storiesGrid.refresh();
     }
 
@@ -240,44 +256,5 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         RouterArgument args = new RouterArgument();
         args.addArgument("routeId", route.id().toString());
         getRouter().moveto(RouteIds.ROUTE_DETAILS, args);
-    }
-
-    private String imagePath(PlaceResponse place) {
-        return place.coverImage() == null || place.coverImage().url() == null
-                ? DEFAULT_IMAGE
-                : place.coverImage().url().toString();
-    }
-
-    private String safeText(String value, String fallback) {
-        return value == null || value.isBlank() ? fallback : value;
-    }
-
-    private void configureButtonIcon(Button button, String iconLiteral, String styleClass) {
-        FontIcon icon = new FontIcon(iconLiteral);
-        icon.setIconSize(15);
-        icon.getStyleClass().add(styleClass);
-        button.setGraphic(icon);
-    }
-
-    private Image loadImage(String imagePath) {
-        return EditorUtils.loadImage(imagePath, DEFAULT_IMAGE, getClass());
-    }
-
-    private void installRoundedImageClip(ImageView target, double radius) {
-        Rectangle clip = new Rectangle();
-        clip.setArcWidth(radius * 2);
-        clip.setArcHeight(radius * 2);
-        clip.widthProperty().bind(target.fitWidthProperty());
-        clip.heightProperty().bind(target.fitHeightProperty());
-        target.setClip(clip);
-    }
-
-    private void installRoundedPaneClip(StackPane target, double radius) {
-        Rectangle clip = new Rectangle();
-        clip.setArcWidth(radius * 2);
-        clip.setArcHeight(radius * 2);
-        clip.widthProperty().bind(target.widthProperty());
-        clip.heightProperty().bind(target.heightProperty());
-        target.setClip(clip);
     }
 }

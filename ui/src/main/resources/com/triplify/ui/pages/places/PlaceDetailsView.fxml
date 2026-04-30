@@ -28,23 +28,24 @@
     <content>
         <StackPane styleClass="page-root,place-details-root">
             <VBox fx:id="contentContainer" styleClass="place-details-content" spacing="20">
-                <StackPane fx:id="heroContainer" styleClass="place-details-hero">
+                <StackPane fx:id="heroContainer" styleClass="place-details-hero" prefHeight="500" maxHeight="500">
                     <ImageView fx:id="heroImageView"
-                               fitWidth="1120"
-                               fitHeight="320"
-                               pickOnBounds="true"
-                               preserveRatio="false"
-                               styleClass="place-details-hero-image"/>
-
-                    <VBox styleClass="place-details-hero-overlay" spacing="0">
-                        <HBox alignment="TOP_LEFT">
+                               mouseTransparent="true"
+                               preserveRatio="true"
+                               smooth="true"/>
+                    <VBox styleClass="place-details-hero-overlay">
+                        <HBox>
                             <Button fx:id="backButton"
                                     onAction="#onBack"
                                     styleClass="place-details-back-button"/>
                         </HBox>
                         <VBox styleClass="place-details-hero-copy" spacing="8">
                             <Label fx:id="placeTitleLabel" styleClass="place-details-title"/>
-                            <Label fx:id="placeCountryLabel" styleClass="place-details-country"/>
+                            <HBox fx:id="countryRow" spacing="6" alignment="CENTER_LEFT" styleClass="route-card-places-row">
+                                <ImageView fx:id="countryEmojiView" fitWidth="18" fitHeight="18" preserveRatio="true"
+                                           visible="false" managed="false"/>
+                                <Label fx:id="countryLabel" styleClass="place-details-country"/>
+                            </HBox>
                         </VBox>
                     </VBox>
                 </StackPane>
@@ -69,25 +70,25 @@
                     </FlowPane>
 
                     <VBox styleClass="place-details-associated-sections" spacing="20">
-                        <VBox styleClass="place-details-trips-section" spacing="12">
+                        <VBox spacing="12">
                             <SectionHeaderView fx:id="associatedTripsHeader"
                                                iconLiteral="fth-map-pin"
                                                />
-                            <CardGridPane fx:id="tripsGrid" minHeight="160" prefHeight="280" maxHeight="280"/>
+                            <CardGridPane fx:id="tripsGrid"/>
                         </VBox>
 
-                        <VBox styleClass="place-details-routes-section" spacing="12">
+                        <VBox spacing="12">
                             <SectionHeaderView fx:id="associatedRoutesHeader"
                                                iconLiteral="fth-map"
                                                />
-                            <CardGridPane fx:id="routesGrid" minHeight="160" prefHeight="280" maxHeight="280"/>
+                            <CardGridPane fx:id="routesGrid"/>
                         </VBox>
 
-                        <VBox styleClass="page-card,place-details-card" spacing="16">
+                        <VBox spacing="16">
                             <SectionHeaderView fx:id="associatedStoriesHeader"
                                                iconLiteral="fth-book-open"
                                                />
-                            <CardGridPane fx:id="storiesGrid" minHeight="160" prefHeight="280" maxHeight="280"/>
+                            <CardGridPane fx:id="storiesGrid"/>
                         </VBox>
                     </VBox>
                 </VBox>

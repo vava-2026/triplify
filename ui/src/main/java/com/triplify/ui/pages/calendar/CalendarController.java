@@ -170,7 +170,7 @@ public class CalendarController extends SimpleLifecycleAwareController {
         undatedTripsGrid.setMaxColumns(1);
         undatedTripsGrid.setMinCardWidth(240);
         undatedTripsGrid.setPageSize(UNDATED_PAGE_SIZE);
-        undatedTripsGrid.setEmptyText(I18n.t("calendar.panel.undated.empty"));
+        undatedTripsGrid.setEmptyTextKey("calendar.panel.undated.empty");
         undatedTripsGrid.setCardFactory(this::buildUndatedCard);
         undatedTripsGrid.setPageLoader(this::loadUndatedPage);
     }
