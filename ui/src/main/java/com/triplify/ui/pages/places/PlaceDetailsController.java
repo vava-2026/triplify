@@ -1,6 +1,7 @@
 package com.triplify.ui.pages.places;
 
 import com.google.inject.Inject;
+import com.triplify.application.shared.Pagination;
 import com.triplify.application.usecase.place.PlaceService;
 import com.triplify.application.usecase.place.dto.DeletePlaceRequest;
 import com.triplify.application.usecase.place.dto.GetPlaceByIdRequest;
@@ -15,8 +16,8 @@ import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.map.InteractiveMap;
 import com.triplify.ui.routing.RouteIds;
+import com.triplify.ui.shared.component.card_grid.CardGridPane;
 import com.triplify.ui.shared.component.detail_actions.view.DetailActionButtonsView;
-import com.triplify.ui.shared.component.empty_state.view.EmptyStateCardView;
 import com.triplify.ui.pages.routes.view.RouteCardView;
 import com.triplify.ui.shared.component.section_header.view.SectionHeaderView;
 import com.triplify.ui.pages.trips.view.TripCardView;
@@ -41,13 +42,12 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import rahulstech.jfx.routing.element.RouterArgument;
 import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 
-import java.util.List;
 import java.util.UUID;
 
 public class PlaceDetailsController extends SimpleLifecycleAwareController {
 
     private static final String DEFAULT_IMAGE = "/com/triplify/ui/pages/trips/images/one.png";
-    private static final int ASSOCIATED_ITEMS_PAGE_SIZE = 8;
+
     @FXML private VBox contentContainer;
     @FXML private StackPane heroContainer;
     @FXML private FlowPane topRowFlow;
@@ -63,9 +63,9 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
     @FXML private SectionHeaderView associatedTripsHeader;
     @FXML private SectionHeaderView associatedStoriesHeader;
     @FXML private SectionHeaderView associatedRoutesHeader;
-    @FXML private FlowPane associatedTripsFlow;
-    @FXML private FlowPane associatedStoriesFlow;
-    @FXML private FlowPane associatedRoutesFlow;
+    @FXML private CardGridPane<TripResponse> tripsGrid;
+    @FXML private CardGridPane<RouteResponse> routesGrid;
+    @FXML private CardGridPane<StoryResponse> storiesGrid;
 
     @Inject private PlaceService placeService;
     @Inject private ToastService toast;
@@ -85,9 +85,6 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         Localization.bindText(associatedRoutesHeader.titleProperty(), "place.details.section.routes");
 
         topRowFlow.prefWrapLengthProperty().bind(contentContainer.widthProperty());
-        associatedTripsFlow.prefWrapLengthProperty().bind(contentContainer.widthProperty());
-        associatedRoutesFlow.prefWrapLengthProperty().bind(contentContainer.widthProperty());
-        associatedStoriesFlow.prefWrapLengthProperty().bind(contentContainer.widthProperty());
 
         heroImageView.fitWidthProperty().bind(heroContainer.widthProperty());
         heroImageView.fitHeightProperty().bind(heroContainer.heightProperty());
@@ -98,6 +95,31 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         placeMap.setControlsVisible(false);
         actionButtonsView.configurePrimary(fxmlLoader, Localization.textBinding("place.details.action.edit"), "fth-edit-3", this::onEditPlace);
         actionButtonsView.configureDelete(fxmlLoader, Localization.textBinding("place.details.action.delete"), "fth-trash-2", Localization.textBinding("place.details.action.delete.confirm"), this::onDeletePlace);
+
+        setupAssociatedGrids();
+    }
+
+    private void setupAssociatedGrids() {
+        tripsGrid.setManualLoadMore(true);
+        tripsGrid.setPageSize(8);
+        tripsGrid.setMinCardWidth(220);
+        tripsGrid.setMaxColumns(3);
+        tripsGrid.setLoadMoreKey("place.details.show.more.trips");
+        tripsGrid.setEmptyText(I18n.t("place.details.empty.trips"));
+
+        routesGrid.setManualLoadMore(true);
+        routesGrid.setPageSize(8);
+        routesGrid.setMinCardWidth(220);
+        routesGrid.setMaxColumns(3);
+        routesGrid.setLoadMoreKey("place.details.show.more.routes");
+        routesGrid.setEmptyText(I18n.t("place.details.empty.routes"));
+
+        storiesGrid.setManualLoadMore(true);
+        storiesGrid.setPageSize(8);
+        storiesGrid.setMinCardWidth(220);
+        storiesGrid.setMaxColumns(3);
+        storiesGrid.setLoadMoreKey("place.details.show.more.stories");
+        storiesGrid.setEmptyText(I18n.t("place.details.empty.stories"));
     }
 
     @Override
@@ -161,30 +183,10 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
             return;
         }
 
-        var tripsResult = placeService.getPlaceTrips(new GetPlaceTripsRequest(
-                placeUuid,
-                new PageRequest(0, ASSOCIATED_ITEMS_PAGE_SIZE)
-        ));
-        if (tripsResult.isFailure()) {
-            errorHandler.handle(tripsResult.getError());
-            getRouter().popBackStack();
-            return;
-        }
-
-        var routesResult = placeService.getPlaceRoutes(new GetPlaceRoutesRequest(
-                placeUuid,
-                new PageRequest(0, ASSOCIATED_ITEMS_PAGE_SIZE)
-        ));
-        if (routesResult.isFailure()) {
-            errorHandler.handle(routesResult.getError());
-            getRouter().popBackStack();
-            return;
-        }
-
-        bind(placeResult.getValue(), tripsResult.getValue().items(), routesResult.getValue().items());
+        bind(placeResult.getValue());
     }
 
-    private void bind(PlaceResponse place, List<TripResponse> trips, List<RouteResponse> routes) {
+    private void bind(PlaceResponse place) {
         heroImageView.setImage(loadImage(imagePath(place)));
         placeTitleLabel.setText(safeText(place.title(), I18n.t("trip.add.fallback.place")));
         placeCountryLabel.setText(place.country() == null ? "" : safeText(place.country().name(), ""));
@@ -193,72 +195,34 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         placeMap.setMapCenter(place.latitude(), place.longitude());
         placeMap.setPinPosition(place.latitude(), place.longitude());
 
-        renderAssociatedTrips(trips);
-        renderAssociatedRoutes(routes);
-        renderAssociatedStories(List.of());
-    }
+        UUID placeUuid = place.id();
 
-    private void renderAssociatedTrips(List<TripResponse> trips) {
-        associatedTripsFlow.getChildren().clear();
-        if (trips.isEmpty()) {
-            associatedTripsFlow.getChildren().add(createEmptyState(I18n.t("place.details.empty.trips"), associatedTripsFlow));
-            return;
-        }
-
-        for (TripResponse trip : trips) {
+        tripsGrid.setCardFactory(trip -> {
             String dateRange = formatDateRange(toLocalDate(trip.startedAt()), toLocalDate(trip.endedAt()));
-            TripCardView card = TripCardView.create(
-                    trip,
-                    dateRange,
-                    () -> openTrip(trip)
-            );
-            associatedTripsFlow.getChildren().add((Region) card.getRoot());
-        }
-    }
+            return (Region) TripCardView.create(trip, dateRange, () -> openTrip(trip)).getRoot();
+        });
+        tripsGrid.setPageLoader((page, size) -> {
+            var r = placeService.getPlaceTrips(new GetPlaceTripsRequest(placeUuid, new PageRequest(page - 1, size)));
+            if (r.isFailure()) return new CardGridPane.PageResult<>(java.util.List.of(), null);
+            var p = r.getValue();
+            return new CardGridPane.PageResult<>(p.items(),
+                    new Pagination(page, size, null, p.hasNext() ? page + 1 : page));
+        });
+        tripsGrid.refresh();
 
-    private void renderAssociatedRoutes(List<RouteResponse> routes) {
-        associatedRoutesFlow.getChildren().clear();
-        if (routes.isEmpty()) {
-            associatedRoutesFlow.getChildren().add(createEmptyState(I18n.t("place.details.empty.routes"), associatedRoutesFlow));
-            return;
-        }
+        routesGrid.setCardFactory(route -> (Region) RouteCardView.create(route, () -> openRoute(route)).getRoot());
+        routesGrid.setPageLoader((page, size) -> {
+            var r = placeService.getPlaceRoutes(new GetPlaceRoutesRequest(placeUuid, new PageRequest(page - 1, size)));
+            if (r.isFailure()) return new CardGridPane.PageResult<>(java.util.List.of(), null);
+            var p = r.getValue();
+            return new CardGridPane.PageResult<>(p.items(),
+                    new Pagination(page, size, null, p.hasNext() ? page + 1 : page));
+        });
+        routesGrid.refresh();
 
-        for (RouteResponse route : routes) {
-            RouteCardView card = RouteCardView.create(route, () -> openRoute(route));
-            associatedRoutesFlow.getChildren().add((Region) card.getRoot());
-        }
-    }
-
-    private void renderAssociatedStories(List<StoryResponse> stories) {
-        associatedStoriesFlow.getChildren().clear();
-        if (stories.isEmpty()) {
-            associatedStoriesFlow.getChildren().add(createEmptyState(I18n.t("place.details.empty.stories"), associatedStoriesFlow));
-            return;
-        }
-
-        for (StoryResponse story : stories) {
-            VBox card = new VBox(6);
-            card.getStyleClass().add("place-details-story-card");
-
-            Label title = new Label(safeText(story.title(), I18n.t("place.details.story.fallback")));
-            title.getStyleClass().add("place-details-story-title");
-            title.setWrapText(true);
-
-            Label description = new Label(safeText(story.description(), I18n.t("place.details.empty.description")));
-            description.getStyleClass().add("place-details-story-description");
-            description.setWrapText(true);
-
-            card.getChildren().addAll(title, description);
-            associatedStoriesFlow.getChildren().add(card);
-        }
-    }
-
-    private EmptyStateCardView createEmptyState(String text, FlowPane parent) {
-        EmptyStateCardView card = new EmptyStateCardView();
-        card.setText(text);
-        card.prefWidthProperty().bind(parent.widthProperty());
-        card.maxWidthProperty().bind(parent.widthProperty());
-        return card;
+        storiesGrid.setCardFactory(story -> new Label());
+        storiesGrid.setPageLoader((page, size) -> new CardGridPane.PageResult<>(java.util.List.of(), null));
+        storiesGrid.refresh();
     }
 
     private void openTrip(TripResponse trip) {

@@ -1,14 +1,11 @@
 package com.triplify.ui.shared.component.card_grid;
 
 import com.triplify.application.shared.Pagination;
-import com.triplify.ui.i18n.I18n;
-import com.triplify.ui.shared.component.button.model.ButtonVariant;
-import com.triplify.ui.shared.component.button.view.AppButtonView;
-import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import com.triplify.ui.shared.util.Localization;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -19,6 +16,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import lombok.Setter;
+import org.kordamp.ikonli.javafx.FontIcon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,7 +66,7 @@ public class CardGridPane<T> extends VBox {
 
     private boolean manualLoadMore = false;
     private HBox loadMoreFooter;
-    private Label loadMoreButton;
+    private Label loadMoreLabel;
 
     public CardGridPane() {
         getStyleClass().add("card-grid-root");
@@ -87,14 +85,22 @@ public class CardGridPane<T> extends VBox {
         emptyPane.setVisible(false);
         emptyPane.setManaged(false);
 
-        loadMoreButton = new Label();
-        loadMoreButton.getStyleClass().addAll("card-grid-load-more-btn");
-        Localization.bindText(loadMoreButton.textProperty(), "common.loadMore");
-        loadMoreButton.setOnMouseClicked(e -> loadNextPage());
+        loadMoreLabel = new Label();
+        loadMoreLabel.getStyleClass().add("card-grid-load-more-text");
+        Localization.bindText(loadMoreLabel.textProperty(), "common.loadMore");
 
-        loadMoreFooter = new HBox(loadMoreButton);
+        FontIcon arrowIcon = new FontIcon("fth-chevron-down");
+        arrowIcon.getStyleClass().add("card-grid-load-more-arrow");
+
+        VBox loadMoreBtn = new VBox(4, loadMoreLabel, arrowIcon);
+        loadMoreBtn.setAlignment(Pos.CENTER);
+        loadMoreBtn.getStyleClass().add("card-grid-load-more-btn");
+        loadMoreBtn.setCursor(Cursor.HAND);
+        loadMoreBtn.setOnMouseClicked(e -> loadNextPage());
+
+        loadMoreFooter = new HBox(loadMoreBtn);
         loadMoreFooter.setAlignment(Pos.CENTER);
-        loadMoreFooter.setPadding(new Insets(8, 0, 8, 0));
+        loadMoreFooter.setPadding(new Insets(12, 0, 16, 0));
         loadMoreFooter.setVisible(false);
         loadMoreFooter.setManaged(false);
 
@@ -127,6 +133,10 @@ public class CardGridPane<T> extends VBox {
 
     public void setManualLoadMore(boolean enabled) {
         this.manualLoadMore = enabled;
+    }
+
+    public void setLoadMoreKey(String i18nKey) {
+        Localization.bindText(loadMoreLabel.textProperty(), i18nKey);
     }
 
     public void setPageSize(int pageSize) {

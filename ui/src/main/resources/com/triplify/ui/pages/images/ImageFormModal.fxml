@@ -17,22 +17,20 @@
 
     <StackPane styleClass="image-modal-card-shell"
                minWidth="520" prefWidth="520" maxWidth="520"
-               alignment="CENTER">
+               prefHeight="550" maxHeight="550">
         <VBox fx:id="card" styleClass="image-modal-card"
               minWidth="520" prefWidth="520" maxWidth="520">
             <padding>
                 <Insets top="28" right="28" bottom="28" left="28"/>
             </padding>
             <VBox spacing="16">
-                <ImageUploadPanelView fx:id="uploadPanel"
-                                      minWidth="464" prefWidth="464" maxWidth="464"
-                                      minHeight="240" prefHeight="240" maxHeight="240"/>
-                <VBox fx:id="descriptionContainer" spacing="0"/>
+                <ImageUploadPanelView fx:id="uploadPanel"/>
+                <VBox fx:id="descriptionContainer"/>
             </VBox>
             <Region VBox.vgrow="ALWAYS"/>
             <HBox spacing="12" alignment="CENTER_RIGHT" styleClass="image-modal-actions">
                 <padding>
-                    <Insets top="20" right="0" bottom="0" left="0"/>
+                    <Insets top="20"/>
                 </padding>
                 <StackPane fx:id="cancelButtonContainer"/>
                 <StackPane fx:id="saveButtonContainer"/>
@@ -42,10 +40,10 @@
         <Button fx:id="closeButton" styleClass="image-modal-close-btn" focusTraversable="false"
                 StackPane.alignment="TOP_RIGHT">
             <graphic>
-                <FontIcon iconLiteral="fth-x" iconSize="18" styleClass="image-modal-close-icon"/>
+                <FontIcon iconLiteral="fth-x" iconSize="20" styleClass="image-modal-close-icon"/>
             </graphic>
             <StackPane.margin>
-                <Insets top="12" right="12" bottom="0" left="0"/>
+                <Insets top="20" right="20"/>
             </StackPane.margin>
         </Button>
     </StackPane>

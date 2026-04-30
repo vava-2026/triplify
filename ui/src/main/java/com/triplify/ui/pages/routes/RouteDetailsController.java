@@ -2,6 +2,7 @@ package com.triplify.ui.pages.routes;
 
 import com.google.inject.Inject;
 import com.gluonhq.maps.MapPoint;
+import com.triplify.application.shared.Pagination;
 import com.triplify.application.usecase.route.RouteService;
 import com.triplify.application.usecase.route.dto.DeleteRouteRequest;
 import com.triplify.application.usecase.route.dto.GetRouteByIdRequest;
@@ -11,8 +12,8 @@ import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.map.InteractiveMap;
 import com.triplify.ui.routing.RouteIds;
+import com.triplify.ui.shared.component.card_grid.CardGridPane;
 import com.triplify.ui.shared.component.detail_actions.view.DetailActionButtonsView;
-import com.triplify.ui.shared.component.empty_state.view.EmptyStateCardView;
 import com.triplify.ui.shared.component.section_header.view.SectionHeaderView;
 import com.triplify.ui.shared.toast.ToastService;
 import com.triplify.ui.shared.util.EditorUtils;
@@ -37,8 +38,10 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import rahulstech.jfx.routing.element.RouterArgument;
 import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class RouteDetailsController extends SimpleLifecycleAwareController {
 
@@ -58,7 +61,7 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
     @FXML private InteractiveMap routeMap;
     @FXML private DetailActionButtonsView actionButtonsView;
     @FXML private SectionHeaderView placesHeader;
-    @FXML private FlowPane placesFlow;
+    @FXML private CardGridPane<PlaceResponse> placesGrid;
 
     @Inject private RouteService routeService;
     @Inject private ToastService toast;
@@ -66,6 +69,8 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
     @Inject private FxmlLoaderHelper fxmlLoader;
 
     private String routeId;
+    private List<PlaceResponse> currentPlaces = List.of();
+    private final AtomicInteger placeIndexCounter = new AtomicInteger(0);
 
     @FXML
     public void initialize() {
@@ -76,7 +81,6 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
         Localization.bindText(placesHeader.titleProperty(), "route.details.section.places");
 
         topRowFlow.prefWrapLengthProperty().bind(contentContainer.widthProperty());
-        placesFlow.prefWrapLengthProperty().bind(contentContainer.widthProperty());
 
         heroImageView.fitWidthProperty().bind(heroContainer.widthProperty());
         heroImageView.fitHeightProperty().bind(heroContainer.heightProperty());
@@ -87,6 +91,23 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
 
         actionButtonsView.configurePrimary(fxmlLoader, Localization.textBinding("route.details.action.edit"), "fth-edit-3", this::onEditRoute);
         actionButtonsView.configureDelete(fxmlLoader, Localization.textBinding("route.details.action.delete"), "fth-trash-2", Localization.textBinding("route.details.action.delete.confirm"), this::onDeleteRoute);
+
+        placesGrid.setManualLoadMore(true);
+        placesGrid.setPageSize(50);
+        placesGrid.setMinCardWidth(560);
+        placesGrid.setMaxColumns(1);
+        placesGrid.setLoadMoreKey("route.details.show.more.places");
+        placesGrid.setEmptyText(I18n.t("route.details.empty.places"));
+        placesGrid.setCardFactory(place -> {
+            int idx = placeIndexCounter.incrementAndGet();
+            return buildPlaceRow(place, idx);
+        });
+        placesGrid.setPageLoader((page, size) -> {
+            if (page > 1) return new CardGridPane.PageResult<>(List.of(), null);
+            List<PlaceResponse> snapshot = new ArrayList<>(currentPlaces);
+            return new CardGridPane.PageResult<>(snapshot,
+                    new Pagination(1, snapshot.size(), snapshot.size(), 1));
+        });
     }
 
     @Override
@@ -151,7 +172,10 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
 
         List<PlaceResponse> places = route.places() == null ? List.of() : List.copyOf(route.places());
         renderMap(places);
-        renderPlaces(places);
+
+        currentPlaces = places;
+        placeIndexCounter.set(0);
+        placesGrid.refresh();
     }
 
     private void renderMap(List<PlaceResponse> places) {
@@ -173,23 +197,6 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
 
         if (waypoints.size() >= 2) {
             routeMap.setPolyline(waypoints);
-        }
-    }
-
-    private void renderPlaces(List<PlaceResponse> places) {
-        placesFlow.getChildren().clear();
-        if (places.isEmpty()) {
-            EmptyStateCardView empty = new EmptyStateCardView();
-            empty.setText(I18n.t("route.details.empty.places"));
-            empty.prefWidthProperty().bind(placesFlow.widthProperty());
-            empty.maxWidthProperty().bind(placesFlow.widthProperty());
-            placesFlow.getChildren().add(empty);
-            return;
-        }
-
-        for (int i = 0; i < places.size(); i++) {
-            HBox row = buildPlaceRow(places.get(i), i + 1);
-            placesFlow.getChildren().add(row);
         }
     }
 

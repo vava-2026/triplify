@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.lang.String?>
+<?import com.triplify.ui.shared.component.card_grid.CardGridPane?>
 <?import com.triplify.ui.map.InteractiveMap?>
 <?import com.triplify.ui.shared.component.detail_actions.view.DetailActionButtonsView?>
 <?import com.triplify.ui.shared.component.section_header.view.SectionHeaderView?>
@@ -18,7 +19,6 @@
             fx:controller="com.triplify.ui.pages.places.PlaceDetailsController"
             fitToWidth="true"
             hbarPolicy="NEVER"
-            vbarPolicy="AS_NEEDED"
             styleClass="page-scroll">
     <stylesheets>
         <String fx:value="/com/triplify/ui/pages/places/add_place.css"/>
@@ -73,21 +73,21 @@
                             <SectionHeaderView fx:id="associatedTripsHeader"
                                                iconLiteral="fth-map-pin"
                                                />
-                            <FlowPane fx:id="associatedTripsFlow" styleClass="place-details-grid"/>
+                            <CardGridPane fx:id="tripsGrid" minHeight="160" prefHeight="280" maxHeight="280"/>
                         </VBox>
 
                         <VBox styleClass="place-details-routes-section" spacing="12">
                             <SectionHeaderView fx:id="associatedRoutesHeader"
                                                iconLiteral="fth-map"
                                                />
-                            <FlowPane fx:id="associatedRoutesFlow" styleClass="place-details-grid"/>
+                            <CardGridPane fx:id="routesGrid" minHeight="160" prefHeight="280" maxHeight="280"/>
                         </VBox>
 
                         <VBox styleClass="page-card,place-details-card" spacing="16">
                             <SectionHeaderView fx:id="associatedStoriesHeader"
                                                iconLiteral="fth-book-open"
                                                />
-                            <FlowPane fx:id="associatedStoriesFlow" styleClass="place-details-grid"/>
+                            <CardGridPane fx:id="storiesGrid" minHeight="160" prefHeight="280" maxHeight="280"/>
                         </VBox>
                     </VBox>
                 </VBox>

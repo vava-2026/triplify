@@ -70,26 +70,26 @@
                         </VBox>
                     </FlowPane>
 
-                    <VBox styleClass="place-details-associated-sections" spacing="20">
+                    <VBox spacing="20">
                         <VBox styleClass="place-details-trips-section" spacing="12">
                             <SectionHeaderView fx:id="routesHeader" iconLiteral="fth-map"/>
-                            <FlowPane fx:id="routesFlow" styleClass="place-details-grid"/>
+                            <CardGridPane fx:id="routesGrid"/>
                         </VBox>
 
-                        <VBox styleClass="place-details-routes-section" spacing="12">
+                        <VBox spacing="12">
                             <SectionHeaderView fx:id="placesHeader" iconLiteral="fth-map-pin"/>
-                            <FlowPane fx:id="placesFlow" styleClass="place-details-grid"/>
+                            <CardGridPane fx:id="placesGrid"/>
                         </VBox>
 
-                        <VBox styleClass="page-card,place-details-card" spacing="16">
+                        <VBox spacing="16">
                             <SectionHeaderView fx:id="storiesHeader" iconLiteral="fth-book-open"/>
-                            <FlowPane fx:id="storiesFlow" styleClass="place-details-grid"/>
+                            <Button fx:id="addStoryButton" styleClass="app-btn,app-btn-tint"/>
+                            <CardGridPane fx:id="storiesGrid"/>
                         </VBox>
 
-                        <VBox styleClass="page-card,place-details-card" spacing="12">
+                        <VBox spacing="12">
                             <SectionHeaderView fx:id="imagesHeader" iconLiteral="fth-image"/>
-                            <CardGridPane fx:id="imagesGrid"
-                                         minHeight="200" prefHeight="360" maxHeight="360"/>
+                            <CardGridPane fx:id="imagesGrid"/>
                         </VBox>
                     </VBox>
                 </VBox>

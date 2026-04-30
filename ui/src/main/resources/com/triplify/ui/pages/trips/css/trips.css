@@ -84,6 +84,22 @@
     -fx-font-size: 14px;
 }
 
+.card-grid-load-more-btn {
+    -fx-background-color: transparent;
+    -fx-padding: 4px 0;
+    -fx-cursor: hand;
+}
+
+.card-grid-load-more-text {
+    -fx-font-size: 14px;
+    -fx-text-fill: -color-primary;
+}
+
+.card-grid-load-more-arrow {
+    -fx-icon-color: -color-primary;
+    -fx-icon-size: 16px;
+}
+
 /* ── Trip Card ── */
 
 .trip-card {
