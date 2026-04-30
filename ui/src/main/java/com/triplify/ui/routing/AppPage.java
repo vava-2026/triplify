@@ -311,20 +311,6 @@ public enum AppPage {
             EnumSet.noneOf(RoleEnum.class),
             false,
             false
-    ),
-    LICENSE_EXPIRED(
-            RouteIds.LICENSE_EXPIRED,
-            "page.licenseExpired",
-            "fth-alert-triangle",
-            EnumSet.of(RoleEnum.USER, RoleEnum.PRO_USER),
-            true,
-            false,
-            false,
-            false,
-            false,
-            null,
-            EnumSet.noneOf(RoleEnum.class),
-            false
     );
 
     private static final Map<String, AppPage> BY_ROUTE_ID = Arrays.stream(values())

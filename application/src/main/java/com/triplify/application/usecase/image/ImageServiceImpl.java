@@ -11,6 +11,7 @@ import com.triplify.domain.model.enums.ImageOwnerType;
 import com.triplify.application.usecase.image.dto.ImageResponse;
 import com.triplify.application.usecase.image.dto.LinkImageRequest;
 import com.triplify.application.usecase.image.dto.UpdateImageRequest;
+import com.triplify.application.usecase.session.SessionUser;
 import com.triplify.application.usecase.session.UserSessionContext;
 import com.triplify.application.usecase.statistic.StatisticService;
 import com.triplify.application.usecase.statistic.dto.IncrementStatisticRequest;
@@ -64,7 +65,7 @@ public class ImageServiceImpl implements ImageService {
             image.updateDescription(request.description());
             imageRepository.save(image);
             if (request.description() == null || !request.description().startsWith("Badge image for ")) {
-                statisticService.incrementStatistic(new IncrementStatisticRequest(sessionContext.getCurrent().orElseThrow().userId(), StatisticType.PHOTOS_UPLOADED)).orThrow();
+                statisticService.incrementStatistic(new IncrementStatisticRequest(userSessionContext.getCurrent().orElseThrow().userId(), StatisticType.PHOTOS_UPLOADED)).orThrow();
             }
             log.info("Image added: id={}", image.getId());
             return Result.ok(ImageResponse.from(image));
