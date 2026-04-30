@@ -155,4 +155,8 @@
     <destination id="account"
                  fxml="com/triplify/ui/pages/account/AccountView.fxml"
                  singleTop="true"/>
+
+    <destination id="license-expired"
+                 fxml="com/triplify/ui/pages/license/LicenseExpiredView.fxml"
+                 singleTop="true"/>
 </router>

@@ -2,7 +2,10 @@ package com.triplify.ui.routing;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.triplify.application.license.LicenseManager;
+import com.triplify.application.usecase.session.SessionUser;
 import com.triplify.application.usecase.session.UserSessionContext;
+import com.triplify.domain.model.enums.RoleEnum;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.toast.ToastService;
 import rahulstech.jfx.routing.Router;
@@ -14,21 +17,46 @@ public class GuardedNavigator {
     private final PageAccessService pageAccessService;
     private final UserSessionContext userSessionContext;
     private final ToastService toastService;
+    private final LicenseManager licenseManager;
 
     @Inject
     public GuardedNavigator(
             PageAccessService pageAccessService,
             UserSessionContext userSessionContext,
-            ToastService toastService
+            ToastService toastService,
+            LicenseManager licenseManager
     ) {
         this.pageAccessService = pageAccessService;
         this.userSessionContext = userSessionContext;
         this.toastService = toastService;
+        this.licenseManager = licenseManager;
     }
 
     public void openDefault(Router router) {
-        AppPage page = pageAccessService.getDefaultPage(userSessionContext.getCurrent());
-        goTo(router, page.getRouteId());
+        goTo(router, resolveLandingRouteId());
+    }
+
+    public String resolveLandingRouteId() {
+        SessionUser currentUser = userSessionContext.getCurrent().orElse(null);
+        if (currentUser == null) {
+            return RouteIds.START;
+        }
+
+        if (currentUser.role() == RoleEnum.PRO_USER) {
+            LicenseManager.CheckStatus status = licenseManager.checkStoredLicense(currentUser.userId().toString()).status;
+            if (status != LicenseManager.CheckStatus.VALID) {
+                SessionUser downgradedUser = new SessionUser(
+                        currentUser.userId(),
+                        currentUser.username(),
+                        currentUser.email(),
+                        RoleEnum.USER,
+                        currentUser.avatarImageId());
+                userSessionContext.set(downgradedUser);
+                return RouteIds.LICENSE_EXPIRED;
+            }
+        }
+
+        return pageAccessService.getDefaultPage(java.util.Optional.of(currentUser)).getRouteId();
     }
 
     public void goTo(Router router, String routeId) {

@@ -15,6 +15,7 @@ import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
+import com.triplify.domain.model.enums.RoleEnum;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -42,6 +43,7 @@ public class MenuView implements Initializable {
     @FXML private VBox navContainer;
 
     @FXML private Label accountRole;
+    @FXML private Label accountProTag;
     @FXML private Label accountNameLabel;
     @FXML private Label avatarLabel;
     @FXML private ImageView avatarImageView;
@@ -140,6 +142,8 @@ public class MenuView implements Initializable {
             avatarLabel.setText(AvatarImageHelper.extractInitial(null));
             showInitialAvatar();
             avatarImageView.setClip(new Circle(19, 19, 19));
+            accountProTag.setVisible(false);
+            accountProTag.setManaged(false);
             return;
         }
 
@@ -149,8 +153,15 @@ public class MenuView implements Initializable {
         currentRoleLabelKey = pageAccessService.getRoleLabelKey(currentUser.role());
         accountRole.textProperty().unbind();
         accountRole.textProperty().bind(Bindings.createStringBinding(
-                () -> I18n.t(currentRoleLabelKey),
-                I18n.bundleProperty()));
+            () -> I18n.t(currentRoleLabelKey),
+            I18n.bundleProperty()));
+
+        accountProTag.textProperty().unbind();
+        accountProTag.setText("Pro");
+
+        boolean isPro = currentUser.role() == RoleEnum.PRO_USER;
+        accountProTag.setVisible(isPro);
+        accountProTag.setManaged(isPro);
         avatarLabel.setText(AvatarImageHelper.extractInitial(username));
         applyAvatarImage(null);
         avatarImageView.setClip(new Circle(19, 19, 19));

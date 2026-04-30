@@ -98,3 +98,18 @@
     -fx-padding: 0 50 30 50;
 }
 
+.license-details {
+    -fx-padding: 6 0 0 0;
+    -fx-spacing: 0;
+}
+
+.license-details-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-ink-muted;
+}
+
+.license-details-value {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-ink;
+}

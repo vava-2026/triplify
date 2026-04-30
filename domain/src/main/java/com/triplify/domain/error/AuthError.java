@@ -4,7 +4,8 @@ public sealed interface AuthError extends DomainError permits
         AuthError.EmailAlreadyTaken,
         AuthError.InvalidCredentials,
         AuthError.SessionExpired,
-        AuthError.UsernameAlreadyTaken {
+        AuthError.UsernameAlreadyTaken,
+        AuthError.LicenseExpired {
 
     record InvalidCredentials() implements AuthError {
         @Override
@@ -53,5 +54,16 @@ public sealed interface AuthError extends DomainError permits
             return "Email is already taken";
         }
     }
-}
 
+    record LicenseExpired() implements AuthError {
+        @Override
+        public String code() {
+            return "error.auth.license.expired";
+        }
+
+        @Override
+        public String message() {
+            return "License has expired, please renew your license";
+        }
+    }
+}
