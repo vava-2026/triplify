@@ -5,7 +5,12 @@ import com.triplify.application.usecase.image.dto.DeleteImageRequest;
 import com.triplify.application.usecase.image.dto.ImageResponse;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
+import com.triplify.ui.shared.component.button.model.ButtonVariant;
+import com.triplify.ui.shared.component.button.view.AppButtonView;
 import com.triplify.ui.shared.util.EditorUtils;
+import com.triplify.ui.shared.util.FxmlLoaderHelper;
+import jakarta.inject.Inject;
+import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -15,6 +20,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Modality;
@@ -43,19 +49,23 @@ public final class ImageViewModalView {
     private final Stage stage;
     private final StackPane root;
 
+    private FxmlLoaderHelper fxmlLoader;
+
     @FXML private StackPane root_fxml;
     @FXML private ImageView imageView;
     @FXML private Label descriptionLabel;
     @FXML private Button closeButton;
-    @FXML private Button deleteButton;
+    @FXML private HBox deleteButtonContainer;
+    //@FXML private Button deleteButton;
 
     private ImageResponse currentImage;
     private Consumer<ImageResponse> onDeleted;
     private boolean ownerInitialized;
 
-    public ImageViewModalView(ImageService imageService, ErrorHandler errorHandler) {
+    public ImageViewModalView(ImageService imageService, ErrorHandler errorHandler, FxmlLoaderHelper fxmlLoader) {
         this.imageService = imageService;
         this.errorHandler = errorHandler;
+        this.fxmlLoader = fxmlLoader;
         this.stage = new Stage(StageStyle.TRANSPARENT);
         this.stage.initModality(Modality.APPLICATION_MODAL);
         this.root = loadView();
@@ -72,13 +82,13 @@ public final class ImageViewModalView {
             ownerInitialized = true;
         }
 
-        double w = owner.getWidth() > 0 ? owner.getWidth() : 1280;
-        double h = owner.getHeight() > 0 ? owner.getHeight() : 800;
-        root.setPrefSize(w, h);
+        double width = owner.getWidth();
+        double height = owner.getHeight();
+        root.setPrefSize(width, height);
         stage.setX(owner.getX());
         stage.setY(owner.getY());
-        stage.setWidth(w);
-        stage.setHeight(h);
+        stage.setWidth(width);
+        stage.setHeight(height);
 
         applyImage(image);
         stage.showAndWait();
@@ -91,7 +101,16 @@ public final class ImageViewModalView {
     @FXML
     private void initialize() {
         closeButton.setOnAction(e -> hide());
-        deleteButton.setOnAction(e -> confirmDelete());
+
+        Button deleteButton = AppButtonView.builder(fxmlLoader)
+                .variant(ButtonVariant.DANGER_OUTLINE)
+                .labelBinding(Bindings.createStringBinding(() -> I18n.t("images.delete"), I18n.bundleProperty()))
+                .icon("fth-trash-2")
+                .requireConfirm(I18n.t("images.delete.confirm.message"))
+                .onAction(this::performDelete)
+                .build();
+
+        deleteButtonContainer.getChildren().setAll(deleteButton);
     }
 
     private void applyImage(ImageResponse image) {
@@ -106,20 +125,6 @@ public final class ImageViewModalView {
         descriptionLabel.setText(desc != null ? desc : "");
         descriptionLabel.setVisible(desc != null && !desc.isBlank());
         descriptionLabel.setManaged(desc != null && !desc.isBlank());
-    }
-
-    private void confirmDelete() {
-        if (currentImage == null) return;
-
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.initOwner(stage);
-        alert.initModality(Modality.APPLICATION_MODAL);
-        alert.setTitle(I18n.t("images.delete.confirm.title"));
-        alert.setHeaderText(null);
-        alert.setContentText(I18n.t("images.delete.confirm.message"));
-        alert.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) performDelete();
-        });
     }
 
     private void performDelete() {

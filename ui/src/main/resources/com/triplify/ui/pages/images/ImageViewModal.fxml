@@ -17,39 +17,29 @@
            styleClass="image-modal-root">
     <Region styleClass="image-modal-backdrop" maxWidth="Infinity" maxHeight="Infinity"/>
 
-    <StackPane styleClass="image-modal-card-shell"
-               minWidth="620" prefWidth="620" maxWidth="620"
-               alignment="CENTER">
-        <VBox fx:id="card" styleClass="image-modal-card"
-              minWidth="620" prefWidth="620" maxWidth="620">
-            <ImageView fx:id="imageView"
-                       fitWidth="620" preserveRatio="true" smooth="true"/>
+    <StackPane maxWidth="600" maxHeight="700">
+        <VBox styleClass="image-modal-card">
+        <padding>
+            <Insets top="50" right="24" bottom="20" left="24"/>
+        </padding>
+        <ScrollPane fx:id="card" styleClass="card-grid-scroll" prefHeight="700" vbarPolicy="ALWAYS" hbarPolicy="NEVER">
             <VBox spacing="8">
-                <padding>
-                    <Insets top="16" right="24" bottom="20" left="24"/>
-                </padding>
-                <ScrollPane fitToWidth="true" styleClass="image-modal-desc-scroll"
-                            minHeight="0" prefHeight="80" maxHeight="160">
-                    <Label fx:id="descriptionLabel" styleClass="image-modal-description"
-                           maxWidth="Infinity" wrapText="true"/>
-                </ScrollPane>
+                <ImageView fx:id="imageView" fitWidth="600" preserveRatio="true"/>
+                <Label fx:id="descriptionLabel" styleClass="image-modal-description"
+                       maxWidth="Infinity" wrapText="true"/>
+                <HBox fx:id="deleteButtonContainer"/>
             </VBox>
+        </ScrollPane>
         </VBox>
 
-        <HBox alignment="TOP_RIGHT" StackPane.alignment="TOP_RIGHT" spacing="4">
+        <Button fx:id="closeButton" styleClass="window-close-btn" focusTraversable="false"
+                StackPane.alignment="TOP_RIGHT">
+            <graphic>
+                <FontIcon iconLiteral="fth-x" iconSize="20" styleClass="window-close-icon"/>
+            </graphic>
             <StackPane.margin>
-                <Insets top="12" right="12" bottom="0" left="0"/>
+                <Insets top="20" right="20"/>
             </StackPane.margin>
-            <Button fx:id="deleteButton" styleClass="image-modal-delete-btn" focusTraversable="false">
-                <graphic>
-                    <FontIcon iconLiteral="fth-trash-2" iconSize="18" styleClass="image-modal-delete-icon"/>
-                </graphic>
-            </Button>
-            <Button fx:id="closeButton" styleClass="image-modal-close-btn" focusTraversable="false">
-                <graphic>
-                    <FontIcon iconLiteral="fth-x" iconSize="18" styleClass="image-modal-close-icon"/>
-                </graphic>
-            </Button>
-        </HBox>
+        </Button>
     </StackPane>
 </StackPane>

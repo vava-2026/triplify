@@ -107,13 +107,13 @@ public final class ImageFormModalView {
             ownerInitialized = true;
         }
 
-        double w = owner.getWidth() > 0 ? owner.getWidth() : 1280;
-        double h = owner.getHeight() > 0 ? owner.getHeight() : 800;
-        root.setPrefSize(w, h);
+        double width = owner.getWidth();
+        double height = owner.getHeight();
+        root.setPrefSize(width, height);
         stage.setX(owner.getX());
         stage.setY(owner.getY());
-        stage.setWidth(w);
-        stage.setHeight(h);
+        stage.setWidth(width);
+        stage.setHeight(height);
         resetState();
         stage.showAndWait();
     }

@@ -15,7 +15,7 @@
         <String fx:value="/com/triplify/ui/pages/trips/css/trips.css"/>
     </stylesheets>
     <VBox spacing="16">
-        <HBox fx:id="typeFilterContainer" styleClass="images-toolbar" spacing="10"/>
+        <VBox fx:id="typeFilterContainer" prefWidth="300"/>
         <CardGridPane fx:id="cardGrid" VBox.vgrow="ALWAYS"/>
     </VBox>
 </StackPane>
