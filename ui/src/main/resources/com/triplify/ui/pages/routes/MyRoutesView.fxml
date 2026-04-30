@@ -16,7 +16,7 @@
             <VBox fx:id="searchContainer" prefWidth="240"/>
             <HBox styleClass="trips-sort">
                 <Label fx:id="sortByLabel" styleClass="trips-sort-label"/>
-                <VBox fx:id="sortSelectContainer" prefWidth="160"/>
+                <VBox fx:id="sortSelectContainer" prefWidth="200"/>
             </HBox>
         </FlowPane>
 

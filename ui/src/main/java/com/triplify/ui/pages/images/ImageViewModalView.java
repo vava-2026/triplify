@@ -13,6 +13,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -95,7 +96,7 @@ public final class ImageViewModalView {
 
     private void applyImage(ImageResponse image) {
         if (image.url() != null) {
-            javafx.scene.image.Image img = EditorUtils.resolveCoverImage(image.url().toString());
+            Image img = EditorUtils.resolveCoverImage(image.url().toUri().toString());
             imageView.setImage(img);
         } else {
             imageView.setImage(null);

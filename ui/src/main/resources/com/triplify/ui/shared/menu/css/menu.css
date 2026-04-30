@@ -151,6 +151,18 @@
     -fx-font-family: -font-family-base;
 }
 
+.nav-pro-tag {
+    -fx-background-color: -color-pro;
+    -fx-text-fill: -color-on-pro;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 3 0 3;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-min-height: 12;
+    -fx-alignment: CENTER;
+}
+
 .account-pro-tag {
     -fx-background-color: -color-pro;
     -fx-text-fill: -color-on-pro;

@@ -2,7 +2,7 @@ package com.triplify.ui.pages.images;
 
 import com.triplify.application.usecase.image.ImageService;
 import com.triplify.application.usecase.image.dto.AddImageRequest;
-import com.triplify.application.usecase.image.dto.ImageOwnerType;
+import com.triplify.domain.model.enums.ImageOwnerType;
 import com.triplify.application.usecase.image.dto.ImageResponse;
 import com.triplify.application.usecase.image.dto.LinkImageRequest;
 import com.triplify.ui.error.ErrorHandler;
@@ -25,7 +25,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseButton;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
