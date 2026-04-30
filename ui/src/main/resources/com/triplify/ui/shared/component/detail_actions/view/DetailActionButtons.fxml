@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
 <fx:root type="VBox"
@@ -9,12 +9,7 @@
          spacing="12"
          styleClass="detail-action-group">
 
-    <Button fx:id="primaryButton"
-            maxWidth="Infinity"
-            styleClass="app-btn,app-btn-primary,detail-action-button"/>
-
-    <Button fx:id="secondaryButton"
-            maxWidth="Infinity"
-            styleClass="app-btn,app-btn-danger-outline,detail-action-button"/>
+    <StackPane fx:id="primaryContainer" maxWidth="Infinity"/>
+    <StackPane fx:id="secondaryContainer" maxWidth="Infinity"/>
 
 </fx:root>

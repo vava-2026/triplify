@@ -110,7 +110,6 @@ public class StoryRepositoryImpl implements StoryRepository {
                 loadTags(conn, story);
             }
 
-            // Check if the total count of Stories exceeds the offset + actual size of list returned
             boolean hasNext = total > pageRequest.offset() + stories.size();
             return Page.of(stories, pageRequest, hasNext);
         } catch (SQLException e) {
@@ -170,7 +169,6 @@ public class StoryRepositoryImpl implements StoryRepository {
 
     @Override
     public void delete(Story story) {
-        // story_tags and story_images cascade on DELETE.
         String sql = "DELETE FROM stories WHERE id = ?";
 
         try (Connection conn = SQLiteConnectionFactory.getConnection();

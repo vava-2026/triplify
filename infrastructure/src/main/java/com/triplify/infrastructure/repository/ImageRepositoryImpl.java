@@ -7,6 +7,7 @@ import com.triplify.domain.repository.ImageRepository;
 import com.triplify.infrastructure.repository.persistence.SQLiteConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.triplify.domain.model.enums.ImageOwnerType;
 
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -59,22 +60,20 @@ public class ImageRepositoryImpl implements ImageRepository {
     @Override
     public Page<Image> findAll(PageRequest pageRequest,
                                String ownerId,
-                               String ownerType,
+                               ImageOwnerType ownerType,
                                Instant uploadedFrom,
                                Instant uploadedTo,
                                boolean uploadTimeAsc) {
-        // SQL filter
         StringBuilder where = new StringBuilder();
-        // SQL query arguments
         List<String> args = new ArrayList<>();
 
         String order = uploadTimeAsc ? "ASC" : "DESC";
 
-        if (ownerId != null && !ownerId.isBlank() && ownerType != null && !ownerType.isBlank()) {
+        if (ownerId!=null && !ownerId.isBlank() && ownerType != null) {
             String ownerExistsClause = toOwnerExistsClause(ownerType);
             if (ownerExistsClause != null) {
                 where.append(where.isEmpty() ? " WHERE " : " AND ").append(ownerExistsClause);
-                args.add(ownerId.trim());
+                args.add(ownerId);
             } else {
                 log.warn("Ignoring unsupported ownerType='{}' while filtering images", ownerType);
             }
@@ -173,12 +172,74 @@ public class ImageRepositoryImpl implements ImageRepository {
         return idx;
     }
 
-    private String toOwnerExistsClause(String ownerType) {
-        return switch (ownerType.trim().toUpperCase(Locale.ROOT)) {
-            case "TRIP" -> "EXISTS (SELECT 1 FROM trip_images ti WHERE ti.image_id = images.id AND ti.trip_id = ?)";
-            case "TRIP_ROUTE" -> "EXISTS (SELECT 1 FROM trip_route_images tri WHERE tri.image_id = images.id AND tri.trip_route_id = ?)";
-            case "TRIP_PLACE" -> "EXISTS (SELECT 1 FROM trip_places_images tpi WHERE tpi.image_id = images.id AND tpi.trip_place_id = ?)";
-            case "STORY" -> "EXISTS (SELECT 1 FROM story_images si WHERE si.image_id = images.id AND si.story_id = ?)";
+    @Override
+    public void linkToOwner(UUID imageId, UUID ownerId, ImageOwnerType ownerType) {
+        String table = resolveJunctionTable(ownerType);
+        String ownerCol = resolveOwnerColumn(ownerType);
+        if (table == null || ownerCol == null) {
+            log.warn("Cannot link image: unsupported ownerType='{}'", ownerType);
+            return;
+        }
+        String sql = "INSERT OR IGNORE INTO " + table + " (" + ownerCol + ", image_id) VALUES (?, ?)";
+        try (Connection conn = SQLiteConnectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, ownerId.toString());
+            ps.setString(2, imageId.toString());
+            ps.executeUpdate();
+            log.debug("Image linked: imageId={} ownerId={} ownerType={}", imageId, ownerId, ownerType);
+        } catch (SQLException e) {
+            log.error("Failed to link image id='{}' to owner='{}' type='{}'", imageId, ownerId, ownerType, e);
+            throw new RuntimeException("Database error while linking image to owner", e);
+        }
+    }
+
+    @Override
+    public void unlinkFromOwner(UUID imageId, UUID ownerId, ImageOwnerType ownerType) {
+        String table = resolveJunctionTable(ownerType);
+        String ownerCol = resolveOwnerColumn(ownerType);
+        if (table == null || ownerCol == null) {
+            log.warn("Cannot unlink image: unsupported ownerType='{}'", ownerType);
+            return;
+        }
+        String sql = "DELETE FROM " + table + " WHERE " + ownerCol + " = ? AND image_id = ?";
+        try (Connection conn = SQLiteConnectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, ownerId.toString());
+            ps.setString(2, imageId.toString());
+            ps.executeUpdate();
+            log.debug("Image unlinked: imageId={} ownerId={} ownerType={}", imageId, ownerId, ownerType);
+        } catch (SQLException e) {
+            log.error("Failed to unlink image id='{}' from owner='{}' type='{}'", imageId, ownerId, ownerType, e);
+            throw new RuntimeException("Database error while unlinking image from owner", e);
+        }
+    }
+
+    private String resolveJunctionTable(ImageOwnerType ownerType) {
+        if (ownerType == null) return null;
+        return switch (ownerType) {
+            case TRIP -> "trip_images";
+            case TRIP_ROUTE -> "trip_route_images";
+            case TRIP_PLACE -> "trip_places_images";
+            default -> null;
+        };
+    }
+
+    private String resolveOwnerColumn(ImageOwnerType ownerType) {
+        if (ownerType == null) return null;
+        return switch (ownerType) {
+            case TRIP-> "trip_id";
+            case TRIP_ROUTE -> "trip_route_id";
+            case TRIP_PLACE -> "trip_place_id";
+            default -> null;
+        };
+    }
+
+    private String toOwnerExistsClause(ImageOwnerType ownerType) {
+        return switch (ownerType) {
+            case TRIP-> "EXISTS (SELECT 1 FROM trip_images ti WHERE ti.image_id = images.id AND ti.trip_id = ?)";
+            case TRIP_ROUTE -> "EXISTS (SELECT 1 FROM trip_route_images tri WHERE tri.image_id = images.id AND tri.trip_route_id = ?)";
+            case TRIP_PLACE -> "EXISTS (SELECT 1 FROM trip_places_images tpi WHERE tpi.image_id = images.id AND tpi.trip_place_id = ?)";
+            case STORY -> "EXISTS (SELECT 1 FROM story_images si WHERE si.image_id = images.id AND si.story_id = ?)";
             default -> null;
         };
     }

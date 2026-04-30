@@ -227,7 +227,7 @@ public class CategoriesController extends SimpleLifecycleAwareController {
         Localization.bindText(emojiLabel.textProperty(), "categories.field.emoji");
         Localization.bindText(colorLabel.textProperty(), "categories.field.color");
 
-		categoriesGrid.setEmptyText(I18n.t("categories.empty"));
+		categoriesGrid.setEmptyTextKey("categories.empty");
 
 		modeBadgeLabel.textProperty().bind(Bindings.createStringBinding(
         () -> selectedCategory.get() == null
@@ -274,7 +274,7 @@ public class CategoriesController extends SimpleLifecycleAwareController {
 	private void attachListeners() {
 		selectedCategory.addListener((obs, oldValue, newValue) -> refreshSelectionStyles());
 		I18n.languageProperty().addListener((obs, oldValue, newValue) -> {
-				categoriesGrid.setEmptyText(I18n.t("categories.empty"));
+				categoriesGrid.setEmptyTextKey("categories.empty");
 				renderFilteredCategories(activeSearchQuery);
 			});
 	}

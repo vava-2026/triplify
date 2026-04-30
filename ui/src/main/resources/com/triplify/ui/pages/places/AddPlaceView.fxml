@@ -60,7 +60,7 @@
                     </VBox>
 
                     <VBox styleClass="add-place-side-column">
-                        <VBox styleClass="page-card,add-place-card,add-place-upload-card" spacing="14">
+                        <VBox styleClass="page-card,add-place-card" spacing="14">
                             <ImageUploadPanelView fx:id="imageUploadPanel"/>
                         </VBox>
 

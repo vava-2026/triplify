@@ -5,6 +5,7 @@ import com.triplify.application.usecase.image.dto.DeleteImageRequest;
 import com.triplify.application.usecase.image.dto.GetImageByIdRequest;
 import com.triplify.application.usecase.image.dto.GetImagesRequest;
 import com.triplify.application.usecase.image.dto.ImageResponse;
+import com.triplify.application.usecase.image.dto.LinkImageRequest;
 import com.triplify.application.usecase.image.dto.UpdateImageRequest;
 import com.triplify.domain.pagination.Page;
 import com.triplify.domain.result.Result;
@@ -46,4 +47,11 @@ public interface ImageService {
      * Deletes an image and its associated metadata.
      */
     Result<Void> deleteImage(DeleteImageRequest request);
+
+    /**
+     * Links an existing image to an owner (trip, trip-place, or trip-route).
+     * When the owner is a trip-place or trip-route, the image is also automatically
+     * linked to the parent trip if {@code tripId} is provided.
+     */
+    Result<Void> linkImage(LinkImageRequest request);
 }

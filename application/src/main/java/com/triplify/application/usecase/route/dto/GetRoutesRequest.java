@@ -1,18 +1,20 @@
 package com.triplify.application.usecase.route.dto;
 
 import com.triplify.application.shared.error.ValidationMessage;
-import com.triplify.application.usecase.dto.DtoConstraints;
+import com.triplify.application.shared.DtoConstraints;
 import com.triplify.domain.pagination.PageRequest;
 import jakarta.validation.constraints.Size;
 
 public record GetRoutesRequest(
         PageRequest pageRequest,
-        Filter filter
+        Filter filter,
+        OrderBy orderBy
 ) {
 
     public GetRoutesRequest {
         pageRequest = pageRequest == null ? PageRequest.defaultRequest() : pageRequest;
         filter = filter == null ? new Filter(null) : filter;
+        orderBy = orderBy == null ? new OrderBy(true) : orderBy;
     }
 
     public record Filter(
@@ -24,4 +26,8 @@ public record GetRoutesRequest(
             name = name == null ? null : name.trim();
         }
     }
+
+    public record OrderBy(
+            boolean lengthAsc
+    ) {}
 }

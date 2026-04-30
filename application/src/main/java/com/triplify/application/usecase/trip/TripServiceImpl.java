@@ -17,6 +17,8 @@ import com.triplify.application.usecase.trip.dto.AddTripRequest;
 import com.triplify.application.usecase.trip.dto.DeleteTripRequest;
 import com.triplify.application.usecase.trip.dto.GetTripByIdRequest;
 import com.triplify.application.usecase.trip.dto.GetTripsRequest;
+import com.triplify.application.usecase.trip.dto.GetTripsForCalendarRequest;
+import com.triplify.application.usecase.trip.dto.GetUndatedTripsRequest;
 import com.triplify.application.usecase.trip.dto.TripResponse;
 import com.triplify.application.usecase.trip.dto.UpdateTripRequest;
 import com.triplify.application.usecase.trip.dto.UpdateTripStatusRequest;
@@ -41,6 +43,7 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.time.Instant;
+import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -232,25 +235,55 @@ public class TripServiceImpl implements TripService {
 
     @Override
     public Result<Page<TripResponse>> getTrips(GetTripsRequest request) {
+        UUID userId = userSessionContext.getCurrent().orElseThrow().userId();
+        log.info("Getting trips for userId='{}', page='{}', size='{}', orderBy='{}'", userId, request.pageRequest().page(), request.pageRequest().size(), request.orderBy());
         GetTripsRequest.Filter filter = request.filter();
         TripFilter tripFilter = new TripFilter(
-                filter != null ? filter.name() : null,
-                filter != null ? filter.countryId() : null,
-                filter != null ? filter.status() : null,
-                filter != null ? filter.categoryId() : null,
-                filter != null ? filter.tagIds() : null,
-                filter != null ? filter.startedFrom() : null,
-                filter != null ? filter.startedTo() : null
+                filter.name(),
+                filter.countryId(),
+                filter.status(),
+                filter.categoryId(),
+                filter.tagIds(),
+                filter.startedFrom(),
+                filter.startedTo()
         );
 
         boolean startTimeAsc = request.orderBy() != null && request.orderBy().startTimeDirectionAsc();
-        Page<Trip> tripsPage = tripRepository.findList(request.pageRequest(), tripFilter, startTimeAsc);
+        Page<Trip> tripsPage = tripRepository.findList(request.pageRequest(), tripFilter, startTimeAsc, userId);
 
         List<TripResponse> responses = new ArrayList<>(tripsPage.items().size());
         for (Trip trip : tripsPage.items()) {
             responses.add(toResponse(trip).orThrow());
         }
 
+
+        log.info("Got {} trips for userId='{}'", tripsPage.items().size(), userId);
+        return Result.ok(new Page<>(responses, tripsPage.page(), tripsPage.size(), tripsPage.hasNext()));
+    }
+
+    @Override
+    public Result<List<TripResponse>> getTripsForCalendar(GetTripsForCalendarRequest request) {
+        UUID userId = userSessionContext.getCurrent().orElseThrow().userId();
+        Instant monthStart = request.yearMonth().atDay(1).atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant monthEnd = request.yearMonth().plusMonths(1).atDay(1).atStartOfDay(ZoneOffset.UTC).toInstant();
+
+        List<Trip> trips = tripRepository.findOverlappingWithMonth(monthStart, monthEnd, userId, request.status());
+        List<TripResponse> responses = new ArrayList<>(trips.size());
+        for (Trip trip : trips) {
+            responses.add(toResponse(trip).orThrow());
+        }
+        log.info("Got {} calendar trips for userId='{}' month='{}'", responses.size(), userId, request.yearMonth());
+        return Result.ok(responses);
+    }
+
+    @Override
+    public Result<Page<TripResponse>> getUndatedTrips(GetUndatedTripsRequest request) {
+        UUID userId = userSessionContext.getCurrent().orElseThrow().userId();
+        Page<Trip> tripsPage = tripRepository.findUndated(request.pageRequest(), userId, request.status());
+        List<TripResponse> responses = new ArrayList<>(tripsPage.items().size());
+        for (Trip trip : tripsPage.items()) {
+            responses.add(toResponse(trip).orThrow());
+        }
         return Result.ok(new Page<>(responses, tripsPage.page(), tripsPage.size(), tripsPage.hasNext()));
     }
 

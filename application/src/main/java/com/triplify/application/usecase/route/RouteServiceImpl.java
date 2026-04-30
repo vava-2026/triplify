@@ -232,7 +232,8 @@ public class RouteServiceImpl implements RouteService {
     public Result<Page<RouteResponse>> getRoutes(GetRoutesRequest request) {
         log.info("Getting routes with filter='{}'", request.filter().name());
         SessionUser user = userSessionContext.getCurrent().orElseThrow();
-        Page<Route> routesPage = routeRepository.findList(request.pageRequest(), request.filter().name(), user.userId());
+        boolean lengthAsc = request.orderBy().lengthAsc();
+        Page<Route> routesPage = routeRepository.findList(request.pageRequest(), request.filter().name(), lengthAsc, user.userId());
         Page<RouteResponse> responsePage = routesPage.map(route ->
                 RouteResponse.from(route, List.of())
         );

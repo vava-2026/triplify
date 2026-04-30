@@ -15,7 +15,10 @@
     <graphic>
         <HBox alignment="CENTER_LEFT" spacing="15">
             <FontIcon fx:id="icon" styleClass="nav-icon" />
-            <Label  fx:id="label" styleClass="nav-label" />
+            <HBox alignment="CENTER_LEFT" spacing="6">
+                <Label fx:id="label" styleClass="nav-label" />
+                <Label fx:id="proTag" styleClass="nav-pro-tag" visible="false" managed="false" />
+            </HBox>
         </HBox>
     </graphic>
 </Button>

@@ -1,8 +1,10 @@
 package com.triplify.application.di;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.Provider;
+import com.triplify.application.license.LicenseManager;
 import com.triplify.application.security.AuthenticatingProxy;
 import com.triplify.application.security.ExceptionHandlingProxy;
 import com.triplify.application.usecase.auth.AuthService;
@@ -40,6 +42,11 @@ import com.triplify.application.usecase.user.UserServiceImpl;
 import com.triplify.application.usecase.session.UserSessionContext;
 import com.triplify.application.usecase.session.UserSessionContextImpl;
 import com.triplify.application.validation.ValidatingProxy;
+import com.triplify.domain.util.DefaultDataDirectories;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 
 public class ApplicationModule extends AbstractModule {
 
@@ -62,6 +69,29 @@ public class ApplicationModule extends AbstractModule {
         bindValidated(TripRouteService.class, TripRouteServiceImpl.class);
         bindValidated(TripService.class, TripServiceImpl.class);
         bindValidated(UserService.class, UserServiceImpl.class);
+    }
+
+    @Provides
+    @Singleton
+    LicenseManager provideLicenseManager() {
+        String publicKeyPem = readResource("com/triplify/application/license/public_key.pem");
+        Path appDataDir = DefaultDataDirectories.resolve("Triplify");
+        try {
+            return new LicenseManager(publicKeyPem, appDataDir.toString());
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to initialize LicenseManager", e);
+        }
+    }
+
+    private static String readResource(String resourcePath) {
+        try (var stream = ApplicationModule.class.getClassLoader().getResourceAsStream(resourcePath)) {
+            if (stream == null) {
+                throw new IllegalStateException("Missing resource: " + resourcePath);
+            }
+            return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to read resource: " + resourcePath, e);
+        }
     }
 
     private <T> void bindValidated(Class<T> iface, Class<? extends T> impl) {

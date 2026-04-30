@@ -21,9 +21,12 @@ import javafx.scene.input.ZoomEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Polygon;
+import javafx.scene.shape.Polyline;
 import org.kordamp.ikonli.javafx.FontIcon;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class InteractiveMap extends StackPane {
 
@@ -45,6 +48,8 @@ public class InteractiveMap extends StackPane {
 
     private CountryHoverLayer countryHoverLayer;
     private PinLayer pinLayer;
+    private PolylineLayer polylineLayer;
+    private MarkersLayer markersLayer;
     private List<CountryBoundary> countryBoundaries;
 
     private double mapPressSceneX;
@@ -119,6 +124,12 @@ public class InteractiveMap extends StackPane {
         countryBoundaries = CountryBoundaryLoader.load();
         countryHoverLayer = new CountryHoverLayer();
         mapView.addLayer(countryHoverLayer);
+
+        polylineLayer = new PolylineLayer();
+        mapView.addLayer(polylineLayer);
+
+        markersLayer = new MarkersLayer();
+        mapView.addLayer(markersLayer);
 
         pinLayer = new PinLayer();
         mapView.addLayer(pinLayer);
@@ -360,10 +371,28 @@ public class InteractiveMap extends StackPane {
         refreshInteractiveLayersLater();
     }
 
+    public void setPolyline(List<MapPoint> waypoints) {
+        polylineLayer.setWaypoints(waypoints);
+    }
+
+    public void clearPolyline() {
+        polylineLayer.clear();
+    }
+
+    public void addMarker(MapPoint point, int sequenceNumber) {
+        markersLayer.addMarker(point, sequenceNumber);
+    }
+
+    public void clearMarkers() {
+        markersLayer.clear();
+    }
+
     private void refreshInteractiveLayersLater() {
         Platform.runLater(() -> {
             pinLayer.refresh();
             countryHoverLayer.refresh();
+            polylineLayer.refresh();
+            markersLayer.refresh();
         });
     }
 
@@ -427,6 +456,125 @@ public class InteractiveMap extends StackPane {
         }
 
         private void refresh() { markDirty(); }
+    }
+
+    private static final class PolylineLayer extends MapLayer {
+        private List<MapPoint> waypoints = List.of();
+        private long revision = 0L;
+        private long renderedRevision = -1L;
+        private String renderedViewportKey = "";
+
+        @Override
+        protected void initialize() { markDirty(); }
+
+        private void setWaypoints(List<MapPoint> waypoints) {
+            this.waypoints = List.copyOf(waypoints);
+            revision++;
+            markDirty();
+        }
+
+        private void clear() {
+            this.waypoints = List.of();
+            revision++;
+            markDirty();
+        }
+
+        private void refresh() { markDirty(); }
+
+        @Override
+        protected void layoutLayer() {
+            String viewportKey = viewportKey();
+            if (viewportKey == null) return;
+            if (renderedRevision == revision && Objects.equals(renderedViewportKey, viewportKey)) return;
+
+            getChildren().clear();
+            if (waypoints.size() < 2) {
+                renderedRevision = revision;
+                renderedViewportKey = viewportKey;
+                return;
+            }
+
+            Polyline polyline = new Polyline();
+            polyline.getStyleClass().add("interactive-map-polyline");
+            polyline.setMouseTransparent(true);
+            for (MapPoint wp : waypoints) {
+                Point2D pixel = getMapPoint(wp.getLatitude(), wp.getLongitude());
+                if (pixel == null) return;
+                polyline.getPoints().addAll(pixel.getX(), pixel.getY());
+            }
+            getChildren().add(polyline);
+
+            renderedRevision = revision;
+            renderedViewportKey = viewportKey;
+        }
+
+        private String viewportKey() {
+            Point2D a = getMapPoint(0, 0);
+            Point2D b = getMapPoint(45, 45);
+            if (a == null || b == null) return null;
+            return a.getX() + ":" + a.getY() + "|" + b.getX() + ":" + b.getY();
+        }
+    }
+
+    private static final class MarkersLayer extends MapLayer {
+
+        private record Marker(MapPoint point, int sequenceNumber) {}
+
+        private final List<Marker> markers = new ArrayList<>();
+        private long revision = 0L;
+        private long renderedRevision = -1L;
+        private String renderedViewportKey = "";
+
+        @Override
+        protected void initialize() { markDirty(); }
+
+        private void addMarker(MapPoint point, int sequenceNumber) {
+            markers.add(new Marker(point, sequenceNumber));
+            revision++;
+            markDirty();
+        }
+
+        private void clear() {
+            markers.clear();
+            revision++;
+            markDirty();
+        }
+
+        private void refresh() { markDirty(); }
+
+        @Override
+        protected void layoutLayer() {
+            String viewportKey = viewportKey();
+            if (viewportKey == null) return;
+            if (renderedRevision == revision && Objects.equals(renderedViewportKey, viewportKey)) return;
+
+            getChildren().clear();
+            for (Marker marker : markers) {
+                Point2D pixel = getMapPoint(marker.point().getLatitude(), marker.point().getLongitude());
+                if (pixel == null) continue;
+
+                Label badge = new Label(String.valueOf(marker.sequenceNumber()));
+                badge.getStyleClass().add("interactive-map-marker-badge");
+                badge.setManaged(false);
+                badge.setMouseTransparent(true);
+                badge.applyCss();
+                badge.autosize();
+                double w = Math.max(24, badge.prefWidth(-1));
+                double h = Math.max(24, badge.prefHeight(-1));
+                badge.relocate(pixel.getX() - w / 2, pixel.getY() - h);
+                getChildren().add(badge);
+            }
+
+            renderedRevision = revision;
+            renderedViewportKey = viewportKey;
+        }
+
+        private String viewportKey() {
+            Point2D a = getMapPoint(0, 0);
+            Point2D b = getMapPoint(45, 45);
+            if (a == null || b == null) return null;
+            return a.getX() + ":" + a.getY() + "|" + b.getX() + ":" + b.getY();
+        }
     }
 
     private static final class CountryHoverLayer extends MapLayer {

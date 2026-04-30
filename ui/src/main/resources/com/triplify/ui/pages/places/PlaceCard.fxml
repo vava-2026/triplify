@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.triplify.ui.pages.places.view.PlaceCardView"
+      fx:id="root"
+      styleClass="route-card">
+    <StackPane fx:id="media" styleClass="trip-card-media"/>
+
+    <VBox spacing="8" styleClass="route-card-body">
+        <Label fx:id="titleLabel" styleClass="route-card-title" wrapText="true"/>
+        <HBox fx:id="countryRow" spacing="6" alignment="CENTER_LEFT" styleClass="route-card-places-row">
+            <ImageView fx:id="countryEmojiView" fitWidth="18" fitHeight="18" preserveRatio="true"
+                       visible="false" managed="false"/>
+            <Label fx:id="countryLabel" styleClass="route-card-places"/>
+        </HBox>
+        <HBox spacing="6" styleClass="route-card-distance-row">
+            <FontIcon fx:id="coordIcon" iconLiteral="fth-map-pin" iconSize="14" styleClass="route-card-distance-icon"/>
+            <Label fx:id="coordLabel" styleClass="route-card-distance"/>
+        </HBox>
+    </VBox>
+</VBox>

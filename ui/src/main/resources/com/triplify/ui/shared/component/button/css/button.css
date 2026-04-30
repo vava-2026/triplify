@@ -16,14 +16,14 @@
 
 .app-btn-size-small {
     -fx-font-size: 13px;
-    -fx-padding: 8 16 8 16;
+    -fx-padding: 0 16 0 16;
     -fx-min-height: 34;
     -fx-pref-height: 34;
 }
 
 .app-btn-size-middle {
     -fx-font-size: 14px;
-    -fx-padding: 10 20 10 20;
+    -fx-padding: 0 20 0 20;
     -fx-min-height: 40;
     -fx-pref-height: 40;
 }
@@ -344,4 +344,25 @@
 .app-btn-user:hover .app-btn-spinner,
 .app-btn-user:pressed .app-btn-spinner {
     -fx-progress-color: -color-on-primary;
+}
+
+.confirm-dialog-root {
+    -fx-background-color: -color-overlay-modal;
+}
+
+.confirm-dialog-backdrop {
+    -fx-background-color: transparent;
+}
+
+.confirm-dialog-card {
+    -fx-background-color: -color-surface;
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-effect: dropshadow(gaussian, -color-shadow-modal, 28, 0, 0, 8);
+}
+
+.confirm-dialog-message {
+    -fx-font-family: -font-family-base;
+    -fx-font-size: 15px;
+    -fx-text-fill: -color-ink;
 }

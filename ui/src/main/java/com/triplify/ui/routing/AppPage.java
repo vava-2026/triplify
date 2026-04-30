@@ -24,6 +24,7 @@ public enum AppPage {
             true,
             null,
             EnumSet.noneOf(RoleEnum.class),
+            false,
             false
     ),
     LOGIN(
@@ -38,6 +39,7 @@ public enum AppPage {
             true,
             null,
             EnumSet.noneOf(RoleEnum.class),
+            false,
             false
     ),
     SIGN_UP(
@@ -52,6 +54,7 @@ public enum AppPage {
             true,
             null,
             EnumSet.noneOf(RoleEnum.class),
+            false,
             false
     ),
     MAP(
@@ -66,6 +69,7 @@ public enum AppPage {
             true,
             null,
             EnumSet.of(RoleEnum.USER, RoleEnum.PRO_USER),
+            false,
             false
     ),
     MY_PLACES(
@@ -80,7 +84,8 @@ public enum AppPage {
             false,
             null,
             EnumSet.noneOf(RoleEnum.class),
-            true
+            true,
+            false
     ),
     MY_ROUTES(
             RouteIds.MY_ROUTES,
@@ -94,12 +99,43 @@ public enum AppPage {
             false,
             null,
             EnumSet.noneOf(RoleEnum.class),
-            true
+            true,
+            false
     ),
     MY_TRIPS(
             RouteIds.MY_TRIPS,
             "nav.myTrips",
             "fth-briefcase",
+            EnumSet.of(RoleEnum.USER, RoleEnum.PRO_USER),
+            true,
+            false,
+            true,
+            false,
+            false,
+            null,
+            EnumSet.noneOf(RoleEnum.class),
+            false,
+            false
+    ),
+    MY_IMAGES(
+            RouteIds.MY_IMAGES,
+            "nav.myImages",
+            "fth-image",
+            EnumSet.of(RoleEnum.USER, RoleEnum.PRO_USER),
+            true,
+            false,
+            true,
+            false,
+            false,
+            null,
+            EnumSet.noneOf(RoleEnum.class),
+            false,
+            false
+    ),
+    MY_IMAGES(
+            RouteIds.MY_IMAGES,
+            "nav.myImages",
+            "fth-image",
             EnumSet.of(RoleEnum.USER, RoleEnum.PRO_USER),
             true,
             false,
@@ -122,6 +158,7 @@ public enum AppPage {
             false,
             RouteIds.MY_TRIPS,
             EnumSet.noneOf(RoleEnum.class),
+            false,
             false
     ),
     ADD_PLACE(
@@ -136,6 +173,7 @@ public enum AppPage {
             false,
             RouteIds.MY_TRIPS,
             EnumSet.noneOf(RoleEnum.class),
+            false,
             false
     ),
     MY_BADGES(
@@ -150,7 +188,8 @@ public enum AppPage {
             false,
             null,
             EnumSet.noneOf(RoleEnum.class),
-            true
+            true,
+            false
     ),
     MY_STATISTICS(
             RouteIds.MY_STATISTICS,
@@ -164,6 +203,7 @@ public enum AppPage {
             false,
             null,
             EnumSet.noneOf(RoleEnum.class),
+            false,
             false
     ),
     CALENDAR(
@@ -178,7 +218,8 @@ public enum AppPage {
             false,
             null,
             EnumSet.noneOf(RoleEnum.class),
-            false
+            false,
+            true
     ),
     COUNTRIES(
             RouteIds.COUNTRIES,
@@ -192,7 +233,8 @@ public enum AppPage {
             false,
             null,
             EnumSet.of(RoleEnum.CONFIGURATION_MANAGER),
-            true
+            true,
+            false
     ),
     CATEGORIES(
             RouteIds.CATEGORIES,
@@ -206,7 +248,8 @@ public enum AppPage {
             false,
             null,
             EnumSet.noneOf(RoleEnum.class),
-            true
+            true,
+            false
     ),
     EMOTIONS(
             RouteIds.EMOTIONS,
@@ -220,7 +263,8 @@ public enum AppPage {
             false,
             null,
             EnumSet.noneOf(RoleEnum.class),
-            true
+            true,
+            false
     ),
     BADGES(
             RouteIds.BADGES,
@@ -234,7 +278,8 @@ public enum AppPage {
             false,
             null,
             EnumSet.noneOf(RoleEnum.class),
-            true
+            true,
+            false
     ),
     SETTINGS(
             RouteIds.SETTINGS,
@@ -248,6 +293,7 @@ public enum AppPage {
             false,
             null,
             EnumSet.noneOf(RoleEnum.class),
+            false,
             false
     ),
     ACCOUNT(
@@ -262,6 +308,22 @@ public enum AppPage {
             false,
             null,
             EnumSet.noneOf(RoleEnum.class),
+            false,
+            false
+    ),
+    LICENSE_EXPIRED(
+            RouteIds.LICENSE_EXPIRED,
+            "page.licenseExpired",
+            "fth-alert-triangle",
+            EnumSet.of(RoleEnum.USER, RoleEnum.PRO_USER),
+            true,
+            false,
+            false,
+            false,
+            false,
+            null,
+            EnumSet.noneOf(RoleEnum.class),
+            false,
             false
     );
 
@@ -286,6 +348,8 @@ public enum AppPage {
     private final EnumSet<RoleEnum> defaultForRoles;
     @Getter
     private final boolean placeholder;
+    @Getter
+    private final boolean pro;
 
     AppPage(
             String routeId,
@@ -299,7 +363,8 @@ public enum AppPage {
             boolean hideHeader,
             String activeMenuRouteId,
             EnumSet<RoleEnum> defaultForRoles,
-            boolean placeholder
+            boolean placeholder,
+            boolean pro
     ) {
         this.routeId = routeId;
         this.labelKey = labelKey;
@@ -313,6 +378,7 @@ public enum AppPage {
         this.activeMenuRouteId = activeMenuRouteId;
         this.defaultForRoles = defaultForRoles.clone();
         this.placeholder = placeholder;
+        this.pro = pro;
     }
 
     public EnumSet<RoleEnum> getAllowedRoles() {
