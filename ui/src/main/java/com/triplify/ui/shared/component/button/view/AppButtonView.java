@@ -16,6 +16,7 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import lombok.Getter;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.net.URL;
@@ -27,8 +28,10 @@ public class AppButtonView implements Initializable {
     private static final URL CSS_URL = AppButtonView.class.getResource("/com/triplify/ui/shared/component/button/css/button.css");
     private static final URL DIALOG_FXML_URL = AppButtonView.class.getResource("/com/triplify/ui/shared/component/button/view/ConfirmDialog.fxml");
 
+    @Getter
     @FXML private Button button;
 
+    @Getter
     private AppButtonViewModel viewModel;
 
     @Inject private FxmlLoaderHelper fxmlLoader;
@@ -44,14 +47,6 @@ public class AppButtonView implements Initializable {
         } else {
             viewModel.execute();
         }
-    }
-
-    public Button getButton() {
-        return button;
-    }
-
-    public AppButtonViewModel getViewModel() {
-        return viewModel;
     }
 
     public static Builder builder(FxmlLoaderHelper fxmlLoader) { return new Builder(fxmlLoader); }

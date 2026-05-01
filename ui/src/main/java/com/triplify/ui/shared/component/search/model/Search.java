@@ -7,6 +7,7 @@ import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.util.Localization;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import lombok.Getter;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -16,18 +17,18 @@ public class Search<T> {
     private final Function<String, List<Entry<T>>> searchFunction;
     private final Function<String, List<Entry<T>>> loadMoreFunction;
 
-    private final StringProperty placeholder = new SimpleStringProperty();
-    private final StringProperty noResult = new SimpleStringProperty();
-    private final int debounceMs;
-    private final int maxResults;
-    private final int maxVisibleResults;
-    private final boolean searchOnTyping;
-    private final boolean showOnEmptyQuery;
-    private final double loadMoreThreshold;
-    private final AppComponentSize size;
-    private final SearchDisplayMode displayMode;
-    private final Consumer<Entry<T>> onResultSelected;
-    private final FieldVariant variant;
+    @Getter private final StringProperty placeholder = new SimpleStringProperty();
+    @Getter private final StringProperty noResult = new SimpleStringProperty();
+    @Getter private final int debounceMs;
+    @Getter private final int maxResults;
+    @Getter private final int maxVisibleResults;
+    @Getter private final boolean searchOnTyping;
+    @Getter private final boolean showOnEmptyQuery;
+    @Getter private final double loadMoreThreshold;
+    @Getter private final AppComponentSize size;
+    @Getter private final SearchDisplayMode displayMode;
+    @Getter private final Consumer<Entry<T>> onResultSelected;
+    @Getter private final FieldVariant variant;
 
     private Search(Builder<T> builder) {
         this.searchFunction = builder.searchFunction;
@@ -49,54 +50,6 @@ public class Search<T> {
 
     public List<Entry<T>> search(String query) {
         return getEntries(query, query == null, searchFunction);
-    }
-
-    public StringProperty getPlaceholder() {
-        return placeholder;
-    }
-
-    public StringProperty getNoResult() {
-        return noResult;
-    }
-
-    public int getDebounceMs() {
-        return debounceMs;
-    }
-
-    public int getMaxResults() {
-        return maxResults;
-    }
-
-    public int getMaxVisibleResults() {
-        return maxVisibleResults;
-    }
-
-    public boolean isSearchOnTyping() {
-        return searchOnTyping;
-    }
-
-    public boolean isShowOnEmptyQuery() {
-        return showOnEmptyQuery;
-    }
-
-    public double getLoadMoreThreshold() {
-        return loadMoreThreshold;
-    }
-
-    public AppComponentSize getSize() {
-        return size;
-    }
-
-    public SearchDisplayMode getDisplayMode() {
-        return displayMode;
-    }
-
-    public Consumer<Entry<T>> getOnResultSelected() {
-        return onResultSelected;
-    }
-
-    public FieldVariant getVariant() {
-        return variant;
     }
 
     private List<Entry<T>> getEntries(String query, boolean b, Function<String, List<Entry<T>>> searchFunction) {

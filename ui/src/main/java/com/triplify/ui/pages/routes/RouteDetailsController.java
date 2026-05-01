@@ -587,7 +587,7 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
 
         for (TripResponse trip : trips) {
             String dateRange = formatTripDateRange(trip.startedAt(), trip.endedAt());
-            TripCardView card = TripCardView.createForDetails(trip, dateRange, () -> openTrip(trip));
+            TripCardView card = TripCardView.create(trip, dateRange, () -> openTrip(trip));
             associatedTripsFlow.getChildren().add((Region) card.getRoot());
         }
     }

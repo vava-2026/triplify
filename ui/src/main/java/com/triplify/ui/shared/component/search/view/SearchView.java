@@ -26,6 +26,7 @@ import javafx.event.EventHandler;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Popup;
 import javafx.util.Duration;
+import lombok.Getter;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.io.IOException;
@@ -36,11 +37,11 @@ public class SearchView<T> extends VBox {
     private static final double ROW_HEIGHT = 32.0;
     private static final String ERROR_STYLE_CLASS = "search-has-error";
 
-    @FXML private TextField searchField;
+    @FXML @Getter private TextField searchField;
     @FXML private HBox searchBox;
     @FXML private FontIcon searchIcon;
 
-    private final ListView<Entry<T>> resultsListView = new ListView<>();
+    @Getter private final ListView<Entry<T>> resultsListView = new ListView<>();
     private final Label noResultsLabel = new Label();
     private final VBox inlineContent = new VBox();
     private final VBox popupContent = new VBox();
@@ -220,14 +221,6 @@ public class SearchView<T> extends VBox {
         applySize(model.getSize());
         attachResultsHost();
         runSearch(searchField.getText());
-    }
-
-    public TextField getSearchField() {
-        return searchField;
-    }
-
-    public ListView<Entry<T>> getResultsListView() {
-        return resultsListView;
     }
 
     private void runSearch(String query) {

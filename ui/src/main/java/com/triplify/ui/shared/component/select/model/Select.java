@@ -6,6 +6,9 @@ import com.triplify.ui.shared.model.FieldVariant;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.List;
 
 public class Select<T> {
@@ -16,8 +19,11 @@ public class Select<T> {
     private final ListProperty<Entry<T>> items = new SimpleListProperty<>(FXCollections.observableArrayList());
     private final ObjectProperty<FieldVariant> variant = new SimpleObjectProperty<>(FieldVariant.FILLED);
     private final ObjectProperty<AppComponentSize> size = new SimpleObjectProperty<>(AppComponentSize.MIDDLE);
+    @Setter
+    @Getter
     private String emoji = null;
 
+    @Setter
     private java.util.function.Consumer<Entry<T>> onSelect = null;
 
     public StringProperty placeholderProperty() {
@@ -90,18 +96,6 @@ public class Select<T> {
 
     public void setSize(AppComponentSize v) {
         size.set(v);
-    }
-
-    public String getEmoji() {
-        return emoji;
-    }
-
-    public void setEmoji(String emoji) {
-        this.emoji = emoji;
-    }
-
-    public void setOnSelect(java.util.function.Consumer<Entry<T>> onSelect) {
-        this.onSelect = onSelect;
     }
 
     public void triggerSelect(Entry<T> value) {

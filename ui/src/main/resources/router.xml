@@ -29,15 +29,20 @@
         <argument name="routeId" type="string" required="true"/>
     </arguments>
 
-    <arguments id="storyDetailsArgs">
-        <argument name="storyId" type="string" required="true"/>
+    <arguments id="tripDetailsArgs">
+        <argument name="tripId" type="string" required="true"/>
     </arguments>
 
     <arguments id="addStoryArgs">
-        <argument name="storyId" type="string" required="false"/>
         <argument name="tripId" type="string" required="false"/>
         <argument name="tripRouteId" type="string" required="false"/>
         <argument name="tripPlaceId" type="string" required="false"/>
+        <argument name="storyId" type="string" required="false"/>
+        <argument name="editorReturnTarget" type="string" required="false"/>
+    </arguments>
+
+    <arguments id="storyDetailsArgs">
+        <argument name="storyId" type="string" required="true"/>
     </arguments>
 
     <destination id="start"
@@ -57,11 +62,11 @@
                  singleTop="true"/>
 
     <destination id="my_places"
-                 fxml="com/triplify/ui/pages/placeholder/PlaceholderPageView.fxml"
+                 fxml="com/triplify/ui/pages/places/MyPlacesView.fxml"
                  singleTop="true"/>
 
     <destination id="my_routes"
-                 fxml="com/triplify/ui/pages/placeholder/PlaceholderPageView.fxml"
+                 fxml="com/triplify/ui/pages/routes/MyRoutesView.fxml"
                  singleTop="true"/>
 
     <destination id="my_trips"
@@ -81,8 +86,8 @@
                  singleTop="true"/>
 
     <destination id="trip_details"
-                 fxml="com/triplify/ui/pages/trips/AddTripView.fxml"
-                 arguments="addTripArgs"
+                 fxml="com/triplify/ui/pages/trips/TripDetailsView.fxml"
+                 arguments="tripDetailsArgs"
                  singleTop="true"/>
     <destination id="add_trip"
                  fxml="com/triplify/ui/pages/trips/AddTripView.fxml"
@@ -109,14 +114,14 @@
                  arguments="routeDetailsArgs"
                  singleTop="true"/>
 
-    <destination id="story_details"
-                 fxml="com/triplify/ui/pages/stories/StoryDetailsView.fxml"
-                 arguments="storyDetailsArgs"
-                 singleTop="true"/>
-
     <destination id="add_story"
                  fxml="com/triplify/ui/pages/stories/AddStoryView.fxml"
                  arguments="addStoryArgs"
+                 singleTop="true"/>
+
+    <destination id="story_details"
+                 fxml="com/triplify/ui/pages/stories/StoryDetailsView.fxml"
+                 arguments="storyDetailsArgs"
                  singleTop="true"/>
 
     <destination id="calendar"
@@ -153,5 +158,9 @@
 
     <destination id="account"
                  fxml="com/triplify/ui/pages/account/AccountView.fxml"
+                 singleTop="true"/>
+
+    <destination id="license-expired"
+                 fxml="com/triplify/ui/pages/license/LicenseExpiredView.fxml"
                  singleTop="true"/>
 </router>
