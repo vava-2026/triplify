@@ -1,47 +1,37 @@
 package com.triplify.application.usecase.map.dto;
 
 import com.triplify.application.shared.error.ValidationMessage;
+import com.triplify.domain.map.MapObjectType;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Min;
+
+import java.util.Set;
 
 public record GetMapObjectsRequest(
 
         @DecimalMin(value = "-90.0", message = ValidationMessage.Constants.LATITUDE_OUT_OF_RANGE)
         @DecimalMax(value = "90.0", message = ValidationMessage.Constants.LATITUDE_OUT_OF_RANGE)
-        Double latitude,
+        double minLatitude,
 
         @DecimalMin(value = "-180.0", message = ValidationMessage.Constants.LONGITUDE_OUT_OF_RANGE)
         @DecimalMax(value = "180.0", message = ValidationMessage.Constants.LONGITUDE_OUT_OF_RANGE)
-        Double longitude,
+        double minLongitude,
 
-        @Min(value = 0, message = ValidationMessage.Constants.NUMBER_MUST_BE_NON_NEGATIVE)
-        int tileRadius,
+        @DecimalMin(value = "-90.0", message = ValidationMessage.Constants.LATITUDE_OUT_OF_RANGE)
+        @DecimalMax(value = "90.0", message = ValidationMessage.Constants.LATITUDE_OUT_OF_RANGE)
+        double maxLatitude,
 
-        @Min(value = 0, message = ValidationMessage.Constants.NUMBER_MUST_BE_NON_NEGATIVE)
-        int zLevel,
+        @DecimalMin(value = "-180.0", message = ValidationMessage.Constants.LONGITUDE_OUT_OF_RANGE)
+        @DecimalMax(value = "180.0", message = ValidationMessage.Constants.LONGITUDE_OUT_OF_RANGE)
+        double maxLongitude,
 
-        Filter filter
+        @DecimalMin(value = "2.0", message = ValidationMessage.Constants.NUMBER_MUST_BE_NON_NEGATIVE)
+        @DecimalMax(value = "18.0", message = ValidationMessage.Constants.NUMBER_MUST_BE_NON_NEGATIVE)
+        double zoomLevel,
+
+        Set<MapObjectType> filter
 ) {
-
     public GetMapObjectsRequest {
-        filter = filter == null ? new Filter(Filter.MapObjectType.ALL) : filter;
-    }
-
-    public record Filter(
-            MapObjectType objectType
-    ) {
-
-        public enum MapObjectType {
-            ALL,
-            ROUTE,
-            PLACE,
-            STORY,
-            TRIP
-        }
-
-        public Filter {
-            objectType = objectType == null ? MapObjectType.ALL : objectType;
-        }
+        if (filter == null) filter = Set.of();
     }
 }

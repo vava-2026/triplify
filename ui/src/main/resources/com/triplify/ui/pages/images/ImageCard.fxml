@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.triplify.ui.pages.images.view.ImageCardView"
+      fx:id="root"
+      styleClass="image-card">
+    <StackPane fx:id="media" styleClass="image-card-media"/>
+    <VBox spacing="4" styleClass="image-card-body">
+        <Label fx:id="descriptionLabel" styleClass="image-card-description" wrapText="false"/>
+    </VBox>
+</VBox>

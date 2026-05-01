@@ -1,15 +1,16 @@
 package com.triplify.infrastructure.repository.persistence;
 
-import com.google.inject.Singleton;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.Singleton;
 
 @Singleton
 public class DatabaseMigrationInitializer {
@@ -37,9 +38,7 @@ public class DatabaseMigrationInitializer {
     );
 
     public void initialize() {
-        Connection connection = SQLiteConnectionFactory.getConnection();
-
-        try {
+        try (Connection connection = SQLiteConnectionFactory.getSpatialConnection()) {
             int userVersion = readUserVersion(connection);
             if (userVersion >= CURRENT_SCHEMA_VERSION) {
                 logger.info("SQLite schema already initialized; skipping migrations");

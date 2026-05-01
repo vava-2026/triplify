@@ -1,13 +1,18 @@
 package com.triplify.application.usecase.image;
 
 import com.google.inject.Inject;
+import com.triplify.application.security.Authenticated;
 import com.triplify.application.shared.error.ApplicationError;
 import com.triplify.application.usecase.image.dto.AddImageRequest;
 import com.triplify.application.usecase.image.dto.DeleteImageRequest;
 import com.triplify.application.usecase.image.dto.GetImageByIdRequest;
 import com.triplify.application.usecase.image.dto.GetImagesRequest;
+import com.triplify.domain.model.enums.ImageOwnerType;
 import com.triplify.application.usecase.image.dto.ImageResponse;
+import com.triplify.application.usecase.image.dto.LinkImageRequest;
 import com.triplify.application.usecase.image.dto.UpdateImageRequest;
+import com.triplify.application.usecase.session.SessionUser;
+import com.triplify.application.usecase.session.UserSessionContext;
 import com.triplify.domain.error.ImageError;
 import com.triplify.domain.model.Image;
 import com.triplify.domain.pagination.Page;
@@ -29,21 +34,23 @@ import java.util.UUID;
 public class ImageServiceImpl implements ImageService {
     private static final Logger log = LoggerFactory.getLogger(ImageServiceImpl.class);
 
-    // Validation constants
     static final long MAX_IMAGE_SIZE_BYTES = 10L * 1024 * 1024; // 10 MB
     static final Set<String> ALLOWED_EXTENSIONS = Set.of("jpg", "jpeg", "png", "gif", "webp", "bmp");
 
     private final ImageRepository imageRepository;
     private final ImageStorageService imageStorageService;
+    private final UserSessionContext userSessionContext;
 
     @Inject
-    public ImageServiceImpl(ImageRepository imageRepository, ImageStorageService imageStorageService) {
+    public ImageServiceImpl(ImageRepository imageRepository, ImageStorageService imageStorageService, UserSessionContext userSessionContext) {
         this.imageRepository = imageRepository;
         this.imageStorageService = imageStorageService;
+        this.userSessionContext = userSessionContext;
     }
 
     @Override
     public Result<ImageResponse> addImage(AddImageRequest request) {
+        log.info("Adding new image with description='{}'", request.description());
         Path sourcePath = request.image();
         validateImageFile(sourcePath).orThrow();
 
@@ -62,6 +69,7 @@ public class ImageServiceImpl implements ImageService {
 
     @Override
     public Result<ImageResponse> getImageById(GetImageByIdRequest request) {
+        log.info("Getting image with id='{}'", request.id());
         UUID id = request.id();
 
         return imageRepository.findById(id)
@@ -70,30 +78,30 @@ public class ImageServiceImpl implements ImageService {
     }
 
     @Override
+    @Authenticated
     public Result<Page<ImageResponse>> getImages(GetImagesRequest request) {
+        log.info("Getting images with page='{}', filter='{}', size='{}', orderBy='{}'", request.pageRequest().page(), request.filter(), request.pageRequest().size(), request.orderBy());
+        SessionUser user = userSessionContext.getCurrent().orElseThrow();
         GetImagesRequest.Filter filter = request.filter();
         GetImagesRequest.OrderBy orderBy = request.orderBy();
-        String ownerId = filter != null ? filter.ownerId() : null;
-        String ownerType = filter != null && filter.ownerType() != null ? filter.ownerType().name() : null;
 
-        try {
-            Page<Image> page = imageRepository.findAll(
-                    request.pageRequest(),
-                    ownerId,
-                    ownerType,
-                    filter != null ? filter.uploadedFrom() : null,
-                    filter != null ? filter.uploadedTo() : null,
-                    orderBy != null && orderBy.uploadTimeAsc()
-            );
-            return Result.ok(page.map(ImageResponse::from));
-        } catch (RuntimeException e) {
-            log.error("Failed to query images", e);
-            return Result.fail(new ApplicationError.StorageFailure("getImages", e));
-        }
+
+        Page<Image> page = imageRepository.findAll(
+                user.userId(),
+                request.pageRequest(),
+                request.filter().ownerId(),
+                filter.ownerType(),
+                filter.uploadedFrom(),
+                filter.uploadedTo(),
+                orderBy != null && orderBy.uploadTimeAsc()
+        );
+        log.info("Found {} items in images", page.items().size());
+        return Result.ok(page.map(ImageResponse::from));
     }
 
     @Override
     public Result<ImageResponse> updateImage(UpdateImageRequest request) {
+        log.info("Updating image with id='{}', description='{}'", request.id(), request.description());
         UUID id = request.id();
 
         Optional<Image> existing = imageRepository.findById(id);
@@ -107,7 +115,6 @@ public class ImageServiceImpl implements ImageService {
         Path newStoredPath = null;
 
         if (request.image() != null) {
-            // Validate and store new image file, then replace old one
             validateImageFile(request.image()).orThrow();
 
             oldStoredPath = image.getUrl();
@@ -118,7 +125,6 @@ public class ImageServiceImpl implements ImageService {
                 return Result.fail(new ApplicationError.StorageFailure("updateImage.store", e));
             }
 
-            // Reconstruct with the new path (url is final in the domain model)
             image = new Image(image.getId(), newStoredPath, request.description(), image.getUploadedAt());
         } else {
             image.updateDescription(request.description());
@@ -127,7 +133,6 @@ public class ImageServiceImpl implements ImageService {
         try {
             imageRepository.update(image);
 
-            // Remove old file only after DB update succeeds to avoid broken references.
             if (oldStoredPath != null) {
                 try {
                     imageStorageService.delete(oldStoredPath);
@@ -139,7 +144,6 @@ public class ImageServiceImpl implements ImageService {
             log.info("Image updated: id={}", image.getId());
             return Result.ok(ImageResponse.from(image));
         } catch (RuntimeException e) {
-            // Best-effort rollback for newly stored replacement file.
             if (newStoredPath != null) {
                 try {
                     imageStorageService.delete(newStoredPath);
@@ -154,6 +158,7 @@ public class ImageServiceImpl implements ImageService {
 
     @Override
     public Result<Void> deleteImage(DeleteImageRequest request) {
+        log.info("Deleting image with id='{}'", request.id());
         UUID id = request.id();
 
         Optional<Image> existing = imageRepository.findById(id);
@@ -170,7 +175,6 @@ public class ImageServiceImpl implements ImageService {
             return Result.fail(new ApplicationError.StorageFailure("deleteImage.record", e));
         }
 
-        // Best-effort physical cleanup: metadata is already gone.
         try {
             imageStorageService.delete(image.getUrl());
         } catch (RuntimeException e) {
@@ -181,12 +185,42 @@ public class ImageServiceImpl implements ImageService {
         return Result.ok();
     }
 
+    @Override
+    public Result<Void> linkImage(LinkImageRequest request) {
+        log.info("Linking image with id='{}' to owner='{}' type='{}'", request.imageId(), request.ownerId(), request.ownerType());
+        UUID imageId = request.imageId();
+        UUID ownerId = request.ownerId();
+        ImageOwnerType ownerType = request.ownerType();
+
+        if (imageRepository.findById(imageId).isEmpty()) {
+            return Result.fail(new ImageError.NotFound(imageId.toString()));
+        }
+
+        try {
+            imageRepository.linkToOwner(imageId, ownerId, ownerType);
+
+            if ((ownerType == ImageOwnerType.TRIP_PLACE || ownerType == ImageOwnerType.TRIP_ROUTE)
+                    && request.tripId() != null) {
+                imageRepository.linkToOwner(imageId, request.tripId(), ImageOwnerType.TRIP);
+            }
+
+            log.info("Image linked: imageId={} ownerId={} ownerType={}", imageId, ownerId, ownerType);
+            return Result.ok();
+        } catch (RuntimeException e) {
+            log.error("Failed to link image id='{}' to owner='{}' type='{}'", imageId, ownerId, ownerType, e);
+            return Result.fail(new ApplicationError.StorageFailure("linkImage", e));
+        }
+    }
+
     private Result<Void> validateImageFile(Path imageFile) {
+        log.debug("Validating image file '{}'", imageFile);
         if (imageFile == null) {
+            log.debug("Image file is null");
             return Result.fail(new ImageError.InvalidFormat("missing"));
         }
 
         if (!Files.exists(imageFile) || !Files.isRegularFile(imageFile) || !Files.isReadable(imageFile)) {
+            log.debug("Image file is not readable");
             return Result.fail(new ImageError.InvalidFormat("unreadable"));
         }
 
@@ -194,6 +228,7 @@ public class ImageServiceImpl implements ImageService {
         try {
             size = Files.size(imageFile);
         } catch (IOException e) {
+            log.warn("Failed to get size of image file '{}'", imageFile, e);
             return Result.fail(new ApplicationError.FileFailure("validateImageFile.size", e));
         }
 
@@ -204,13 +239,16 @@ public class ImageServiceImpl implements ImageService {
         String filename = imageFile.getFileName() == null ? "" : imageFile.getFileName().toString();
         String extension = extractExtension(filename);
         if (!ALLOWED_EXTENSIONS.contains(extension)) {
+            log.warn("Image file has invalid extension '{}'", extension);
             return Result.fail(new ImageError.InvalidFormat(extension.isBlank() ? "unknown" : extension));
         }
 
         if (!hasValidMagicBytes(imageFile, extension)) {
+            log.warn("Image file has invalid magic bytes");
             return Result.fail(new ImageError.InvalidFormat(extension));
         }
 
+        log.debug("Image file is valid");
         return Result.ok();
     }
 

@@ -1,8 +1,13 @@
 package com.triplify.ui.shared.component.detail_actions.view;
 
+import com.triplify.ui.shared.component.button.model.ButtonVariant;
+import com.triplify.ui.shared.component.button.view.AppButtonView;
+import com.triplify.ui.shared.util.FxmlLoaderHelper;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 import java.io.IOException;
@@ -17,8 +22,8 @@ public class DetailActionButtonsView extends VBox {
             "/com/triplify/ui/shared/component/detail_actions/css/detail_actions.css"
     );
 
-    @FXML private Button primaryButton;
-    @FXML private Button secondaryButton;
+    @FXML private StackPane primaryContainer;
+    @FXML private StackPane secondaryContainer;
 
     public DetailActionButtonsView() {
         FXMLLoader loader = new FXMLLoader(FXML_URL);
@@ -36,11 +41,27 @@ public class DetailActionButtonsView extends VBox {
         }
     }
 
-    public Button getPrimaryButton() {
-        return primaryButton;
+    public void configurePrimary(FxmlLoaderHelper fxmlLoader, ObservableValue<String> label, String icon, Runnable onAction) {
+        Button btn = AppButtonView.builder(fxmlLoader)
+                .variant(ButtonVariant.PRIMARY)
+                .labelBinding(label)
+                .icon(icon)
+                .onAction(onAction)
+                .build();
+        btn.setMaxWidth(Double.MAX_VALUE);
+        primaryContainer.getChildren().setAll(btn);
     }
 
-    public Button getSecondaryButton() {
-        return secondaryButton;
+    public void configureDelete(FxmlLoaderHelper fxmlLoader, ObservableValue<String> label, String icon,
+                                ObservableValue<String> confirmMessage, Runnable onAction) {
+        Button btn = AppButtonView.builder(fxmlLoader)
+                .variant(ButtonVariant.DANGER_OUTLINE)
+                .labelBinding(label)
+                .icon(icon)
+                .requireConfirm(confirmMessage)
+                .onAction(onAction)
+                .build();
+        btn.setMaxWidth(Double.MAX_VALUE);
+        secondaryContainer.getChildren().setAll(btn);
     }
 }

@@ -1,13 +1,14 @@
 package com.triplify.application.usecase.trip.dto;
 
 import com.triplify.application.shared.error.ValidationMessage;
-import com.triplify.application.usecase.dto.DtoConstraints;
+import com.triplify.application.shared.DtoConstraints;
 import com.triplify.domain.model.enums.StatusEnum;
 import com.triplify.domain.pagination.PageRequest;
 import jakarta.validation.constraints.Size;
 
 import java.time.Instant;
 import java.util.Set;
+import java.util.UUID;
 
 public record GetTripsRequest(
         PageRequest pageRequest,
@@ -17,6 +18,7 @@ public record GetTripsRequest(
 
     public GetTripsRequest {
         pageRequest = pageRequest == null ? PageRequest.defaultRequest() : pageRequest;
+        filter = filter == null ? new Filter(null, null, null, null, null, null, null) : filter;
     }
 
     public record Filter(
@@ -25,7 +27,7 @@ public record GetTripsRequest(
             String countryId,
             StatusEnum status,
             String categoryId,
-            Set<String> tagIds,
+            Set<UUID> tagIds,
             Instant startedFrom,
             Instant startedTo
     ) {

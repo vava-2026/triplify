@@ -1,19 +1,22 @@
 package com.triplify.application.usecase.user;
 
 import com.google.inject.Inject;
-import com.triplify.application.shared.error.ApplicationError;
 import com.triplify.application.security.Authenticated;
+import com.triplify.application.shared.error.ApplicationError;
 import com.triplify.application.usecase.image.ImageService;
 import com.triplify.application.usecase.image.dto.AddImageRequest;
 import com.triplify.application.usecase.image.dto.ImageResponse;
 import com.triplify.application.usecase.session.SessionUser;
 import com.triplify.application.usecase.session.UserSessionContext;
+import com.triplify.application.usecase.user.dto.InstallLicenseRequest;
 import com.triplify.application.usecase.user.dto.UpdateUserAvatarRequest;
 import com.triplify.application.usecase.user.dto.UpdateUserProfileRequest;
 import com.triplify.application.usecase.user.dto.UserResponse;
+import com.triplify.application.license.LicenseManager;
 import com.triplify.domain.error.AuthError;
 import com.triplify.domain.error.UserError;
 import com.triplify.domain.model.User;
+import com.triplify.domain.model.enums.RoleEnum;
 import com.triplify.domain.repository.UserRepository;
 import com.triplify.domain.result.Result;
 import org.slf4j.Logger;
@@ -28,12 +31,14 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final ImageService imageService;
     private final UserSessionContext sessionContext;
+    private final LicenseManager licenseManager;
 
     @Inject
-    public UserServiceImpl(UserRepository userRepository, ImageService imageService, UserSessionContext sessionContext) {
+    public UserServiceImpl(UserRepository userRepository, ImageService imageService, UserSessionContext sessionContext, LicenseManager licenseManager) {
         this.userRepository = userRepository;
         this.imageService = imageService;
         this.sessionContext = sessionContext;
+        this.licenseManager = licenseManager;
     }
 
     @Override
@@ -80,10 +85,33 @@ public class UserServiceImpl implements UserService {
         }
 
         ImageResponse image = imageResult.getValue();
+
         user.updateAvatar(image.id());
         userRepository.update(user);
 
         log.info("Updated avatar for user id='{}'", user.getId());
         return Result.ok(UserResponse.from(user));
+    }
+
+    @Override
+    public Result<Void> installLicense(InstallLicenseRequest request) {
+        User user = userRepository.findByEmail(sessionContext.getCurrent().orElseThrow().email()).orElseThrow();
+        LicenseManager.LicenseResult result = licenseManager.installLicense(request.licenseFilePath(), user.getId().toString());
+        if (!result.valid) {
+            return Result.fail(new ApplicationError.Unexpected(result.errorMessage));
+        }
+
+        user.promoteRole(RoleEnum.PRO_USER);
+        userRepository.update(user);
+
+        sessionContext.set(new com.triplify.application.usecase.session.SessionUser(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole(),
+                user.getAvatarImageId()));
+        sessionContext.save();
+
+        return Result.ok();
     }
 }

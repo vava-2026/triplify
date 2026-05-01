@@ -22,7 +22,10 @@ import com.triplify.ui.shared.util.FxmlLoaderHelper;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.layout.HBox;
@@ -64,7 +67,6 @@ public class MainApp extends Application {
         log.info("App launched");
         userSessionContext.load();
 
-        // Sidebar island
         FxmlLoadResult<Node, SidebarIslandView> islandResult = fxml.load("/com/triplify/ui/shared/menu/view/SidebarIsland.fxml");
         Node island = islandResult.node();
         SidebarIslandView islandView = islandResult.controller();
@@ -74,7 +76,6 @@ public class MainApp extends Application {
         islandPane.setMinWidth(MenuView.SIDEBAR_WIDTH);
         islandPane.setMaxWidth(MenuView.SIDEBAR_WIDTH);
 
-        // Sidebar menu
         FxmlLoadResult<Node, MenuView> menuResult = fxml.load("/com/triplify/ui/shared/menu/view/MenuView.fxml");
         Node menu = menuResult.node();
         MenuView menuView = menuResult.controller();
@@ -85,7 +86,6 @@ public class MainApp extends Application {
             }
         });
 
-        // Header
         FxmlLoadResult<Node, HeaderView> headerResult = fxml.load("/com/triplify/ui/shared/header/view/HeaderView.fxml");
         Node header = headerResult.node();
         HeaderView headerView = headerResult.controller();
@@ -98,7 +98,6 @@ public class MainApp extends Application {
             }
         });
 
-        // Router content area
         TriplifyRouterContext routerContext = new TriplifyRouterContext(injectorRef);
         RouterStackPane contentArea = new RouterStackPane();
 
@@ -143,7 +142,6 @@ public class MainApp extends Application {
         header.visibleProperty().bind(showHeader);
         header.managedProperty().bind(showHeader);
 
-        // Router navigation
         contentArea.routerProperty().addListener((obs, oldRouter, newRouter) -> {
             router = newRouter;
             log.info("Router initialized: {}", newRouter != null ? "ready" : "null");
@@ -151,8 +149,7 @@ public class MainApp extends Application {
             if (router != null && !initialNavigationHandled) {
                 initialNavigationHandled = true;
                 if (userSessionContext.getCurrent().isPresent()) {
-                    AppPage defaultPage = pageAccessService.getDefaultPage(userSessionContext.getCurrent());
-                    router.setHomeDestination(defaultPage.getRouteId());
+                    router.setHomeDestination(guardedNavigator.resolveLandingRouteId());
                 }
                 Platform.runLater(() -> {
                     guardedNavigator.syncContext(router);
@@ -168,20 +165,34 @@ public class MainApp extends Application {
         topBar.visibleProperty().bind(showIsland);
         topBar.managedProperty().bind(showIsland);
 
-        HBox bottomRow = new HBox(menu, contentArea);
-        bottomRow.getStyleClass().add("app-bottom-row");
-        VBox.setVgrow(bottomRow, Priority.ALWAYS);
-
-        VBox normalLayout = new VBox(topBar, bottomRow);
-        normalLayout.getStyleClass().add("app-root");
-
-        // Root
-        StackPane root = new StackPane(normalLayout);
+        StackPane.setAlignment(topBar, Pos.TOP_LEFT);
+        StackPane.setAlignment(menu, Pos.TOP_LEFT);
+        StackPane.setMargin(menu, new Insets(70, 0, 0, 0));
+        StackPane root = new StackPane(contentArea, topBar, menu);
         root.getStyleClass().add("app-scene-root");
+
+        BooleanBinding isMapPage = Bindings.createBooleanBinding(
+                () -> {
+                    AppPage page = routerContext.getCurrentPage();
+                    return page != null && RouteIds.MAP.equals(page.getRouteId());
+                },
+                routerContext.currentPageProperty());
+        var menuCollapsed = menuView.getViewModel().collapsedProperty();
+        var leftOffset = Bindings.createDoubleBinding(
+                () -> !isMapPage.get() && showMenu.get() && !menuCollapsed.get()
+                        ? MenuView.SIDEBAR_WIDTH : 0.0,
+                isMapPage, showMenu, menuCollapsed);
+        var topOffset = Bindings.createDoubleBinding(
+                () -> !isMapPage.get() && showHeader.get() ? 70.0 : 0.0,
+                isMapPage, showHeader);
+        contentArea.prefWidthProperty().bind(root.widthProperty().subtract(leftOffset));
+        contentArea.prefHeightProperty().bind(root.heightProperty().subtract(topOffset));
+        contentArea.maxWidthProperty().bind(contentArea.prefWidthProperty());
+        contentArea.maxHeightProperty().bind(contentArea.prefHeightProperty());
+        StackPane.setAlignment(contentArea, Pos.BOTTOM_RIGHT);
 
         toastService.attach(root);
 
-        // Scene
         Scene scene = new Scene(root, 1280, 800);
 
         URL themeUrl = getClass().getResource("/com/triplify/ui/shared/css/theme.css");

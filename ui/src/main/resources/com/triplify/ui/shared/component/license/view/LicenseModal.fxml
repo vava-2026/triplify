@@ -17,15 +17,14 @@
 
     <StackPane styleClass="license-modal-card-shell"
                minWidth="500" prefWidth="500" maxWidth="500"
-               minHeight="500" prefHeight="500" maxHeight="500"
-               alignment="CENTER">
+               minHeight="550" prefHeight="550" maxHeight="550">
         <VBox styleClass="license-modal-card"
               alignment="TOP_CENTER"
               minWidth="500" prefWidth="500" maxWidth="500"
-              minHeight="500" prefHeight="500" maxHeight="500">
+              minHeight="550" prefHeight="550" maxHeight="550">
             <VBox styleClass="license-modal-content" spacing="25" alignment="TOP_CENTER" VBox.vgrow="ALWAYS">
                 <padding>
-                    <Insets top="30" right="115" bottom="0" left="115"/>
+                    <Insets top="30" right="115" left="115"/>
                 </padding>
                 <ImageUploadPanelView fx:id="uploadPanel"
                                       styleClass="license-upload-panel"
@@ -55,5 +54,4 @@
         </Button>
     </StackPane>
 </StackPane>
-
 

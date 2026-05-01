@@ -289,7 +289,7 @@ public class CountriesController extends SimpleLifecycleAwareController {
 		Localization.bindText(nameLabel.textProperty(), "countries.field.name");
 		Localization.bindText(nameSkLabel.textProperty(), "countries.field.nameSk");
 		Localization.bindText(emojiLabel.textProperty(), "countries.field.emoji");
-		countriesGrid.setEmptyText(I18n.t("countries.empty"));
+		countriesGrid.setEmptyTextKey("countries.empty");
 
 		modeBadgeLabel.textProperty().bind(Bindings.createStringBinding(
 				() -> selectedCountry.get() == null
@@ -303,7 +303,7 @@ public class CountriesController extends SimpleLifecycleAwareController {
 	private void attachListeners() {
 		selectedCountry.addListener((obs, oldValue, newValue) -> refreshSelectionStyles());
 		I18n.languageProperty().addListener((obs, oldValue, newValue) -> {
-			countriesGrid.setEmptyText(I18n.t("countries.empty"));
+			countriesGrid.setEmptyTextKey("countries.empty");
 			reloadCountries();
 		});
 	}

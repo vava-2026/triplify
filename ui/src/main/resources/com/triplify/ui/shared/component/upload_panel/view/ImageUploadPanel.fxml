@@ -56,5 +56,14 @@
                managed="false"
                visible="false"
                styleClass="editor-helper-text"/>
+        <VBox fx:id="selectedMetaBox"
+              managed="false"
+              visible="false"
+              spacing="4">
+            <Label fx:id="selectedStatusLabel"
+                   styleClass="editor-helper-text"/>
+            <Label fx:id="selectedExpiryLabel"
+                   styleClass="editor-helper-text"/>
+        </VBox>
     </children>
 </fx:root>

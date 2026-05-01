@@ -1,10 +1,6 @@
 .trips-toolbar {
-    -fx-spacing: 12px;
-    -fx-alignment: center-left;
-}
-
-.trips-filters {
-    -fx-spacing: 10px;
+    -fx-hgap: 10px;
+    -fx-vgap: 10px;
     -fx-alignment: center-left;
 }
 
@@ -88,6 +84,22 @@
     -fx-font-size: 14px;
 }
 
+.card-grid-load-more-btn {
+    -fx-background-color: transparent;
+    -fx-padding: 4px 0;
+    -fx-cursor: hand;
+}
+
+.card-grid-load-more-text {
+    -fx-font-size: 14px;
+    -fx-text-fill: -color-primary;
+}
+
+.card-grid-load-more-arrow {
+    -fx-icon-color: -color-primary;
+    -fx-icon-size: 16px;
+}
+
 /* ── Trip Card ── */
 
 .trip-card {
@@ -121,12 +133,20 @@
     -fx-font-weight: bold;
 }
 
-.trip-category {
+.trip-category-row {
+    -fx-alignment: center-left;
+    -fx-spacing: 6;
+    -fx-background-color: -color-surface-tint;
+    -fx-background-radius: 8px;
+    -fx-pref-height: 36px;
+    -fx-padding: 0px 8px;
+}
+
+.trip-category-value {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
     -fx-text-fill: -color-ink-muted;
     -fx-font-size: 14px;
-    -fx-background-color: -color-surface-tint;
-    -fx-background-radius: 999px;
-    -fx-padding: 2px 8px;
 }
 
 .trip-date-row {
@@ -178,37 +198,6 @@
 }
 
 /* ── Create Trip Card ── */
-
-.trip-create-card {
-    -fx-background-color: -color-surface;
-    -fx-background-radius: 14px;
-    -fx-border-color: -color-create-border;
-    -fx-border-radius: 14px;
-    -fx-border-width: 2px;
-    -fx-border-style: segments(8, 6);
-    -fx-effect: -shadow-card;
-    -fx-cursor: hand;
-    -fx-alignment: center;
-    -fx-padding: 12px;
-    -fx-pref-height: 353px;
-    -fx-min-height: 353px;
-    -fx-max-height: 353px;
-}
-
-.trip-create-icon {
-    -fx-icon-color: -color-primary;
-    -fx-icon-size: 18px;
-}
-
-.trip-create-title {
-    -fx-text-fill: -color-ink;
-    -fx-font-weight: bold;
-}
-
-.trip-create-subtitle {
-    -fx-text-fill: -color-ink-muted;
-    -fx-font-size: 12px;
-}
 
 /* ── Cover Fallback ── */
 

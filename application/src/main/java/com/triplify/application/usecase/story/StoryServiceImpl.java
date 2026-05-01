@@ -19,6 +19,7 @@ import com.triplify.domain.filter.StoryFilter;
 import com.triplify.domain.model.Emotion;
 import com.triplify.domain.model.Image;
 import com.triplify.domain.model.Story;
+import com.triplify.domain.model.enums.ImageOwnerType;
 import com.triplify.domain.model.enums.RoleEnum;
 import com.triplify.domain.pagination.Page;
 import com.triplify.domain.pagination.PageRequest;
@@ -219,10 +220,12 @@ public class StoryServiceImpl implements StoryService {
     }
 
     private StoryResponse toResponse(Story story) {
+        SessionUser user = sessionContext.getCurrent().orElseThrow();
         Page<Image> imagesPage = imageRepository.findAll(
+                user.userId(),
                 new PageRequest(0, DEFAULT_PAGE_SIZE),
                 story.getId().toString(),
-                "STORY",
+                ImageOwnerType.STORY,
                 null, null, true
         );
 

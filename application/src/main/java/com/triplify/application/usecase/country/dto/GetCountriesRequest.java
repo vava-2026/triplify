@@ -1,7 +1,7 @@
 package com.triplify.application.usecase.country.dto;
 
 import com.triplify.application.shared.error.ValidationMessage;
-import com.triplify.application.usecase.dto.DtoConstraints;
+import com.triplify.application.shared.DtoConstraints;
 import com.triplify.domain.filter.CountryFilter;
 import com.triplify.domain.pagination.PageRequest;
 

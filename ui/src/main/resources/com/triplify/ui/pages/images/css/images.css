@@ -1,0 +1,98 @@
+.image-card {
+    -fx-background-color: -color-surface;
+    -fx-background-radius: 12px;
+    -fx-effect: -shadow-card;
+    -fx-cursor: hand;
+}
+
+.image-card:hover {
+    -fx-translate-y: -1px;
+}
+
+.image-card-media {
+    -fx-min-height: 180px;
+    -fx-pref-height: 180px;
+    -fx-max-height: 180px;
+}
+
+.image-card-body {
+    -fx-padding: 8px 10px 10px 10px;
+}
+
+.image-card-description {
+    -fx-text-fill: -color-ink-muted;
+    -fx-font-size: 13px;
+}
+
+.image-modal-root {
+    -fx-background-color: transparent;
+}
+
+.image-modal-backdrop {
+    -fx-background-color: rgba(0, 0, 0, 0.55);
+}
+
+.image-modal-card {
+    -fx-background-color: -color-surface;
+    -fx-background-radius: 18px;
+    -fx-effect: -shadow-dialog;
+}
+
+.image-modal-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-ink;
+}
+
+.image-modal-description {
+    -fx-font-size: 14px;
+    -fx-text-fill: -color-ink-muted;
+    -fx-wrap-text: true;
+}
+
+.image-modal-close-btn {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+}
+
+.image-modal-close-icon {
+    -fx-icon-color: -color-primary-dark;
+}
+
+.image-modal-close-btn:hover .image-modal-close-icon {
+    -fx-icon-color: -color-ink;
+}
+
+.image-modal-delete-btn {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-cursor: hand;
+    -fx-padding: 4px;
+}
+
+.image-modal-delete-btn:hover {
+    -fx-background-color: -color-danger-subtle;
+    -fx-background-radius: 6px;
+}
+
+.image-modal-delete-icon {
+    -fx-icon-color: -color-danger;
+}
+
+
+.card-grid-load-more-btn {
+    -fx-background-color: transparent;
+    -fx-padding: 4px 0;
+    -fx-cursor: hand;
+}
+
+.card-grid-load-more-text {
+    -fx-font-size: 14px;
+    -fx-text-fill: -color-primary;
+}
+
+.card-grid-load-more-arrow {
+    -fx-icon-color: -color-primary;
+    -fx-icon-size: 16px;
+}

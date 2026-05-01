@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.triplify.ui.shared.component.section_header.view.SectionHeaderView?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<ScrollPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.triplify.ui.pages.stories.AddStoryController"
+            fitToWidth="true"
+            hbarPolicy="NEVER"
+            vbarPolicy="AS_NEEDED"
+            styleClass="page-scroll">
+    <content>
+        <StackPane styleClass="page-root,trip-editor-root">
+            <VBox fx:id="contentContainer" styleClass="trip-editor-content">
+                <FlowPane styleClass="trip-editor-flow">
+                    <VBox styleClass="trip-editor-main-column">
+                        <VBox styleClass="page-card,trip-editor-card" spacing="18">
+                            <SectionHeaderView fx:id="contextSectionHeader" iconLiteral="fth-link"/>
+                            <Label fx:id="contextLabel" styleClass="story-editor-context-label" wrapText="true"/>
+                        </VBox>
+
+                        <VBox styleClass="page-card,trip-editor-card" spacing="18">
+                            <SectionHeaderView fx:id="generalSectionHeader" iconLiteral="fth-info"/>
+
+                            <VBox styleClass="trip-editor-form-group">
+                                <Label fx:id="titleLabel" styleClass="form-label"/>
+                                <VBox fx:id="titleInputContainer"/>
+                            </VBox>
+
+                            <VBox styleClass="trip-editor-form-group">
+                                <Label fx:id="descriptionLabel" styleClass="form-label"/>
+                                <VBox fx:id="descriptionInputContainer"/>
+                            </VBox>
+
+                            <VBox styleClass="trip-editor-form-group">
+                                <Label fx:id="storyTimeLabel" styleClass="form-label"/>
+                                <VBox fx:id="dateContainer"/>
+                                <HBox fx:id="timeRow" spacing="8" alignment="CENTER_LEFT"/>
+                            </VBox>
+                        </VBox>
+                    </VBox>
+
+                    <VBox styleClass="trip-editor-side-column">
+                        <VBox styleClass="page-card,trip-editor-card" spacing="18">
+                            <SectionHeaderView fx:id="emotionSectionHeader" iconLiteral="fth-smile"/>
+
+                            <VBox styleClass="trip-editor-form-group">
+                                <Label fx:id="emotionLabel" styleClass="form-label"/>
+                                <VBox fx:id="emotionSelectContainer"/>
+                            </VBox>
+                        </VBox>
+
+                        <VBox styleClass="page-card,trip-editor-card" spacing="18">
+                            <SectionHeaderView fx:id="tagsSectionHeader" iconLiteral="fth-tag"/>
+
+                            <VBox styleClass="trip-editor-form-group">
+                                <Label fx:id="tagsLabel" styleClass="form-label"/>
+                                <VBox fx:id="tagPickerContainer"/>
+                            </VBox>
+                        </VBox>
+
+                        <VBox fx:id="actionButtonsContainer" spacing="12"/>
+                    </VBox>
+                </FlowPane>
+            </VBox>
+        </StackPane>
+    </content>
+</ScrollPane>

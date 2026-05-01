@@ -1,18 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Label?>
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
-<?import javafx.scene.layout.VBox?>
 
 <StackPane xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
-           fx:controller="com.triplify.ui.pages.SimplePageController"
-           styleClass="page-root">
-    <VBox spacing="14" maxWidth="980">
-        <Label text="Map" styleClass="page-title"/>
-        <Label text="Explore destinations and drop pins for your next trip." styleClass="page-subtitle"/>
-        <StackPane styleClass="page-card map-canvas">
-            <Label text="Zoom or drag to explore the map area"/>
-        </StackPane>
-    </VBox>
+           fx:controller="com.triplify.ui.pages.map.MapController"
+           styleClass="map-page-root">
+    <stylesheets>
+        <String fx:value="/com/triplify/ui/pages/map/map.css"/>
+    </stylesheets>
+
+    <StackPane fx:id="mapContainer" styleClass="map-container"/>
+
+    <HBox fx:id="searchContainer"
+          styleClass="map-search-container"
+          pickOnBounds="false"
+          mouseTransparent="false"
+          StackPane.alignment="TOP_CENTER">
+        <StackPane.margin>
+            <Insets top="14"/>
+        </StackPane.margin>
+    </HBox>
+
+    <HBox fx:id="filterToolbar"
+          styleClass="map-filter-toolbar"
+          maxWidth="-Infinity"
+          maxHeight="-Infinity"
+          pickOnBounds="false"
+          mouseTransparent="false"
+          StackPane.alignment="BOTTOM_LEFT"/>
+
+    <StackPane fx:id="clusterPopupContainer"
+               pickOnBounds="false"
+               mouseTransparent="false"
+               StackPane.alignment="CENTER_RIGHT"/>
+
 </StackPane>
