@@ -303,6 +303,6 @@ SELECT
 FROM split_tags st
 INNER JOIN trips t ON t.title = st.trip_title
 INNER JOIN tags tg ON tg.name = st.tag_chunk
-WHERE tg.user_id = '00000000-0000-0000-0000-000000000001';
+WHERE tg.user_id = 'f1d1a33f-1e7c-4ea1-bb1d-c8f06efb5b5a';
 
 DROP TABLE tmp_trips_data;
