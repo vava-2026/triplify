@@ -1,13 +1,3 @@
-INSERT OR IGNORE INTO users (
-    id, username, email, password_hash, role
-) VALUES (
-    '00000000-0000-0000-0000-000000000001',
-    'system',
-    'system@triplify.local',
-    'seeded-system-user',
-    'configuration manager'
-);
-
 INSERT OR IGNORE INTO tags (id, user_id, name, color)
 VALUES
     ('20000000-0000-0000-0000-000000000001', 'f1d1a33f-1e7c-4ea1-bb1d-c8f06efb5b5a', 'City', 'blue'),
