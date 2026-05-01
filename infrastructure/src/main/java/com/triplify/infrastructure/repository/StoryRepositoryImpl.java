@@ -192,7 +192,7 @@ public class StoryRepositoryImpl implements StoryRepository {
         if (emotionId != null) {
             emotion = new Emotion(
                     UUID.fromString(rs.getString("e_id")),
-                    UUID.fromString(rs.getString("e_created_by")),
+                    rs.getString("e_created_by")!=null? UUID.fromString(rs.getString("e_created_by")) : null,
                     rs.getString("e_name"),
                     rs.getString("e_name_sk"),
                     rs.getString("e_emoji_unicode")

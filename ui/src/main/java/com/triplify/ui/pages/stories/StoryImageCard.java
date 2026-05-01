@@ -2,6 +2,7 @@ package com.triplify.ui.pages.stories;
 
 import com.triplify.application.usecase.image.dto.ImageResponse;
 import com.triplify.ui.shared.component.input_item.InputItem;
+import com.triplify.ui.shared.component.input_item.TextAreaItem;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.util.EditorUtils;
 import javafx.geometry.Pos;
@@ -24,7 +25,7 @@ class StoryImageCard extends HBox {
 
     private final UUID imageId;
     private final String filePath;
-    private final InputItem descriptionInput;
+    private final TextAreaItem descriptionInput;
 
     StoryImageCard(File file, Runnable onRemove) {
         this(null, file.getAbsolutePath(),
@@ -61,11 +62,11 @@ class StoryImageCard extends HBox {
         previewPane.getStyleClass().add("story-image-preview");
         EditorUtils.installRoundedClip(previewPane, 10);
 
-        descriptionInput = new InputItem("story.add.image.description", FieldVariant.GHOST);
+        descriptionInput = new TextAreaItem("story.add.image.description", FieldVariant.GHOST);
         if (description != null && !description.isBlank()) {
             descriptionInput.setText(description);
         }
-        HBox.setHgrow(descriptionInput, Priority.ALWAYS);
+        //HBox.setHgrow(descriptionInput, Priority.ALWAYS);
 
         FontIcon removeIcon = new FontIcon("fth-x");
         removeIcon.getStyleClass().add("input-action-icon");
@@ -75,11 +76,10 @@ class StoryImageCard extends HBox {
         removeBtn.getStyleClass().add("input-action-btn");
         removeBtn.setOnAction(e -> onRemove.run());
 
-        VBox rightBox = new VBox(6, descriptionInput, removeBtn);
-        rightBox.setAlignment(Pos.CENTER_LEFT);
-        HBox.setHgrow(rightBox, Priority.ALWAYS);
+        //rightBox.setAlignment(Pos.CENTER_LEFT);
+        //HBox.setHgrow(rightBox, Priority.ALWAYS);
 
-        getChildren().addAll(previewPane, rightBox);
+        getChildren().addAll(previewPane, descriptionInput, removeBtn);
     }
 
     UUID getImageId() { return imageId; }

@@ -11,6 +11,7 @@
 @import url("/com/triplify/ui/shared/toast/toast.css");
 @import url("/com/triplify/ui/pages/trips/css/trips.css");
 @import url("/com/triplify/ui/pages/routes/css/add_route.css");
+@import url("/com/triplify/ui/pages/stories/stories.css");
 
 .root {
     -color-bg: #f0f0f0;
@@ -168,7 +169,6 @@
 
 .page-root {
     -fx-background-color: -color-bg;
-    /* top: 70px topbar + 24px spacing; left: 260px sidebar + 28px spacing */
     -fx-padding: 24px;
 }
 

@@ -124,6 +124,8 @@ public class AddStoryController extends WindowedPageController {
         minuteInput = new NumericInputItem(0, 59, 0, FieldVariant.GHOST);
 
         tagPicker = new TagPickerItem();
+        tagPicker.setPlaceholderKey("trips.filter.tag");
+        tagPicker.setPopupTitleKey("trip.add.tag.popupTitle");
 
         titleInputContainer.getChildren().add(titleInput);
         descriptionInputContainer.getChildren().add(descriptionInput);
@@ -135,8 +137,7 @@ public class AddStoryController extends WindowedPageController {
 
         tagPickerContainer.getChildren().add(tagPicker);
 
-        addImageContainer.getChildren().add(
-                new AddCardView("story.add.image.add.title", "story.add.image.add.subtitle", this::onAddImage));
+        addImageContainer.getChildren().add(new AddCardView("story.add.image.add.title", "story.add.image.add.subtitle", this::onAddImage));
 
         EditorUtils.installRoundedClip(interactiveMap, 18);
         initializeMap();
@@ -159,10 +160,7 @@ public class AddStoryController extends WindowedPageController {
         buildEmotionsView();
         createActionButtons();
 
-        tagPicker.configureTagService(tagService,
-                err -> toast.error(I18n.t("story.add.toast.tags.loadFailed")));
-        tagPicker.setPlaceholderText(I18n.t("story.add.select.tag"));
-        tagPicker.setPopupTitle(I18n.t("story.add.tag.popupTitle"));
+        tagPicker.configureTagService(tagService,err -> toast.error(I18n.t("story.add.toast.tags.loadFailed")));
     }
 
     @Override
@@ -199,7 +197,8 @@ public class AddStoryController extends WindowedPageController {
 
     private void onSave() {
         Map<String, Consumer<String>> fieldHandlers = Map.of(
-                "title", msg -> titleInput.showError(msg)
+                "title", msg -> titleInput.showError(msg),
+                "storyTime", msg -> datePicker.showError(msg)
         );
 
         String title = titleInput.getText().trim();
@@ -209,16 +208,25 @@ public class AddStoryController extends WindowedPageController {
 
         var result = createMode
                 ? storyService.addStory(new AddStoryRequest(
-                        title, description, storyTime,
+                        title,
+                        description,
+                        storyTime,
                         parseUUID(tripId), parseUUID(tripRouteId), parseUUID(tripPlaceId),
                         emotionId, tagPicker.getSelectedTagIds(),
-                        selectedLatitude, selectedLongitude))
+                        selectedLatitude,
+                        selectedLongitude
+                ))
                 : storyService.updateStory(new UpdateStoryRequest(
                         UUID.fromString(storyId),
-                        title, description, storyTime,
+                        title,
+                        description,
+                        storyTime,
                         parseUUID(tripId), parseUUID(tripRouteId), parseUUID(tripPlaceId),
-                        emotionId, tagPicker.getSelectedTagIds(),
-                        selectedLatitude, selectedLongitude));
+                        emotionId,
+                        tagPicker.getSelectedTagIds(),
+                        selectedLatitude,
+                        selectedLongitude
+                ));
 
         result.onSuccess(saved -> {
             syncImages(saved.id());
@@ -284,8 +292,7 @@ public class AddStoryController extends WindowedPageController {
                 new FileChooser.ExtensionFilter(I18n.t("place.add.dialog.cover.filter"), "*.png", "*.jpg", "*.jpeg")
         );
 
-        File file = chooser.showOpenDialog(
-                addImageContainer.getScene() == null ? null : addImageContainer.getScene().getWindow());
+        File file = chooser.showOpenDialog(addImageContainer.getScene() == null ? null : addImageContainer.getScene().getWindow());
         if (file == null) return;
 
         if (!EditorUtils.isSupportedImageFile(file)) {
@@ -354,7 +361,7 @@ public class AddStoryController extends WindowedPageController {
 
     private Instant buildStoryTime() {
         LocalDate date = datePicker.getValue();
-        if (date == null) return Instant.now();
+        if (date == null) return null;
         return date.atTime(hourInput.getValue(), minuteInput.getValue()).toInstant(ZoneOffset.UTC);
     }
 

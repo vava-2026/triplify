@@ -19,7 +19,6 @@
             styleClass="page-scroll">
     <stylesheets>
         <String fx:value="/com/triplify/ui/pages/places/add_place.css"/>
-        <String fx:value="/com/triplify/ui/pages/stories/stories.css"/>
     </stylesheets>
     <content>
         <StackPane styleClass="page-root,trip-editor-root">

@@ -33,6 +33,7 @@ import com.triplify.ui.shared.component.add_card.view.AddCardView;
 import com.triplify.ui.shared.component.card_grid.CardGridPane;
 import com.triplify.ui.shared.component.detail_actions.view.DetailActionButtonsView;
 import com.triplify.ui.pages.routes.view.RouteCardView;
+import com.triplify.ui.pages.stories.view.StoryCardView;
 import com.triplify.ui.shared.component.section_header.view.SectionHeaderView;
 import com.triplify.ui.shared.toast.ToastService;
 import com.triplify.ui.shared.util.DisplayUtils;
@@ -53,7 +54,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.HBox;
+import javafx.scene.Node;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import org.kordamp.ikonli.javafx.FontIcon;
@@ -158,7 +159,7 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         storiesGrid.setManualLoadMore(true);
         storiesGrid.setPageSize(8);
         storiesGrid.setMinCardWidth(220);
-        storiesGrid.setMaxColumns(3);
+        storiesGrid.setMaxColumns(4);
         storiesGrid.setLoadMoreKey("trip.details.show.more.stories");
         storiesGrid.setEmptyTextKey("trip.details.empty.stories");
     }
@@ -387,35 +388,8 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         return card;
     }
 
-    private VBox buildStoryCard(StoryResponse story, UUID forTripId) {
-        VBox card = new VBox(6);
-        card.getStyleClass().add("trip-details-story-card");
-        card.setCursor(javafx.scene.Cursor.HAND);
-        card.setOnMouseClicked(e -> openStory(story));
-
-        Label title = new Label(safeText(story.title(), I18n.t("trip.details.story.fallback")));
-        title.getStyleClass().add("trip-details-story-title");
-        title.setWrapText(true);
-
-        String timeText = story.storyTime() == null ? "" : TIME_FORMAT.format(story.storyTime());
-        HBox meta = new HBox(10);
-        meta.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-        Label timeLabel = new Label(timeText);
-        timeLabel.getStyleClass().add("trip-details-story-time");
-
-        if (story.emotion() != null) {
-            String emotionText = story.emotion().emojiUnicode() != null
-                    ? story.emotion().emojiUnicode() + " " + Localization.localize(story.emotion())
-                    : Localization.localize(story.emotion());
-            Label emotionLabel = new Label(emotionText);
-            emotionLabel.getStyleClass().add("trip-details-story-emotion");
-            meta.getChildren().addAll(timeLabel, emotionLabel);
-        } else {
-            meta.getChildren().add(timeLabel);
-        }
-
-        card.getChildren().addAll(title, meta);
-        return card;
+    private Node buildStoryCard(StoryResponse story, UUID forTripId) {
+        return StoryCardView.create(story, () -> openStory(story)).getRoot();
     }
 
     private void openRoute(com.triplify.application.usecase.route.dto.RouteResponse route) {
