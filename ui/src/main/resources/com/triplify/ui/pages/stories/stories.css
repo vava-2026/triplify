@@ -1,0 +1,109 @@
+.story-card {
+    -fx-background-color: -color-surface;
+    -fx-background-radius: 14px;
+    -fx-effect: -shadow-card;
+    -fx-cursor: hand;
+    -fx-pref-height: 300px;
+    -fx-min-height: 300px;
+    -fx-max-height: 300px;
+}
+
+.story-card:hover {
+    -fx-translate-y: -1px;
+}
+
+.story-card-media {
+    -fx-min-height: 152px;
+    -fx-pref-height: 152px;
+    -fx-max-height: 152px;
+    -fx-padding: 10px;
+}
+
+.story-cover-default {
+    -fx-background-color: linear-gradient(to bottom right, #c5cfe0, #e8eef5);
+    -fx-background-radius: 12px;
+}
+
+.story-card-body {
+    -fx-padding: 10px 12px 12px 12px;
+}
+
+.story-card-title {
+    -fx-text-fill: -color-ink;
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+}
+
+.story-emotion-row {
+    -fx-alignment: center-left;
+    -fx-spacing: 6;
+    -fx-background-color: -color-surface-tint;
+    -fx-background-radius: 8px;
+    -fx-pref-height: 32px;
+    -fx-padding: 0px 8px;
+}
+
+.story-emotion-value {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-text-fill: -color-ink-muted;
+    -fx-font-size: 13px;
+}
+
+.story-date-row {
+    -fx-alignment: center-left;
+}
+
+.story-date-icon {
+    -fx-icon-color: -color-ink-muted;
+}
+
+.story-date {
+    -fx-text-fill: -color-ink-muted;
+    -fx-font-size: 13px;
+}
+
+.story-details-page-title {
+    -fx-font-size: 26px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -color-ink;
+}
+
+.story-details-time {
+    -fx-font-size: 13px;
+    -fx-text-fill: -color-ink-muted;
+}
+
+.story-details-emotion {
+    -fx-font-size: 13px;
+    -fx-text-fill: -color-ink-muted;
+    -fx-background-color: -color-surface-tint;
+    -fx-background-radius: 999px;
+    -fx-padding: 4px 10px;
+}
+
+.story-details-context-link {
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-text-fill: -color-primary;
+    -fx-underline: true;
+    -fx-cursor: hand;
+}
+
+.story-details-context-link:hover {
+    -fx-text-fill: -color-primary-dark;
+}
+
+.story-image-card {
+    -fx-background-color: -color-surface;
+    -fx-background-radius: 12px;
+    -fx-border-color: -color-border-muted;
+    -fx-border-width: 1;
+    -fx-border-radius: 12px;
+    -fx-padding: 10 12 10 12;
+}
+
+.story-image-preview {
+    -fx-background-color: -color-surface-tint;
+    -fx-background-radius: 10px;
+}

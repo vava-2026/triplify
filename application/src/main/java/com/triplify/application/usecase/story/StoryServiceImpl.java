@@ -118,6 +118,7 @@ public class StoryServiceImpl implements StoryService {
             request.tagIds().forEach(story::addTag);
         }
 
+        story.updateLocation(request.latitude(), request.longitude());
         storyRepository.create(story);
         log.info("Created story id='{}', title='{}' for userId='{}'",
                 story.getId(), story.getTitle(), user.userId());
@@ -145,6 +146,7 @@ public class StoryServiceImpl implements StoryService {
         story.updateDescription(request.description());
         story.updateStoryTime(request.storyTime());
         story.updateEmotion(request.emotionId());
+        story.updateLocation(request.latitude(), request.longitude());
 
         Set<UUID> existingTagIds = new LinkedHashSet<>(story.getTagIds());
         existingTagIds.forEach(story::removeTag);

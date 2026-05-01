@@ -222,7 +222,7 @@ public class ImageRepositoryImpl implements ImageRepository {
             case TRIP -> "trip_images";
             case TRIP_ROUTE -> "trip_route_images";
             case TRIP_PLACE -> "trip_places_images";
-            default -> null;
+            case STORY -> "story_images";
         };
     }
 
@@ -232,7 +232,7 @@ public class ImageRepositoryImpl implements ImageRepository {
             case TRIP-> "trip_id";
             case TRIP_ROUTE -> "trip_route_id";
             case TRIP_PLACE -> "trip_place_id";
-            default -> null;
+            case STORY -> "story_id";
         };
     }
 

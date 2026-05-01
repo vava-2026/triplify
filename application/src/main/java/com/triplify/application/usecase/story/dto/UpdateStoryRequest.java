@@ -28,6 +28,8 @@ public record UpdateStoryRequest(
         UUID tripRouteId,
         UUID tripPlaceId,
         UUID emotionId,
-        Set<UUID> tagIds
+        Set<UUID> tagIds,
+        Double latitude,
+        Double longitude
 ) {
 }

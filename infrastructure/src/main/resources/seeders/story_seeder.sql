@@ -6,7 +6,6 @@ CREATE TEMP TABLE tmp_stories_data (
     emotion_name TEXT,
     tag_names    TEXT
 );
-
 INSERT INTO tmp_stories_data (title, description, trip_title, story_time, emotion_name, tag_names) VALUES
 
 ('First Morning in Lisbon',
@@ -149,7 +148,30 @@ INSERT INTO tmp_stories_data (title, description, trip_title, story_time, emotio
  'Calm',
  'Nature,Solo,Spiritual');
 
-INSERT OR IGNORE INTO stories (id, user_id, trip_id, trip_route_id, trip_place_id, emotion_id, title, description, story_time, created_at)
+WITH story_locations(title, latitude, longitude) AS (
+    VALUES
+        ('First Morning in Lisbon', 38.7223, -9.1393),
+        ('Vineyard Sunset Moment', 41.1600, -7.7900),
+        ('Gaudí Overwhelm in Barcelona', 41.3851, 2.1734),
+        ('Toledo at Dusk', 39.8628, -4.0273),
+        ('Seine Morning Walk', 48.8566, 2.3522),
+        ('Market Day in Provence', 43.9493, 4.8055),
+        ('Florence at First Light', 43.7696, 11.2558),
+        ('Lake Como Afternoon', 45.9870, 9.2590),
+        ('Neuschwanstein Fog Day', 47.5576, 10.7498),
+        ('Black Forest Trail Solo', 48.1290, 8.2330),
+        ('Shibuya Crossing at Midnight', 35.6595, 139.7005),
+        ('Fushimi Inari Before Sunrise', 34.9671, 135.7727),
+        ('Chao Phraya River at Dusk', 13.7563, 100.5018),
+        ('Chiang Mai Night Bazaar', 18.7877, 98.9931),
+        ('Teotihuacán at Dawn', 19.6925, -98.8432),
+        ('Guanajuato Rooftop View', 21.0190, -101.2574),
+        ('Grand Canyon First Look', 36.0570, -112.1431),
+        ('New York Skyline from Brooklyn', 40.7003, -73.9967),
+        ('Bondi to Coogee Walk', -33.9132, 151.2749),
+        ('Red Centre Silence', -25.3444, 131.0369)
+)
+INSERT OR IGNORE INTO stories (id, user_id, trip_id, trip_route_id, trip_place_id, emotion_id, title, description, latitude, longitude, story_time, created_at)
 SELECT
     lower(
         hex(randomblob(4)) || '-' ||
@@ -165,9 +187,13 @@ SELECT
     e.id  AS emotion_id,
     sd.title,
     sd.description,
+    sl.latitude,
+    sl.longitude,
     sd.story_time,
-    datetime('now') AS created_at
+    strftime('%Y-%m-%dT%H:%M:%SZ', 'now') AS created_at
 FROM tmp_stories_data sd
+INNER JOIN story_locations sl
+    ON sl.title = sd.title
 INNER JOIN trips t
     ON t.title   = sd.trip_title
    AND t.user_id = 'f1d1a33f-1e7c-4ea1-bb1d-c8f06efb5b5a'

@@ -46,6 +46,12 @@ public class Story {
     @Setter(AccessLevel.PRIVATE)
     private Instant storyTime;
 
+    @Setter(AccessLevel.PRIVATE)
+    private Double latitude;
+
+    @Setter(AccessLevel.PRIVATE)
+    private Double longitude;
+
     @NonNull
     private final Instant createdAt;
 
@@ -130,6 +136,12 @@ public class Story {
         log.debug("Story [{}] emotion linked: {}", id, emotion.getId());
         setEmotionId(emotion.getId());
         setEmotion(emotion);
+    }
+
+    public void updateLocation(Double latitude, Double longitude) {
+        log.debug("Story [{}] location updated: ({}, {})", id, latitude, longitude);
+        setLatitude(latitude);
+        setLongitude(longitude);
     }
 
     public void clearEmotion() {

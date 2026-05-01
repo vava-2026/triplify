@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.String?>
 <?import com.triplify.ui.shared.component.section_header.view.SectionHeaderView?>
+<?import com.triplify.ui.map.InteractiveMap?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.FlowPane?>
@@ -15,6 +17,9 @@
             hbarPolicy="NEVER"
             vbarPolicy="AS_NEEDED"
             styleClass="page-scroll">
+    <stylesheets>
+        <String fx:value="/com/triplify/ui/pages/places/add_place.css"/>
+    </stylesheets>
     <content>
         <StackPane styleClass="page-root,trip-editor-root">
             <VBox fx:id="contentContainer" styleClass="trip-editor-content">
@@ -43,6 +48,19 @@
                                 <VBox fx:id="dateContainer"/>
                                 <HBox fx:id="timeRow" spacing="8" alignment="CENTER_LEFT"/>
                             </VBox>
+                        </VBox>
+
+                        <VBox styleClass="page-card,trip-editor-card" spacing="18">
+                            <SectionHeaderView fx:id="imagesSectionHeader" iconLiteral="fth-image"/>
+                            <VBox fx:id="imageCardsContainer" spacing="10"/>
+                            <VBox fx:id="addImageContainer"/>
+                        </VBox>
+
+                        <VBox styleClass="page-card,trip-editor-card,add-place-map-card" spacing="16">
+                            <SectionHeaderView fx:id="locationSectionHeader" iconLiteral="fth-map-pin"/>
+                            <InteractiveMap fx:id="interactiveMap"/>
+                            <Label fx:id="mapHelperLabel" wrapText="true" styleClass="add-place-helper-text"/>
+                            <Label fx:id="selectedCoordinatesLabel" styleClass="add-place-coordinate-label"/>
                         </VBox>
                     </VBox>
 

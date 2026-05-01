@@ -1,9 +1,12 @@
 package com.triplify.ui.shared.util;
 
+import com.triplify.application.shared.localization.LocalizedName;
 import com.triplify.application.usecase.country.dto.CountryResponse;
+import com.triplify.application.usecase.emotion.dto.EmotionResponse;
 import com.triplify.application.usecase.image.dto.ImageResponse;
 import com.triplify.application.usecase.place.dto.PlaceResponse;
 import com.triplify.domain.model.enums.StatusEnum;
+import javafx.beans.property.StringProperty;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -74,5 +77,15 @@ public final class DisplayUtils {
         }
 
         EditorUtils.applyEmojiImage(emojiView, country.emojiUnicode(), emojiSize);
+    }
+
+    public static void bindEmoji(HBox row, Label label, ImageView imageView, LocalizedName lName, String emoji, int size) {
+        label.textProperty().unbind();
+        Localization.bindLocalizedText(label.textProperty(), lName);
+
+        row.setVisible(true);
+        row.setManaged(true);
+
+        EditorUtils.applyEmojiImage(imageView, emoji, size);
     }
 }

@@ -25,6 +25,8 @@ public record AddStoryRequest(
         UUID tripRouteId,
         UUID tripPlaceId,
         UUID emotionId,
-        Set<UUID> tagIds
+        Set<UUID> tagIds,
+        Double latitude,
+        Double longitude
 ) {
 }

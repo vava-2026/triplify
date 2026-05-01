@@ -279,8 +279,6 @@
     -fx-text-fill: -color-theme-gray-fg;
 }
 
-/* ── Variants ─────────────────────────────────────────────── */
-
 .app-tag-picker-variant-filled .app-tag-picker-shell {
     -fx-background-color: -color-surface;
     -fx-border-color: transparent;
