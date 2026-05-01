@@ -49,8 +49,7 @@ import java.util.UUID;
 
 public class StoryDetailsController extends SimpleLifecycleAwareController {
 
-    private static final DateTimeFormatter TIME_FORMAT =
-            DateTimeFormatter.ofPattern("MMM d, yyyy  HH:mm").withZone(ZoneOffset.UTC);
+    private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("MMM d, yyyy  HH:mm").withZone(ZoneOffset.UTC);
 
     @FXML private VBox contentContainer;
     @FXML private Button backButton;
@@ -97,12 +96,17 @@ public class StoryDetailsController extends SimpleLifecycleAwareController {
         EditorUtils.installRoundedClip(storyMap, 18);
         storyMap.setSelectionEnabled(false);
         storyMap.setControlsVisible(false);
+        emotionRow.setVisible(false);
+        emotionRow.setManaged(false);
 
-        actionButtonsView.configurePrimary(fxmlLoader,
-                Localization.textBinding("story.details.action.edit"), "fth-edit-3", this::onEditStory);
-        actionButtonsView.configureDelete(fxmlLoader,
-                Localization.textBinding("story.details.action.delete"), "fth-trash-2",
-                Localization.textBinding("story.details.action.delete.confirm"), this::onDeleteStory);
+        actionButtonsView.configurePrimary(fxmlLoader, Localization.textBinding("story.details.action.edit"), "fth-edit-3", this::onEditStory);
+        actionButtonsView.configureDelete(
+                fxmlLoader,
+                Localization.textBinding("story.details.action.delete"),
+                "fth-trash-2",
+                Localization.textBinding("story.details.action.delete.confirm"),
+                this::onDeleteStory
+        );
 
         setupImagesGrid();
     }
@@ -157,12 +161,12 @@ public class StoryDetailsController extends SimpleLifecycleAwareController {
     }
 
     private void bind(StoryResponse story) {
-        storyTitleLabel.setText(story.title() == null || story.title().isBlank()
-                ? I18n.t("story.details.fallback.title") : story.title());
+        storyTitleLabel.setText(story.title());
+        storyTimeLabel.setText(TIME_FORMAT.format(story.storyTime()));
 
-        storyTimeLabel.setText(story.storyTime() == null ? "" : TIME_FORMAT.format(story.storyTime()));
-
-        DisplayUtils.bindEmoji(emotionRow, emotionLabel, emotionEmojiView, story.emotion(), story.emotion().emojiUnicode(), 18);
+        if (story.emotion() != null) {
+            DisplayUtils.bindEmoji(emotionRow, emotionLabel, emotionEmojiView, story.emotion(), story.emotion().emojiUnicode(), 18);
+        }
         descriptionValueLabel.setText(EditorUtils.safeText(story.description(), I18n.t("story.details.empty.description")));
 
         renderTags(story);

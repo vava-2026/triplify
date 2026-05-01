@@ -3,9 +3,6 @@
     -fx-background-radius: 14px;
     -fx-effect: -shadow-card;
     -fx-cursor: hand;
-    -fx-pref-height: 300px;
-    -fx-min-height: 300px;
-    -fx-max-height: 300px;
 }
 
 .story-card:hover {
