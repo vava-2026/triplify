@@ -94,7 +94,6 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
     @FXML private CardGridPane<TripRouteResponse> routesGrid;
     @FXML private CardGridPane<TripPlaceResponse> placesGrid;
     @FXML private CardGridPane<StoryResponse> storiesGrid;
-    @FXML private Button addStoryButton;
     @FXML private CardGridPane<ImageResponse> imagesGrid;
 
     @Inject private TripService tripService;
@@ -129,7 +128,6 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         actionButtonsView.configureDelete(fxmlLoader, Localization.textBinding("trip.details.action.delete"), "fth-trash-2", Localization.textBinding("trip.details.action.delete.confirm"), this::onDeleteTrip);
 
         Localization.bindText(imagesHeader.titleProperty(), "trip.details.section.images");
-        Localization.bindText(addStoryButton.textProperty(), "trip.details.action.addStory");
 
         setupRoutesGrid();
         setupPlacesGrid();
@@ -162,6 +160,13 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         storiesGrid.setMaxColumns(4);
         storiesGrid.setLoadMoreKey("trip.details.show.more.stories");
         storiesGrid.setEmptyTextKey("trip.details.empty.stories");
+
+        AddCardView addCard = new AddCardView(
+                "stories.add.card.title",
+                "stories.add.card.subtitle",
+                () -> navigateToAddStory(UUID.fromString(tripId))
+        );
+        storiesGrid.addPinnedNode(addCard);
     }
 
     private void setupImagesGrid() {
@@ -297,8 +302,6 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
                     new Pagination(page, size, null, p.hasNext() ? page + 1 : page));
         });
         storiesGrid.refresh();
-
-        addStoryButton.setOnAction(e -> navigateToAddStory(tripUuid));
 
         setupImageLoader(tripUuid);
     }
