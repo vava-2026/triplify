@@ -23,10 +23,12 @@ import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.shared.component.detail_actions.view.DetailActionButtonsView;
 import com.triplify.ui.shared.component.empty_state.view.EmptyStateCardView;
 import com.triplify.ui.shared.component.section_header.view.SectionHeaderView;
-import com.triplify.ui.shared.component.trip.view.TripCardView;
 import com.triplify.ui.shared.toast.ToastService;
+import com.triplify.ui.shared.util.DisplayUtils;
 import com.triplify.ui.shared.util.EditorUtils;
+import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import com.triplify.ui.shared.util.Localization;
+import com.triplify.ui.pages.trips.view.TripCardView;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
@@ -59,14 +61,17 @@ import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
 
 public class RouteDetailsController extends SimpleLifecycleAwareController {
 
     private static final String DEFAULT_IMAGE = "/com/triplify/ui/pages/trips/images/one.png";
+    private static final int COUNTRY_EMOJI_SIZE = 18;
     private static final int SCAN_PAGE_SIZE = 64;
     private static final int MAX_MATCHED_TRIP_ROUTES = 24;
     private static final int ASSOCIATED_TRIPS_LIMIT = 8;
@@ -79,7 +84,9 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
     @FXML private Button backButton;
     @FXML private ImageView heroImageView;
     @FXML private Label routeTitleLabel;
-    @FXML private Label routeSubtitleLabel;
+    @FXML private HBox countryRow;
+    @FXML private ImageView countryEmojiView;
+    @FXML private Label countryLabel;
     @FXML private Label descriptionTitleLabel;
     @FXML private Label descriptionValueLabel;
     @FXML private Label overviewTitleLabel;
@@ -100,6 +107,7 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
     @Inject private StoryService storyService;
     @Inject private ToastService toast;
     @Inject private ErrorHandler errorHandler;
+    @Inject private FxmlLoaderHelper fxmlLoader;
 
     private String routeId;
     private RouteResponse currentRoute;
@@ -115,7 +123,7 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
 
     @FXML
     public void initialize() {
-        configureButtonIcon(backButton, "fth-chevron-left", "route-details-back-icon");
+        configureButtonIcon(backButton, "fth-chevron-left", "place-details-back-icon");
         Localization.bindText(backButton.textProperty(), "route.details.back");
         Localization.bindText(descriptionTitleLabel.textProperty(), "route.details.description");
         Localization.bindText(overviewTitleLabel.textProperty(), "route.details.overview");
@@ -127,20 +135,20 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
         associatedTripsFlow.prefWrapLengthProperty().bind(contentContainer.widthProperty());
         associatedStoriesFlow.prefWrapLengthProperty().bind(contentContainer.widthProperty());
 
-        heroImageView.fitWidthProperty().bind(heroContainer.widthProperty());
-        heroImageView.fitHeightProperty().bind(heroContainer.heightProperty());
-        installRoundedPaneClip(heroContainer, 28);
-        installRoundedImageClip(heroImageView, 28);
+        EditorUtils.installRoundedClip(heroContainer, 28);
+        EditorUtils.initializeCoverPreview(heroImageView, heroContainer);
         installRoundedPaneClip(routeMap, 20);
         routeMap.setSelectionEnabled(false);
         routeMap.setControlsVisible(false);
 
-        Localization.bindText(actionButtonsView.getPrimaryButton().textProperty(), "route.details.action.edit");
-        Localization.bindText(actionButtonsView.getSecondaryButton().textProperty(), "route.details.action.delete");
-        actionButtonsView.getPrimaryButton().setOnAction(event -> onEditRoute());
-        actionButtonsView.getSecondaryButton().setOnAction(event -> onDeleteRoute());
-        configureButtonIcon(actionButtonsView.getPrimaryButton(), "fth-edit-3", "app-btn-icon");
-        configureButtonIcon(actionButtonsView.getSecondaryButton(), "fth-trash-2", "app-btn-icon");
+        actionButtonsView.configurePrimary(fxmlLoader, Localization.textBinding("route.details.action.edit"), "fth-edit-3", this::onEditRoute);
+        actionButtonsView.configureDelete(
+                fxmlLoader,
+                Localization.textBinding("route.details.action.delete"),
+                "fth-trash-2",
+                Localization.textBinding("route.details.action.delete.confirm"),
+                this::onDeleteRoute
+        );
         initializeDragPreview();
         contentContainer.addEventFilter(MouseEvent.MOUSE_RELEASED, event -> finishDragging());
         contentContainer.addEventFilter(MouseEvent.MOUSE_DRAGGED, this::updateDragPreview);
@@ -306,8 +314,12 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
 
     private void bindCurrentState() {
         routeTitleLabel.setText(safeText(currentRoute.title(), I18n.t("trip.add.fallback.route")));
-        routeSubtitleLabel.setText(formatPlacesCount(currentRoute.places() == null ? 0 : currentRoute.places().size()));
-        heroImageView.setImage(loadImage(routeImagePath(currentRoute)));
+        bindRouteCountry(currentRoute);
+        EditorUtils.setCoverPreviewImage(
+                heroImageView,
+                heroContainer,
+                EditorUtils.loadImage(routeImagePath(currentRoute), DEFAULT_IMAGE, getClass())
+        );
         descriptionValueLabel.setText(safeText(currentRoute.description(), I18n.t("route.details.empty.description")));
         distanceValueLabel.setText(String.format(Locale.US, I18n.t("route.details.metric.distance"), currentRoute.length()));
         placesValueLabel.setText(formatPlacesCount(currentPlaces.size()));
@@ -357,7 +369,7 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
         Label orderLabel = new Label(String.valueOf(index));
         orderLabel.getStyleClass().add("route-details-place-index");
 
-        ImageView preview = new ImageView(loadImage(placeImagePath(place)));
+        ImageView preview = new ImageView(EditorUtils.loadImage(placeImagePath(place), DEFAULT_IMAGE, getClass()));
         preview.setFitWidth(92);
         preview.setFitHeight(58);
         preview.setPreserveRatio(false);
@@ -596,7 +608,7 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
         VBox card = new VBox(10);
         card.getStyleClass().add("route-details-story-card");
 
-        ImageView preview = new ImageView(loadImage(storyImagePath(story)));
+        ImageView preview = new ImageView(EditorUtils.loadImage(storyImagePath(story), DEFAULT_IMAGE, getClass()));
         preview.setFitWidth(257);
         preview.setFitHeight(146);
         preview.setPreserveRatio(false);
@@ -654,9 +666,8 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
     }
 
     private String routeImagePath(RouteResponse route) {
-        return route.coverImage() == null || route.coverImage().url() == null
-                ? DEFAULT_IMAGE
-                : route.coverImage().url().toString();
+        String coverUrl = DisplayUtils.deriveCoverUrl(route.coverImage());
+        return coverUrl == null || coverUrl.isBlank() ? DEFAULT_IMAGE : coverUrl;
     }
 
     private String placeImagePath(PlaceResponse place) {
@@ -731,24 +742,56 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
         return value == null || value.isBlank() ? fallback : value;
     }
 
+    private void bindRouteCountry(RouteResponse route) {
+        if (route == null || route.places() == null || route.places().isEmpty()) {
+            countryRow.setVisible(true);
+            countryRow.setManaged(true);
+            countryLabel.textProperty().unbind();
+            countryLabel.setText(formatPlacesCount(0));
+            countryEmojiView.setVisible(false);
+            countryEmojiView.setManaged(false);
+            countryEmojiView.setImage(null);
+            return;
+        }
+
+        String firstEmoji = null;
+        Set<String> countries = new LinkedHashSet<>();
+        for (PlaceResponse place : route.places()) {
+            if (place != null && place.country() != null) {
+                if (firstEmoji == null) {
+                    firstEmoji = place.country().emojiUnicode();
+                }
+                String localizedCountry = Localization.localize(place.country());
+                if (localizedCountry != null && !localizedCountry.isBlank()) {
+                    countries.add(localizedCountry);
+                }
+            }
+        }
+
+        if (countries.isEmpty()) {
+            countryRow.setVisible(true);
+            countryRow.setManaged(true);
+            countryLabel.textProperty().unbind();
+            countryLabel.setText(formatPlacesCount(route.places().size()));
+            countryEmojiView.setVisible(false);
+            countryEmojiView.setManaged(false);
+            countryEmojiView.setImage(null);
+            return;
+        }
+
+        String firstCountry = countries.iterator().next();
+        countryRow.setVisible(true);
+        countryRow.setManaged(true);
+        EditorUtils.applyEmojiImage(countryEmojiView, firstEmoji, COUNTRY_EMOJI_SIZE);
+        countryLabel.textProperty().unbind();
+        countryLabel.setText(countries.size() == 1 ? firstCountry : firstCountry + " +" + (countries.size() - 1));
+    }
+
     private void configureButtonIcon(Button button, String iconLiteral, String styleClass) {
         FontIcon icon = new FontIcon(iconLiteral);
         icon.setIconSize(15);
         icon.getStyleClass().add(styleClass);
         button.setGraphic(icon);
-    }
-
-    private Image loadImage(String imagePath) {
-        return EditorUtils.loadImage(imagePath, DEFAULT_IMAGE, getClass());
-    }
-
-    private void installRoundedImageClip(ImageView target, double radius) {
-        Rectangle clip = new Rectangle();
-        clip.setArcWidth(radius * 2);
-        clip.setArcHeight(radius * 2);
-        clip.widthProperty().bind(target.fitWidthProperty());
-        clip.heightProperty().bind(target.fitHeightProperty());
-        target.setClip(clip);
     }
 
     private void installRoundedPaneClip(StackPane target, double radius) {

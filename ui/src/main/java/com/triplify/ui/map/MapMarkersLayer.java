@@ -31,8 +31,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
-import lombok.Setter;
-
 public class MapMarkersLayer extends MapLayer {
 
     private static final int MARKER_SIZE = 36;
@@ -61,9 +59,9 @@ public class MapMarkersLayer extends MapLayer {
 
     private final PauseTransition hideDelay = new PauseTransition(Duration.millis(100));
 
-    @Setter private Consumer<MapObjectResponse> onMarkerClick = ignore -> {};
-    @Setter private Consumer<MapObjectResponse> onClusterClick = ignore -> {};
-    @Setter private Consumer<String> onRouteHover = ignore -> {};
+    private Consumer<MapObjectResponse> onMarkerClick = ignore -> {};
+    private Consumer<MapObjectResponse> onClusterClick = ignore -> {};
+    private Consumer<String> onRouteHover = ignore -> {};
 
     public MapMarkersLayer() {
         hoverCard = buildHoverCard();
@@ -74,6 +72,18 @@ public class MapMarkersLayer extends MapLayer {
         this.markers = new ArrayList<>(markers);
         markersRevision++;
         markDirty();
+    }
+
+    public void setOnMarkerClick(Consumer<MapObjectResponse> onMarkerClick) {
+        this.onMarkerClick = onMarkerClick == null ? ignore -> {} : onMarkerClick;
+    }
+
+    public void setOnClusterClick(Consumer<MapObjectResponse> onClusterClick) {
+        this.onClusterClick = onClusterClick == null ? ignore -> {} : onClusterClick;
+    }
+
+    public void setOnRouteHover(Consumer<String> onRouteHover) {
+        this.onRouteHover = onRouteHover == null ? ignore -> {} : onRouteHover;
     }
 
     @Override

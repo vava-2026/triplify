@@ -12,8 +12,6 @@ import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.util.Localization;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import lombok.Getter;
-
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -32,14 +30,14 @@ public class Countries {
     private final Consumer<Entry<String>> onResultSelected;
     private final Consumer<AppError> onLoadFailed;
 
-    @Getter private final StringProperty placeholder = new SimpleStringProperty();
-    @Getter private final StringProperty noResult = new SimpleStringProperty();
-    @Getter private final String placeholderKey;
-    @Getter private final String noResultKey;
-    @Getter private final int debounceMs;
-    @Getter private final int pageSize;
-    @Getter private final FieldVariant variant;
-    @Getter private final boolean searchOnTyping;
+    private final StringProperty placeholder = new SimpleStringProperty();
+    private final StringProperty noResult = new SimpleStringProperty();
+    private final String placeholderKey;
+    private final String noResultKey;
+    private final int debounceMs;
+    private final int pageSize;
+    private final FieldVariant variant;
+    private final boolean searchOnTyping;
 
     private final List<Entry<String>> entries = new ArrayList<>();
 
@@ -133,6 +131,38 @@ public class Countries {
         if (onResultSelected != null) {
             onResultSelected.accept(result);
         }
+    }
+
+    public StringProperty getPlaceholder() {
+        return placeholder;
+    }
+
+    public StringProperty getNoResult() {
+        return noResult;
+    }
+
+    public String getPlaceholderKey() {
+        return placeholderKey;
+    }
+
+    public String getNoResultKey() {
+        return noResultKey;
+    }
+
+    public int getDebounceMs() {
+        return debounceMs;
+    }
+
+    public int getPageSize() {
+        return pageSize;
+    }
+
+    public FieldVariant getVariant() {
+        return variant;
+    }
+
+    public boolean isSearchOnTyping() {
+        return searchOnTyping;
     }
 
     public Entry<String> findBestMatch(String externalCountryName) {

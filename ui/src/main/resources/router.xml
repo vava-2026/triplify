@@ -29,6 +29,17 @@
         <argument name="routeId" type="string" required="true"/>
     </arguments>
 
+    <arguments id="storyDetailsArgs">
+        <argument name="storyId" type="string" required="true"/>
+    </arguments>
+
+    <arguments id="addStoryArgs">
+        <argument name="storyId" type="string" required="false"/>
+        <argument name="tripId" type="string" required="false"/>
+        <argument name="tripRouteId" type="string" required="false"/>
+        <argument name="tripPlaceId" type="string" required="false"/>
+    </arguments>
+
     <destination id="start"
                  fxml="com/triplify/ui/pages/start/StartPageView.fxml"
                  singleTop="true"/>
@@ -57,6 +68,10 @@
                  fxml="com/triplify/ui/pages/trips/MyTripsView.fxml"
                  singleTop="true"/>
 
+    <destination id="my_images"
+                 fxml="com/triplify/ui/pages/images/MyImagesView.fxml"
+                 singleTop="true"/>
+
     <destination id="my_badges"
                  fxml="com/triplify/ui/pages/placeholder/PlaceholderPageView.fxml"
                  singleTop="true"/>
@@ -66,7 +81,8 @@
                  singleTop="true"/>
 
     <destination id="trip_details"
-                 fxml="com/triplify/ui/pages/placeholder/PlaceholderPageView.fxml"
+                 fxml="com/triplify/ui/pages/trips/AddTripView.fxml"
+                 arguments="addTripArgs"
                  singleTop="true"/>
     <destination id="add_trip"
                  fxml="com/triplify/ui/pages/trips/AddTripView.fxml"
@@ -91,6 +107,16 @@
     <destination id="route_details"
                  fxml="com/triplify/ui/pages/routes/RouteDetailsView.fxml"
                  arguments="routeDetailsArgs"
+                 singleTop="true"/>
+
+    <destination id="story_details"
+                 fxml="com/triplify/ui/pages/stories/StoryDetailsView.fxml"
+                 arguments="storyDetailsArgs"
+                 singleTop="true"/>
+
+    <destination id="add_story"
+                 fxml="com/triplify/ui/pages/stories/AddStoryView.fxml"
+                 arguments="addStoryArgs"
                  singleTop="true"/>
 
     <destination id="calendar"

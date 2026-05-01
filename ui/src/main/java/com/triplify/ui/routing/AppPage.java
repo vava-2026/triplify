@@ -1,8 +1,6 @@
 package com.triplify.ui.routing;
 
 import com.triplify.domain.model.enums.RoleEnum;
-import lombok.Getter;
-
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
@@ -132,20 +130,6 @@ public enum AppPage {
             false,
             false
     ),
-    MY_IMAGES(
-            RouteIds.MY_IMAGES,
-            "nav.myImages",
-            "fth-image",
-            EnumSet.of(RoleEnum.USER, RoleEnum.PRO_USER),
-            true,
-            false,
-            true,
-            false,
-            false,
-            null,
-            EnumSet.noneOf(RoleEnum.class),
-            false
-    ),
     TRIP_DETAILS(
             RouteIds.TRIP_DETAILS,
             "page.tripDetails",
@@ -165,6 +149,36 @@ public enum AppPage {
             RouteIds.ADD_PLACE,
             "page.addPlace",
             "fth-plus-circle",
+            EnumSet.of(RoleEnum.USER, RoleEnum.PRO_USER),
+            true,
+            false,
+            false,
+            false,
+            false,
+            RouteIds.MY_TRIPS,
+            EnumSet.noneOf(RoleEnum.class),
+            false,
+            false
+    ),
+    STORY_DETAILS(
+            RouteIds.STORY_DETAILS,
+            "story.details.fallback.title",
+            "fth-book-open",
+            EnumSet.of(RoleEnum.USER, RoleEnum.PRO_USER),
+            true,
+            false,
+            false,
+            false,
+            false,
+            RouteIds.MY_TRIPS,
+            EnumSet.noneOf(RoleEnum.class),
+            false,
+            false
+    ),
+    ADD_STORY(
+            RouteIds.ADD_STORY,
+            "story.add.page.title",
+            "fth-edit-3",
             EnumSet.of(RoleEnum.USER, RoleEnum.PRO_USER),
             true,
             false,
@@ -330,25 +344,18 @@ public enum AppPage {
     private static final Map<String, AppPage> BY_ROUTE_ID = Arrays.stream(values())
             .collect(Collectors.toUnmodifiableMap(AppPage::getRouteId, page -> page));
 
-    @Getter
     private final String routeId;
-    @Getter
     private final String labelKey;
-    @Getter
     private final String icon;
     private final EnumSet<RoleEnum> allowedRoles;
     private final boolean requiresAuth;
-    @Getter
     private final boolean guestOnly;
     private final boolean showInPrimaryMenu;
     private final boolean showInAccountSection;
-    @Getter
     private final boolean hideHeader;
     private final String activeMenuRouteId;
     private final EnumSet<RoleEnum> defaultForRoles;
-    @Getter
     private final boolean placeholder;
-    @Getter
     private final boolean pro;
 
     AppPage(
@@ -385,8 +392,36 @@ public enum AppPage {
         return allowedRoles.clone();
     }
 
+    public String getRouteId() {
+        return routeId;
+    }
+
+    public String getLabelKey() {
+        return labelKey;
+    }
+
+    public String getIcon() {
+        return icon;
+    }
+
     public boolean requiresAuth() {
         return requiresAuth;
+    }
+
+    public boolean isGuestOnly() {
+        return guestOnly;
+    }
+
+    public boolean isHideHeader() {
+        return hideHeader;
+    }
+
+    public boolean isPlaceholder() {
+        return placeholder;
+    }
+
+    public boolean isPro() {
+        return pro;
     }
 
     public boolean isAllowedFor(RoleEnum role) {

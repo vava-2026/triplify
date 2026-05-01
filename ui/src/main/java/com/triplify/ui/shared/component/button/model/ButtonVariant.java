@@ -1,8 +1,5 @@
 package com.triplify.ui.shared.component.button.model;
 
-import lombok.Getter;
-
-@Getter
 public enum ButtonVariant {
 
     PRIMARY("app-btn-primary"),
@@ -18,5 +15,9 @@ public enum ButtonVariant {
     private final String styleClass;
 
     ButtonVariant(String styleClass) { this.styleClass = styleClass; }
+
+    public String getStyleClass() {
+        return styleClass;
+    }
 
 }

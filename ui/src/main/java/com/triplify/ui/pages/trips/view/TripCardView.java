@@ -20,8 +20,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import lombok.Setter;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -42,7 +40,6 @@ public class TripCardView implements Initializable {
     @FXML private Label categoryLabel;
     @FXML private Label dateLabel;
 
-    @Setter
     private Runnable onOpen;
     private StatusEnum currentStatus;
     private final ChangeListener<ResourceBundle> i18nBundleListener = (obs, oldBundle, newBundle) -> applyStatus(currentStatus);
@@ -68,6 +65,10 @@ public class TripCardView implements Initializable {
 
     public Node getRoot() {
         return root;
+    }
+
+    public void setOnOpen(Runnable onOpen) {
+        this.onOpen = onOpen;
     }
 
     public void setTrip(TripResponse trip, String dateRange) {
@@ -153,5 +154,9 @@ public class TripCardView implements Initializable {
         view.setOnOpen(onOpen);
         view.setTrip(trip, dateRange);
         return view;
+    }
+
+    public static TripCardView createForDetails(TripResponse trip, String dateRange, Runnable onOpen) {
+        return create(trip, dateRange, onOpen);
     }
 }

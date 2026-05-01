@@ -36,7 +36,6 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.scene.shape.Rectangle;
 import org.kordamp.ikonli.javafx.FontIcon;
 import rahulstech.jfx.routing.element.RouterArgument;
 import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
@@ -67,7 +66,6 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
     @FXML private CardGridPane<TripResponse> tripsGrid;
     @FXML private CardGridPane<RouteResponse> routesGrid;
     @FXML private CardGridPane<StoryResponse> storiesGrid;
-
     @FXML private HBox countryRow;
     @FXML private ImageView countryEmojiView;
     @FXML private Label countryLabel;
@@ -205,7 +203,6 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
 
         placeTitleLabel.setText(place.title());
         descriptionValueLabel.setText(EditorUtils.safeText(place.description(), I18n.t("place.details.empty.description")));
-
         DisplayUtils.bindCountry(countryRow, countryLabel, countryEmojiView, place.country(), COUNTRY_EMOJI_SIZE);
 
         placeMap.setMapCenter(place.latitude(), place.longitude());

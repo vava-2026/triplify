@@ -18,8 +18,6 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import lombok.Getter;
-import lombok.Setter;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.io.File;
@@ -39,16 +37,12 @@ public class ImageUploadPanelView extends VBox {
 
     @FXML private FontIcon sectionIconNode;
     @FXML private Label sectionTitleLabel;
-    @Getter
     @FXML private StackPane uploadArea;
-    @Getter
     @FXML private ImageView coverPreview;
-    @Getter
     @FXML private VBox uploadPlaceholder;
     @FXML private FontIcon uploadIconNode;
     @FXML private Label uploadTitleLabel;
     @FXML private Label uploadSubtitleLabel;
-    @Getter
     @FXML private Label selectedImageLabel;
     @FXML private VBox selectedMetaBox;
     @FXML private Label selectedStatusLabel;
@@ -60,9 +54,7 @@ public class ImageUploadPanelView extends VBox {
     private final IntegerProperty uploadIconSize = new SimpleIntegerProperty(this, "uploadIconSize", 30);
     private final DoubleProperty panelWidth = new SimpleDoubleProperty(this, "panelWidth", Double.NaN);
     private final DoubleProperty panelHeight = new SimpleDoubleProperty(this, "panelHeight", Double.NaN);
-    @Setter
     private Consumer<File> onImageFileSelected;
-    @Setter
     private Consumer<File> onUnsupportedImageFile;
 
     public ImageUploadPanelView() {
@@ -93,6 +85,22 @@ public class ImageUploadPanelView extends VBox {
 
     public StringProperty sectionTitleProperty() {
         return sectionTitleLabel.textProperty();
+    }
+
+    public StackPane getUploadArea() {
+        return uploadArea;
+    }
+
+    public ImageView getCoverPreview() {
+        return coverPreview;
+    }
+
+    public VBox getUploadPlaceholder() {
+        return uploadPlaceholder;
+    }
+
+    public Label getSelectedImageLabel() {
+        return selectedImageLabel;
     }
 
     public StringProperty sectionIconLiteralProperty() {
@@ -211,6 +219,14 @@ public class ImageUploadPanelView extends VBox {
 
     public void setOnUploadClicked(EventHandler<? super MouseEvent> handler) {
         uploadArea.setOnMouseClicked(handler);
+    }
+
+    public void setOnImageFileSelected(Consumer<File> onImageFileSelected) {
+        this.onImageFileSelected = onImageFileSelected;
+    }
+
+    public void setOnUnsupportedImageFile(Consumer<File> onUnsupportedImageFile) {
+        this.onUnsupportedImageFile = onUnsupportedImageFile;
     }
 
     public void installDefaultImageDragAndDrop() {

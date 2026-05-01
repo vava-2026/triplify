@@ -26,9 +26,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
-import lombok.Getter;
-import lombok.Setter;
-
 public class HeaderView implements Initializable {
 
     private static final Logger log = LoggerFactory.getLogger(HeaderView.class);
@@ -38,10 +35,9 @@ public class HeaderView implements Initializable {
     @FXML private Label pageTitle;
     @FXML private StackPane searchContainer;
 
-    @Getter private final HeaderViewModel viewModel = new HeaderViewModel();
+    private final HeaderViewModel viewModel = new HeaderViewModel();
 
     @Inject private TripService tripService;
-    @Setter
     private Consumer<String> navigationHandler;
 
     @Override
@@ -54,6 +50,14 @@ public class HeaderView implements Initializable {
 
     public void setActivePage(AppPage page) {
         viewModel.activePageProperty().set(page);
+    }
+
+    public HeaderViewModel getViewModel() {
+        return viewModel;
+    }
+
+    public void setNavigationHandler(Consumer<String> navigationHandler) {
+        this.navigationHandler = navigationHandler;
     }
 
     private void buildSearch() {

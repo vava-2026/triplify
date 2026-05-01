@@ -9,15 +9,11 @@
 }
 
 .route-details-hero {
-    -fx-min-height: 320px;
-    -fx-pref-height: 320px;
-    -fx-max-height: 320px;
+    -fx-min-height: 500px;
+    -fx-pref-height: 500px;
+    -fx-max-height: 500px;
     -fx-background-color: transparent;
     -fx-background-radius: 28px;
-}
-
-.route-details-hero-image {
-    -fx-smooth: true;
 }
 
 .route-details-hero-overlay {
@@ -29,8 +25,7 @@
 
 .route-details-hero-copy {
     -fx-alignment: bottom-left;
-    -fx-max-width: 560px;
-    -fx-padding: 196px 0 0;
+    -fx-padding: 400px 0 0 0;
 }
 
 .route-details-back-button {
@@ -53,7 +48,7 @@
     -fx-text-fill: -color-on-surface;
 }
 
-.route-details-subtitle {
+.route-details-country {
     -fx-font-size: 15px;
     -fx-text-fill: rgba(255, 255, 255, 0.88);
 }
@@ -97,9 +92,9 @@
 }
 
 .route-details-overview-card .add-place-map-shell {
-    -fx-min-height: 240px;
-    -fx-pref-height: 240px;
-    -fx-max-height: 240px;
+    -fx-min-height: 360px;
+    -fx-pref-height: 360px;
+    -fx-max-height: 360px;
     -fx-background-radius: 18px;
 }
 

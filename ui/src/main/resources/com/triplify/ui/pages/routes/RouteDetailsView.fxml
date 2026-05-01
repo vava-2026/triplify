@@ -22,6 +22,7 @@
             styleClass="page-scroll">
     <stylesheets>
         <String fx:value="/com/triplify/ui/pages/places/add_place.css"/>
+        <String fx:value="/com/triplify/ui/pages/places/place_details.css"/>
         <String fx:value="/com/triplify/ui/pages/routes/add_route.css"/>
         <String fx:value="/com/triplify/ui/pages/routes/route_details.css"/>
         <String fx:value="/com/triplify/ui/pages/trips/css/trips.css"/>
@@ -29,23 +30,28 @@
     <content>
         <StackPane styleClass="page-root,route-details-root">
             <VBox fx:id="contentContainer" styleClass="route-details-content" spacing="20">
-                <StackPane fx:id="heroContainer" styleClass="route-details-hero">
+                <StackPane fx:id="heroContainer" styleClass="place-details-hero" prefHeight="500" maxHeight="500">
                     <ImageView fx:id="heroImageView"
-                               fitWidth="1120"
-                               fitHeight="320"
-                               pickOnBounds="true"
-                               preserveRatio="false"
-                               styleClass="route-details-hero-image"/>
-
-                    <VBox styleClass="route-details-hero-overlay" spacing="0">
-                        <HBox alignment="TOP_LEFT">
+                               mouseTransparent="true"
+                               preserveRatio="true"
+                               smooth="true"/>
+                    <VBox styleClass="place-details-hero-overlay">
+                        <HBox>
                             <Button fx:id="backButton"
                                     onAction="#onBack"
-                                    styleClass="route-details-back-button"/>
+                                    styleClass="place-details-back-button"/>
                         </HBox>
-                        <VBox styleClass="route-details-hero-copy" spacing="8">
-                            <Label fx:id="routeTitleLabel" styleClass="route-details-title"/>
-                            <Label fx:id="routeSubtitleLabel" styleClass="route-details-subtitle"/>
+                        <VBox styleClass="place-details-hero-copy" spacing="8">
+                            <Label fx:id="routeTitleLabel" styleClass="place-details-title"/>
+                            <HBox fx:id="countryRow" spacing="6" alignment="CENTER_LEFT" styleClass="route-card-places-row">
+                                <ImageView fx:id="countryEmojiView"
+                                           fitWidth="18"
+                                           fitHeight="18"
+                                           preserveRatio="true"
+                                           visible="false"
+                                           managed="false"/>
+                                <Label fx:id="countryLabel" styleClass="place-details-country"/>
+                            </HBox>
                         </VBox>
                     </VBox>
                 </StackPane>

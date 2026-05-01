@@ -24,8 +24,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import lombok.Setter;
-
 public class CardGridPane<T> extends VBox {
 
     private static final Logger log = LoggerFactory.getLogger(CardGridPane.class);
@@ -42,9 +40,7 @@ public class CardGridPane<T> extends VBox {
     private final StackPane emptyPane;
     private final Label emptyLabel;
 
-    @Setter
     private PageLoader<T> pageLoader;
-    @Setter
     private Function<T, Node> cardFactory;
     private final List<Node> pinnedNodes = new ArrayList<>();
 
@@ -56,11 +52,9 @@ public class CardGridPane<T> extends VBox {
     private double lastViewportWidth = 0;
 
     private double gap = 16;
-    @Setter
     private double minCardWidth = 200;
     private int maxColumns = 5;
 
-    @Setter
     private boolean manualLoadMore = false;
     private HBox loadMoreFooter;
     private Label loadMoreLabel;
@@ -137,6 +131,14 @@ public class CardGridPane<T> extends VBox {
         Localization.bindText(loadMoreLabel.textProperty(), i18nKey);
     }
 
+    public void setPageLoader(PageLoader<T> pageLoader) {
+        this.pageLoader = pageLoader;
+    }
+
+    public void setCardFactory(Function<T, Node> cardFactory) {
+        this.cardFactory = cardFactory;
+    }
+
     public void setPageSize(int pageSize) {
         this.pageSize = Math.max(1, pageSize);
     }
@@ -147,8 +149,16 @@ public class CardGridPane<T> extends VBox {
         grid.setVgap(gap);
     }
 
+    public void setMinCardWidth(double minCardWidth) {
+        this.minCardWidth = minCardWidth;
+    }
+
     public void setMaxColumns(int maxColumns) {
         this.maxColumns = Math.max(1, maxColumns);
+    }
+
+    public void setManualLoadMore(boolean manualLoadMore) {
+        this.manualLoadMore = manualLoadMore;
     }
 
     public void setEmptyTextKey(String i18nKey) {
