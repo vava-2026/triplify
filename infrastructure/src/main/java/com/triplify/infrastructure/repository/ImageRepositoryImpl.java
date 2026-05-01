@@ -58,24 +58,26 @@ public class ImageRepositoryImpl implements ImageRepository {
     }
 
     @Override
-    public Page<Image> findAll(PageRequest pageRequest,
-                               String ownerId,
-                               ImageOwnerType ownerType,
-                               Instant uploadedFrom,
-                               Instant uploadedTo,
-                               boolean uploadTimeAsc) {
+    public Page<Image> findAll(
+            UUID userId,
+            PageRequest pageRequest,
+            String ownerId,
+            ImageOwnerType ownerType,
+            Instant uploadedFrom,
+            Instant uploadedTo,
+            boolean uploadTimeAsc) {
         StringBuilder where = new StringBuilder();
         List<String> args = new ArrayList<>();
 
         String order = uploadTimeAsc ? "ASC" : "DESC";
 
-        if (ownerId!=null && !ownerId.isBlank() && ownerType != null) {
-            String ownerExistsClause = toOwnerExistsClause(ownerType);
-            if (ownerExistsClause != null) {
-                where.append(where.isEmpty() ? " WHERE " : " AND ").append(ownerExistsClause);
+        if (ownerType != null) {
+            boolean isOwnerId = ownerId != null && !ownerId.isBlank();
+            String ownerExistsClause = toOwnerExistsClause(ownerType, isOwnerId);
+            where.append(where.isEmpty() ? " WHERE " : " AND ").append(ownerExistsClause);
+            args.add(userId.toString());
+            if (isOwnerId) {
                 args.add(ownerId);
-            } else {
-                log.warn("Ignoring unsupported ownerType='{}' while filtering images", ownerType);
             }
         }
 
@@ -220,7 +222,7 @@ public class ImageRepositoryImpl implements ImageRepository {
             case TRIP -> "trip_images";
             case TRIP_ROUTE -> "trip_route_images";
             case TRIP_PLACE -> "trip_places_images";
-            default -> null;
+            case STORY -> "story_images";
         };
     }
 
@@ -230,17 +232,28 @@ public class ImageRepositoryImpl implements ImageRepository {
             case TRIP-> "trip_id";
             case TRIP_ROUTE -> "trip_route_id";
             case TRIP_PLACE -> "trip_place_id";
-            default -> null;
+            case STORY -> "story_id";
         };
     }
 
-    private String toOwnerExistsClause(ImageOwnerType ownerType) {
-        return switch (ownerType) {
-            case TRIP-> "EXISTS (SELECT 1 FROM trip_images ti WHERE ti.image_id = images.id AND ti.trip_id = ?)";
-            case TRIP_ROUTE -> "EXISTS (SELECT 1 FROM trip_route_images tri WHERE tri.image_id = images.id AND tri.trip_route_id = ?)";
-            case TRIP_PLACE -> "EXISTS (SELECT 1 FROM trip_places_images tpi WHERE tpi.image_id = images.id AND tpi.trip_place_id = ?)";
-            case STORY -> "EXISTS (SELECT 1 FROM story_images si WHERE si.image_id = images.id AND si.story_id = ?)";
-            default -> null;
+    private String toOwnerExistsClause(ImageOwnerType ownerType, boolean isOwnerId) {
+        var value = switch (ownerType) {
+            case TRIP -> "EXISTS (SELECT 1 FROM trip_images ti JOIN trips t ON t.id = ti.trip_id WHERE ti.image_id = images.id AND t.user_id = ?";
+            case TRIP_ROUTE -> "EXISTS (SELECT 1 FROM trip_route_images tri JOIN trip_routes tr ON tr.id = tri.trip_route_id JOIN trips t ON t.id = tr.trip_id WHERE tri.image_id = images.id AND t.user_id = ?";
+            case TRIP_PLACE -> "EXISTS (SELECT 1 FROM trip_places_images tpi JOIN trip_places tp ON tp.id = tpi.trip_place_id JOIN trips t ON t.id = tp.trip_id WHERE tpi.image_id = images.id AND t.user_id = ?";
+            case STORY -> "EXISTS (SELECT 1 FROM story_images si JOIN stories s ON s.id = si.story_id WHERE si.image_id = images.id AND s.user_id = ?";
         };
+
+        if (isOwnerId) {
+            var idPart = switch (ownerType) {
+                case TRIP -> " AND ti.trip_id = ?";
+                case TRIP_ROUTE -> " AND tri.trip_route_id = ?";
+                case TRIP_PLACE -> " AND tpi.trip_place_id = ?";
+                case STORY -> " AND si.story_id = ?";
+            };
+            value += idPart;
+        }
+        value += ")";
+        return value;
     }
 }

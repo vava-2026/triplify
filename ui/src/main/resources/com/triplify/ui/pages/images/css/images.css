@@ -80,12 +80,6 @@
     -fx-icon-color: -color-danger;
 }
 
-/* ── Images page toolbar ── */
-
-.images-toolbar {
-    -fx-alignment: center-left;
-    -fx-spacing: 10px;
-}
 
 .card-grid-load-more-btn {
     -fx-background-color: transparent;

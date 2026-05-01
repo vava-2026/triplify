@@ -15,6 +15,7 @@ public interface ImageRepository {
     Optional<Image> findById(UUID id);
 
     Page<Image> findAll(
+            UUID userId,
             PageRequest pageRequest,
             String ownerId,
             ImageOwnerType ownerType,

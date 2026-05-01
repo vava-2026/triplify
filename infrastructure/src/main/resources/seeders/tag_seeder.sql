@@ -1,0 +1,22 @@
+INSERT OR IGNORE INTO tags (id, user_id, name, color)
+VALUES
+    ('20000000-0000-0000-0000-000000000001', 'f1d1a33f-1e7c-4ea1-bb1d-c8f06efb5b5a', 'City', 'blue'),
+    ('20000000-0000-0000-0000-000000000002', 'f1d1a33f-1e7c-4ea1-bb1d-c8f06efb5b5a', 'Adventure', 'orange'),
+    ('20000000-0000-0000-0000-000000000003', 'f1d1a33f-1e7c-4ea1-bb1d-c8f06efb5b5a', 'Food', 'red'),
+    ('20000000-0000-0000-0000-000000000004', 'f1d1a33f-1e7c-4ea1-bb1d-c8f06efb5b5a', 'Study', 'purple'),
+    ('20000000-0000-0000-0000-000000000005', 'f1d1a33f-1e7c-4ea1-bb1d-c8f06efb5b5a', 'Hike', 'green'),
+    ('20000000-0000-0000-0000-000000000006', 'f1d1a33f-1e7c-4ea1-bb1d-c8f06efb5b5a', 'Relax', 'yellow'),
+    ('20000000-0000-0000-0000-000000000007', 'f1d1a33f-1e7c-4ea1-bb1d-c8f06efb5b5a', 'Family', 'pink'),
+    ('20000000-0000-0000-0000-000000000008', 'f1d1a33f-1e7c-4ea1-bb1d-c8f06efb5b5a', 'Photography', 'gray'),
+    ('20000000-0000-0000-0000-000000000009', 'f1d1a33f-1e7c-4ea1-bb1d-c8f06efb5b5a', 'Nature', 'green'),
+    ('20000000-0000-0000-0000-000000000010', 'f1d1a33f-1e7c-4ea1-bb1d-c8f06efb5b5a', 'Shopping', 'purple'),
+    ('20000000-0000-0000-0000-000000000011', 'f1d1a33f-1e7c-4ea1-bb1d-c8f06efb5b5a', 'Beach', 'cyan'),
+    ('20000000-0000-0000-0000-000000000012', 'f1d1a33f-1e7c-4ea1-bb1d-c8f06efb5b5a', 'Mountains', 'teal'),
+    ('20000000-0000-0000-0000-000000000013', 'f1d1a33f-1e7c-4ea1-bb1d-c8f06efb5b5a', 'Nightlife', 'violet'),
+    ('20000000-0000-0000-0000-000000000014', 'f1d1a33f-1e7c-4ea1-bb1d-c8f06efb5b5a', 'Romantic', 'rose'),
+    ('20000000-0000-0000-0000-000000000015', 'f1d1a33f-1e7c-4ea1-bb1d-c8f06efb5b5a', 'Solo', 'sage'),
+    ('20000000-0000-0000-0000-000000000016', 'f1d1a33f-1e7c-4ea1-bb1d-c8f06efb5b5a', 'Luxury', 'golden_brown'),
+    ('20000000-0000-0000-0000-000000000017', 'f1d1a33f-1e7c-4ea1-bb1d-c8f06efb5b5a', 'Budget', 'lime'),
+    ('20000000-0000-0000-0000-000000000018', 'f1d1a33f-1e7c-4ea1-bb1d-c8f06efb5b5a', 'Roadtrip', 'amber'),
+    ('20000000-0000-0000-0000-000000000019', 'f1d1a33f-1e7c-4ea1-bb1d-c8f06efb5b5a', 'Spiritual', 'indigo'),
+    ('20000000-0000-0000-0000-000000000020', 'f1d1a33f-1e7c-4ea1-bb1d-c8f06efb5b5a', 'Winter', 'steel_blue');

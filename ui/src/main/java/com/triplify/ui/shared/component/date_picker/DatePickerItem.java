@@ -49,6 +49,8 @@ public class DatePickerItem extends VBox {
     private final GridPane weekdayGrid = new GridPane();
     private final GridPane dayGrid = new GridPane();
 
+    private final Label errorLabel = new Label();
+
     private DateTimeFormatter formatter;
     private FieldVariant lastVariant;
     private LocalDate value;
@@ -83,6 +85,11 @@ public class DatePickerItem extends VBox {
         configurePopup();
         setFormatPattern(formatPattern);
         applyVariant(variant);
+
+        errorLabel.getStyleClass().add("input-error-label");
+        errorLabel.setVisible(false);
+        errorLabel.setManaged(false);
+        getChildren().add(errorLabel);
     }
 
     private void configureTriggerButton() {
@@ -321,6 +328,20 @@ public class DatePickerItem extends VBox {
         textField.setText(value == null ? "" : formatter.format(value));
     }
 
+    public void showError(String message) {
+        errorLabel.setText(message);
+        errorLabel.setVisible(true);
+        errorLabel.setManaged(true);
+        shell.getStyleClass().remove("app-date-shell-error");
+        shell.getStyleClass().add("app-date-shell-error");
+    }
+
+    public void clearError() {
+        errorLabel.setVisible(false);
+        errorLabel.setManaged(false);
+        shell.getStyleClass().remove("app-date-shell-error");
+    }
+
     public LocalDate getValue() {
         return value;
     }
@@ -328,6 +349,7 @@ public class DatePickerItem extends VBox {
     public void setValue(LocalDate value) {
         this.value = value;
         updateDisplayText();
+        clearError();
     }
 
     public void setPromptText(String promptText) {

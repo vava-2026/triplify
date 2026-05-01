@@ -24,6 +24,8 @@ public record StoryResponse(
         String title,
         String description,
         Instant storyTime,
+        Double latitude,
+        Double longitude,
         Instant createdAt,
         Set<TagResponse> tags,
         Set<ImageResponse> images
@@ -59,6 +61,8 @@ public record StoryResponse(
                 story.getTitle(),
                 story.getDescription(),
                 story.getStoryTime(),
+                story.getLatitude(),
+                story.getLongitude(),
                 story.getCreatedAt(),
                 tagResponses,
                 imageResponses

@@ -104,9 +104,9 @@ public final class LicenseModalView {
             ownerInitialized = true;
         }
 
-        double width = owner.getWidth() > 0 ? owner.getWidth() : 1280;
-        double height = owner.getHeight() > 0 ? owner.getHeight() : 800;
-        root.setPrefSize(width, height);
+        double width = owner.getWidth();
+        double height = owner.getHeight();
+        root.setPrefSize(owner.getWidth(),  owner.getHeight());
         resetUploadState();
         loadStoredLicenseSummary();
         stage.setX(owner.getX());

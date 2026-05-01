@@ -74,7 +74,7 @@ public class TripCardView implements Initializable {
     public void setTrip(TripResponse trip, String dateRange) {
         if (trip == null) return;
         titleLabel.setText(trip.title());
-        bindCategoryChip(trip.category());
+        DisplayUtils.bindEmoji(categoryRow, categoryLabel, categoryEmojiView, trip.category(), trip.category().emojiUnicode(), CATEGORY_EMOJI_SIZE);
         dateLabel.setText(dateRange);
 
         String coverUrl = DisplayUtils.deriveCoverUrl(trip.coverImage());
@@ -92,30 +92,6 @@ public class TripCardView implements Initializable {
         if (statusClass != null) {
             statusLabel.getStyleClass().add(statusClass);
         }
-    }
-
-    private void bindCategoryChip(CategoryResponse category) {
-        categoryLabel.textProperty().unbind();
-        Localization.bindLocalizedText(categoryLabel.textProperty(), category);
-
-        boolean rowVisible = category != null;
-        if (categoryRow != null) {
-            categoryRow.setVisible(rowVisible);
-            categoryRow.setManaged(rowVisible);
-        }
-
-        if (categoryEmojiView == null) {
-            return;
-        }
-
-        if (!rowVisible) {
-            categoryEmojiView.setVisible(false);
-            categoryEmojiView.setManaged(false);
-            categoryEmojiView.setImage(null);
-            return;
-        }
-
-        EditorUtils.applyEmojiImage(categoryEmojiView, category.emojiUnicode(), CATEGORY_EMOJI_SIZE);
     }
 
     private String resolveStatusLabel(StatusEnum status) {

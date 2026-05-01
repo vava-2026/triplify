@@ -17,8 +17,10 @@ import com.triplify.ui.shared.component.select.view.SelectView;
 import com.triplify.ui.shared.model.AppComponentSize;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.util.FxmlLoaderHelper;
+import com.triplify.ui.shared.util.Localization;
 import javafx.fxml.FXML;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
@@ -29,14 +31,14 @@ public class MyImagesController extends SimpleLifecycleAwareController {
 
     private static final Logger log = LoggerFactory.getLogger(MyImagesController.class);
 
-    @FXML private HBox typeFilterContainer;
+    @FXML private VBox typeFilterContainer;
     @FXML private CardGridPane<ImageResponse> cardGrid;
 
     @Inject private ImageService imageService;
     @Inject private ErrorHandler errorHandler;
     @Inject private FxmlLoaderHelper fxmlLoader;
 
-    private ImageOwnerType selectedType = null;
+    private ImageOwnerType selectedType = ImageOwnerType.TRIP;
     private ImageViewModalView imageViewModal;
 
     @FXML
@@ -48,28 +50,29 @@ public class MyImagesController extends SimpleLifecycleAwareController {
 
     private void configureTypeFilter() {
         Select<ImageOwnerType> typeSelect = Select.<ImageOwnerType>builder()
+                .placeholder(I18n.t("images.filter.placeholder"))
+                .size(AppComponentSize.BIG)
                 .items(List.of(
-                        Entry.<ImageOwnerType>builder(null, I18n.t("images.filter.all")).build(),
-                        Entry.<ImageOwnerType>builder(ImageOwnerType.TRIP, I18n.t("images.filter.trip")).build(),
-                        Entry.<ImageOwnerType>builder(ImageOwnerType.TRIP_PLACE, I18n.t("images.filter.place")).build(),
-                        Entry.<ImageOwnerType>builder(ImageOwnerType.TRIP_ROUTE, I18n.t("images.filter.route")).build()
+                        Entry.builder(ImageOwnerType.TRIP, Localization.textBinding("images.filter.trip")).build(),
+                        Entry.builder(ImageOwnerType.TRIP_PLACE, Localization.textBinding("images.filter.place")).build(),
+                        Entry.builder(ImageOwnerType.TRIP_ROUTE, Localization.textBinding("images.filter.route")).build(),
+                        Entry.builder(ImageOwnerType.STORY, Localization.textBinding("images.filter.story")).build()
                 ))
-                .placeholder("images.filter.placeholder")
-                .variant(FieldVariant.OUTLINED)
-                .size(AppComponentSize.SMALL)
                 .onSelect(entry -> {
-                    selectedType = entry == null ? null : entry.getValue();
+                    selectedType = entry.getValue();
                     cardGrid.refresh();
                 })
                 .build();
+        typeSelect.setSelectedItem(typeSelect.getItems().getFirst());
 
         SelectView<ImageOwnerType> selectView = new SelectView<>();
+        selectView.update(typeSelect);
         typeFilterContainer.getChildren().setAll(selectView);
     }
 
     private void configureGrid() {
         log.info("Configuring image grid");
-        imageViewModal = new ImageViewModalView(imageService, errorHandler);
+        imageViewModal = new ImageViewModalView(imageService, errorHandler, fxmlLoader);
 
         cardGrid.setMinCardWidth(220);
         cardGrid.setMaxColumns(5);

@@ -33,6 +33,7 @@ import com.triplify.ui.shared.component.add_card.view.AddCardView;
 import com.triplify.ui.shared.component.card_grid.CardGridPane;
 import com.triplify.ui.shared.component.detail_actions.view.DetailActionButtonsView;
 import com.triplify.ui.pages.routes.view.RouteCardView;
+import com.triplify.ui.pages.stories.view.StoryCardView;
 import com.triplify.ui.shared.component.section_header.view.SectionHeaderView;
 import com.triplify.ui.shared.toast.ToastService;
 import com.triplify.ui.shared.util.DisplayUtils;
@@ -49,10 +50,11 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.HBox;
+import javafx.scene.Node;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import org.kordamp.ikonli.javafx.FontIcon;
@@ -92,7 +94,6 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
     @FXML private CardGridPane<TripRouteResponse> routesGrid;
     @FXML private CardGridPane<TripPlaceResponse> placesGrid;
     @FXML private CardGridPane<StoryResponse> storiesGrid;
-    @FXML private Button addStoryButton;
     @FXML private CardGridPane<ImageResponse> imagesGrid;
 
     @Inject private TripService tripService;
@@ -127,7 +128,6 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         actionButtonsView.configureDelete(fxmlLoader, Localization.textBinding("trip.details.action.delete"), "fth-trash-2", Localization.textBinding("trip.details.action.delete.confirm"), this::onDeleteTrip);
 
         Localization.bindText(imagesHeader.titleProperty(), "trip.details.section.images");
-        Localization.bindText(addStoryButton.textProperty(), "trip.details.action.addStory");
 
         setupRoutesGrid();
         setupPlacesGrid();
@@ -157,9 +157,16 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         storiesGrid.setManualLoadMore(true);
         storiesGrid.setPageSize(8);
         storiesGrid.setMinCardWidth(220);
-        storiesGrid.setMaxColumns(3);
+        storiesGrid.setMaxColumns(4);
         storiesGrid.setLoadMoreKey("trip.details.show.more.stories");
         storiesGrid.setEmptyTextKey("trip.details.empty.stories");
+
+        AddCardView addCard = new AddCardView(
+                "stories.add.card.title",
+                "stories.add.card.subtitle",
+                () -> navigateToAddStory(UUID.fromString(tripId))
+        );
+        storiesGrid.addPinnedNode(addCard);
     }
 
     private void setupImagesGrid() {
@@ -170,7 +177,7 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         imagesGrid.setEmptyTextKey("trip.details.empty.images");
 
         imageFormModal = new ImageFormModalView(fxmlLoader, imageService, errorHandler);
-        imageViewModal = new ImageViewModalView(imageService, errorHandler);
+        imageViewModal = new ImageViewModalView(imageService, errorHandler, fxmlLoader);
 
         AddCardView addCard = new AddCardView(
                 "images.add.card.title",
@@ -296,8 +303,6 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         });
         storiesGrid.refresh();
 
-        addStoryButton.setOnAction(e -> navigateToAddStory(tripUuid));
-
         setupImageLoader(tripUuid);
     }
 
@@ -317,6 +322,7 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
             return new CardGridPane.PageResult<>(domainPage.items(),
                     new Pagination(page, size, null, totalPages));
         });
+        imagesGrid.setVScrollPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         imagesGrid.refresh();
     }
 
@@ -385,35 +391,8 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         return card;
     }
 
-    private VBox buildStoryCard(StoryResponse story, UUID forTripId) {
-        VBox card = new VBox(6);
-        card.getStyleClass().add("trip-details-story-card");
-        card.setCursor(javafx.scene.Cursor.HAND);
-        card.setOnMouseClicked(e -> openStory(story));
-
-        Label title = new Label(safeText(story.title(), I18n.t("trip.details.story.fallback")));
-        title.getStyleClass().add("trip-details-story-title");
-        title.setWrapText(true);
-
-        String timeText = story.storyTime() == null ? "" : TIME_FORMAT.format(story.storyTime());
-        HBox meta = new HBox(10);
-        meta.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-        Label timeLabel = new Label(timeText);
-        timeLabel.getStyleClass().add("trip-details-story-time");
-
-        if (story.emotion() != null) {
-            String emotionText = story.emotion().emojiUnicode() != null
-                    ? story.emotion().emojiUnicode() + " " + Localization.localize(story.emotion())
-                    : Localization.localize(story.emotion());
-            Label emotionLabel = new Label(emotionText);
-            emotionLabel.getStyleClass().add("trip-details-story-emotion");
-            meta.getChildren().addAll(timeLabel, emotionLabel);
-        } else {
-            meta.getChildren().add(timeLabel);
-        }
-
-        card.getChildren().addAll(title, meta);
-        return card;
+    private Node buildStoryCard(StoryResponse story, UUID forTripId) {
+        return StoryCardView.create(story, () -> openStory(story)).getRoot();
     }
 
     private void openRoute(com.triplify.application.usecase.route.dto.RouteResponse route) {
