@@ -3,6 +3,13 @@
 .section-header .label{ -fx-font-family: -font-family-base; -fx-font-size: 20px; -fx-font-weight: 700; -fx-text-fill: -color-ink; }
 .header-icon    { -fx-icon-color: -color-primary-dark;}
 
+.badges-group-title {
+    -fx-font-family: -font-family-base;
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+    -fx-text-fill: -color-ink;
+}
+
 #statisticsGrid {
     -fx-pref-width: -1;
     -fx-hgap: 12;
@@ -35,8 +42,12 @@
 .icon-purple { -fx-background-color: -color-stats-purple-bg; }
 .icon-pink   { -fx-background-color: -color-stats-pink-bg; }
 
+.badges-group {
+    -fx-alignment: center;
+}
+
 .badges-grid {
-    -fx-padding: 10;
+    -fx-padding: 0;
     -fx-hgap: 20;
     -fx-vgap: 20;
     -fx-alignment: center;

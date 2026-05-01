@@ -6,7 +6,13 @@ import com.triplify.application.usecase.auth.AuthService;
 import com.triplify.application.usecase.badge.BadgeService;
 import com.triplify.application.usecase.badge.dto.BadgeResponse;
 import com.triplify.application.usecase.badge.dto.GetBadgesRequest;
+import com.triplify.application.usecase.badgegroup.BadgeGroupService;
+import com.triplify.application.usecase.badgegroup.dto.BadgeGroupResponse;
+import com.triplify.application.usecase.badgegroup.dto.BadgeGroupType;
 import com.triplify.application.usecase.image.ImageService;
+import com.triplify.application.usecase.statistic.StatisticService;
+import com.triplify.application.usecase.statistic.dto.GetDisplayedStatisticsRequest;
+import com.triplify.application.usecase.statistic.dto.StatisticResponse;
 import com.triplify.application.usecase.image.dto.GetImageByIdRequest;
 import com.triplify.application.usecase.image.dto.ImageResponse;
 import com.triplify.application.usecase.session.SessionUser;
@@ -32,6 +38,7 @@ import com.triplify.ui.shared.component.input_item.InputItem;
 import com.triplify.ui.shared.toast.ToastService;
 import com.triplify.ui.shared.util.AvatarImageHelper;
 import com.triplify.ui.shared.util.FxmlLoaderHelper;
+import com.triplify.ui.shared.util.Localization;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -41,6 +48,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import org.slf4j.Logger;
@@ -50,6 +58,11 @@ import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 import java.io.File;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.List;
 import java.util.UUID;
 
@@ -59,7 +72,6 @@ public class AccountController extends SimpleLifecycleAwareController {
     private static final int BADGE_COLUMNS = 5;
     private static final double PROFILE_AVATAR_SIZE = 150;
 
-    @FXML private GridPane badgesGrid;
     @FXML private Label profileNameLabel;
     @FXML private Label profileEmailLabel;
     @FXML private Label profileRolePill;
@@ -73,12 +85,16 @@ public class AccountController extends SimpleLifecycleAwareController {
     @FXML private HBox profileNameEditorRow;
     @FXML private StackPane profileNameInputContainer;
     @FXML private StackPane profileNameSaveButtonContainer;
+    @FXML private Label badgesTitleLabel;
+    @FXML private VBox badgesGroupsContainer;
     @FXML private StatisticsController statisticsSectionController;
 
     @Inject private ToastService toast;
     @Inject private AuthService authService;
     @Inject private BadgeService badgeService;
+    @Inject private BadgeGroupService badgeGroupService;
     @Inject private ImageService imageService;
+    @Inject private StatisticService statisticService;
     @Inject private UserService userService;
     @Inject private UserSessionContext userSessionContext;
     @Inject private ErrorHandler errorHandler;
@@ -92,6 +108,7 @@ public class AccountController extends SimpleLifecycleAwareController {
 
     @FXML
     public void initialize() {
+        Localization.bindText(badgesTitleLabel.textProperty(), "account.badges.title");
         licenseModal = new LicenseModalView(
                 fxmlLoader,
                 licenseManager,
@@ -171,37 +188,117 @@ public class AccountController extends SimpleLifecycleAwareController {
     }
 
     private void loadBadges() {
-        badgesGrid.getChildren().clear();
+        badgesGroupsContainer.getChildren().clear();
         try {
+            Result<List<BadgeGroupResponse>> groupsResult = badgeGroupService.getAllBadgeGroups();
             Result<List<BadgeResponse>> result = badgeService.getBadges(new GetBadgesRequest(null));
-            result.onSuccess(this::renderBadges);
+            groupsResult.onFailure(error -> {
+                log.warn("Failed to load badge groups for account page: {}", error.message());
+                errorHandler.handle(error);
+            });
             result.onFailure(error -> {
                 log.warn("Failed to load badges for account page: {}", error.message());
                 errorHandler.handle(error);
             });
+
+            Map<String, Long> statsByBadgeGroupId = new java.util.HashMap<>();
+            if (userSessionContext.isLoggedIn()) {
+                userSessionContext.getCurrent().ifPresent(user -> {
+                    Result<List<StatisticResponse>> statsResult = statisticService.getDisplayedStatistics(
+                            new GetDisplayedStatisticsRequest(user.userId())
+                    );
+                    statsResult.onSuccess(list -> {
+                        for (StatisticResponse s : list) {
+                            if (s.type() != null && s.type().getBadgeGroupId() != null) {
+                                statsByBadgeGroupId.put(s.type().getBadgeGroupId(), s.amount());
+                            }
+                        }
+                    });
+                });
+            }
+
+            if (groupsResult.isSuccess() && result.isSuccess()) {
+                renderBadgesByGroups(groupsResult.getValue(), result.getValue(), statsByBadgeGroupId);
+            }
         } catch (Exception ex) {
             log.error("Unexpected error while loading badges for account page", ex);
         }
     }
 
-    private void renderBadges(List<BadgeResponse> badges) {
-        badgesGrid.getChildren().clear();
+    private void renderBadgesByGroups(List<BadgeGroupResponse> groups, List<BadgeResponse> badges, Map<String, Long> statsByBadgeGroupId) {
+        Map<BadgeGroupType, List<BadgeResponse>> badgesByGroup = new EnumMap<>(BadgeGroupType.class);
+        for (BadgeResponse badge : badges) {
+            badgesByGroup.computeIfAbsent(badge.group(), ignored -> new ArrayList<>()).add(badge);
+        }
+
+        List<BadgeGroupResponse> orderedGroups = groups.stream()
+                .sorted(Comparator.comparingInt(group -> BadgeGroupType.fromIdOrThrow(group.id().toString()).ordinal()))
+                .toList();
+
+        for (BadgeGroupResponse group : orderedGroups) {
+            BadgeGroupType groupType = BadgeGroupType.fromIdOrThrow(group.id().toString());
+            List<BadgeResponse> groupBadges = badgesByGroup.getOrDefault(groupType, List.of());
+            badgesGroupsContainer.getChildren().add(createBadgeGroupSection(group, groupBadges, statsByBadgeGroupId));
+        }
+    }
+
+    private VBox createBadgeGroupSection(BadgeGroupResponse group, List<BadgeResponse> badges, Map<String, Long> statsByBadgeGroupId) {
+        VBox groupSection = new VBox(15);
+        groupSection.getStyleClass().add("badges-group");
+        groupSection.setAlignment(javafx.geometry.Pos.TOP_CENTER);
+        groupSection.setMinWidth(880);
+        groupSection.setPrefWidth(880);
+        groupSection.setMaxWidth(880);
+
+        Label groupTitle = new Label();
+        Localization.bindLocalizedText(groupTitle.textProperty(), group);
+        groupTitle.getStyleClass().add("badges-group-title");
+        groupTitle.setWrapText(true);
+        groupTitle.setMinWidth(880);
+        groupTitle.setPrefWidth(880);
+        groupTitle.setMaxWidth(880);
+
+        GridPane groupGrid = new GridPane();
+        groupGrid.getStyleClass().add("badges-grid");
+        groupGrid.setAlignment(javafx.geometry.Pos.CENTER);
+        groupGrid.setMinWidth(880);
+        groupGrid.setPrefWidth(880);
+        groupGrid.setMaxWidth(880);
+
+        double columnWidth = 100.0 / BADGE_COLUMNS;
+        for (int i = 0; i < BADGE_COLUMNS; i++) {
+            javafx.scene.layout.ColumnConstraints column = new javafx.scene.layout.ColumnConstraints();
+            column.setPercentWidth(columnWidth);
+            groupGrid.getColumnConstraints().add(column);
+        }
 
         for (int i = 0; i < badges.size(); i++) {
             BadgeResponse response = badges.get(i);
             BadgeView badgeView = new BadgeView();
-            badgeView.update(toUiBadge(response));
+            int currentValue = resolveCurrentValue(response, statsByBadgeGroupId);
+            badgeView.update(toUiBadge(response, currentValue), group, currentValue, response.requiredValue());
 
             int col = i % BADGE_COLUMNS;
             int row = i / BADGE_COLUMNS;
-            badgesGrid.add(badgeView, col, row);
+            groupGrid.add(badgeView, col, row);
         }
+
+        groupSection.getChildren().addAll(groupTitle, groupGrid);
+        return groupSection;
+    }
+    private int resolveCurrentValue(BadgeResponse response, Map<String, Long> statsByBadgeGroupId) {
+        if (response.group() == null || response.group().id() == null) {
+            return 0;
+        }
+
+        long statValue = statsByBadgeGroupId.getOrDefault(response.group().id(), 0L);
+        return (int) Math.min(Integer.MAX_VALUE, statValue);
     }
 
-    private BadgeViewModel toUiBadge(BadgeResponse response) {
-        int requiredValue = response.requiredValue();
-        int currentValue = 100;
-        boolean unlocked = requiredValue <= 100;
+
+
+    private BadgeViewModel toUiBadge(BadgeResponse response, int currentValue) {
+        boolean unlocked = response.requiredValue() <= currentValue;
 
         return new BadgeViewModel(
                 response.name(),
@@ -211,7 +308,7 @@ public class AccountController extends SimpleLifecycleAwareController {
                 resolveImageUrl(response.image()),
                 response.group(),
                 response.level(),
-                requiredValue,
+                response.requiredValue(),
                 currentValue,
                 unlocked
         );
