@@ -18,12 +18,17 @@ import com.triplify.application.usecase.triproute.dto.TripRouteResponse;
 import com.triplify.domain.pagination.PageRequest;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
+import com.gluonhq.maps.MapPoint;
 import com.triplify.ui.map.InteractiveMap;
+import com.triplify.ui.pages.places.PlaceDetailsController;
 import com.triplify.ui.routing.RouteIds;
+import com.triplify.ui.pages.stories.view.StoryCardView;
+import com.triplify.ui.shared.component.card_grid.CardGridPane;
 import com.triplify.ui.shared.component.detail_actions.view.DetailActionButtonsView;
 import com.triplify.ui.shared.component.empty_state.view.EmptyStateCardView;
 import com.triplify.ui.shared.component.section_header.view.SectionHeaderView;
 import com.triplify.ui.shared.toast.ToastService;
+import com.triplify.application.shared.GeoCalculator;
 import com.triplify.ui.shared.util.DisplayUtils;
 import com.triplify.ui.shared.util.EditorUtils;
 import com.triplify.ui.shared.util.FxmlLoaderHelper;
@@ -48,6 +53,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.control.ScrollPane;
 import javafx.stage.Popup;
 import org.kordamp.ikonli.javafx.FontIcon;
 import rahulstech.jfx.routing.element.RouterArgument;
@@ -67,6 +73,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
+
+import static com.triplify.ui.shared.util.DisplayUtils.toLocalDate;
 
 public class RouteDetailsController extends SimpleLifecycleAwareController {
 
@@ -97,9 +105,9 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
     @FXML private SectionHeaderView placesHeader;
     @FXML private VBox placesListContainer;
     @FXML private SectionHeaderView associatedTripsHeader;
-    @FXML private FlowPane associatedTripsFlow;
+    @FXML private CardGridPane<TripResponse> associatedTripsGrid;
     @FXML private SectionHeaderView associatedStoriesHeader;
-    @FXML private FlowPane associatedStoriesFlow;
+    @FXML private CardGridPane<StoryResponse> associatedStoriesGrid;
 
     @Inject private RouteService routeService;
     @Inject private TripService tripService;
@@ -123,7 +131,10 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
 
     @FXML
     public void initialize() {
-        configureButtonIcon(backButton, "fth-chevron-left", "place-details-back-icon");
+        FontIcon icon = new FontIcon("fth-chevron-left");
+        icon.setIconSize(16);
+        icon.getStyleClass().add("place-details-back-icon");
+        backButton.setGraphic(icon);
         Localization.bindText(backButton.textProperty(), "route.details.back");
         Localization.bindText(descriptionTitleLabel.textProperty(), "route.details.description");
         Localization.bindText(overviewTitleLabel.textProperty(), "route.details.overview");
@@ -132,12 +143,10 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
         Localization.bindText(placesHeader.titleProperty(), "route.details.section.places");
 
         topRowFlow.prefWrapLengthProperty().bind(contentContainer.widthProperty());
-        associatedTripsFlow.prefWrapLengthProperty().bind(contentContainer.widthProperty());
-        associatedStoriesFlow.prefWrapLengthProperty().bind(contentContainer.widthProperty());
 
         EditorUtils.installRoundedClip(heroContainer, 28);
         EditorUtils.initializeCoverPreview(heroImageView, heroContainer);
-        installRoundedPaneClip(routeMap, 20);
+        EditorUtils.installRoundedClip(routeMap, 20);
         routeMap.setSelectionEnabled(false);
         routeMap.setControlsVisible(false);
 
@@ -149,11 +158,14 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
                 Localization.textBinding("route.details.action.delete.confirm"),
                 this::onDeleteRoute
         );
+
+        configureAssociatedTripsGrid();
+        configureAssociatedStoriesGrid();
         initializeDragPreview();
         contentContainer.addEventFilter(MouseEvent.MOUSE_RELEASED, event -> finishDragging());
         contentContainer.addEventFilter(MouseEvent.MOUSE_DRAGGED, this::updateDragPreview);
 
-        I18n.bundleProperty().addListener((obs, oldBundle, newBundle) -> refreshLocalizedContent());
+        I18n.bundleProperty().addListener((obs, oldBundle, newBundle) -> localize());
     }
 
     @Override
@@ -224,7 +236,7 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
         if (currentRoute.places() != null) {
             currentPlaces.addAll(currentRoute.places());
         }
-        bindCurrentState();
+        bind();
     }
 
     private List<TripRouteResponse> loadMatchedTripRoutes(UUID routeUuid) {
@@ -306,28 +318,46 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
                 .toList();
     }
 
-    private void refreshLocalizedContent() {
-        if (currentRoute != null) {
-            bindCurrentState();
+    private void bind() {
+        routeTitleLabel.setText(currentRoute.title());
+        if (currentRoute.coverImage() != null) {
+            String coverUrl = DisplayUtils.deriveCoverUrl(currentRoute.coverImage());
+            Image image = EditorUtils.loadImage(coverUrl, DEFAULT_IMAGE, RouteDetailsController.class);
+            EditorUtils.setCoverPreviewImage(heroImageView, heroContainer, image);
         }
-    }
-
-    private void bindCurrentState() {
-        routeTitleLabel.setText(safeText(currentRoute.title(), I18n.t("trip.add.fallback.route")));
-        bindRouteCountry(currentRoute);
-        EditorUtils.setCoverPreviewImage(
-                heroImageView,
-                heroContainer,
-                EditorUtils.loadImage(routeImagePath(currentRoute), DEFAULT_IMAGE, getClass())
-        );
-        descriptionValueLabel.setText(safeText(currentRoute.description(), I18n.t("route.details.empty.description")));
-        distanceValueLabel.setText(String.format(Locale.US, I18n.t("route.details.metric.distance"), currentRoute.length()));
-        placesValueLabel.setText(formatPlacesCount(currentPlaces.size()));
 
         renderMap(currentRoute);
         renderPlaces(currentPlaces);
-        renderAssociatedTrips(currentTrips);
-        renderAssociatedStories(currentStories);
+        localize();
+        associatedTripsGrid.refresh();
+        associatedStoriesGrid.refresh();
+    }
+
+    private void localize(){
+        descriptionValueLabel.setText(EditorUtils.safeText(currentRoute.description(), I18n.t("route.details.empty.description")));
+        distanceValueLabel.setText(String.format(Locale.US, I18n.t("route.details.metric.distance"), currentRoute.length()));
+        placesValueLabel.setText(formatPlacesCount(currentPlaces.size()));
+    }
+
+    private void configureAssociatedTripsGrid() {
+        associatedTripsGrid.setMinCardWidth(240);
+        associatedTripsGrid.setMaxColumns(4);
+        associatedTripsGrid.setVScrollPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        associatedTripsGrid.setEmptyTextKey("route.details.empty.trips");
+        associatedTripsGrid.setCardFactory(trip -> {
+            String dateRange = DisplayUtils.formatDateRange(toLocalDate(trip.startedAt()), toLocalDate(trip.endedAt()));
+            return TripCardView.create(trip, dateRange, () -> openTrip(trip)).getRoot();
+        });
+        associatedTripsGrid.setPageLoader((page, size) -> new CardGridPane.PageResult<>(currentTrips, null));
+    }
+
+    private void configureAssociatedStoriesGrid() {
+        associatedStoriesGrid.setMinCardWidth(257);
+        associatedStoriesGrid.setMaxColumns(4);
+        associatedStoriesGrid.setVScrollPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        associatedStoriesGrid.setEmptyTextKey("route.details.empty.stories");
+        associatedStoriesGrid.setCardFactory(story -> StoryCardView.create(story, () -> openStory(story)).getRoot());
+        associatedStoriesGrid.setPageLoader((page, size) -> new CardGridPane.PageResult<>(currentStories, null));
     }
 
     private void renderMap(RouteResponse route) {
@@ -335,23 +365,37 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
 
         if (places.isEmpty()) {
             routeMap.setMapCenter(48.1486, 17.1077);
-            routeMap.setPinPosition(48.1486, 17.1077);
+        } else {
+            double latitudeAverage = places.stream().mapToDouble(PlaceResponse::latitude).average().orElse(places.getFirst().latitude());
+            double longitudeAverage = places.stream().mapToDouble(PlaceResponse::longitude).average().orElse(places.getFirst().longitude());
+            routeMap.setMapCenter(latitudeAverage, longitudeAverage);
+        }
+
+        renderMapWaypoints(currentPlaces);
+    }
+
+    private void renderMapWaypoints(List<PlaceResponse> places) {
+        routeMap.clearMarkers();
+        routeMap.clearPolyline();
+        if (places.isEmpty()) {
             return;
         }
 
-        double latitudeAverage = places.stream().mapToDouble(PlaceResponse::latitude).average().orElse(places.getFirst().latitude());
-        double longitudeAverage = places.stream().mapToDouble(PlaceResponse::longitude).average().orElse(places.getFirst().longitude());
-        routeMap.setMapCenter(latitudeAverage, longitudeAverage);
-        routeMap.setPinPosition(places.getFirst().latitude(), places.getFirst().longitude());
+        for (int i = 0; i < places.size(); i++) {
+            PlaceResponse place = places.get(i);
+            routeMap.addMarker(new MapPoint(place.latitude(), place.longitude()), i + 1);
+        }
+
+        if (places.size() >= 2) {
+            List<MapPoint> waypoints = places.stream()
+                    .map(p -> new MapPoint(p.latitude(), p.longitude()))
+                    .toList();
+            routeMap.setPolyline(waypoints);
+        }
     }
 
     private void renderPlaces(List<PlaceResponse> places) {
         placesListContainer.getChildren().clear();
-        if (places.isEmpty()) {
-            placesListContainer.getChildren().add(createEmptyState(I18n.t("route.details.empty.places"), placesListContainer));
-            return;
-        }
-
         for (int index = 0; index < places.size(); index++) {
             PlaceResponse place = places.get(index);
             placesListContainer.getChildren().add(buildPlaceRow(place, index + 1));
@@ -369,7 +413,8 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
         Label orderLabel = new Label(String.valueOf(index));
         orderLabel.getStyleClass().add("route-details-place-index");
 
-        ImageView preview = new ImageView(EditorUtils.loadImage(placeImagePath(place), DEFAULT_IMAGE, getClass()));
+        String path = DisplayUtils.deriveCoverUrl(place.coverImage());
+        ImageView preview = new ImageView(EditorUtils.loadImage(path, "", getClass()));
         preview.setFitWidth(92);
         preview.setFitHeight(58);
         preview.setPreserveRatio(false);
@@ -380,14 +425,14 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
         preview.setClip(clip);
 
         VBox copy = new VBox(4);
-        Label title = new Label(safeText(place.title(), I18n.t("route.details.place.fallback")));
+        Label title = new Label(place.title());
         title.getStyleClass().add("route-details-place-title");
         title.setWrapText(true);
 
         String subtitleText = place.country() == null
-                ? safeText(place.description(), "")
+                ? EditorUtils.safeText(place.description(), "")
                 : Localization.localize(place.country());
-        Label subtitle = new Label(safeText(subtitleText, ""));
+        Label subtitle = new Label(subtitleText);
         subtitle.getStyleClass().add("route-details-place-subtitle");
         subtitle.setWrapText(true);
         copy.getChildren().addAll(title, subtitle);
@@ -406,7 +451,12 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
             }
             openPlace(place);
         });
-        row.getChildren().addAll(orderLabel, preview, copy, actions);
+        if (place.coverImage()==null){
+            row.getChildren().addAll(orderLabel, copy, actions);
+        }
+        else {
+            row.getChildren().addAll(orderLabel,preview, copy, actions);
+        }
         return row;
     }
 
@@ -461,6 +511,8 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
         Collections.swap(currentPlaces, draggedIndex, targetIndex);
         placeOrderChanged = true;
         renderPlaces(currentPlaces);
+        renderMapWaypoints(currentPlaces);
+        distanceValueLabel.setText(String.format(Locale.US, I18n.t("route.details.metric.distance"), calculateRouteLength(currentPlaces)));
     }
 
     private void finishDragging() {
@@ -513,7 +565,9 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
             currentPlaces.addAll(currentRoute.places());
         }
         renderPlaces(currentPlaces);
+        renderMapWaypoints(currentPlaces);
         placesValueLabel.setText(formatPlacesCount(currentPlaces.size()));
+        distanceValueLabel.setText(String.format(Locale.US, I18n.t("route.details.metric.distance"), currentRoute.length()));
     }
 
     private void initializeDragPreview() {
@@ -578,81 +632,20 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
         }
     }
 
-    private void renderAssociatedTrips(List<TripResponse> trips) {
-        associatedTripsFlow.getChildren().clear();
-        if (trips.isEmpty()) {
-            associatedTripsFlow.getChildren().add(createEmptyState(I18n.t("route.details.empty.trips"), associatedTripsFlow));
-            return;
-        }
-
-        for (TripResponse trip : trips) {
-            String dateRange = formatTripDateRange(trip.startedAt(), trip.endedAt());
-            TripCardView card = TripCardView.create(trip, dateRange, () -> openTrip(trip));
-            associatedTripsFlow.getChildren().add((Region) card.getRoot());
-        }
-    }
-
-    private void renderAssociatedStories(List<StoryResponse> stories) {
-        associatedStoriesFlow.getChildren().clear();
-        if (stories.isEmpty()) {
-            associatedStoriesFlow.getChildren().add(createEmptyState(I18n.t("route.details.empty.stories"), associatedStoriesFlow));
-            return;
-        }
-
-        for (StoryResponse story : stories) {
-            associatedStoriesFlow.getChildren().add(buildStoryCard(story));
-        }
-    }
-
-    private VBox buildStoryCard(StoryResponse story) {
-        VBox card = new VBox(10);
-        card.getStyleClass().add("route-details-story-card");
-
-        ImageView preview = new ImageView(EditorUtils.loadImage(storyImagePath(story), DEFAULT_IMAGE, getClass()));
-        preview.setFitWidth(257);
-        preview.setFitHeight(146);
-        preview.setPreserveRatio(false);
-        preview.getStyleClass().add("route-details-story-image");
-        Rectangle clip = new Rectangle(257, 146);
-        clip.setArcWidth(20);
-        clip.setArcHeight(20);
-        preview.setClip(clip);
-
-        VBox body = new VBox(8);
-        body.getStyleClass().add("route-details-story-body");
-
-        Label title = new Label(safeText(story.title(), I18n.t("route.details.story.fallback")));
-        title.getStyleClass().add("route-details-story-title");
-        title.setWrapText(true);
-
-        Label meta = new Label(formatStoryDate(story.storyTime()));
-        meta.getStyleClass().add("route-details-story-meta");
-
-        body.getChildren().addAll(title, meta);
-
-        if (story.emotion() != null) {
-            Label emotion = new Label(buildEmotionLabel(story));
-            emotion.getStyleClass().add("route-details-story-emotion");
-            body.getChildren().add(emotion);
-        }
-
-        card.getChildren().addAll(preview, body);
-        return card;
-    }
-
-    private EmptyStateCardView createEmptyState(String text, Region parent) {
-        EmptyStateCardView card = new EmptyStateCardView();
-        card.setText(text);
-        card.prefWidthProperty().bind(parent.widthProperty());
-        card.maxWidthProperty().bind(parent.widthProperty());
-        return card;
-    }
-
     private void openTrip(TripResponse trip) {
         RouterArgument args = new RouterArgument();
         args.addArgument("tripId", trip.id().toString());
-        args.addArgument("tripStatus", trip.status());
-        getRouter().moveto(RouteIds.ADD_TRIP, args);
+        getRouter().moveto(RouteIds.TRIP_DETAILS, args);
+    }
+
+    private void openStory(StoryResponse story) {
+        if (story == null || story.id() == null) {
+            return;
+        }
+
+        RouterArgument args = new RouterArgument();
+        args.addArgument("storyId", story.id().toString());
+        getRouter().moveto(RouteIds.STORY_DETAILS, args);
     }
 
     private void openPlace(PlaceResponse place) {
@@ -663,34 +656,6 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
         RouterArgument args = new RouterArgument();
         args.addArgument("placeId", place.id().toString());
         getRouter().moveto(RouteIds.PLACE_DETAILS, args);
-    }
-
-    private String routeImagePath(RouteResponse route) {
-        String coverUrl = DisplayUtils.deriveCoverUrl(route.coverImage());
-        return coverUrl == null || coverUrl.isBlank() ? DEFAULT_IMAGE : coverUrl;
-    }
-
-    private String placeImagePath(PlaceResponse place) {
-        return place.coverImage() == null || place.coverImage().url() == null
-                ? DEFAULT_IMAGE
-                : place.coverImage().url().toString();
-    }
-
-    private String storyImagePath(StoryResponse story) {
-        if (story.images() == null || story.images().isEmpty()) {
-            return DEFAULT_IMAGE;
-        }
-
-        return story.images().stream()
-                .findFirst()
-                .filter(image -> image.url() != null)
-                .map(image -> image.url().toString())
-                .orElse(DEFAULT_IMAGE);
-    }
-
-    private String buildEmotionLabel(StoryResponse story) {
-        String emoji = story.emotion().emojiUnicode() == null ? "" : story.emotion().emojiUnicode() + " ";
-        return emoji + Localization.localize(story.emotion());
     }
 
     private boolean isClickOnHandle(Object target) {
@@ -711,95 +676,13 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
         return String.format(Locale.US, I18n.t(key), count);
     }
 
-    private String formatTripDateRange(Instant startedAt, Instant endedAt) {
-        LocalDate start = startedAt == null ? null : startedAt.atZone(ZoneOffset.UTC).toLocalDate();
-        LocalDate end = endedAt == null ? null : endedAt.atZone(ZoneOffset.UTC).toLocalDate();
-        if (start == null && end == null) {
-            return I18n.t("route.details.trip.dates.tba");
+    private double calculateRouteLength(List<PlaceResponse> places) {
+        double total = 0;
+        for (int i = 1; i < places.size(); i++) {
+            PlaceResponse from = places.get(i - 1);
+            PlaceResponse to = places.get(i);
+            total += GeoCalculator.distanceKm(from.latitude(), from.longitude(), to.latitude(), to.longitude());
         }
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
-                .withLocale(I18n.getLanguage().getLocale());
-
-        if (start != null && end != null) {
-            return start.format(formatter) + " - " + end.format(formatter);
-        }
-
-        return (start == null ? end : start).format(formatter);
-    }
-
-    private String formatStoryDate(Instant storyTime) {
-        if (storyTime == null) {
-            return I18n.t("route.details.story.date.unknown");
-        }
-
-        return storyTime.atZone(ZoneOffset.UTC)
-                .toLocalDate()
-                .format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(I18n.getLanguage().getLocale()));
-    }
-
-    private String safeText(String value, String fallback) {
-        return value == null || value.isBlank() ? fallback : value;
-    }
-
-    private void bindRouteCountry(RouteResponse route) {
-        if (route == null || route.places() == null || route.places().isEmpty()) {
-            countryRow.setVisible(true);
-            countryRow.setManaged(true);
-            countryLabel.textProperty().unbind();
-            countryLabel.setText(formatPlacesCount(0));
-            countryEmojiView.setVisible(false);
-            countryEmojiView.setManaged(false);
-            countryEmojiView.setImage(null);
-            return;
-        }
-
-        String firstEmoji = null;
-        Set<String> countries = new LinkedHashSet<>();
-        for (PlaceResponse place : route.places()) {
-            if (place != null && place.country() != null) {
-                if (firstEmoji == null) {
-                    firstEmoji = place.country().emojiUnicode();
-                }
-                String localizedCountry = Localization.localize(place.country());
-                if (localizedCountry != null && !localizedCountry.isBlank()) {
-                    countries.add(localizedCountry);
-                }
-            }
-        }
-
-        if (countries.isEmpty()) {
-            countryRow.setVisible(true);
-            countryRow.setManaged(true);
-            countryLabel.textProperty().unbind();
-            countryLabel.setText(formatPlacesCount(route.places().size()));
-            countryEmojiView.setVisible(false);
-            countryEmojiView.setManaged(false);
-            countryEmojiView.setImage(null);
-            return;
-        }
-
-        String firstCountry = countries.iterator().next();
-        countryRow.setVisible(true);
-        countryRow.setManaged(true);
-        EditorUtils.applyEmojiImage(countryEmojiView, firstEmoji, COUNTRY_EMOJI_SIZE);
-        countryLabel.textProperty().unbind();
-        countryLabel.setText(countries.size() == 1 ? firstCountry : firstCountry + " +" + (countries.size() - 1));
-    }
-
-    private void configureButtonIcon(Button button, String iconLiteral, String styleClass) {
-        FontIcon icon = new FontIcon(iconLiteral);
-        icon.setIconSize(15);
-        icon.getStyleClass().add(styleClass);
-        button.setGraphic(icon);
-    }
-
-    private void installRoundedPaneClip(StackPane target, double radius) {
-        Rectangle clip = new Rectangle();
-        clip.setArcWidth(radius * 2);
-        clip.setArcHeight(radius * 2);
-        clip.widthProperty().bind(target.widthProperty());
-        clip.heightProperty().bind(target.heightProperty());
-        target.setClip(clip);
+        return total;
     }
 }

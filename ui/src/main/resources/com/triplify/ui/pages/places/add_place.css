@@ -119,3 +119,27 @@
     -fx-background-radius: 12px;
     -fx-padding: 10 12 10 12;
 }
+
+.interactive-map-marker-badge {
+    -fx-background-color: #2a9d8f;
+    -fx-background-radius: 50%;
+    -fx-border-radius: 50%;
+    -fx-border-color: white;
+    -fx-border-width: 2;
+    -fx-text-fill: white;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER;
+    -fx-min-width: 24px;
+    -fx-min-height: 24px;
+    -fx-padding: 2 5 2 5;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.32), 5, 0, 0, 1);
+}
+
+.interactive-map-polyline {
+    -fx-stroke: #2a9d8f;
+    -fx-stroke-width: 2.5;
+    -fx-stroke-line-cap: round;
+    -fx-stroke-line-join: round;
+    -fx-opacity: 0.72;
+}

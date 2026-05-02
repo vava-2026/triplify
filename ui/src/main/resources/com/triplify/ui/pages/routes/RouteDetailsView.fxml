@@ -2,6 +2,7 @@
 
 <?import java.lang.String?>
 <?import com.triplify.ui.map.InteractiveMap?>
+<?import com.triplify.ui.shared.component.card_grid.CardGridPane?>
 <?import com.triplify.ui.shared.component.detail_actions.view.DetailActionButtonsView?>
 <?import com.triplify.ui.shared.component.section_header.view.SectionHeaderView?>
 <?import javafx.scene.control.Button?>
@@ -23,7 +24,7 @@
     <stylesheets>
         <String fx:value="/com/triplify/ui/pages/places/add_place.css"/>
         <String fx:value="/com/triplify/ui/pages/places/place_details.css"/>
-        <String fx:value="/com/triplify/ui/pages/routes/add_route.css"/>
+        <String fx:value="/com/triplify/ui/pages/routes/css/add_route.css"/>
         <String fx:value="/com/triplify/ui/pages/routes/route_details.css"/>
         <String fx:value="/com/triplify/ui/pages/trips/css/trips.css"/>
     </stylesheets>
@@ -86,12 +87,12 @@
                 <VBox styleClass="route-details-associated-sections" spacing="20">
                     <VBox styleClass="route-details-associated-section" spacing="12">
                         <SectionHeaderView fx:id="associatedTripsHeader" iconLiteral="fth-briefcase"/>
-                        <FlowPane fx:id="associatedTripsFlow" styleClass="route-details-grid"/>
+                        <CardGridPane fx:id="associatedTripsGrid"/>
                     </VBox>
 
                     <VBox styleClass="route-details-associated-section" spacing="12">
                         <SectionHeaderView fx:id="associatedStoriesHeader" iconLiteral="fth-book-open"/>
-                        <FlowPane fx:id="associatedStoriesFlow" styleClass="route-details-grid"/>
+                        <CardGridPane fx:id="associatedStoriesGrid"/>
                     </VBox>
                 </VBox>
             </VBox>
