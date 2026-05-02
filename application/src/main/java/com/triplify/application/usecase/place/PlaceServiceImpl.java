@@ -22,6 +22,8 @@ import com.triplify.application.usecase.category.dto.CategoryResponse;
 import com.triplify.application.usecase.route.dto.RouteResponse;
 import com.triplify.application.usecase.session.SessionUser;
 import com.triplify.application.usecase.session.UserSessionContext;
+import com.triplify.application.usecase.statistic.StatisticService;
+import com.triplify.application.usecase.statistic.dto.IncrementStatisticRequest;
 import com.triplify.application.usecase.tag.dto.TagResponse;
 import com.triplify.application.usecase.trip.dto.TripResponse;
 import com.triplify.domain.model.Category;
@@ -34,6 +36,7 @@ import com.triplify.domain.repository.RoutePlaceRepository;
 import com.triplify.domain.repository.TripPlaceRepository;
 import com.triplify.domain.repository.PlaceRepository;
 import com.triplify.domain.result.Result;
+import com.triplify.domain.model.enums.StatisticType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,6 +57,7 @@ public class PlaceServiceImpl implements PlaceService {
     private final ImageService imageService;
     private final RoutePlaceRepository routePlaceRepository;
     private final TripPlaceRepository tripPlaceRepository;
+    private final StatisticService statisticService;
 
     @Inject
     PlaceServiceImpl(
@@ -62,7 +66,8 @@ public class PlaceServiceImpl implements PlaceService {
             ImageService imageService,
             CountryService countryService,
             RoutePlaceRepository routePlaceRepository,
-            TripPlaceRepository tripPlaceRepository
+                TripPlaceRepository tripPlaceRepository,
+                StatisticService statisticService
     ) {
         this.placeRepository = placeRepository;
         this.userSessionContext = userSessionContext;
@@ -70,6 +75,7 @@ public class PlaceServiceImpl implements PlaceService {
         this.countryService = countryService;
         this.routePlaceRepository = routePlaceRepository;
         this.tripPlaceRepository = tripPlaceRepository;
+        this.statisticService = statisticService;
     }
 
     @Override
@@ -87,6 +93,7 @@ public class PlaceServiceImpl implements PlaceService {
         UUID imageId = image != null ? image.id() : null;
         Place place = new Place(user.userId(), countryResponse.id(), imageId, request.title(), request.description(), request.latitude(), request.longitude());
         placeRepository.create(place);
+        statisticService.incrementStatistic(new IncrementStatisticRequest(user.userId(), StatisticType.PLACES_VISITED)).orThrow();
         log.info("Added new place with id='{}', title='{}' by userId='{}'", place.getId(), place.getTitle(), user.userId());
 
         return Result.ok(PlaceResponse.from(place));

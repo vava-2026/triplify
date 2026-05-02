@@ -6,6 +6,8 @@ import com.triplify.application.usecase.auth.dto.LogInRequest;
 import com.triplify.application.usecase.auth.dto.SignUpRequest;
 import com.triplify.application.usecase.session.SessionUser;
 import com.triplify.application.usecase.session.UserSessionContext;
+import com.triplify.application.usecase.statistic.StatisticService;
+import com.triplify.application.usecase.statistic.dto.InitializeUserStatisticsRequest;
 import com.triplify.domain.error.AuthError;
 import com.triplify.domain.model.User;
 import com.triplify.domain.model.enums.RoleEnum;
@@ -21,13 +23,16 @@ public class AuthServiceImpl implements AuthService {
     private final com.triplify.domain.service.PasswordEncoder passwordEncoder;
     private final UserSessionContext sessionContext;
     private final LicenseManager licenseManager;
+    private final StatisticService statisticService;
 
     @Inject
-    public AuthServiceImpl(UserRepository userRepository, com.triplify.domain.service.PasswordEncoder passwordEncoder, UserSessionContext sessionContext, LicenseManager licenseManager) {
+    public AuthServiceImpl(UserRepository userRepository, com.triplify.domain.service.PasswordEncoder passwordEncoder,
+                           UserSessionContext sessionContext, LicenseManager licenseManager, StatisticService statisticService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.sessionContext = sessionContext;
         this.licenseManager = licenseManager;
+        this.statisticService = statisticService;
     }
 
     @Override
@@ -64,6 +69,7 @@ public class AuthServiceImpl implements AuthService {
                 user.getRole(),
                 user.getAvatarImageId()));
         sessionContext.save();
+        statisticService.initializeUserStatistics(new InitializeUserStatisticsRequest(user.getId())).orThrow();
         return Result.ok();
     }
 
@@ -102,6 +108,7 @@ public class AuthServiceImpl implements AuthService {
                 user.getRole(),
                 user.getAvatarImageId()));
         sessionContext.save();
+        statisticService.initializeUserStatistics(new InitializeUserStatisticsRequest(user.getId())).orThrow();
         return Result.ok();
     }
 }
