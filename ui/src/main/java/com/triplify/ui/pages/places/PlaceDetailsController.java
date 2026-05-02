@@ -25,6 +25,7 @@ import com.triplify.application.usecase.tripplace.dto.UpdateTripPlaceStatusReque
 import com.triplify.domain.model.enums.ImageOwnerType;
 import com.triplify.domain.model.enums.StatusEnum;
 import com.triplify.domain.pagination.PageRequest;
+import com.triplify.domain.result.Result;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.map.InteractiveMap;
@@ -237,14 +238,10 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
     }
 
     @Override
-    public void onLifecycleInitialize() {
+    public void onLifecycleShow() {
         RouterArgument data = getRouter().getCurrentData();
         placeId = data == null ? null : data.getValue("placeId");
         tripPlaceId = data == null ? null : data.getValue("tripPlaceId");
-    }
-
-    @Override
-    public void onLifecycleShow() {
         loadPlaceDetails();
     }
 
@@ -294,6 +291,8 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
             bind(currentTripPlace.place());
             return;
         }
+        resetTripContext();
+
         UUID placeUuid = UUID.fromString(placeId);
 
         var placeResult = placeService.getPlaceById(new GetPlaceByIdRequest(placeUuid));
@@ -368,7 +367,7 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         contextContainerCont.setVisible(true);
         contextContainerCont.setManaged(true);
 
-        var result = tripPlaceService.getTripPlaceById(
+        Result<TripPlaceResponse> result = tripPlaceService.getTripPlaceById(
                 new GetTripPlaceByIdRequest(UUID.fromString(tripPlaceId)));
         if (result.isFailure()) {
             return;
@@ -412,17 +411,27 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         DisplayUtils.renderTripPlaceContext(getRouter(),contextContainer, currentTripPlace);
     }
 
+    private void resetTripContext() {
+        contextContainerCont.setVisible(false);
+        contextContainerCont.setManaged(false);
+        statusContainer.setVisible(false);
+        statusContainer.setManaged(false);
+        tripPlaceAssociatedItemsContainer.setVisible(false);
+        tripPlaceAssociatedItemsContainer.setManaged(false);
+        placeAssociatedItemsContainer.setVisible(true);
+        placeAssociatedItemsContainer.setManaged(true);
+        currentTripPlace = null;
+    }
+
     private void onTripPlaceStatusSelected(StatusEnum status) {
         if (currentTripPlace == null || status == null) return;
         if (currentTripPlace.status() == status) return;
-        var result = tripPlaceService.updateTripPlaceStatus(
-                new UpdateTripPlaceStatusRequest(currentTripPlace.id(), status));
-        if (result.isFailure()) {
-            errorHandler.handle(result.getError());
-        } else {
-            currentTripPlace = result.getValue();
+        Result<TripPlaceResponse> result = tripPlaceService.updateTripPlaceStatus(new UpdateTripPlaceStatusRequest(currentTripPlace.id(), status));
+        result.onSuccess(updated -> {
+            currentTripPlace = updated;
             toast.success(I18n.t("tripplace.context.status.updated"));
-        }
+        });
+        result.onFailure(error -> errorHandler.handle(error));
     }
 
     private void openAddImageModal() {

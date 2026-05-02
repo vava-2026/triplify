@@ -248,14 +248,10 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
     }
 
     @Override
-    public void onLifecycleInitialize() {
+    public void onLifecycleShow() {
         RouterArgument data = getRouter().getCurrentData();
         routeId = data == null ? null : data.getValue("routeId");
         tripRouteId = data == null ? null : data.getValue("tripRouteId");
-    }
-
-    @Override
-    public void onLifecycleShow() {
         loadRouteDetails();
     }
 
@@ -305,6 +301,7 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
             currentRoute = currentTripRoute.route();
         }
         else {
+            resetTripContext();
             UUID routeUuid = UUID.fromString(routeId);
             var routeResult = routeService.getRouteById(new GetRouteByIdRequest(routeUuid));
             if (routeResult.isFailure()) {
@@ -379,6 +376,18 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
         tripStoriesGrid.refresh();
 
         DisplayUtils.renderTripRouteContext(getRouter(), contextContainer, currentTripRoute);
+    }
+
+    private void resetTripContext() {
+        contextContainerCont.setVisible(false);
+        contextContainerCont.setManaged(false);
+        statusContainer.setVisible(false);
+        statusContainer.setManaged(false);
+        tripRouteAssociatedItemsContainer.setVisible(false);
+        tripRouteAssociatedItemsContainer.setManaged(false);
+        routeAssociatedItemsContainer.setVisible(true);
+        routeAssociatedItemsContainer.setManaged(true);
+        currentTripRoute = null;
     }
 
     private void onTripRouteStatusSelected(StatusEnum status) {
