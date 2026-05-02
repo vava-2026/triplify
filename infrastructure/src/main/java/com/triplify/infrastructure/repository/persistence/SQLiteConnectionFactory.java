@@ -49,12 +49,6 @@ public class SQLiteConnectionFactory {
     private record NativeBundle(Path directory, Path mainLibrary) {
     }
 
-    /**
-     * Opens a fresh, independent connection with SpatiaLite enabled.
-     * Unlike {@link #getConnection()}, the returned connection is NOT the shared singleton
-     * and must be managed (closed) by the caller.
-     * Safe to call from any thread; reuses the already-extracted native bundle.
-     */
     public static synchronized Connection openSpatialConnection() {
         return getSpatialConnection();
     }

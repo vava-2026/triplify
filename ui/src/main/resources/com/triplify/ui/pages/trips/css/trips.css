@@ -37,8 +37,6 @@
     -fx-background-color: -color-surface;
 }
 
-/* ── Card Grid ── */
-
 .card-grid-root {
     -fx-padding: 0;
 }
@@ -100,8 +98,6 @@
     -fx-icon-size: 16px;
 }
 
-/* ── Trip Card ── */
-
 .trip-card {
     -fx-background-color: -color-surface;
     -fx-background-radius: 14px;
@@ -162,8 +158,6 @@
     -fx-font-size: 14px;
 }
 
-/* ── Trip Status Badges ── */
-
 .trip-status {
     -fx-background-radius: 999px;
     -fx-padding: 4px 10px;
@@ -196,10 +190,6 @@
     -fx-background-color: -color-status-ongoing-bg;
     -fx-text-fill: -color-status-ongoing-fg;
 }
-
-/* ── Create Trip Card ── */
-
-/* ── Cover Fallback ── */
 
 .trip-cover-default {
     -fx-background-color: linear-gradient(to bottom right, #b5c7d6, #e6edf3);

@@ -15,7 +15,7 @@ import com.google.inject.Singleton;
 @Singleton
 public class DatabaseMigrationInitializer {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseMigrationInitializer.class);
-    private static final int CURRENT_SCHEMA_VERSION = 16;
+    private static final int CURRENT_SCHEMA_VERSION = 19;
     private static final List<MigrationStep> MIGRATIONS = List.of(
             new MigrationStep(1, "migrations/initial.sql"),
             new MigrationStep(2, "migrations/V2__countries_created_by_nullable.sql"),
@@ -29,10 +29,13 @@ public class DatabaseMigrationInitializer {
             new MigrationStep(10, "seeders/badge_image_seeder.sql"),
             new MigrationStep(11, "seeders/badge_seeder.sql"),
             new MigrationStep(12, "seeders/user_seeder.sql"),
-            new MigrationStep(13, "seeders/place_seeder.sql"),
-            new MigrationStep(14, "seeders/route_seeder.sql"),
-                new MigrationStep(15, "seeders/emotion_seeder.sql"),
-                new MigrationStep(16, "migrations/V7__create_statistics_table.sql")
+            new MigrationStep(13, "seeders/tag_seeder.sql"),
+            new MigrationStep(14, "seeders/place_seeder.sql"),
+            new MigrationStep(15, "seeders/route_seeder.sql"),
+            new MigrationStep(16, "seeders/emotion_seeder.sql"),
+            new MigrationStep(17, "seeders/trip_seeder.sql"),
+            new MigrationStep(18, "seeders/story_seeder.sql"),
+            new MigrationStep(19, "migrations/V7__create_statistics_table.sql")
     );
 
     public void initialize() {

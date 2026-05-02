@@ -556,6 +556,14 @@ public class AddTripController extends WindowedPageController {
         card.setPreviewImage(EditorUtils.loadImage(item.imagePath(), DEFAULT_IMAGE, getClass()));
         card.setTitle(item.title());
         card.setSubtitle(item.subtitle());
+        card.setCursor(Cursor.HAND);
+        card.addEventFilter(MouseEvent.MOUSE_CLICKED, event -> {
+            if (isClickOnButton(event.getTarget())) return;
+            RouterArgument args = new RouterArgument();
+            args.addArgument("routeId", item.id());
+            getRouter().moveto(RouteIds.ROUTE_DETAILS, args);
+            event.consume();
+        });
         card.setOnRemove(() -> {
             routeItems.remove(item);
             renderRoutes();

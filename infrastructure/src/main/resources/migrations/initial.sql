@@ -238,6 +238,8 @@ CREATE TABLE stories (
          ON DELETE SET NULL ON UPDATE CASCADE,
     title          TEXT NOT NULL COLLATE NOCASE,
     description    TEXT,
+    latitude REAL NOT NULL CHECK (latitude  BETWEEN -90  AND  90),
+    longitude REAL NOT NULL CHECK (longitude BETWEEN -180 AND 180),
     story_time     TEXT NOT NULL
      CHECK (datetime(story_time) IS NOT NULL),
     created_at     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
@@ -250,6 +252,10 @@ CREATE TABLE stories (
      )
 );
 CREATE INDEX idx_stories_user_id ON stories(user_id);
+
+-- Adding column to the Stories table as SpatiaLite specific data
+SELECT AddGeometryColumn('stories', 'geom', 4326, 'POINT', 'XY');
+SELECT CreateSpatialIndex('stories', 'geom');
 
 CREATE TABLE badges_groups (
     id             TEXT NOT NULL PRIMARY KEY,
@@ -395,6 +401,23 @@ CREATE TRIGGER trg_places_geom_update
     AFTER UPDATE OF latitude, longitude ON places FOR EACH ROW
 BEGIN
     UPDATE places
+    SET geom = MakePoint(NEW.longitude, NEW.latitude, 4326)
+    WHERE id = OLD.id;
+END;
+
+
+CREATE TRIGGER trg_stories_geom_insert
+    AFTER INSERT ON stories FOR EACH ROW
+BEGIN
+    UPDATE stories
+    SET geom = MakePoint(NEW.longitude, NEW.latitude, 4326)
+    WHERE id = NEW.id;
+END;
+
+CREATE TRIGGER trg_stories_geom_update
+    AFTER UPDATE OF latitude, longitude ON stories FOR EACH ROW
+BEGIN
+    UPDATE stories
     SET geom = MakePoint(NEW.longitude, NEW.latitude, 4326)
     WHERE id = OLD.id;
 END;

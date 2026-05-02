@@ -17,11 +17,9 @@ public class TripPlace {
     @NonNull
     private final UUID id;
 
-    /** Reference to the owning Trip aggregate by ID only. */
     @NonNull
     private final UUID tripId;
 
-    /** Related Place reference by stable ID, with optional linked object. */
     @NonNull
     private final UUID placeId;
 

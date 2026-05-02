@@ -557,12 +557,12 @@ public class InteractiveMap extends StackPane {
                 badge.getStyleClass().add("interactive-map-marker-badge");
                 badge.setManaged(false);
                 badge.setMouseTransparent(true);
+                getChildren().add(badge);
                 badge.applyCss();
                 badge.autosize();
-                double w = Math.max(24, badge.prefWidth(-1));
-                double h = Math.max(24, badge.prefHeight(-1));
-                badge.relocate(pixel.getX() - w / 2, pixel.getY() - h);
-                getChildren().add(badge);
+                double w = Math.max(24, badge.getLayoutBounds().getWidth());
+                double h = Math.max(24, badge.getLayoutBounds().getHeight());
+                badge.relocate(pixel.getX() - w / 2, pixel.getY() - h / 2);
             }
 
             renderedRevision = revision;

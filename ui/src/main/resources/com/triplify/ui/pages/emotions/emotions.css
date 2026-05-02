@@ -123,3 +123,20 @@
 	-fx-text-fill: -color-ink-muted;
 	-fx-font-size: 13px;
 }
+
+.emotions-view {
+	-fx-spacing: 4;
+}
+
+.emotions-error-label {
+	-fx-padding: 0 2 0 2;
+}
+
+.emotions-view.emotions-has-error .search-input-box {
+	-fx-border-color: -color-danger;
+	-fx-border-width: 1.5;
+}
+
+.emotions-view.emotions-has-error.search-showing .search-input-box {
+	-fx-border-color: -color-danger -color-danger -color-surface-tint -color-danger;
+}
