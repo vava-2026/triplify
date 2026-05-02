@@ -1,12 +1,10 @@
 package com.triplify.ui.pages.trips.view;
 
-import com.triplify.application.usecase.category.dto.CategoryResponse;
 import com.triplify.application.usecase.trip.dto.TripResponse;
 import com.triplify.domain.model.enums.StatusEnum;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.util.DisplayUtils;
 import com.triplify.ui.shared.util.EditorUtils;
-import com.triplify.ui.shared.util.Localization;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.WeakChangeListener;
 import javafx.fxml.FXML;
@@ -73,7 +71,17 @@ public class TripCardView implements Initializable {
     public void setTrip(TripResponse trip, String dateRange) {
         if (trip == null) return;
         titleLabel.setText(trip.title());
-        DisplayUtils.bindEmoji(categoryRow, categoryLabel, categoryEmojiView, trip.category(), trip.category().emojiUnicode(), CATEGORY_EMOJI_SIZE);
+        if (trip.category() != null) {
+            DisplayUtils.bindEmoji(categoryRow, categoryLabel, categoryEmojiView, trip.category(), trip.category().emojiUnicode(), CATEGORY_EMOJI_SIZE);
+        } else {
+            categoryRow.setVisible(false);
+            categoryRow.setManaged(false);
+            categoryLabel.textProperty().unbind();
+            categoryLabel.setText("");
+            categoryEmojiView.setImage(null);
+            categoryEmojiView.setVisible(false);
+            categoryEmojiView.setManaged(false);
+        }
         dateLabel.setText(dateRange);
 
         String coverUrl = DisplayUtils.deriveCoverUrl(trip.coverImage());

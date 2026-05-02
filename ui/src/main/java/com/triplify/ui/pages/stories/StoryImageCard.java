@@ -66,7 +66,6 @@ class StoryImageCard extends HBox {
         if (description != null && !description.isBlank()) {
             descriptionInput.setText(description);
         }
-        //HBox.setHgrow(descriptionInput, Priority.ALWAYS);
 
         FontIcon removeIcon = new FontIcon("fth-x");
         removeIcon.getStyleClass().add("input-action-icon");
@@ -75,9 +74,6 @@ class StoryImageCard extends HBox {
         removeBtn.setFocusTraversable(false);
         removeBtn.getStyleClass().add("input-action-btn");
         removeBtn.setOnAction(e -> onRemove.run());
-
-        //rightBox.setAlignment(Pos.CENTER_LEFT);
-        //HBox.setHgrow(rightBox, Priority.ALWAYS);
 
         getChildren().addAll(previewPane, descriptionInput, removeBtn);
     }

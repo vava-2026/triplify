@@ -56,7 +56,6 @@ public final class ImageViewModalView {
     @FXML private Label descriptionLabel;
     @FXML private Button closeButton;
     @FXML private HBox deleteButtonContainer;
-    //@FXML private Button deleteButton;
 
     private ImageResponse currentImage;
     private Consumer<ImageResponse> onDeleted;
