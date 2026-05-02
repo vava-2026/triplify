@@ -294,32 +294,34 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
     }
 
     private void loadRouteDetails() {
-        if (routeId == null || routeId.isBlank()) {
+        if ((routeId == null || routeId.isBlank()) && (tripRouteId == null || tripRouteId.isBlank()) ) {
             toast.warning(I18n.t("route.details.toast.notFound"));
             getRouter().popBackStack();
             return;
         }
 
-        UUID routeUuid = UUID.fromString(routeId);
-        var routeResult = routeService.getRouteById(new GetRouteByIdRequest(routeUuid));
-        if (routeResult.isFailure()) {
-            errorHandler.handle(routeResult.getError());
-            getRouter().popBackStack();
-            return;
-        }
-
-        currentRoute = routeResult.getValue();
-        currentPlaces.clear();
-        if (currentRoute.places() != null) {
-            currentPlaces.addAll(currentRoute.places());
-        }
-
         if (tripRouteId != null && !tripRouteId.isBlank()) {
             loadTripContext();
-        } else {
+            currentRoute = currentTripRoute.route();
+        }
+        else {
+            UUID routeUuid = UUID.fromString(routeId);
+            var routeResult = routeService.getRouteById(new GetRouteByIdRequest(routeUuid));
+            if (routeResult.isFailure()) {
+                errorHandler.handle(routeResult.getError());
+                getRouter().popBackStack();
+                return;
+            }
+            currentRoute = routeResult.getValue();
+
             List<TripRouteResponse> matchedTripRoutes = loadMatchedTripRoutes(routeUuid);
             currentTrips = loadAssociatedTrips(matchedTripRoutes);
             currentStories = loadAssociatedStories(matchedTripRoutes);
+        }
+
+        currentPlaces.clear();
+        if (currentRoute.places() != null) {
+            currentPlaces.addAll(currentRoute.places());
         }
 
         bind();
@@ -336,8 +338,7 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
         contextContainerCont.setVisible(true);
         contextContainerCont.setManaged(true);
 
-        var result = tripRouteService.getTripRouteById(
-                new GetTripRouteByIdRequest(UUID.fromString(tripRouteId)));
+        var result = tripRouteService.getTripRouteById(new GetTripRouteByIdRequest(UUID.fromString(tripRouteId)));
         if (result.isFailure()) {
             return;
         }

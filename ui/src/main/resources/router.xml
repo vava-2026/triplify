@@ -22,11 +22,13 @@
     </arguments>
 
     <arguments id="placeDetailsArgs">
-        <argument name="placeId" type="string" required="true"/>
+        <argument name="placeId" type="string" required="false"/>
+        <argument name="tripPlaceId" type="string" required="false"/>
     </arguments>
 
     <arguments id="routeDetailsArgs">
-        <argument name="routeId" type="string" required="true"/>
+        <argument name="routeId" type="string" required="false"/>
+        <argument name="tripRouteId" type="string" required="false"/>
     </arguments>
 
     <arguments id="tripDetailsArgs">

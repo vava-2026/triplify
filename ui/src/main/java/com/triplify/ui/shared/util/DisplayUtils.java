@@ -137,7 +137,7 @@ public final class DisplayUtils {
             contextContainer.getChildren().add(buildContextLink(I18n.t("details.context.trip"), () -> openTrip(router,tripPlace.tripId())));
         }
         if (tripPlace.tripRouteId() != null) {
-            contextContainer.getChildren().add(buildContextLink(I18n.t("details.context.route"), () -> openRoute(tripPlace.tripRouteId())));
+            contextContainer.getChildren().add(buildContextLink(I18n.t("details.context.route"), () -> openTripRoute(router, tripPlace.tripRouteId())));
         }
     }
 
@@ -154,10 +154,10 @@ public final class DisplayUtils {
             contextContainer.getChildren().add(buildContextLink(I18n.t("details.context.trip"), () -> openTrip(router,story.tripId())));
         }
         if (story.tripRouteId() != null) {
-            contextContainer.getChildren().add(buildContextLink(I18n.t("details.context.route"), () -> openRoute(story.tripRouteId())));
+            contextContainer.getChildren().add(buildContextLink(I18n.t("details.context.route"), () -> openTripRoute(router,story.tripRouteId())));
         }
         if (story.tripPlaceId() != null) {
-            contextContainer.getChildren().add(buildContextLink(I18n.t("details.context.place"), () -> openPlace(story.tripPlaceId())));
+            contextContainer.getChildren().add(buildContextLink(I18n.t("details.context.place"), () -> openTripPlace(router,story.tripPlaceId())));
         }
     }
 
@@ -175,11 +175,21 @@ public final class DisplayUtils {
         router.moveto(RouteIds.TRIP_DETAILS, args);
     }
 
-    private static void openRoute(UUID tripRouteId) {
-        // tripRouteId is not the same as routeId — no dedicated route details navigation
+    private static void openRoute(Router router, UUID routeId) {
+        RouterArgument args = new RouterArgument();
+        args.addArgument("routeId", routeId.toString());
+        router.moveto(RouteIds.ROUTE_DETAILS, args);
     }
 
-    private static void openPlace(UUID tripPlaceId) {
-        // tripPlaceId is not the same as placeId — no dedicated navigation without a service lookup
+    private static void openTripRoute(Router router, UUID tripRouteId) {
+        RouterArgument args = new RouterArgument();
+        args.addArgument("tripRouteId", tripRouteId.toString());
+        router.moveto(RouteIds.ROUTE_DETAILS, args);
+    }
+
+    private static void openTripPlace(Router router, UUID tripPlaceId) {
+        RouterArgument args = new RouterArgument();
+        args.addArgument("tripPlaceId", tripPlaceId.toString());
+        router.moveto(RouteIds.PLACE_DETAILS, args);
     }
 }

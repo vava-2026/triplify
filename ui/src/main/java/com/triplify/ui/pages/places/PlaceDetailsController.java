@@ -283,12 +283,17 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
     }
 
     private void loadPlaceDetails() {
-        if (placeId == null || placeId.isBlank()) {
+        if ((placeId == null || placeId.isBlank()) && (tripPlaceId == null || tripPlaceId.isBlank())) {
             toast.warning(I18n.t("place.details.toast.notFound"));
             getRouter().popBackStack();
             return;
         }
 
+        if(tripPlaceId != null && !tripPlaceId.isBlank()) {
+            loadTripContext();
+            bind(currentTripPlace.place());
+            return;
+        }
         UUID placeUuid = UUID.fromString(placeId);
 
         var placeResult = placeService.getPlaceById(new GetPlaceByIdRequest(placeUuid));
@@ -297,12 +302,7 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
             getRouter().popBackStack();
             return;
         }
-
         bind(placeResult.getValue());
-
-        if (tripPlaceId != null && !tripPlaceId.isBlank()) {
-            loadTripContext();
-        }
     }
 
     private void bind(PlaceResponse place) {

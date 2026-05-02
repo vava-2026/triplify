@@ -77,7 +77,7 @@ public class RouteServiceImpl implements RouteService {
         Route route = new Route(
                 user.userId(),
                 request.title(),
-                request.description(),
+                request.description() == null? "" : request.description(),
                 calculateLength(List.of())
         );
 
@@ -95,7 +95,7 @@ public class RouteServiceImpl implements RouteService {
         Route route = requireOwnedRoute(request.id(), user.userId()).orThrow();
         List<RoutePlace> routePlaces = routePlaceRepository.findByRouteId(request.id());
         route.updateTitle(request.title());
-        route.updateDescription(request.description());
+        route.updateDescription(request.description()==null? "" : request.description());
         route.updateLength(calculateLength(routePlaces));
 
         replaceCoverImage(route, request.coverImage(), request.title()).orThrow();
