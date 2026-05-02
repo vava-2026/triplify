@@ -189,6 +189,8 @@ CREATE TABLE trip_places (
     place_id   TEXT NOT NULL
      REFERENCES places(id)
          ON DELETE CASCADE ON UPDATE CASCADE,
+    status     TEXT    NOT NULL DEFAULT 'planned'
+        CHECK (status IN ('planned', 'ongoing', 'visited', 'canceled')),
     visit_date TEXT CHECK (visit_date IS NULL OR datetime(visit_date) IS NOT NULL),  -- added per ERD
     created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
      CHECK (datetime(created_at) IS NOT NULL),
