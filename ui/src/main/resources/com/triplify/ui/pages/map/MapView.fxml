@@ -31,7 +31,11 @@
           maxHeight="-Infinity"
           pickOnBounds="false"
           mouseTransparent="false"
-          StackPane.alignment="BOTTOM_LEFT"/>
+          StackPane.alignment="BOTTOM_LEFT">
+        <StackPane.margin>
+            <Insets bottom="24" left="24" right="24"/>
+        </StackPane.margin>
+    </HBox>
 
     <StackPane fx:id="clusterPopupContainer"
                pickOnBounds="false"

@@ -16,6 +16,7 @@ import java.util.ResourceBundle;
 public class TriplifyRouterContext extends BaseRouterContext {
 
     private final BooleanProperty fullScreenContent = new SimpleBooleanProperty(false);
+    private final BooleanProperty menuCollapsed = new SimpleBooleanProperty(false);
     private final ObjectProperty<AppPage> currentPage = new SimpleObjectProperty<>();
     private final ObjectProperty<AppPage> selectedPrimaryPage = new SimpleObjectProperty<>();
     private final Injector injector;
@@ -67,6 +68,18 @@ public class TriplifyRouterContext extends BaseRouterContext {
 
     public void setFullScreenContent(boolean value) {
         fullScreenContent.set(value);
+    }
+
+    public BooleanProperty menuCollapsedProperty() {
+        return menuCollapsed;
+    }
+
+    public boolean isMenuCollapsed() {
+        return menuCollapsed.get();
+    }
+
+    public void setMenuCollapsed(boolean value) {
+        menuCollapsed.set(value);
     }
 
     public ObjectProperty<AppPage> currentPageProperty() {

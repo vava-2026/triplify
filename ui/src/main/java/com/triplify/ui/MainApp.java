@@ -178,6 +178,7 @@ public class MainApp extends Application {
                 },
                 routerContext.currentPageProperty());
         var menuCollapsed = menuView.getViewModel().collapsedProperty();
+        routerContext.menuCollapsedProperty().bind(menuCollapsed);
         var leftOffset = Bindings.createDoubleBinding(
                 () -> !isMapPage.get() && showMenu.get() && !menuCollapsed.get()
                         ? MenuView.SIDEBAR_WIDTH : 0.0,
