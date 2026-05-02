@@ -28,6 +28,7 @@ import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.pages.images.ImageFormModalView;
 import com.triplify.ui.pages.images.ImageViewModalView;
 import com.triplify.ui.pages.images.view.ImageCardView;
+import com.triplify.ui.pages.places.view.TripPlaceCardView;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.shared.component.add_card.view.AddCardView;
 import com.triplify.ui.shared.component.card_grid.CardGridPane;
@@ -146,8 +147,9 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
 
     private void setupPlacesGrid() {
         placesGrid.setManualLoadMore(true);
+        placesGrid.setVScrollPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         placesGrid.setPageSize(8);
-        placesGrid.setMinCardWidth(180);
+        placesGrid.setMinCardWidth(220);
         placesGrid.setMaxColumns(4);
         placesGrid.setLoadMoreKey("trip.details.show.more.places");
         placesGrid.setEmptyTextKey("trip.details.empty.places");
@@ -155,6 +157,7 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
 
     private void setupStoriesGrid() {
         storiesGrid.setManualLoadMore(true);
+        storiesGrid.setVScrollPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         storiesGrid.setPageSize(8);
         storiesGrid.setMinCardWidth(220);
         storiesGrid.setMaxColumns(4);
@@ -266,8 +269,7 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
                 return new CardGridPane.PageResult<>(List.of(), null);
             }
             var p = r.getValue();
-            return new CardGridPane.PageResult<>(p.items(),
-                    new Pagination(page, size, null, p.hasNext() ? page + 1 : page));
+            return new CardGridPane.PageResult<>(p.items(), new Pagination(page, size, null, p.hasNext() ? page + 1 : page));
         });
         routesGrid.refresh();
 
@@ -275,15 +277,14 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         placesGrid.setPageLoader((page, size) -> {
             var r = tripPlaceService.getTripPlaces(new GetTripPlacesRequest(
                     new PageRequest(page - 1, size),
-                    new GetTripPlacesRequest.Filter(tripUuid, TripPlaceSourceType.MANUAL, null, null, null, null),
+                    new GetTripPlacesRequest.Filter(tripUuid, null, null, null, null, null),
                     new GetTripPlacesRequest.OrderBy(false)));
             if (r.isFailure()) {
                 log.warn("Failed to load trip places: {}", r.getError().message());
                 return new CardGridPane.PageResult<>(List.of(), null);
             }
             var p = r.getValue();
-            return new CardGridPane.PageResult<>(p.items(),
-                    new Pagination(page, size, null, p.hasNext() ? page + 1 : page));
+            return new CardGridPane.PageResult<>(p.items(), new Pagination(page, size, null, p.hasNext() ? page + 1 : page));
         });
         placesGrid.refresh();
 
@@ -350,8 +351,7 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         RouteCardView routeCard = RouteCardView.create(
                 tripRoute.route(), () -> openRoute(tripRoute.route()));
 
-        ComboBox<StatusEnum> statusCombo = new ComboBox<>(
-                FXCollections.observableArrayList(StatusEnum.values()));
+        ComboBox<StatusEnum> statusCombo = new ComboBox<>(FXCollections.observableArrayList(StatusEnum.values()));
         statusCombo.setValue(tripRoute.status());
         statusCombo.setMaxWidth(Double.MAX_VALUE);
         statusCombo.getStyleClass().add("trip-details-status-combo");
@@ -373,22 +373,8 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         }
     }
 
-    private VBox buildPlaceCard(TripPlaceResponse tripPlace) {
-        VBox card = new VBox(4);
-        card.getStyleClass().add("trip-details-place-card");
-        card.setCursor(javafx.scene.Cursor.HAND);
-        card.setOnMouseClicked(e -> openPlace(tripPlace.place().id()));
-
-        Label title = new Label(safeText(tripPlace.place().title(), I18n.t("trip.add.fallback.place")));
-        title.getStyleClass().add("trip-details-place-title");
-        title.setWrapText(true);
-
-        String country = tripPlace.place().country() == null ? "" : safeText(tripPlace.place().country().name(), "");
-        Label countryLabel = new Label(country);
-        countryLabel.getStyleClass().add("trip-details-place-country");
-
-        card.getChildren().addAll(title, countryLabel);
-        return card;
+    private Node buildPlaceCard(TripPlaceResponse tripPlace) {
+        return TripPlaceCardView.create(tripPlace, () -> openTripPlace(tripPlace.id(), tripPlace.place().id())).getRoot();
     }
 
     private Node buildStoryCard(StoryResponse story, UUID forTripId) {
@@ -402,10 +388,11 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         getRouter().moveto(RouteIds.ROUTE_DETAILS, args);
     }
 
-    private void openPlace(UUID placeId) {
+    private void openTripPlace(UUID tripPlaceId, UUID placeId) {
         if (placeId == null) return;
         RouterArgument args = new RouterArgument();
         args.addArgument("placeId", placeId.toString());
+        args.addArgument("tripPlaceId", tripPlaceId.toString());
         getRouter().moveto(RouteIds.PLACE_DETAILS, args);
     }
 

@@ -45,7 +45,7 @@ public class TripCardView implements Initializable {
     @Setter
     private Runnable onOpen;
     private StatusEnum currentStatus;
-    private final ChangeListener<ResourceBundle> i18nBundleListener = (obs, oldBundle, newBundle) -> applyStatus(currentStatus);
+    private final ChangeListener<ResourceBundle> i18nBundleListener = (obs, oldBundle, newBundle) -> DisplayUtils.applyStatus(statusLabel, currentStatus);
     private final WeakChangeListener<ResourceBundle> weakI18nBundleListener = new WeakChangeListener<>(i18nBundleListener);
 
     @Override
@@ -81,41 +81,10 @@ public class TripCardView implements Initializable {
         EditorUtils.applyCoverBackground(media, image);
 
         currentStatus = trip.status();
-        applyStatus(currentStatus);
+        DisplayUtils.applyStatus(statusLabel, currentStatus);
     }
 
-    private void applyStatus(StatusEnum status) {
-        statusLabel.setText(resolveStatusLabel(status));
-        statusLabel.getStyleClass().removeIf(style -> style.startsWith("trip-status-"));
-        String statusClass = resolveStatusCssClass(status);
-        if (statusClass != null) {
-            statusLabel.getStyleClass().add(statusClass);
-        }
-    }
 
-    private String resolveStatusLabel(StatusEnum status) {
-        if (status == null) {
-            return I18n.t("trip.status.unknown");
-        }
-
-        return switch (status) {
-            case VISITED -> I18n.t("trip.status.visited");
-            case ONGOING -> I18n.t("trip.status.ongoing");
-            case PLANNED, CANCELED -> I18n.t("trip.status.planned");
-        };
-    }
-
-    private String resolveStatusCssClass(StatusEnum status) {
-        if (status == null) {
-            return null;
-        }
-
-        return switch (status) {
-            case VISITED -> "trip-status-visited";
-            case ONGOING -> "trip-status-ongoing";
-            case PLANNED, CANCELED -> "trip-status-planned";
-        };
-    }
 
     public static TripCardView create(TripResponse trip, String dateRange, Runnable onOpen) {
         if (FXML_URL == null) throw new IllegalStateException("TripCard.fxml not found");

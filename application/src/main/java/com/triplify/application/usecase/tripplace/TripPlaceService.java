@@ -7,6 +7,7 @@ import com.triplify.application.usecase.tripplace.dto.GetTripPlacesRequest;
 import com.triplify.application.usecase.tripplace.dto.ReplaceManualTripPlacesRequest;
 import com.triplify.application.usecase.tripplace.dto.TripPlaceResponse;
 import com.triplify.application.usecase.tripplace.dto.UpdateTripPlaceRequest;
+import com.triplify.application.usecase.tripplace.dto.UpdateTripPlaceStatusRequest;
 import com.triplify.domain.pagination.Page;
 import com.triplify.domain.result.Result;
 
@@ -18,6 +19,8 @@ public interface TripPlaceService {
     Result<TripPlaceResponse> addTripPlace(AddTripPlaceRequest request);
 
     Result<TripPlaceResponse> updateTripPlace(UpdateTripPlaceRequest request);
+
+    Result<TripPlaceResponse> updateTripPlaceStatus(UpdateTripPlaceStatusRequest request);
 
     Result<Void> deleteTripPlace(DeleteTripPlaceRequest request);
 

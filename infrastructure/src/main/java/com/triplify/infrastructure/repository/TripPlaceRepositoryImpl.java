@@ -32,6 +32,7 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
 
     private static final Logger log = LoggerFactory.getLogger(TripPlaceRepositoryImpl.class);
     private static final String BASE_COLUMNS = "id, trip_id, place_id, visit_date, created_at, updated_at";
+    private static final StatusEnum DEFAULT_STATUS = StatusEnum.PLANNED;
 
     @Override
     public Optional<TripPlace> findById(UUID id) {
@@ -273,6 +274,9 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
             }
 
             setNullableInstant(ps, index++, tripPlace.getVisitDate());
+            if (columns.hasStatus()) {
+                ps.setString(index++, tripPlace.getStatus().getValue());
+            }
             ps.setString(index++, tripPlace.getCreatedAt().toString());
             ps.setString(index, tripPlace.getUpdatedAt().toString());
             ps.executeUpdate();
@@ -302,6 +306,9 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
             }
 
             setNullableInstant(ps, index++, tripPlace.getVisitDate());
+            if (columns.hasStatus()) {
+                ps.setString(index++, tripPlace.getStatus().getValue());
+            }
             ps.setString(index++, tripPlace.getUpdatedAt().toString());
             ps.setString(index, tripPlace.getId().toString());
             ps.executeUpdate();
@@ -324,6 +331,9 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
     }
 
     private TripPlace mapRow(ResultSet rs, ColumnState columns) throws SQLException {
+        StatusEnum status = columns.hasStatus()
+                ? StatusEnum.fromValue(rs.getString("status"))
+                : DEFAULT_STATUS;
         return new TripPlace(
                 UUID.fromString(rs.getString("id")),
                 UUID.fromString(rs.getString("trip_id")),
@@ -333,6 +343,7 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
                 columns.hasTripRouteId() ? nullableUuid(rs.getString("trip_route_id")) : null,
                 columns.hasRoutePlaceId() ? nullableUuid(rs.getString("route_place_id")) : null,
                 nullableInstant(rs.getString("visit_date")),
+                status,
                 Instant.parse(rs.getString("created_at")),
                 Instant.parse(rs.getString("updated_at"))
         );
@@ -349,6 +360,9 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
         }
         if (columns.hasRoutePlaceId()) {
             sql.append(", route_place_id");
+        }
+        if (columns.hasStatus()) {
+            sql.append(", status");
         }
         sql.append(" FROM trip_places").append(suffix);
         return sql.toString();
@@ -445,8 +459,14 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
             cols.append(", route_place_id");
             values.append(", ?");
         }
-        cols.append(", visit_date, created_at, updated_at");
-        values.append(", ?, ?, ?");
+        cols.append(", visit_date");
+        values.append(", ?");
+        if (columns.hasStatus()) {
+            cols.append(", status");
+            values.append(", ?");
+        }
+        cols.append(", created_at, updated_at");
+        values.append(", ?, ?");
         return "INSERT INTO trip_places (" + cols + ") VALUES (" + values + ")";
     }
 
@@ -462,7 +482,11 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
         if (columns.hasRoutePlaceId()) {
             sql.append(", route_place_id = ?");
         }
-        sql.append(", visit_date = ?, updated_at = ? WHERE id = ?");
+        sql.append(", visit_date = ?");
+        if (columns.hasStatus()) {
+            sql.append(", status = ?");
+        }
+        sql.append(", updated_at = ? WHERE id = ?");
         return sql.toString();
     }
 
@@ -470,6 +494,7 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
         boolean hasSourceType = false;
         boolean hasTripRouteId = false;
         boolean hasRoutePlaceId = false;
+        boolean hasStatus = false;
 
         try (PreparedStatement ps = conn.prepareStatement("PRAGMA table_info(trip_places)");
              ResultSet rs = ps.executeQuery()) {
@@ -481,11 +506,23 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
                     hasTripRouteId = true;
                 } else if ("route_place_id".equalsIgnoreCase(name)) {
                     hasRoutePlaceId = true;
+                } else if ("status".equalsIgnoreCase(name)) {
+                    hasStatus = true;
                 }
             }
         }
 
-        return new ColumnState(hasSourceType, hasTripRouteId, hasRoutePlaceId);
+        if (!hasStatus) {
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "ALTER TABLE trip_places ADD COLUMN status TEXT NOT NULL DEFAULT 'planned'")) {
+                ps.executeUpdate();
+            } catch (SQLException ignored) {
+                // column already exists in a concurrent call
+            }
+            hasStatus = true;
+        }
+
+        return new ColumnState(hasSourceType, hasTripRouteId, hasRoutePlaceId, hasStatus);
     }
 
     private UUID nullableUuid(String value) {
@@ -512,6 +549,6 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
         }
     }
 
-    private record ColumnState(boolean hasSourceType, boolean hasTripRouteId, boolean hasRoutePlaceId) {
+    private record ColumnState(boolean hasSourceType, boolean hasTripRouteId, boolean hasRoutePlaceId, boolean hasStatus) {
     }
 }

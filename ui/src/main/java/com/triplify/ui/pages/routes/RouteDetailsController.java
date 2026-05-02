@@ -429,10 +429,8 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
         title.getStyleClass().add("route-details-place-title");
         title.setWrapText(true);
 
-        String subtitleText = place.country() == null
-                ? EditorUtils.safeText(place.description(), "")
-                : Localization.localize(place.country());
-        Label subtitle = new Label(subtitleText);
+        Label subtitle = new Label();
+        Localization.bindLocalizedText(subtitle.textProperty(), place.country());
         subtitle.getStyleClass().add("route-details-place-subtitle");
         subtitle.setWrapText(true);
         copy.getChildren().addAll(title, subtitle);
