@@ -21,7 +21,6 @@ import com.triplify.application.usecase.route.RouteService;
 import com.triplify.application.usecase.route.dto.GetRouteByIdRequest;
 import com.triplify.application.usecase.route.dto.RouteResponse;
 import com.triplify.application.usecase.story.StoryService;
-import com.triplify.application.usecase.story.dto.GetStoriesRequest;
 import com.triplify.application.usecase.story.dto.StoryResponse;
 import com.triplify.application.usecase.tag.TagService;
 import com.triplify.application.usecase.tag.dto.TagResponse;
@@ -45,7 +44,6 @@ import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.pages.WindowedPageController;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.application.shared.Pagination;
-import com.triplify.ui.pages.stories.view.StoryCardView;
 import com.triplify.ui.shared.component.button.model.ButtonVariant;
 import com.triplify.ui.shared.component.button.view.AppButtonView;
 import com.triplify.ui.shared.component.add_card.view.AddCardView;
@@ -141,9 +139,6 @@ public class AddTripController extends WindowedPageController {
     @FXML private Button addCountryButton;
     @FXML private Button addRouteButton;
     @FXML private Button addPlaceButton;
-    @FXML private VBox storiesSectionContainer;
-    @FXML private SectionHeaderView storiesSectionHeader;
-    @FXML private CardGridPane<StoryResponse> storiesGrid;
     @FXML private VBox actionButtonsContainer;
 
     @Inject private ToastService toast;
@@ -215,7 +210,6 @@ public class AddTripController extends WindowedPageController {
         loadAvailableCategories();
         refreshLocalizedUi();
         initializeActionPickers();
-        setupStoriesSection();
         I18n.bundleProperty().addListener((obs, oldBundle, newBundle) -> refreshLocalizedUi());
         renderCountryChips();
         renderRoutes();
@@ -247,7 +241,6 @@ public class AddTripController extends WindowedPageController {
     public void onWindowedShow() {
         EditorDraftStorage.clearTripDraft();
         consumeReturnedEditorResults();
-        refreshStoriesIfNeeded();
     }
 
     @FXML
@@ -440,7 +433,6 @@ public class AddTripController extends WindowedPageController {
         Localization.bindText(descriptionLabel.textProperty(), "trip.add.field.description");
         Localization.bindText(routesSectionHeader.titleProperty(), "trip.add.section.routes");
         Localization.bindText(placesSectionHeader.titleProperty(), "trip.add.section.places");
-        Localization.bindText(storiesSectionHeader.titleProperty(), "trip.add.section.stories");
         Localization.bindText(imageUploadPanel.sectionTitleProperty(), "trip.add.section.cover");
         Localization.bindText(imageUploadPanel.uploadTitleProperty(), "trip.add.upload.title");
         Localization.bindText(imageUploadPanel.uploadSubtitleProperty(), "trip.add.upload.subtitle");
@@ -930,68 +922,6 @@ public class AddTripController extends WindowedPageController {
 
         loadTripRoutes(trip.id());
         loadTripPlaces(trip.id());
-        loadTripStories(trip.id());
-    }
-
-    private void setupStoriesSection() {
-        if (storiesGrid == null) {
-            return;
-        }
-
-        storiesGrid.setManualLoadMore(true);
-        storiesGrid.setPageSize(8);
-        storiesGrid.setMinCardWidth(220);
-        storiesGrid.setMaxColumns(3);
-        storiesGrid.setLoadMoreKey("common.loadMore");
-        storiesGrid.setEmptyTextKey("trip.details.empty.stories");
-        storiesGrid.addPinnedNode(new AddCardView(
-                "stories.add.card.title",
-                "stories.add.card.subtitle",
-                this::onAddStory
-        ));
-        storiesGrid.setCardFactory(story -> StoryCardView.create(story, () -> openStory(story)).getRoot());
-        updateStoriesSectionVisibility();
-    }
-
-    private void updateStoriesSectionVisibility() {
-        if (storiesSectionContainer == null) {
-            return;
-        }
-
-        boolean visible = tripId != null && !tripId.isBlank() && !createMode;
-        storiesSectionContainer.setVisible(visible);
-        storiesSectionContainer.setManaged(visible);
-    }
-
-    private void refreshStoriesIfNeeded() {
-        if (tripId == null || tripId.isBlank() || createMode) {
-            updateStoriesSectionVisibility();
-            return;
-        }
-
-        loadTripStories(UUID.fromString(tripId));
-    }
-
-    private void loadTripStories(UUID targetTripId) {
-        if (storiesGrid == null || targetTripId == null) {
-            return;
-        }
-
-        updateStoriesSectionVisibility();
-        storiesGrid.setPageLoader((page, size) -> {
-            var r = storyService.getStories(new GetStoriesRequest(
-                    new PageRequest(page - 1, size),
-                    new GetStoriesRequest.Filter(targetTripId, null, null, null, null, null),
-                    new GetStoriesRequest.OrderBy(false)));
-            if (r.isFailure()) {
-                log.warn("Failed to load trip stories [tripId={}, code={}, message={}]", targetTripId, r.getError().code(), r.getError().message());
-                return new CardGridPane.PageResult<>(List.of(), null);
-            }
-            var p = r.getValue();
-            return new CardGridPane.PageResult<>(p.items(),
-                    new Pagination(page, size, null, p.hasNext() ? page + 1 : page));
-        });
-        storiesGrid.refresh();
     }
 
     private void loadTripRoutes(UUID targetTripId) {
