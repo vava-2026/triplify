@@ -19,7 +19,6 @@ import com.triplify.application.usecase.tripplace.dto.TripPlaceResponse;
 import com.triplify.application.usecase.triproute.TripRouteService;
 import com.triplify.application.usecase.triproute.dto.GetTripRoutesRequest;
 import com.triplify.application.usecase.triproute.dto.TripRouteResponse;
-import com.triplify.application.usecase.triproute.dto.UpdateTripRouteStatusRequest;
 import com.triplify.domain.model.enums.StatusEnum;
 import com.triplify.domain.model.enums.TripPlaceSourceType;
 import com.triplify.domain.pagination.PageRequest;
@@ -33,7 +32,7 @@ import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.shared.component.add_card.view.AddCardView;
 import com.triplify.ui.shared.component.card_grid.CardGridPane;
 import com.triplify.ui.shared.component.detail_actions.view.DetailActionButtonsView;
-import com.triplify.ui.pages.routes.view.RouteCardView;
+import com.triplify.ui.pages.routes.view.TripRouteCardView;
 import com.triplify.ui.pages.stories.view.StoryCardView;
 import com.triplify.ui.shared.component.section_header.view.SectionHeaderView;
 import com.triplify.ui.shared.toast.ToastService;
@@ -46,10 +45,8 @@ import static com.triplify.ui.shared.util.DisplayUtils.toLocalDate;
 import static com.triplify.ui.shared.util.EditorUtils.configureButtonIcon;
 import static com.triplify.ui.shared.util.EditorUtils.installRoundedClip;
 
-import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
@@ -140,7 +137,7 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         routesGrid.setManualLoadMore(true);
         routesGrid.setPageSize(8);
         routesGrid.setMinCardWidth(220);
-        routesGrid.setMaxColumns(3);
+        routesGrid.setMaxColumns(4);
         routesGrid.setLoadMoreKey("trip.details.show.more.routes");
         routesGrid.setEmptyTextKey("trip.details.empty.routes");
     }
@@ -250,16 +247,16 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
 
     private void bind(TripResponse trip) {
         heroImageView.setImage(loadImage(trip));
-        tripTitleLabel.setText(safeText(trip.title(), I18n.t("trip.add.fallback.trip")));
+        tripTitleLabel.setText(trip.title());
         tripStatusLabel.setText(trip.status() == null ? "" : trip.status().getLabel());
         tripDatesLabel.setText(DisplayUtils.formatDateRange(toLocalDate(trip.startedAt()), toLocalDate(trip.endedAt())));
         tripCountriesLabel.setText(DisplayUtils.deriveCountryLabel(trip.countries()));
-        tripCategoryLabel.setText(trip.category() == null ? "" : safeText(Localization.localize(trip.category()), ""));
-        descriptionValueLabel.setText(safeText(trip.description(), I18n.t("trip.details.empty.description")));
+        tripCategoryLabel.setText(trip.category() == null ? "" : EditorUtils.safeText(Localization.localize(trip.category()), ""));
+        descriptionValueLabel.setText(EditorUtils.safeText(trip.description(), I18n.t("trip.details.empty.description")));
 
         UUID tripUuid = trip.id();
 
-        routesGrid.setCardFactory(tr -> buildTripRouteCard(tr, tripUuid));
+        routesGrid.setCardFactory(tr -> buildTripRouteCard(tr));
         routesGrid.setPageLoader((page, size) -> {
             var r = tripRouteService.getTripRoutes(new GetTripRoutesRequest(
                     new PageRequest(page - 1, size),
@@ -347,30 +344,8 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         );
     }
 
-    private VBox buildTripRouteCard(TripRouteResponse tripRoute, UUID forTripId) {
-        RouteCardView routeCard = RouteCardView.create(
-                tripRoute.route(), () -> openRoute(tripRoute.route()));
-
-        ComboBox<StatusEnum> statusCombo = new ComboBox<>(FXCollections.observableArrayList(StatusEnum.values()));
-        statusCombo.setValue(tripRoute.status());
-        statusCombo.setMaxWidth(Double.MAX_VALUE);
-        statusCombo.getStyleClass().add("trip-details-status-combo");
-        statusCombo.setOnAction(e -> updateTripRouteStatus(tripRoute.id(), statusCombo.getValue(), forTripId));
-
-        VBox wrapper = new VBox(8);
-        wrapper.getChildren().addAll(routeCard.getRoot(), statusCombo);
-        return wrapper;
-    }
-
-    private void updateTripRouteStatus(UUID tripRouteId, StatusEnum newStatus, UUID forTripId) {
-        if (newStatus == null) return;
-        var result = tripRouteService.updateStatus(new UpdateTripRouteStatusRequest(tripRouteId, newStatus, null, null));
-        if (result.isFailure()) {
-            toast.error(I18n.t("trip.details.route.status.failed"));
-            errorHandler.handle(result.getError());
-        } else {
-            toast.success(I18n.t("trip.details.route.status.updated"));
-        }
+    private Node buildTripRouteCard(TripRouteResponse tripRoute) {
+        return TripRouteCardView.create(tripRoute, () -> openRoute(tripRoute)).getRoot();
     }
 
     private Node buildPlaceCard(TripPlaceResponse tripPlace) {
@@ -381,10 +356,11 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         return StoryCardView.create(story, () -> openStory(story)).getRoot();
     }
 
-    private void openRoute(com.triplify.application.usecase.route.dto.RouteResponse route) {
-        if (route == null || route.id() == null) return;
+    private void openRoute(TripRouteResponse tripRoute) {
+        if (tripRoute == null || tripRoute.route() == null || tripRoute.route().id() == null) return;
         RouterArgument args = new RouterArgument();
-        args.addArgument("routeId", route.id().toString());
+        args.addArgument("routeId", tripRoute.route().id().toString());
+        args.addArgument("tripRouteId", tripRoute.id().toString());
         getRouter().moveto(RouteIds.ROUTE_DETAILS, args);
     }
 
@@ -413,10 +389,6 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         String url = trip.coverImage() != null && trip.coverImage().url() != null
                 ? trip.coverImage().url().toString() : DEFAULT_IMAGE;
         return EditorUtils.loadImage(url, DEFAULT_IMAGE, getClass());
-    }
-
-    private static String safeText(String value, String fallback) {
-        return value == null || value.isBlank() ? fallback : value;
     }
 
     private void configureButtonIcon(Button button, String iconLiteral, String styleClass) {

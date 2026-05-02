@@ -7,6 +7,7 @@ import com.triplify.application.usecase.image.dto.ImageResponse;
 import com.triplify.application.usecase.place.dto.PlaceResponse;
 import com.triplify.application.usecase.story.dto.StoryResponse;
 import com.triplify.application.usecase.tripplace.dto.TripPlaceResponse;
+import com.triplify.application.usecase.triproute.dto.TripRouteResponse;
 import com.triplify.domain.model.enums.StatusEnum;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.routing.RouteIds;
@@ -137,6 +138,13 @@ public final class DisplayUtils {
         }
         if (tripPlace.tripRouteId() != null) {
             contextContainer.getChildren().add(buildContextLink(I18n.t("details.context.route"), () -> openRoute(tripPlace.tripRouteId())));
+        }
+    }
+
+    public static void renderTripRouteContext(Router router, VBox contextContainer, TripRouteResponse tripRoute) {
+        contextContainer.getChildren().clear();
+        if (tripRoute.tripId() != null) {
+            contextContainer.getChildren().add(buildContextLink(I18n.t("details.context.trip"), () -> openTrip(router, tripRoute.tripId())));
         }
     }
 
