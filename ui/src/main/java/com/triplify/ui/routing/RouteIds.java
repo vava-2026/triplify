@@ -7,8 +7,6 @@ public final class RouteIds {
     public static final String MY_ROUTES = "my_routes";
     public static final String MY_TRIPS = "my_trips";
     public static final String MY_IMAGES = "my_images";
-    public static final String MY_BADGES = "my_badges";
-    public static final String MY_STATISTICS = "my_statistics";
     public static final String CALENDAR = "calendar";
     public static final String COUNTRIES = "countries";
     public static final String CATEGORIES = "categories";

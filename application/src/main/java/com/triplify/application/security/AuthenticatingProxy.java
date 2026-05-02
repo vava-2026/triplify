@@ -77,8 +77,22 @@ public class AuthenticatingProxy implements InvocationHandler {
      * Checks in order: implementation method ==> implementation class
      */
     private Authenticated resolveAnnotation(Method method) {
+        Class<?> implClass = target.getClass();
         try {
-            Method implMethod = target.getClass().getMethod(method.getName(), method.getParameterTypes());
+            if (Proxy.isProxyClass(implClass)) {
+                var handler = Proxy.getInvocationHandler(target);
+                try {
+                    var field = handler.getClass().getDeclaredField("target");
+                    field.setAccessible(true);
+                    Object underlying = field.get(handler);
+                    if (underlying != null) {
+                        implClass = underlying.getClass();
+                    }
+                } catch (ReflectiveOperationException ignored) {
+                }
+            }
+
+            Method implMethod = implClass.getMethod(method.getName(), method.getParameterTypes());
             Authenticated methodLevel = implMethod.getAnnotation(Authenticated.class);
             if (methodLevel != null) {
                 return methodLevel;
@@ -87,6 +101,6 @@ public class AuthenticatingProxy implements InvocationHandler {
             log.warn("Method {} does not exist in implementation class", method.getName());
         }
 
-        return target.getClass().getAnnotation(Authenticated.class);
+        return implClass.getAnnotation(Authenticated.class);
     }
 }

@@ -24,7 +24,7 @@
     </stylesheets>
     <ScrollPane fitToWidth="true" fitToHeight="true" hbarPolicy="NEVER" vbarPolicy="NEVER" styleClass="page-scroll">
             <StackPane styleClass="account-scroll-content">
-            <VBox spacing="14" styleClass="account-page-content" maxWidth="1060">
+            <VBox spacing="45" styleClass="account-page-content" minWidth="960" maxWidth="1060">
                 <HBox styleClass="profile-hero-card" fillHeight="false">
                     <HBox alignment="CENTER_LEFT" spacing="35" fillHeight="false">
                         <StackPane styleClass="profile-avatar-circle">
@@ -74,16 +74,15 @@
                     <StackPane fx:id="logoutButtonContainer" alignment="CENTER_RIGHT"/>
                 </HBox>
 
-                <VBox>
-                    <GridPane fx:id="badgesGrid" styleClass="badges-grid">
-                        <columnConstraints>
-                            <ColumnConstraints percentWidth="20"/>
-                            <ColumnConstraints percentWidth="20"/>
-                            <ColumnConstraints percentWidth="20"/>
-                            <ColumnConstraints percentWidth="20"/>
-                            <ColumnConstraints percentWidth="20"/>
-                        </columnConstraints>
-                    </GridPane>
+                <fx:include fx:id="statisticsSection" source="StatisticsView.fxml" VBox.vgrow="ALWAYS"/>
+
+                <VBox fx:id="badgesSection" spacing="20" alignment="TOP_CENTER">
+                    <HBox styleClass="section-header" alignment="CENTER_LEFT" spacing="8">
+                        <FontIcon iconLiteral="fth-award" iconSize="24" styleClass="header-icon"/>
+                        <Label fx:id="badgesTitleLabel"/>
+                    </HBox>
+
+                    <VBox fx:id="badgesGroupsContainer" spacing="30" alignment="TOP_CENTER" prefWidth="880" minWidth="880" maxWidth="880"/>
                 </VBox>
             </VBox>
             </StackPane>

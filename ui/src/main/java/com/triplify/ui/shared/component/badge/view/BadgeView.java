@@ -1,10 +1,13 @@
 package com.triplify.ui.shared.component.badge.view;
 
+import com.triplify.application.usecase.badgegroup.dto.BadgeGroupResponse;
 import com.triplify.ui.shared.component.badge.viewmodel.BadgeViewModel;
+import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.util.Localization;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.beans.binding.Bindings;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -24,7 +27,11 @@ public class BadgeView extends VBox {
 
     @FXML private ImageView badgeImage;
     @FXML private Label badgeName;
-    @FXML private Label badgeStat;
+    @FXML private Label badgeDescription;
+
+    private BadgeGroupResponse currentGroup;
+    private int currentValue;
+    private int requiredValue;
 
     public BadgeView() {
         URL fxmlUrl = getClass().getResource("/com/triplify/ui/shared/component/badge/view/AppBadge.fxml");
@@ -48,18 +55,24 @@ public class BadgeView extends VBox {
         updateTitleLayout();
     }
 
-    public void update(BadgeViewModel badge) {
+    public void update(BadgeViewModel badge, BadgeGroupResponse group, int currentVal, int requiredVal) {
+        this.currentGroup = group;
+        this.currentValue = currentVal;
+        this.requiredValue = requiredVal;
+        
         badgeName.textProperty().unbind();
-        badgeStat.textProperty().unbind();
+        badgeDescription.textProperty().unbind();
         Localization.bindLocalizedText(badgeName.textProperty(), badge);
-
-        badgeStat.textProperty().bind(
-                Localization.textBinding("badge.countriesVisited")
-                        .concat(": ")
-                        .concat(badge.getCurrentValue())
-                        .concat("/")
-                        .concat(badge.getRequiredValue())
-        );
+        
+        badgeDescription.textProperty().bind(Bindings.createStringBinding(
+            () -> {
+                if (currentGroup == null) return "";
+                String localizedDesc = Localization.localizeDescription(currentGroup);
+                String pair = currentValue + "/" + requiredValue;
+                return localizedDesc.replace("?", pair);
+            },
+            I18n.languageProperty()
+        ));
         badgeImage.setImage(resolveBadgeImage(badge.getImage()));
 
         if (badge.isUnlocked()) {

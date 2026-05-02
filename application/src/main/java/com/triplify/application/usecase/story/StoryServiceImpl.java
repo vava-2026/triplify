@@ -11,6 +11,8 @@ import com.triplify.application.usecase.story.dto.GetStoriesRequest;
 import com.triplify.application.usecase.story.dto.GetStoryByIdRequest;
 import com.triplify.application.usecase.story.dto.StoryResponse;
 import com.triplify.application.usecase.story.dto.UpdateStoryRequest;
+import com.triplify.application.usecase.statistic.StatisticService;
+import com.triplify.application.usecase.statistic.dto.IncrementStatisticRequest;
 import com.triplify.domain.error.StoryError;
 import com.triplify.domain.error.TripError;
 import com.triplify.domain.error.TripPlaceError;
@@ -30,6 +32,7 @@ import com.triplify.domain.repository.TripPlaceRepository;
 import com.triplify.domain.repository.TripRepository;
 import com.triplify.domain.repository.TripRouteRepository;
 import com.triplify.domain.result.Result;
+import com.triplify.domain.model.enums.StatisticType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,6 +54,7 @@ public class StoryServiceImpl implements StoryService {
     private final TripRepository tripRepository;
     private final TripRouteRepository tripRouteRepository;
     private final TripPlaceRepository tripPlaceRepository;
+    private final StatisticService statisticService;
 
     @Inject
     public StoryServiceImpl(StoryRepository storyRepository,
@@ -59,7 +63,8 @@ public class StoryServiceImpl implements StoryService {
                             TripRepository tripRepository,
                             TripPlaceRepository tripPlaceRepository,
                             TripRouteRepository  tripRouteRepository,
-                            UserSessionContext sessionContext) {
+                            UserSessionContext sessionContext,
+                            StatisticService statisticService) {
         this.storyRepository = storyRepository;
         this.imageRepository = imageRepository;
         this.tripRepository = tripRepository;
@@ -67,6 +72,7 @@ public class StoryServiceImpl implements StoryService {
         this.tripRouteRepository = tripRouteRepository;
         this.sessionContext = sessionContext;
         this.emotionRepository = emotionRepository;
+        this.statisticService = statisticService;
     }
 
     @Override
@@ -120,6 +126,7 @@ public class StoryServiceImpl implements StoryService {
 
         story.updateLocation(request.latitude(), request.longitude());
         storyRepository.create(story);
+    statisticService.incrementStatistic(new IncrementStatisticRequest(user.userId(), StatisticType.STORIES_CREATED)).orThrow();
         log.info("Created story id='{}', title='{}' for userId='{}'",
                 story.getId(), story.getTitle(), user.userId());
         return Result.ok(toResponse(story));
