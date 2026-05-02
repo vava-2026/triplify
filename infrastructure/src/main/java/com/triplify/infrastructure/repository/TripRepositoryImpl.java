@@ -359,6 +359,28 @@ public class TripRepositoryImpl implements TripRepository {
         }
     }
 
+    @Override
+    public Set<UUID> findCountryIdsByUser(UUID userId) {
+        String sql = "SELECT DISTINCT tc.country_id AS country_id FROM trip_countries tc INNER JOIN trips t ON tc.trip_id = t.id WHERE t.user_id = ?";
+        Set<UUID> result = new LinkedHashSet<>();
+        try (Connection conn = SQLiteConnectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, userId.toString());
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String val = rs.getString("country_id");
+                    if (val != null) {
+                        result.add(UUID.fromString(val));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            log.error("Failed to load country ids for userId='{}'", userId, e);
+            throw new RuntimeException("Database error while loading country ids for user", e);
+        }
+        return result;
+    }
+
     private List<Trip> hydrateTrips(Connection conn, List<Trip> trips) throws SQLException {
         if (trips.isEmpty()) {
             return trips;

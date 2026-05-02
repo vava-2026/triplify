@@ -23,4 +23,5 @@ public interface TripRepository {
     void replaceTagIds(UUID tripId, Set<UUID> tagIds);
     void replaceCountryIds(UUID tripId, Set<UUID> countryIds);
     void updateCoverImageId(UUID tripId, UUID coverImageId);
+    Set<UUID> findCountryIdsByUser(UUID userId);
 }
