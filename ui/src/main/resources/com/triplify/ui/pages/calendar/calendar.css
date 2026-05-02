@@ -44,12 +44,6 @@
     -fx-background-color: -color-surface-dark;
 }
 
-.day-header-row {
-    -fx-background-color: -color-surface;
-    -fx-border-color: -color-border-muted;
-    -fx-border-width: 0 0 1 0;
-}
-
 .day-header-cell {
     -fx-font-size: 11px;
     -fx-font-weight: bold;
@@ -117,8 +111,9 @@
 }
 
 .trip-chip-span {
-    -fx-background-radius: 0;
+    -fx-background-radius: 4;
     -fx-min-width: 10;
+    -fx-min-height: 20;
 }
 
 .trip-chip-point {
@@ -191,16 +186,6 @@
     -fx-border-width: 0 0 0 1;
     -fx-padding: 12;
     -fx-spacing: 10;
-}
-
-.selected-trip-panel {
-    -fx-background-color: -color-surface;
-    -fx-background-radius: 8;
-    -fx-border-color: -color-border-muted;
-    -fx-border-radius: 8;
-    -fx-border-width: 1;
-    -fx-padding: 10;
-    -fx-effect: dropshadow(gaussian, rgba(12, 12, 13, 0.07), 12, 0, 0, 3);
 }
 
 .selected-title {

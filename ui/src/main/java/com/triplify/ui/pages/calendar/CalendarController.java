@@ -53,21 +53,17 @@ public class CalendarController extends SimpleLifecycleAwareController {
     private static final Logger log = LoggerFactory.getLogger(CalendarController.class);
     private static final int UNDATED_PAGE_SIZE = 10;
 
-    // FXML
     @FXML private HBox navBar;
     @FXML private Button prevMonthBtn;
     @FXML private Button nextMonthBtn;
     @FXML private Label monthYearLabel;
-    @FXML private GridPane dayHeaderRow;
     @FXML private GridPane calendarGrid;
     @FXML private VBox selectedTripPanel;
     @FXML private Label undatedTitleLabel;
     @FXML private CardGridPane<TripResponse> undatedTripsGrid;
 
-    // Injected
     @Inject private TripService tripService;
 
-    // State
     private YearMonth currentMonth;
     private StatusEnum selectedStatus;
     private Select<StatusEnum> statusSelect;
@@ -78,7 +74,6 @@ public class CalendarController extends SimpleLifecycleAwareController {
     @FXML
     private void initialize() {
         currentMonth = YearMonth.now();
-        buildDayHeaders();
         buildStatusFilter();
         setupNavButtons();
         setupUndatedGrid();
@@ -87,29 +82,6 @@ public class CalendarController extends SimpleLifecycleAwareController {
     @Override
     public void onLifecycleShow() {
         refreshAll();
-    }
-
-    // ── Setup ──────────────────────────────────────────────────────────
-
-    private void buildDayHeaders() {
-        String[] keys = {
-            "calendar.day.mon", "calendar.day.tue", "calendar.day.wed",
-            "calendar.day.thu", "calendar.day.fri", "calendar.day.sat", "calendar.day.sun"
-        };
-
-        dayHeaderRow.getColumnConstraints().clear();
-        for (int col = 0; col < 7; col++) {
-            ColumnConstraints cc = new ColumnConstraints();
-            cc.setPercentWidth(100.0 / 7);
-            cc.setHgrow(Priority.SOMETIMES);
-            dayHeaderRow.getColumnConstraints().add(cc);
-
-            Label lbl = new Label();
-            lbl.getStyleClass().add("day-header-cell");
-            lbl.setMaxWidth(Double.MAX_VALUE);
-            Localization.bindText(lbl.textProperty(), keys[col]);
-            dayHeaderRow.add(lbl, col, 0);
-        }
     }
 
     private void buildStatusFilter() {
@@ -166,8 +138,6 @@ public class CalendarController extends SimpleLifecycleAwareController {
         undatedTripsGrid.setPageLoader(this::loadUndatedPage);
     }
 
-    // ── Data refresh ──────────────────────────────────────────────────
-
     private void refreshAll() {
         selectedStatus = statusSelect != null && statusSelect.getSelectedItem() != null
                 ? statusSelect.getSelectedItem().getValue()
@@ -198,8 +168,7 @@ public class CalendarController extends SimpleLifecycleAwareController {
         buildCalendarGrid();
     }
 
-    // ── Calendar grid construction ────────────────────────────────────
-
+    //partly generated with Copilot
     private void buildCalendarGrid() {
         calendarGrid.getChildren().clear();
         calendarGrid.getColumnConstraints().clear();
@@ -213,7 +182,7 @@ public class CalendarController extends SimpleLifecycleAwareController {
             calendarGrid.getColumnConstraints().add(cc);
         }
 
-        int startOffset = currentMonth.atDay(1).getDayOfWeek().getValue() - 1; // Mon=0
+        int startOffset = currentMonth.atDay(1).getDayOfWeek().getValue() - 1;
         int daysInMonth = currentMonth.lengthOfMonth();
         int totalCells = startOffset + daysInMonth;
         int rows = (int) Math.ceil(totalCells / 7.0);
@@ -258,11 +227,7 @@ public class CalendarController extends SimpleLifecycleAwareController {
             if (tripOccursOnDay(trip, date)) {
                 Node chip = buildChip(trip, date);
                 cell.getChildren().add(chip);
-                List<Node> chips = chipsByTripId.get(trip.id());
-                if (chips == null) {
-                    chips = new ArrayList<>();
-                    chipsByTripId.put(trip.id(), chips);
-                }
+                List<Node> chips = chipsByTripId.computeIfAbsent(trip.id(), k -> new ArrayList<>());
                 chips.add(chip);
             }
         }
@@ -270,10 +235,8 @@ public class CalendarController extends SimpleLifecycleAwareController {
     }
 
     private boolean tripOccursOnDay(TripResponse trip, LocalDate date) {
-        LocalDate start = trip.startedAt() != null
-                ? trip.startedAt().atZone(ZoneOffset.UTC).toLocalDate() : null;
-        LocalDate end = trip.endedAt() != null
-                ? trip.endedAt().atZone(ZoneOffset.UTC).toLocalDate() : null;
+        LocalDate start = trip.startedAt() != null ? trip.startedAt().atZone(ZoneOffset.UTC).toLocalDate() : null;
+        LocalDate end = trip.endedAt() != null ? trip.endedAt().atZone(ZoneOffset.UTC).toLocalDate() : null;
 
         if (start != null && end != null) return !date.isBefore(start) && !date.isAfter(end);
         if (start != null) return date.equals(start);
@@ -283,12 +246,9 @@ public class CalendarController extends SimpleLifecycleAwareController {
 
     private Node buildChip(TripResponse trip, LocalDate cellDate) {
         boolean isSpan = trip.startedAt() != null && trip.endedAt() != null;
-        ColorTheme colorTheme = resolveCategoryTheme(trip);
 
         HBox chip = new HBox();
-        chip.getStyleClass().addAll("trip-chip",
-                isSpan ? "trip-chip-span" : "trip-chip-point",
-                colorTheme.getStyleClass());
+        chip.getStyleClass().addAll("trip-chip", isSpan ? "trip-chip-span" : "trip-chip-point", trip.category().color().getStyleClass());
 
         if (isSpan) {
             LocalDate effectiveStart = trip.startedAt().atZone(ZoneOffset.UTC).toLocalDate();
@@ -311,15 +271,6 @@ public class CalendarController extends SimpleLifecycleAwareController {
         });
         return chip;
     }
-
-    private ColorTheme resolveCategoryTheme(TripResponse trip) {
-        if (trip == null || trip.category() == null || trip.category().color() == null) {
-            return ColorTheme.GRAY;
-        }
-        return trip.category().color();
-    }
-
-    // ── Selection ─────────────────────────────────────────────────────
 
     private void handleChipClick(TripResponse trip) {
         boolean isSame = selectedTrip != null && selectedTrip.id().equals(trip.id());
@@ -364,8 +315,6 @@ public class CalendarController extends SimpleLifecycleAwareController {
         selectedTripPanel.setVisible(true);
         selectedTripPanel.setManaged(true);
     }
-
-    // ── Undated grid ──────────────────────────────────────────────────
 
     private Node buildUndatedCard(TripResponse trip) {
         String dateRange = formatDateRange(toLocalDate(trip.startedAt()), toLocalDate(trip.endedAt()));
