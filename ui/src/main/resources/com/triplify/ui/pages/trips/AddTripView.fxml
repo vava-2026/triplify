@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import com.triplify.ui.shared.component.section_header.view.SectionHeaderView?>
-<?import com.triplify.ui.shared.component.card_grid.CardGridPane?>
 <?import com.triplify.ui.shared.component.tag_picker.TagPickerItem?>
 <?import com.triplify.ui.shared.component.upload_panel.view.ImageUploadPanelView?>
 <?import javafx.scene.control.Button?>

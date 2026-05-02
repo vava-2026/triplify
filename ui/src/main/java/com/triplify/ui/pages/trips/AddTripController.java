@@ -20,8 +20,6 @@ import com.triplify.application.usecase.place.dto.PlaceResponse;
 import com.triplify.application.usecase.route.RouteService;
 import com.triplify.application.usecase.route.dto.GetRouteByIdRequest;
 import com.triplify.application.usecase.route.dto.RouteResponse;
-import com.triplify.application.usecase.story.StoryService;
-import com.triplify.application.usecase.story.dto.StoryResponse;
 import com.triplify.application.usecase.tag.TagService;
 import com.triplify.application.usecase.tag.dto.TagResponse;
 import com.triplify.application.usecase.trip.TripService;
@@ -37,17 +35,13 @@ import com.triplify.application.usecase.triproute.dto.ReplaceTripRoutesRequest;
 import com.triplify.application.usecase.triproute.dto.TripRouteResponse;
 import com.triplify.domain.model.enums.StatusEnum;
 import com.triplify.domain.model.enums.TripPlaceSourceType;
-import com.triplify.domain.pagination.PageRequest;
 import com.triplify.domain.result.Result;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.pages.WindowedPageController;
 import com.triplify.ui.routing.RouteIds;
-import com.triplify.application.shared.Pagination;
 import com.triplify.ui.shared.component.button.model.ButtonVariant;
 import com.triplify.ui.shared.component.button.view.AppButtonView;
-import com.triplify.ui.shared.component.add_card.view.AddCardView;
-import com.triplify.ui.shared.component.card_grid.CardGridPane;
 import com.triplify.ui.pages.categories.Categories;
 import com.triplify.ui.pages.countries.model.Countries;
 import com.triplify.ui.pages.countries.view.CountriesView;
@@ -150,7 +144,6 @@ public class AddTripController extends WindowedPageController {
     @Inject private PlaceService placeService;
     @Inject private TripRouteService tripRouteService;
     @Inject private TripPlaceService tripPlaceService;
-    @Inject private StoryService storyService;
     @Inject private CountryService countryService;
     @Inject private FxmlLoaderHelper fxmlLoader;
 
@@ -281,17 +274,6 @@ public class AddTripController extends WindowedPageController {
         boolean nextState = !placePickerContainer.isVisible();
         setPlacePickerVisible(nextState);
         if (nextState) setRoutePickerVisible(false);
-    }
-
-    @FXML
-    private void onAddStory() {
-        if (tripId == null || tripId.isBlank()) {
-            return;
-        }
-
-        RouterArgument args = new RouterArgument();
-        args.addArgument("tripId", tripId);
-        getRouter().moveto(RouteIds.ADD_STORY, args);
     }
 
     @FXML
@@ -616,13 +598,6 @@ public class AddTripController extends WindowedPageController {
         return card;
     }
 
-    private void openStory(StoryResponse story) {
-        if (story == null || story.id() == null) return;
-        RouterArgument args = new RouterArgument();
-        args.addArgument("storyId", story.id().toString());
-        getRouter().moveto(RouteIds.STORY_DETAILS, args);
-    }
-
     private boolean isClickOnButton(Object target) {
         Node current = target instanceof Node node ? node : null;
         while (current != null) {
@@ -849,15 +824,11 @@ public class AddTripController extends WindowedPageController {
         for (PlaceItem item : placeItems) {
             itemsById.putIfAbsent(item.id(), item);
         }
-
-// I dont know what the idea was, but currently this works out horrible
-//
-//
-//        for (RouteItem route : routeItems) {
-//            for (PlaceItem item : route.derivedPlaces()) {
-//                itemsById.putIfAbsent(item.id(), item);
-//            }
-//        }
+        for (RouteItem route : routeItems) {
+            for (PlaceItem item : route.derivedPlaces()) {
+                itemsById.putIfAbsent(item.id(), item);
+            }
+        }
         return new ArrayList<>(itemsById.values());
     }
 

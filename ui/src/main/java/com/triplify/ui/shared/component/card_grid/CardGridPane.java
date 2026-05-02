@@ -130,8 +130,7 @@ public class CardGridPane<T> extends VBox {
     }
 
     public void setVScrollPolicy(ScrollPane.ScrollBarPolicy policy) {
-        policy = policy == null ? ScrollPane.ScrollBarPolicy.ALWAYS : policy;
-        scrollPane.setVbarPolicy(manualLoadMore ? ScrollPane.ScrollBarPolicy.NEVER : policy);
+        scrollPane.setVbarPolicy(policy);
     }
 
     public void setLoadMoreKey(String i18nKey) {
