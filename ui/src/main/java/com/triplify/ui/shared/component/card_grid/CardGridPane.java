@@ -60,8 +60,8 @@ public class CardGridPane<T> extends VBox {
     private double minCardWidth = 200;
     private int maxColumns = 5;
 
+    @Setter
     private boolean manualLoadMore = false;
-    private ScrollPane.ScrollBarPolicy vScrollPolicy = ScrollPane.ScrollBarPolicy.ALWAYS;
     private HBox loadMoreFooter;
     private Label loadMoreLabel;
 
@@ -130,13 +130,8 @@ public class CardGridPane<T> extends VBox {
     }
 
     public void setVScrollPolicy(ScrollPane.ScrollBarPolicy policy) {
-        vScrollPolicy = policy == null ? ScrollPane.ScrollBarPolicy.ALWAYS : policy;
-        applyVScrollPolicy();
-    }
-
-    public void setManualLoadMore(boolean manualLoadMore) {
-        this.manualLoadMore = manualLoadMore;
-        applyVScrollPolicy();
+        policy = policy == null ? ScrollPane.ScrollBarPolicy.ALWAYS : policy;
+        scrollPane.setVbarPolicy(manualLoadMore ? ScrollPane.ScrollBarPolicy.NEVER : policy);
     }
 
     public void setLoadMoreKey(String i18nKey) {
@@ -151,10 +146,6 @@ public class CardGridPane<T> extends VBox {
         this.gap = gap;
         grid.setHgap(gap);
         grid.setVgap(gap);
-    }
-
-    private void applyVScrollPolicy() {
-        scrollPane.setVbarPolicy(manualLoadMore ? ScrollPane.ScrollBarPolicy.NEVER : vScrollPolicy);
     }
 
     public void setMaxColumns(int maxColumns) {

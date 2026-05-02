@@ -198,6 +198,7 @@ private void setupInputs()
 
     private void setupRoutesGrid() {
         routesGrid.setManualLoadMore(true);
+        routesGrid.setVScrollPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         routesGrid.setPageSize(3);
         routesGrid.setMinCardWidth(220);
         routesGrid.setMaxColumns(3);
@@ -207,6 +208,7 @@ private void setupInputs()
 
     private void setupPlacesGrid() {
         placesGrid.setManualLoadMore(true);
+        placesGrid.setVScrollPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         placesGrid.setPageSize(4);
         placesGrid.setMinCardWidth(180);
         placesGrid.setMaxColumns(4);
@@ -216,6 +218,7 @@ private void setupInputs()
 
     private void setupStoriesGrid() {
         storiesGrid.setManualLoadMore(true);
+        storiesGrid.setVScrollPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         storiesGrid.setPageSize(8);
         storiesGrid.setMinCardWidth(220);
         storiesGrid.setMaxColumns(3);
@@ -225,6 +228,7 @@ private void setupInputs()
 
     private void setupImagesGrid() {
         imagesGrid.setManualLoadMore(true);
+        imagesGrid.setVScrollPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         imagesGrid.setMinCardWidth(220);
         imagesGrid.setMaxColumns(4);
         imagesGrid.setPageSize(7);
