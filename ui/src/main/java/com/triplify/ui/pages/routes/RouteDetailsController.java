@@ -1,52 +1,90 @@
 package com.triplify.ui.pages.routes;
 
 import com.google.inject.Inject;
-import com.gluonhq.maps.MapPoint;
-import com.triplify.application.shared.Pagination;
+import com.triplify.application.usecase.place.dto.PlaceResponse;
 import com.triplify.application.usecase.route.RouteService;
 import com.triplify.application.usecase.route.dto.DeleteRouteRequest;
 import com.triplify.application.usecase.route.dto.GetRouteByIdRequest;
 import com.triplify.application.usecase.route.dto.RouteResponse;
-import com.triplify.application.usecase.place.dto.PlaceResponse;
+import com.triplify.application.usecase.story.StoryService;
+import com.triplify.application.usecase.story.dto.GetStoriesRequest;
+import com.triplify.application.usecase.story.dto.StoryResponse;
+import com.triplify.application.usecase.trip.TripService;
+import com.triplify.application.usecase.trip.dto.GetTripByIdRequest;
+import com.triplify.application.usecase.trip.dto.TripResponse;
+import com.triplify.application.usecase.triproute.TripRouteService;
+import com.triplify.application.usecase.triproute.dto.GetTripRoutesRequest;
+import com.triplify.application.usecase.triproute.dto.TripRouteResponse;
+import com.triplify.domain.pagination.PageRequest;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
+import com.gluonhq.maps.MapPoint;
 import com.triplify.ui.map.InteractiveMap;
+import com.triplify.ui.pages.places.PlaceDetailsController;
 import com.triplify.ui.routing.RouteIds;
+import com.triplify.ui.pages.stories.view.StoryCardView;
 import com.triplify.ui.shared.component.card_grid.CardGridPane;
 import com.triplify.ui.shared.component.detail_actions.view.DetailActionButtonsView;
+import com.triplify.ui.shared.component.empty_state.view.EmptyStateCardView;
 import com.triplify.ui.shared.component.section_header.view.SectionHeaderView;
 import com.triplify.ui.shared.toast.ToastService;
+import com.triplify.application.shared.GeoCalculator;
+import com.triplify.ui.shared.util.DisplayUtils;
 import com.triplify.ui.shared.util.EditorUtils;
 import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import com.triplify.ui.shared.util.Localization;
-
-import static com.triplify.ui.shared.util.EditorUtils.installRoundedClip;
-
+import com.triplify.ui.pages.trips.view.TripCardView;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
+import javafx.scene.Node;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.control.ScrollPane;
+import javafx.stage.Popup;
 import org.kordamp.ikonli.javafx.FontIcon;
 import rahulstech.jfx.routing.element.RouterArgument;
 import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
+
+import static com.triplify.ui.shared.util.DisplayUtils.toLocalDate;
 
 public class RouteDetailsController extends SimpleLifecycleAwareController {
 
     private static final String DEFAULT_IMAGE = "/com/triplify/ui/pages/trips/images/one.png";
-    private static final int ROUTE_MAP_ZOOM = 8;
+    private static final int COUNTRY_EMOJI_SIZE = 18;
+    private static final int SCAN_PAGE_SIZE = 64;
+    private static final int MAX_MATCHED_TRIP_ROUTES = 24;
+    private static final int ASSOCIATED_TRIPS_LIMIT = 8;
+    private static final int STORIES_PER_ROUTE_LIMIT = 4;
+    private static final int ASSOCIATED_STORIES_LIMIT = 8;
 
     @FXML private VBox contentContainer;
     @FXML private StackPane heroContainer;
@@ -54,60 +92,80 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
     @FXML private Button backButton;
     @FXML private ImageView heroImageView;
     @FXML private Label routeTitleLabel;
-    @FXML private Label routeLengthLabel;
+    @FXML private HBox countryRow;
+    @FXML private ImageView countryEmojiView;
+    @FXML private Label countryLabel;
     @FXML private Label descriptionTitleLabel;
     @FXML private Label descriptionValueLabel;
-    @FXML private Label mapTitleLabel;
+    @FXML private Label overviewTitleLabel;
     @FXML private InteractiveMap routeMap;
+    @FXML private Label distanceValueLabel;
+    @FXML private Label placesValueLabel;
     @FXML private DetailActionButtonsView actionButtonsView;
     @FXML private SectionHeaderView placesHeader;
-    @FXML private CardGridPane<PlaceResponse> placesGrid;
+    @FXML private VBox placesListContainer;
+    @FXML private SectionHeaderView associatedTripsHeader;
+    @FXML private CardGridPane<TripResponse> associatedTripsGrid;
+    @FXML private SectionHeaderView associatedStoriesHeader;
+    @FXML private CardGridPane<StoryResponse> associatedStoriesGrid;
 
     @Inject private RouteService routeService;
+    @Inject private TripService tripService;
+    @Inject private TripRouteService tripRouteService;
+    @Inject private StoryService storyService;
     @Inject private ToastService toast;
     @Inject private ErrorHandler errorHandler;
     @Inject private FxmlLoaderHelper fxmlLoader;
 
     private String routeId;
-    private List<PlaceResponse> currentPlaces = List.of();
-    private final AtomicInteger placeIndexCounter = new AtomicInteger(0);
+    private RouteResponse currentRoute;
+    private final List<PlaceResponse> currentPlaces = new ArrayList<>();
+    private List<TripResponse> currentTrips = List.of();
+    private List<StoryResponse> currentStories = List.of();
+    private PlaceResponse draggedPlace;
+    private VBox draggedHandle;
+    private HBox draggedRow;
+    private Popup dragPreviewPopup;
+    private ImageView dragPreviewImageView;
+    private boolean placeOrderChanged;
 
     @FXML
     public void initialize() {
-        configureButtonIcon(backButton, "fth-chevron-left", "place-details-back-icon");
+        FontIcon icon = new FontIcon("fth-chevron-left");
+        icon.setIconSize(16);
+        icon.getStyleClass().add("place-details-back-icon");
+        backButton.setGraphic(icon);
         Localization.bindText(backButton.textProperty(), "route.details.back");
         Localization.bindText(descriptionTitleLabel.textProperty(), "route.details.description");
-        Localization.bindText(mapTitleLabel.textProperty(), "route.details.map");
+        Localization.bindText(overviewTitleLabel.textProperty(), "route.details.overview");
+        Localization.bindText(associatedTripsHeader.titleProperty(), "route.details.section.trips");
+        Localization.bindText(associatedStoriesHeader.titleProperty(), "route.details.section.stories");
         Localization.bindText(placesHeader.titleProperty(), "route.details.section.places");
 
         topRowFlow.prefWrapLengthProperty().bind(contentContainer.widthProperty());
 
-        heroImageView.fitWidthProperty().bind(heroContainer.widthProperty());
-        heroImageView.fitHeightProperty().bind(heroContainer.heightProperty());
-        installRoundedClip(heroContainer, 28);
-        installRoundedClip(routeMap, 20);
+        EditorUtils.installRoundedClip(heroContainer, 28);
+        EditorUtils.initializeCoverPreview(heroImageView, heroContainer);
+        EditorUtils.installRoundedClip(routeMap, 20);
         routeMap.setSelectionEnabled(false);
         routeMap.setControlsVisible(false);
 
         actionButtonsView.configurePrimary(fxmlLoader, Localization.textBinding("route.details.action.edit"), "fth-edit-3", this::onEditRoute);
-        actionButtonsView.configureDelete(fxmlLoader, Localization.textBinding("route.details.action.delete"), "fth-trash-2", Localization.textBinding("route.details.action.delete.confirm"), this::onDeleteRoute);
+        actionButtonsView.configureDelete(
+                fxmlLoader,
+                Localization.textBinding("route.details.action.delete"),
+                "fth-trash-2",
+                Localization.textBinding("route.details.action.delete.confirm"),
+                this::onDeleteRoute
+        );
 
-        placesGrid.setManualLoadMore(true);
-        placesGrid.setPageSize(50);
-        placesGrid.setMinCardWidth(560);
-        placesGrid.setMaxColumns(1);
-        placesGrid.setLoadMoreKey("route.details.show.more.places");
-        placesGrid.setEmptyTextKey("route.details.empty.places");
-        placesGrid.setCardFactory(place -> {
-            int idx = placeIndexCounter.incrementAndGet();
-            return buildPlaceRow(place, idx);
-        });
-        placesGrid.setPageLoader((page, size) -> {
-            if (page > 1) return new CardGridPane.PageResult<>(List.of(), null);
-            List<PlaceResponse> snapshot = new ArrayList<>(currentPlaces);
-            return new CardGridPane.PageResult<>(snapshot,
-                    new Pagination(1, snapshot.size(), snapshot.size(), 1));
-        });
+        configureAssociatedTripsGrid();
+        configureAssociatedStoriesGrid();
+        initializeDragPreview();
+        contentContainer.addEventFilter(MouseEvent.MOUSE_RELEASED, event -> finishDragging());
+        contentContainer.addEventFilter(MouseEvent.MOUSE_DRAGGED, this::updateDragPreview);
+
+        I18n.bundleProperty().addListener((obs, oldBundle, newBundle) -> localize());
     }
 
     @Override
@@ -126,22 +184,31 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
         getRouter().popBackStack();
     }
 
+    @FXML
     private void onEditRoute() {
-        if (routeId == null || routeId.isBlank()) return;
+        if (routeId == null || routeId.isBlank()) {
+            return;
+        }
+
         RouterArgument args = new RouterArgument();
         args.addArgument("tripId", UUID.randomUUID().toString());
-        args.addArgument("tripName", "");
+        args.addArgument("tripName", currentRoute == null || currentRoute.title() == null ? "" : currentRoute.title());
         args.addArgument("routeId", routeId);
         getRouter().moveto(RouteIds.ADD_ROUTE, args);
     }
 
+    @FXML
     private void onDeleteRoute() {
-        if (routeId == null || routeId.isBlank()) return;
+        if (routeId == null || routeId.isBlank()) {
+            return;
+        }
+
         var result = routeService.deleteRoute(new DeleteRouteRequest(UUID.fromString(routeId)));
         if (result.isFailure()) {
             errorHandler.handle(result.getError());
             return;
         }
+
         toast.success(I18n.t("route.details.toast.deleted.title"), I18n.t("route.details.toast.deleted.body"));
         getRouter().popBackStack();
     }
@@ -153,109 +220,469 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
             return;
         }
 
-        var result = routeService.getRouteById(new GetRouteByIdRequest(UUID.fromString(routeId)));
-        if (result.isFailure()) {
-            errorHandler.handle(result.getError());
+        UUID routeUuid = UUID.fromString(routeId);
+        var routeResult = routeService.getRouteById(new GetRouteByIdRequest(routeUuid));
+        if (routeResult.isFailure()) {
+            errorHandler.handle(routeResult.getError());
             getRouter().popBackStack();
             return;
         }
 
-        bind(result.getValue());
+        currentRoute = routeResult.getValue();
+        List<TripRouteResponse> matchedTripRoutes = loadMatchedTripRoutes(routeUuid);
+        currentTrips = loadAssociatedTrips(matchedTripRoutes);
+        currentStories = loadAssociatedStories(matchedTripRoutes);
+        currentPlaces.clear();
+        if (currentRoute.places() != null) {
+            currentPlaces.addAll(currentRoute.places());
+        }
+        bind();
     }
 
-    private void bind(RouteResponse route) {
-        heroImageView.setImage(loadImage(route));
-        routeTitleLabel.setText(route.title() == null || route.title().isBlank() ? I18n.t("trip.add.fallback.route") : route.title());
-        routeLengthLabel.setText(String.format(java.util.Locale.US, I18n.t("route.add.length"), route.length()));
-        descriptionValueLabel.setText(route.description() == null || route.description().isBlank()
-                ? I18n.t("route.details.empty.description") : route.description());
+    private List<TripRouteResponse> loadMatchedTripRoutes(UUID routeUuid) {
+        List<TripRouteResponse> matches = new ArrayList<>();
+        int page = 0;
 
-        List<PlaceResponse> places = route.places() == null ? List.of() : List.copyOf(route.places());
-        renderMap(places);
+        while (matches.size() < MAX_MATCHED_TRIP_ROUTES) {
+            var result = tripRouteService.getTripRoutes(new GetTripRoutesRequest(new PageRequest(page, SCAN_PAGE_SIZE), null));
+            if (result.isFailure()) {
+                return List.of();
+            }
 
-        currentPlaces = places;
-        placeIndexCounter.set(0);
-        placesGrid.refresh();
-    }
+            var pageResult = result.getValue();
+            for (TripRouteResponse tripRoute : pageResult.items()) {
+                if (tripRoute.route() != null && routeUuid.equals(tripRoute.route().id())) {
+                    matches.add(tripRoute);
+                    if (matches.size() >= MAX_MATCHED_TRIP_ROUTES) {
+                        break;
+                    }
+                }
+            }
 
-    private void renderMap(List<PlaceResponse> places) {
-        routeMap.clearMarkers();
-        routeMap.clearPolyline();
-
-        if (places.isEmpty()) return;
-
-        List<MapPoint> waypoints = places.stream()
-                .map(p -> new MapPoint(p.latitude(), p.longitude()))
-                .toList();
-
-        PlaceResponse first = places.get(0);
-        routeMap.setMapCenter(first.latitude(), first.longitude());
-
-        for (int i = 0; i < places.size(); i++) {
-            routeMap.addMarker(new MapPoint(places.get(i).latitude(), places.get(i).longitude()), i + 1);
+            if (!pageResult.hasNext()) {
+                break;
+            }
+            page++;
         }
 
-        if (waypoints.size() >= 2) {
+        return matches;
+    }
+
+    private List<TripResponse> loadAssociatedTrips(List<TripRouteResponse> matchedTripRoutes) {
+        LinkedHashMap<UUID, TripResponse> trips = new LinkedHashMap<>();
+        for (TripRouteResponse tripRoute : matchedTripRoutes) {
+            if (tripRoute.tripId() == null || trips.containsKey(tripRoute.tripId())) {
+                continue;
+            }
+
+            var result = tripService.getTripById(new GetTripByIdRequest(tripRoute.tripId()));
+            if (result.isFailure()) {
+                continue;
+            }
+
+            trips.put(tripRoute.tripId(), result.getValue());
+            if (trips.size() >= ASSOCIATED_TRIPS_LIMIT) {
+                break;
+            }
+        }
+        return new ArrayList<>(trips.values());
+    }
+
+    private List<StoryResponse> loadAssociatedStories(List<TripRouteResponse> matchedTripRoutes) {
+        LinkedHashMap<UUID, StoryResponse> storiesById = new LinkedHashMap<>();
+
+        for (TripRouteResponse tripRoute : matchedTripRoutes) {
+            var filter = new GetStoriesRequest.Filter(
+                    null,
+                    tripRoute.id(),
+                    null,
+                    null,
+                    null,
+                    null
+            );
+            var orderBy = new GetStoriesRequest.OrderBy(false);
+            var request = new GetStoriesRequest(new PageRequest(0, STORIES_PER_ROUTE_LIMIT), filter, orderBy);
+            var result = storyService.getStories(request);
+            if (result.isFailure()) {
+                continue;
+            }
+
+            for (StoryResponse story : result.getValue().items()) {
+                storiesById.putIfAbsent(story.id(), story);
+            }
+        }
+
+        return storiesById.values().stream()
+                .sorted(Comparator.comparing(StoryResponse::storyTime, Comparator.nullsLast(Comparator.reverseOrder())))
+                .limit(ASSOCIATED_STORIES_LIMIT)
+                .toList();
+    }
+
+    private void bind() {
+        routeTitleLabel.setText(currentRoute.title());
+        if (currentRoute.coverImage() != null) {
+            String coverUrl = DisplayUtils.deriveCoverUrl(currentRoute.coverImage());
+            Image image = EditorUtils.loadImage(coverUrl, DEFAULT_IMAGE, RouteDetailsController.class);
+            EditorUtils.setCoverPreviewImage(heroImageView, heroContainer, image);
+        }
+
+        renderMap(currentRoute);
+        renderPlaces(currentPlaces);
+        localize();
+        associatedTripsGrid.refresh();
+        associatedStoriesGrid.refresh();
+    }
+
+    private void localize(){
+        descriptionValueLabel.setText(EditorUtils.safeText(currentRoute.description(), I18n.t("route.details.empty.description")));
+        distanceValueLabel.setText(String.format(Locale.US, I18n.t("route.details.metric.distance"), currentRoute.length()));
+        placesValueLabel.setText(formatPlacesCount(currentPlaces.size()));
+    }
+
+    private void configureAssociatedTripsGrid() {
+        associatedTripsGrid.setMinCardWidth(240);
+        associatedTripsGrid.setMaxColumns(4);
+        associatedTripsGrid.setVScrollPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        associatedTripsGrid.setEmptyTextKey("route.details.empty.trips");
+        associatedTripsGrid.setCardFactory(trip -> {
+            String dateRange = DisplayUtils.formatDateRange(toLocalDate(trip.startedAt()), toLocalDate(trip.endedAt()));
+            return TripCardView.create(trip, dateRange, () -> openTrip(trip)).getRoot();
+        });
+        associatedTripsGrid.setPageLoader((page, size) -> new CardGridPane.PageResult<>(currentTrips, null));
+    }
+
+    private void configureAssociatedStoriesGrid() {
+        associatedStoriesGrid.setMinCardWidth(257);
+        associatedStoriesGrid.setMaxColumns(4);
+        associatedStoriesGrid.setVScrollPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        associatedStoriesGrid.setEmptyTextKey("route.details.empty.stories");
+        associatedStoriesGrid.setCardFactory(story -> StoryCardView.create(story, () -> openStory(story)).getRoot());
+        associatedStoriesGrid.setPageLoader((page, size) -> new CardGridPane.PageResult<>(currentStories, null));
+    }
+
+    private void renderMap(RouteResponse route) {
+        List<PlaceResponse> places = route.places() == null ? List.of() : route.places().stream().toList();
+
+        if (places.isEmpty()) {
+            routeMap.setMapCenter(48.1486, 17.1077);
+        } else {
+            double latitudeAverage = places.stream().mapToDouble(PlaceResponse::latitude).average().orElse(places.getFirst().latitude());
+            double longitudeAverage = places.stream().mapToDouble(PlaceResponse::longitude).average().orElse(places.getFirst().longitude());
+            routeMap.setMapCenter(latitudeAverage, longitudeAverage);
+        }
+
+        renderMapWaypoints(currentPlaces);
+    }
+
+    private void renderMapWaypoints(List<PlaceResponse> places) {
+        routeMap.clearMarkers();
+        routeMap.clearPolyline();
+        if (places.isEmpty()) {
+            return;
+        }
+
+        for (int i = 0; i < places.size(); i++) {
+            PlaceResponse place = places.get(i);
+            routeMap.addMarker(new MapPoint(place.latitude(), place.longitude()), i + 1);
+        }
+
+        if (places.size() >= 2) {
+            List<MapPoint> waypoints = places.stream()
+                    .map(p -> new MapPoint(p.latitude(), p.longitude()))
+                    .toList();
             routeMap.setPolyline(waypoints);
         }
     }
 
+    private void renderPlaces(List<PlaceResponse> places) {
+        placesListContainer.getChildren().clear();
+        for (int index = 0; index < places.size(); index++) {
+            PlaceResponse place = places.get(index);
+            placesListContainer.getChildren().add(buildPlaceRow(place, index + 1));
+        }
+    }
+
     private HBox buildPlaceRow(PlaceResponse place, int index) {
-        HBox row = new HBox(12);
+        HBox row = new HBox(14);
         row.setAlignment(Pos.CENTER_LEFT);
-        row.getStyleClass().add("add-route-place-row");
-        row.setCursor(javafx.scene.Cursor.HAND);
-        row.setOnMouseClicked(e -> openPlace(place));
+        row.getStyleClass().add("route-details-place-row");
+        if (place.equals(draggedPlace)) {
+            row.getStyleClass().add("add-route-place-row-dragging");
+        }
 
-        Label indexLabel = new Label(String.valueOf(index));
-        indexLabel.getStyleClass().add("add-route-place-index");
-        indexLabel.setMinWidth(24);
+        Label orderLabel = new Label(String.valueOf(index));
+        orderLabel.getStyleClass().add("route-details-place-index");
 
-        String imgUrl = place.coverImage() != null && place.coverImage().url() != null
-                ? place.coverImage().url().toString() : DEFAULT_IMAGE;
-        ImageView thumb = new ImageView(EditorUtils.loadImage(imgUrl, DEFAULT_IMAGE, getClass()));
-        thumb.setFitWidth(112);
-        thumb.setFitHeight(72);
-        thumb.setPreserveRatio(false);
-        thumb.getStyleClass().add("add-route-thumb");
-        Rectangle clip = new Rectangle(112, 72);
+        String path = DisplayUtils.deriveCoverUrl(place.coverImage());
+        ImageView preview = new ImageView(EditorUtils.loadImage(path, "", getClass()));
+        preview.setFitWidth(92);
+        preview.setFitHeight(58);
+        preview.setPreserveRatio(false);
+        preview.getStyleClass().add("route-details-place-thumb");
+        Rectangle clip = new Rectangle(92, 58);
         clip.setArcWidth(16);
         clip.setArcHeight(16);
-        thumb.setClip(clip);
+        preview.setClip(clip);
 
-        Label title = new Label(place.title() == null || place.title().isBlank()
-                ? I18n.t("trip.add.fallback.place") : place.title());
-        title.getStyleClass().add("add-route-place-title");
+        VBox copy = new VBox(4);
+        Label title = new Label(place.title());
+        title.getStyleClass().add("route-details-place-title");
         title.setWrapText(true);
 
-        String countryName = place.country() == null ? "" : place.country().name();
-        Label country = new Label(countryName == null ? "" : countryName);
-        country.getStyleClass().add("add-route-place-subtitle");
+        String subtitleText = place.country() == null
+                ? EditorUtils.safeText(place.description(), "")
+                : Localization.localize(place.country());
+        Label subtitle = new Label(subtitleText);
+        subtitle.getStyleClass().add("route-details-place-subtitle");
+        subtitle.setWrapText(true);
+        copy.getChildren().addAll(title, subtitle);
+        HBox.setHgrow(copy, Priority.ALWAYS);
 
-        VBox textBox = new VBox(4, title, country);
-        HBox.setHgrow(textBox, Priority.ALWAYS);
+        HBox actions = new HBox(10);
+        actions.setAlignment(Pos.CENTER_RIGHT);
+        Region handle = createHandle(place, row);
+        actions.getChildren().add(handle);
 
-        row.getChildren().addAll(indexLabel, thumb, textBox);
+        row.setOnMouseDragEntered(event -> reorderPlaces(place));
+        row.setOnMouseReleased(event -> finishDragging());
+        row.setOnMouseClicked(event -> {
+            if (isClickOnHandle(event.getTarget())) {
+                return;
+            }
+            openPlace(place);
+        });
+        if (place.coverImage()==null){
+            row.getChildren().addAll(orderLabel, copy, actions);
+        }
+        else {
+            row.getChildren().addAll(orderLabel,preview, copy, actions);
+        }
         return row;
     }
 
+    private Region createHandle(PlaceResponse place, HBox row) {
+        VBox handle = new VBox(3);
+        handle.setAlignment(Pos.CENTER);
+        handle.getStyleClass().add("add-route-handle");
+        handle.setCursor(Cursor.OPEN_HAND);
+
+        for (int index = 0; index < 3; index++) {
+            javafx.scene.shape.Circle dot = new javafx.scene.shape.Circle(1.8);
+            dot.getStyleClass().add("add-route-handle-dot");
+            handle.getChildren().add(dot);
+        }
+
+        handle.setOnMousePressed(event -> handle.setCursor(Cursor.CLOSED_HAND));
+        handle.setOnDragDetected(event -> beginDragging(place, handle, row, event));
+        handle.setOnMouseReleased(event -> {
+            handle.setCursor(Cursor.OPEN_HAND);
+            handle.getStyleClass().remove("add-route-handle-dragging");
+            finishDragging();
+        });
+        return handle;
+    }
+
+    private void beginDragging(PlaceResponse place, VBox handle, HBox row, MouseEvent event) {
+        draggedPlace = place;
+        draggedHandle = handle;
+        draggedRow = row;
+        placeOrderChanged = false;
+        handle.setCursor(Cursor.CLOSED_HAND);
+        handle.getStyleClass().add("add-route-handle-dragging");
+        if (!row.getStyleClass().contains("add-route-place-row-dragging")) {
+            row.getStyleClass().add("add-route-place-row-dragging");
+        }
+        showDragPreview(row, event);
+        handle.startFullDrag();
+        event.consume();
+    }
+
+    private void reorderPlaces(PlaceResponse targetPlace) {
+        if (draggedPlace == null || draggedPlace.equals(targetPlace)) {
+            return;
+        }
+
+        int draggedIndex = currentPlaces.indexOf(draggedPlace);
+        int targetIndex = currentPlaces.indexOf(targetPlace);
+        if (draggedIndex < 0 || targetIndex < 0 || draggedIndex == targetIndex) {
+            return;
+        }
+
+        Collections.swap(currentPlaces, draggedIndex, targetIndex);
+        placeOrderChanged = true;
+        renderPlaces(currentPlaces);
+        renderMapWaypoints(currentPlaces);
+        distanceValueLabel.setText(String.format(Locale.US, I18n.t("route.details.metric.distance"), calculateRouteLength(currentPlaces)));
+    }
+
+    private void finishDragging() {
+        if (draggedPlace == null) {
+            return;
+        }
+
+        if (draggedHandle != null) {
+            draggedHandle.setCursor(Cursor.OPEN_HAND);
+            draggedHandle.getStyleClass().remove("add-route-handle-dragging");
+            draggedHandle = null;
+        }
+        if (draggedRow != null) {
+            draggedRow.getStyleClass().remove("add-route-place-row-dragging");
+            draggedRow = null;
+        }
+
+        PlaceResponse previousDraggedPlace = draggedPlace;
+        boolean shouldPersist = placeOrderChanged;
+        hideDragPreview();
+        draggedPlace = null;
+        placeOrderChanged = false;
+        renderPlaces(currentPlaces);
+
+        if (shouldPersist) {
+            persistPlaceOrder(previousDraggedPlace);
+        }
+    }
+
+    private void persistPlaceOrder(PlaceResponse focusPlace) {
+        if (routeId == null || routeId.isBlank()) {
+            return;
+        }
+
+        var result = routeService.rearrangePlacesInRoute(
+                new com.triplify.application.usecase.route.dto.RearrangePlacesInRouteRequest(
+                        UUID.fromString(routeId),
+                        currentPlaces.stream().map(PlaceResponse::id).toList()
+                )
+        );
+        if (result.isFailure()) {
+            errorHandler.handle(result.getError());
+            loadRouteDetails();
+            return;
+        }
+
+        currentRoute = result.getValue();
+        currentPlaces.clear();
+        if (currentRoute.places() != null) {
+            currentPlaces.addAll(currentRoute.places());
+        }
+        renderPlaces(currentPlaces);
+        renderMapWaypoints(currentPlaces);
+        placesValueLabel.setText(formatPlacesCount(currentPlaces.size()));
+        distanceValueLabel.setText(String.format(Locale.US, I18n.t("route.details.metric.distance"), currentRoute.length()));
+    }
+
+    private void initializeDragPreview() {
+        dragPreviewImageView = new ImageView();
+        dragPreviewImageView.setMouseTransparent(true);
+        dragPreviewImageView.getStyleClass().add("add-route-drag-preview");
+
+        StackPane previewRoot = new StackPane(dragPreviewImageView);
+        previewRoot.setMouseTransparent(true);
+        previewRoot.getStyleClass().add("add-route-drag-preview-shell");
+
+        dragPreviewPopup = new Popup();
+        dragPreviewPopup.setAutoHide(false);
+        dragPreviewPopup.setAutoFix(false);
+        dragPreviewPopup.setHideOnEscape(false);
+        dragPreviewPopup.getContent().add(previewRoot);
+    }
+
+    private void showDragPreview(HBox row, MouseEvent event) {
+        if (contentContainer.getScene() == null || contentContainer.getScene().getWindow() == null) {
+            return;
+        }
+
+        SnapshotParameters parameters = new SnapshotParameters();
+        parameters.setFill(Color.TRANSPARENT);
+        WritableImage snapshot = row.snapshot(parameters, null);
+        dragPreviewImageView.setImage(snapshot);
+
+        if (!dragPreviewPopup.isShowing()) {
+            dragPreviewPopup.show(
+                    contentContainer.getScene().getWindow(),
+                    event.getScreenX() - snapshot.getWidth() - 18,
+                    event.getScreenY() - 12
+            );
+        }
+        updateDragPreviewPosition(event);
+    }
+
+    private void updateDragPreview(MouseEvent event) {
+        if (draggedPlace == null) {
+            return;
+        }
+        updateDragPreviewPosition(event);
+    }
+
+    private void updateDragPreviewPosition(MouseEvent event) {
+        if (dragPreviewPopup == null || !dragPreviewPopup.isShowing()) {
+            return;
+        }
+
+        double previewWidth = dragPreviewImageView.getImage() == null ? 0 : dragPreviewImageView.getImage().getWidth();
+        dragPreviewPopup.setX(event.getScreenX() - previewWidth - 18);
+        dragPreviewPopup.setY(event.getScreenY() - 12);
+    }
+
+    private void hideDragPreview() {
+        if (dragPreviewPopup != null) {
+            dragPreviewPopup.hide();
+        }
+        if (dragPreviewImageView != null) {
+            dragPreviewImageView.setImage(null);
+        }
+    }
+
+    private void openTrip(TripResponse trip) {
+        RouterArgument args = new RouterArgument();
+        args.addArgument("tripId", trip.id().toString());
+        getRouter().moveto(RouteIds.TRIP_DETAILS, args);
+    }
+
+    private void openStory(StoryResponse story) {
+        if (story == null || story.id() == null) {
+            return;
+        }
+
+        RouterArgument args = new RouterArgument();
+        args.addArgument("storyId", story.id().toString());
+        getRouter().moveto(RouteIds.STORY_DETAILS, args);
+    }
+
     private void openPlace(PlaceResponse place) {
-        if (place == null || place.id() == null) return;
+        if (place == null || place.id() == null) {
+            return;
+        }
+
         RouterArgument args = new RouterArgument();
         args.addArgument("placeId", place.id().toString());
         getRouter().moveto(RouteIds.PLACE_DETAILS, args);
     }
 
-    private Image loadImage(RouteResponse route) {
-        String url = route.coverImage() != null && route.coverImage().url() != null
-                ? route.coverImage().url().toString() : DEFAULT_IMAGE;
-        return EditorUtils.loadImage(url, DEFAULT_IMAGE, getClass());
+    private boolean isClickOnHandle(Object target) {
+        Node current = target instanceof Node node ? node : null;
+        while (current != null) {
+            if (current.getStyleClass().contains("add-route-handle")) {
+                return true;
+            }
+            current = current.getParent();
+        }
+        return false;
     }
 
-    private void configureButtonIcon(Button button, String iconLiteral, String styleClass) {
-        FontIcon icon = new FontIcon(iconLiteral);
-        icon.setIconSize(15);
-        icon.getStyleClass().add(styleClass);
-        button.setGraphic(icon);
+    private String formatPlacesCount(int count) {
+        String key = count == 1
+                ? "route.details.metric.places.one"
+                : "route.details.metric.places.other";
+        return String.format(Locale.US, I18n.t(key), count);
+    }
+
+    private double calculateRouteLength(List<PlaceResponse> places) {
+        double total = 0;
+        for (int i = 1; i < places.size(); i++) {
+            PlaceResponse from = places.get(i - 1);
+            PlaceResponse to = places.get(i);
+            total += GeoCalculator.distanceKm(from.latitude(), from.longitude(), to.latitude(), to.longitude());
+        }
+        return total;
     }
 }
