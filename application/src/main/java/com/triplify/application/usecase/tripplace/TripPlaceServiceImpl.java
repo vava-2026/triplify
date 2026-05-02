@@ -16,6 +16,7 @@ import com.triplify.application.usecase.tripplace.dto.GetTripPlacesRequest;
 import com.triplify.application.usecase.tripplace.dto.ReplaceManualTripPlacesRequest;
 import com.triplify.application.usecase.tripplace.dto.TripPlaceResponse;
 import com.triplify.application.usecase.tripplace.dto.UpdateTripPlaceRequest;
+import com.triplify.application.usecase.tripplace.dto.UpdateTripPlaceStatusRequest;
 import com.triplify.domain.error.PlaceError;
 import com.triplify.domain.error.TripError;
 import com.triplify.domain.error.TripPlaceError;
@@ -121,11 +122,23 @@ public class TripPlaceServiceImpl implements TripPlaceService {
                 existing.getTripRouteId(),
                 existing.getRoutePlaceId(),
                 request.visitDate(),
+                existing.getStatus(),
                 existing.getCreatedAt(),
                 Instant.now()
         );
         tripPlaceRepository.update(updated);
         return getTripPlaceById(new GetTripPlaceByIdRequest(updated.getId()));
+    }
+
+    @Override
+    public Result<TripPlaceResponse> updateTripPlaceStatus(UpdateTripPlaceStatusRequest request) {
+        SessionUser user = userSessionContext.getCurrent().orElseThrow();
+        TripPlace existing = requireTripPlace(request.id()).orThrow();
+        requireOwnedTrip(existing.getTripId(), user.userId()).orThrow();
+
+        existing.updateStatus(request.status());
+        tripPlaceRepository.update(existing);
+        return getTripPlaceById(new GetTripPlaceByIdRequest(existing.getId()));
     }
 
     @Override
@@ -272,6 +285,7 @@ public class TripPlaceServiceImpl implements TripPlaceService {
                 tripPlace.getTripRouteId(),
                 tripPlace.getRoutePlaceId(),
                 tripPlace.getVisitDate(),
+                tripPlace.getStatus(),
                 tripPlace.getCreatedAt(),
                 tripPlace.getUpdatedAt(),
                 Set.<ImageResponse>of()

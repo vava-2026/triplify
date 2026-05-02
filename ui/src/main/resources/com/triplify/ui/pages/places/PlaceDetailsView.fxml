@@ -5,14 +5,17 @@
 <?import com.triplify.ui.map.InteractiveMap?>
 <?import com.triplify.ui.shared.component.detail_actions.view.DetailActionButtonsView?>
 <?import com.triplify.ui.shared.component.section_header.view.SectionHeaderView?>
+<?import com.triplify.ui.shared.component.select.view.SelectView?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <ScrollPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
@@ -24,6 +27,7 @@
         <String fx:value="/com/triplify/ui/pages/places/add_place.css"/>
         <String fx:value="/com/triplify/ui/pages/places/place_details.css"/>
         <String fx:value="/com/triplify/ui/pages/trips/css/trips.css"/>
+        <String fx:value="/com/triplify/ui/pages/trips/css/trip_context.css"/>
     </stylesheets>
     <content>
         <StackPane styleClass="page-root,place-details-root">
@@ -60,6 +64,14 @@
                         </VBox>
 
                         <VBox styleClass="place-details-side-column" spacing="14">
+                            <VBox fx:id="contextContainerCont" styleClass="page-card,place-details-card" spacing="12">
+                                <SectionHeaderView fx:id="contextHeader" iconLiteral="fth-link"/>
+                                <VBox fx:id="contextContainer" spacing="8"/>
+                            </VBox>
+                            <VBox fx:id="statusContainer" styleClass="page-card,trip-context-card" spacing="14">
+                                <SectionHeaderView fx:id="statusHeader" iconLiteral="fth-aperture"/>
+                                <SelectView fx:id="tripPlaceStatusSelect"/>
+                            </VBox>
                             <VBox styleClass="page-card,place-details-card,place-details-map-card" spacing="12">
                                 <Label fx:id="mapTitleLabel" styleClass="place-details-card-title"/>
                                 <InteractiveMap fx:id="placeMap"/>
@@ -69,27 +81,37 @@
                         </VBox>
                     </FlowPane>
 
-                    <VBox styleClass="place-details-associated-sections" spacing="20">
+                    <VBox fx:id="tripPlaceAssociatedItemsContainer" spacing="20">
                         <VBox spacing="12">
-                            <SectionHeaderView fx:id="associatedTripsHeader"
-                                               iconLiteral="fth-map-pin"
-                                               />
-                            <CardGridPane fx:id="tripsGrid"/>
+                            <SectionHeaderView fx:id="tripImagesHeader" iconLiteral="fth-image"/>
+                            <CardGridPane fx:id="tripImagesGrid"/>
                         </VBox>
 
                         <VBox spacing="12">
-                            <SectionHeaderView fx:id="associatedRoutesHeader"
-                                               iconLiteral="fth-map"
-                                               />
-                            <CardGridPane fx:id="routesGrid"/>
+                            <SectionHeaderView fx:id="tripStoriesHeader" iconLiteral="fth-book-open"/>
+                            <CardGridPane fx:id="tripStoriesGrid"/>
                         </VBox>
+                    </VBox>
+                </VBox>
 
-                        <VBox spacing="16">
-                            <SectionHeaderView fx:id="associatedStoriesHeader"
-                                               iconLiteral="fth-book-open"
-                                               />
-                            <CardGridPane fx:id="storiesGrid"/>
-                        </VBox>
+                <VBox fx:id="placeAssociatedItemsContainer" styleClass="place-details-associated-sections" spacing="20">
+                    <VBox spacing="12">
+                        <SectionHeaderView fx:id="associatedTripsHeader"
+                                           iconLiteral="fth-map-pin"
+                        />
+                        <CardGridPane fx:id="tripsGrid"/>
+                    </VBox>
+                    <VBox spacing="12">
+                        <SectionHeaderView fx:id="associatedRoutesHeader"
+                                           iconLiteral="fth-map"
+                        />
+                        <CardGridPane fx:id="routesGrid"/>
+                    </VBox>
+                    <VBox spacing="16">
+                        <SectionHeaderView fx:id="associatedStoriesHeader"
+                                           iconLiteral="fth-book-open"
+                        />
+                        <CardGridPane fx:id="storiesGrid"/>
                     </VBox>
                 </VBox>
             </VBox>

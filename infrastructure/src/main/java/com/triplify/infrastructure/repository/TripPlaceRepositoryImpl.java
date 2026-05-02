@@ -4,7 +4,6 @@ import com.triplify.domain.model.TripPlace;
 import com.triplify.domain.model.Trip;
 import com.triplify.domain.model.Category;
 import com.triplify.domain.model.Image;
-import com.triplify.domain.model.enums.ColorEnum;
 import com.triplify.domain.model.enums.StatusEnum;
 import com.triplify.domain.model.enums.TripPlaceSourceType;
 import com.triplify.domain.pagination.Page;
@@ -24,7 +23,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -35,14 +33,15 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
 
     @Override
     public Optional<TripPlace> findById(UUID id) {
-        try (Connection conn = SQLiteConnectionFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(selectSql(conn, " WHERE id = ? LIMIT 1"))) {
+        try (Connection conn = SQLiteConnectionFactory.getConnection()) {
             ColumnState columns = tripPlaceColumns(conn);
+            try (PreparedStatement ps = conn.prepareStatement(selectSql(columns, " WHERE id = ? LIMIT 1"))) {
             ps.setString(1, id.toString());
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return Optional.of(mapRow(rs, columns));
                 }
+            }
             }
         } catch (SQLException e) {
             log.error("Failed to find trip place by id='{}'", id, e);
@@ -54,15 +53,16 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
 
     @Override
     public Optional<TripPlace> findByTripIdAndPlaceId(UUID tripId, UUID placeId) {
-        try (Connection conn = SQLiteConnectionFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(selectSql(conn, " WHERE trip_id = ? AND place_id = ? LIMIT 1"))) {
+        try (Connection conn = SQLiteConnectionFactory.getConnection()) {
             ColumnState columns = tripPlaceColumns(conn);
+            try (PreparedStatement ps = conn.prepareStatement(selectSql(columns, " WHERE trip_id = ? AND place_id = ? LIMIT 1"))) {
             ps.setString(1, tripId.toString());
             ps.setString(2, placeId.toString());
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return Optional.of(mapRow(rs, columns));
                 }
+            }
             }
         } catch (SQLException e) {
             log.error("Failed to find trip place by tripId='{}' and placeId='{}'", tripId, placeId, e);
@@ -74,9 +74,9 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
 
     @Override
     public List<TripPlace> findByPlaceId(UUID placeId) {
-        try (Connection conn = SQLiteConnectionFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(selectSql(conn, " WHERE place_id = ? ORDER BY created_at DESC"))) {
+        try (Connection conn = SQLiteConnectionFactory.getConnection()) {
             ColumnState columns = tripPlaceColumns(conn);
+            try (PreparedStatement ps = conn.prepareStatement(selectSql(columns, " WHERE place_id = ? ORDER BY created_at DESC"))) {
             ps.setString(1, placeId.toString());
             try (ResultSet rs = ps.executeQuery()) {
                 List<TripPlace> items = new ArrayList<>();
@@ -84,6 +84,7 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
                     items.add(mapRow(rs, columns));
                 }
                 return items;
+            }
             }
         } catch (SQLException e) {
             log.error("Failed to find trip places by placeId='{}'", placeId, e);
@@ -224,27 +225,25 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
             Instant visitTo,
             boolean visitTimeAsc
     ) {
-        try (Connection conn = SQLiteConnectionFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(buildFindListSql(
-                     conn, tripId, sourceType, tripRouteId, routePlaceId, visitFrom, visitTo, visitTimeAsc
-             ))) {
+        try (Connection conn = SQLiteConnectionFactory.getConnection()) {
             ColumnState columns = tripPlaceColumns(conn);
-            List<Object> params = buildFindListParams(conn, tripId, sourceType, tripRouteId, routePlaceId, visitFrom, visitTo, pageRequest);
-            for (int i = 0; i < params.size(); i++) {
-                ps.setObject(i + 1, params.get(i));
-            }
+            String sql = buildFindListSql(columns, tripId, sourceType, tripRouteId, routePlaceId, visitFrom, visitTo, visitTimeAsc);
+            List<Object> params = buildFindListParams(columns, tripId, sourceType, tripRouteId, routePlaceId, visitFrom, visitTo, pageRequest);
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                bindParams(ps, params);
 
-            try (ResultSet rs = ps.executeQuery()) {
-                List<TripPlace> items = new ArrayList<>();
-                while (rs.next()) {
-                    items.add(mapRow(rs, columns));
-                }
+                try (ResultSet rs = ps.executeQuery()) {
+                    List<TripPlace> items = new ArrayList<>();
+                    while (rs.next()) {
+                        items.add(mapRow(rs, columns));
+                    }
 
-                boolean hasNext = items.size() > pageRequest.size();
-                if (hasNext) {
-                    items.remove(items.size() - 1);
+                    boolean hasNext = items.size() > pageRequest.size();
+                    if (hasNext) {
+                        items.remove(items.size() - 1);
+                    }
+                    return Page.of(items, pageRequest, hasNext);
                 }
-                return Page.of(items, pageRequest, hasNext);
             }
         } catch (SQLException e) {
             log.error("Failed to query trip places", e);
@@ -254,9 +253,9 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
 
     @Override
     public void create(TripPlace tripPlace) {
-        try (Connection conn = SQLiteConnectionFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(insertSql(conn))) {
+        try (Connection conn = SQLiteConnectionFactory.getConnection()) {
             ColumnState columns = tripPlaceColumns(conn);
+            try (PreparedStatement ps = conn.prepareStatement(insertSql(columns))) {
             ps.setString(1, tripPlace.getId().toString());
             ps.setString(2, tripPlace.getTripId().toString());
             ps.setString(3, tripPlace.getPlaceId().toString());
@@ -273,9 +272,11 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
             }
 
             setNullableInstant(ps, index++, tripPlace.getVisitDate());
+            ps.setString(index++, tripPlace.getStatus().getValue());
             ps.setString(index++, tripPlace.getCreatedAt().toString());
             ps.setString(index, tripPlace.getUpdatedAt().toString());
             ps.executeUpdate();
+            }
         } catch (SQLException e) {
             log.error("Failed to create trip place id='{}'", tripPlace.getId(), e);
             throw new RuntimeException("Database error while creating trip place", e);
@@ -284,9 +285,9 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
 
     @Override
     public void update(TripPlace tripPlace) {
-        try (Connection conn = SQLiteConnectionFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(updateSql(conn))) {
+        try (Connection conn = SQLiteConnectionFactory.getConnection()) {
             ColumnState columns = tripPlaceColumns(conn);
+            try (PreparedStatement ps = conn.prepareStatement(updateSql(columns))) {
             ps.setString(1, tripPlace.getTripId().toString());
             ps.setString(2, tripPlace.getPlaceId().toString());
 
@@ -302,9 +303,11 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
             }
 
             setNullableInstant(ps, index++, tripPlace.getVisitDate());
+            ps.setString(index++, tripPlace.getStatus().getValue());
             ps.setString(index++, tripPlace.getUpdatedAt().toString());
             ps.setString(index, tripPlace.getId().toString());
             ps.executeUpdate();
+            }
         } catch (SQLException e) {
             log.error("Failed to update trip place id='{}'", tripPlace.getId(), e);
             throw new RuntimeException("Database error while updating trip place", e);
@@ -333,13 +336,13 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
                 columns.hasTripRouteId() ? nullableUuid(rs.getString("trip_route_id")) : null,
                 columns.hasRoutePlaceId() ? nullableUuid(rs.getString("route_place_id")) : null,
                 nullableInstant(rs.getString("visit_date")),
+                StatusEnum.fromValue(rs.getString("status")),
                 Instant.parse(rs.getString("created_at")),
                 Instant.parse(rs.getString("updated_at"))
         );
     }
 
-    private String selectSql(Connection conn, String suffix) throws SQLException {
-        ColumnState columns = tripPlaceColumns(conn);
+    private String selectSql(ColumnState columns, String suffix) {
         StringBuilder sql = new StringBuilder("SELECT ").append(BASE_COLUMNS);
         if (columns.hasSourceType()) {
             sql.append(", source_type");
@@ -350,12 +353,13 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
         if (columns.hasRoutePlaceId()) {
             sql.append(", route_place_id");
         }
+        sql.append(", status");
         sql.append(" FROM trip_places").append(suffix);
         return sql.toString();
     }
 
     private String buildFindListSql(
-            Connection conn,
+            ColumnState columns,
             UUID tripId,
             TripPlaceSourceType sourceType,
             UUID tripRouteId,
@@ -363,9 +367,8 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
             Instant visitFrom,
             Instant visitTo,
             boolean visitTimeAsc
-    ) throws SQLException {
-        ColumnState columns = tripPlaceColumns(conn);
-        StringBuilder sql = new StringBuilder(selectSql(conn, " WHERE 1=1"));
+    ) {
+        StringBuilder sql = new StringBuilder(selectSql(columns, " WHERE 1=1"));
 
         if (tripId != null) {
             sql.append(" AND trip_id = ? ");
@@ -393,7 +396,7 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
     }
 
     private List<Object> buildFindListParams(
-            Connection conn,
+            ColumnState columns,
             UUID tripId,
             TripPlaceSourceType sourceType,
             UUID tripRouteId,
@@ -401,8 +404,7 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
             Instant visitFrom,
             Instant visitTo,
             PageRequest pageRequest
-    ) throws SQLException {
-        ColumnState columns = tripPlaceColumns(conn);
+    ) {
         List<Object> params = new ArrayList<>();
 
         if (tripId != null) {
@@ -429,8 +431,7 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
         return params;
     }
 
-    private String insertSql(Connection conn) throws SQLException {
-        ColumnState columns = tripPlaceColumns(conn);
+    private String insertSql(ColumnState columns) {
         StringBuilder cols = new StringBuilder("id, trip_id, place_id");
         StringBuilder values = new StringBuilder("?, ?, ?");
         if (columns.hasSourceType()) {
@@ -445,13 +446,16 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
             cols.append(", route_place_id");
             values.append(", ?");
         }
-        cols.append(", visit_date, created_at, updated_at");
-        values.append(", ?, ?, ?");
+        cols.append(", visit_date");
+        values.append(", ?");
+        cols.append(", status");
+        values.append(", ?");
+        cols.append(", created_at, updated_at");
+        values.append(", ?, ?");
         return "INSERT INTO trip_places (" + cols + ") VALUES (" + values + ")";
     }
 
-    private String updateSql(Connection conn) throws SQLException {
-        ColumnState columns = tripPlaceColumns(conn);
+    private String updateSql(ColumnState columns) {
         StringBuilder sql = new StringBuilder("UPDATE trip_places SET trip_id = ?, place_id = ?");
         if (columns.hasSourceType()) {
             sql.append(", source_type = ?");
@@ -462,7 +466,9 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
         if (columns.hasRoutePlaceId()) {
             sql.append(", route_place_id = ?");
         }
-        sql.append(", visit_date = ?, updated_at = ? WHERE id = ?");
+        sql.append(", visit_date = ?");
+        sql.append(", status = ?");
+        sql.append(", updated_at = ? WHERE id = ?");
         return sql.toString();
     }
 
@@ -486,6 +492,12 @@ public class TripPlaceRepositoryImpl implements TripPlaceRepository {
         }
 
         return new ColumnState(hasSourceType, hasTripRouteId, hasRoutePlaceId);
+    }
+
+    private void bindParams(PreparedStatement ps, List<Object> params) throws SQLException {
+        for (int i = 0; i < params.size(); i++) {
+            ps.setObject(i + 1, params.get(i));
+        }
     }
 
     private UUID nullableUuid(String value) {

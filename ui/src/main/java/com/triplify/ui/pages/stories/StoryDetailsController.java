@@ -170,7 +170,7 @@ public class StoryDetailsController extends SimpleLifecycleAwareController {
         descriptionValueLabel.setText(EditorUtils.safeText(story.description(), I18n.t("story.details.empty.description")));
 
         renderTags(story);
-        renderContext(story);
+        DisplayUtils.renderStoryContext(getRouter(),contextContainer, story);
         renderMap(story);
         setupImageLoader(UUID.fromString(storyId));
         imagesGrid.refresh();
@@ -184,22 +184,6 @@ public class StoryDetailsController extends SimpleLifecycleAwareController {
             Label chip = new Label(tag.name());
             chip.getStyleClass().addAll("trip-editor-chip", "trip-editor-chip-soft");
             tagsFlow.getChildren().add(chip);
-        }
-    }
-
-    private void renderContext(StoryResponse story) {
-        contextContainer.getChildren().clear();
-        if (story.tripId() != null) {
-            contextContainer.getChildren().add(buildContextLink(
-                    I18n.t("story.details.context.trip"), () -> openTrip(story.tripId())));
-        }
-        if (story.tripRouteId() != null) {
-            contextContainer.getChildren().add(buildContextLink(
-                    I18n.t("story.details.context.route"), () -> openRoute(story.tripRouteId())));
-        }
-        if (story.tripPlaceId() != null) {
-            contextContainer.getChildren().add(buildContextLink(
-                    I18n.t("story.details.context.place"), () -> openPlace(story.tripPlaceId())));
         }
     }
 
@@ -259,27 +243,5 @@ public class StoryDetailsController extends SimpleLifecycleAwareController {
                 contentContainer.getScene().getWindow(),
                 image,
                 deleted -> imagesGrid.refresh());
-    }
-
-    private Label buildContextLink(String text, Runnable action) {
-        Label label = new Label(text);
-        label.getStyleClass().add("story-details-context-link");
-        label.setCursor(javafx.scene.Cursor.HAND);
-        label.setOnMouseClicked(e -> action.run());
-        return label;
-    }
-
-    private void openTrip(UUID tripId) {
-        RouterArgument args = new RouterArgument();
-        args.addArgument("tripId", tripId.toString());
-        getRouter().moveto(RouteIds.TRIP_DETAILS, args);
-    }
-
-    private void openRoute(UUID tripRouteId) {
-        // tripRouteId is not the same as routeId — no dedicated route details navigation
-    }
-
-    private void openPlace(UUID tripPlaceId) {
-        // tripPlaceId is not the same as placeId — no dedicated navigation without a service lookup
     }
 }

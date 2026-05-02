@@ -5,14 +5,17 @@
 <?import com.triplify.ui.shared.component.card_grid.CardGridPane?>
 <?import com.triplify.ui.shared.component.detail_actions.view.DetailActionButtonsView?>
 <?import com.triplify.ui.shared.component.section_header.view.SectionHeaderView?>
+<?import com.triplify.ui.shared.component.select.view.SelectView?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <ScrollPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
@@ -27,6 +30,7 @@
         <String fx:value="/com/triplify/ui/pages/routes/css/add_route.css"/>
         <String fx:value="/com/triplify/ui/pages/routes/route_details.css"/>
         <String fx:value="/com/triplify/ui/pages/trips/css/trips.css"/>
+        <String fx:value="/com/triplify/ui/pages/trips/css/trip_context.css"/>
     </stylesheets>
     <content>
         <StackPane styleClass="page-root,route-details-root">
@@ -34,8 +38,7 @@
                 <StackPane fx:id="heroContainer" styleClass="place-details-hero" prefHeight="500" maxHeight="500">
                     <ImageView fx:id="heroImageView"
                                mouseTransparent="true"
-                               preserveRatio="true"
-                               smooth="true"/>
+                               preserveRatio="true"/>
                     <VBox styleClass="place-details-hero-overlay">
                         <HBox>
                             <Button fx:id="backButton"
@@ -44,47 +47,60 @@
                         </HBox>
                         <VBox styleClass="place-details-hero-copy" spacing="8">
                             <Label fx:id="routeTitleLabel" styleClass="place-details-title"/>
-                            <HBox fx:id="countryRow" spacing="6" alignment="CENTER_LEFT" styleClass="route-card-places-row">
-                                <ImageView fx:id="countryEmojiView"
-                                           fitWidth="18"
-                                           fitHeight="18"
-                                           preserveRatio="true"
-                                           visible="false"
-                                           managed="false"/>
-                                <Label fx:id="countryLabel" styleClass="place-details-country"/>
-                            </HBox>
                         </VBox>
                     </VBox>
                 </StackPane>
 
-                <FlowPane fx:id="topRowFlow" styleClass="route-details-top-row" prefWrapLength="1000">
-                    <VBox styleClass="route-details-main-column" spacing="20">
-                        <VBox styleClass="page-card,route-details-card,route-details-description-card" spacing="12">
-                            <Label fx:id="descriptionTitleLabel" styleClass="route-details-card-title"/>
-                            <Label fx:id="descriptionValueLabel" styleClass="route-details-description" wrapText="true"/>
-                        </VBox>
+                <VBox styleClass="route-details-sections" spacing="20">
+                    <FlowPane fx:id="topRowFlow" styleClass="route-details-top-row" prefWrapLength="1000">
+                        <VBox styleClass="route-details-main-column" spacing="20">
+                            <VBox styleClass="page-card,route-details-card,route-details-description-card" spacing="12">
+                                <Label fx:id="descriptionTitleLabel" styleClass="route-details-card-title"/>
+                                <Label fx:id="descriptionValueLabel" styleClass="route-details-description" wrapText="true"/>
+                            </VBox>
 
-                        <VBox styleClass="page-card,route-details-card" spacing="14">
-                            <SectionHeaderView fx:id="placesHeader" iconLiteral="fth-map-pin"/>
-                            <VBox fx:id="placesListContainer" styleClass="route-details-places-list" spacing="12"/>
-                        </VBox>
-                    </VBox>
-
-                    <VBox styleClass="route-details-side-column" spacing="14">
-                        <VBox styleClass="page-card,route-details-card,route-details-overview-card" spacing="12">
-                            <Label fx:id="overviewTitleLabel" styleClass="route-details-card-title"/>
-                            <InteractiveMap fx:id="routeMap"/>
-                            <VBox styleClass="route-details-metrics" spacing="8">
-                                <Label fx:id="distanceValueLabel" styleClass="route-details-distance-value"/>
-                                <Label fx:id="placesValueLabel" styleClass="route-details-places-value"/>
+                            <VBox styleClass="page-card,route-details-card" spacing="14">
+                                <SectionHeaderView fx:id="placesHeader" iconLiteral="fth-map-pin"/>
+                                <VBox fx:id="placesListContainer" styleClass="route-details-places-list" spacing="12"/>
                             </VBox>
                         </VBox>
 
-                        <DetailActionButtonsView fx:id="actionButtonsView"/>
-                    </VBox>
-                </FlowPane>
+                        <VBox styleClass="route-details-side-column" spacing="14">
+                            <VBox fx:id="contextContainerCont" styleClass="page-card,route-details-card" spacing="12">
+                                <SectionHeaderView fx:id="contextHeader" iconLiteral="fth-link"/>
+                                <VBox fx:id="contextContainer" spacing="8"/>
+                            </VBox>
+                            <VBox fx:id="statusContainer" styleClass="page-card,trip-context-card" spacing="14">
+                                <SectionHeaderView fx:id="statusHeader" iconLiteral="fth-aperture"/>
+                                <SelectView fx:id="tripRouteStatusSelect"/>
+                            </VBox>
+                            <VBox styleClass="page-card,route-details-card,route-details-overview-card" spacing="12">
+                                <Label fx:id="overviewTitleLabel" styleClass="route-details-card-title"/>
+                                <InteractiveMap fx:id="routeMap"/>
+                                <VBox styleClass="route-details-metrics" spacing="8">
+                                    <Label fx:id="distanceValueLabel" styleClass="route-details-distance-value"/>
+                                    <Label fx:id="placesValueLabel" styleClass="route-details-places-value"/>
+                                </VBox>
+                            </VBox>
 
-                <VBox styleClass="route-details-associated-sections" spacing="20">
+                            <DetailActionButtonsView fx:id="actionButtonsView"/>
+                        </VBox>
+                    </FlowPane>
+
+                    <VBox fx:id="tripRouteAssociatedItemsContainer" spacing="20">
+                        <VBox spacing="12">
+                            <SectionHeaderView fx:id="tripImagesHeader" iconLiteral="fth-image"/>
+                            <CardGridPane fx:id="tripImagesGrid"/>
+                        </VBox>
+
+                        <VBox spacing="12">
+                            <SectionHeaderView fx:id="tripStoriesHeader" iconLiteral="fth-book-open"/>
+                            <CardGridPane fx:id="tripStoriesGrid"/>
+                        </VBox>
+                    </VBox>
+                </VBox>
+
+                <VBox fx:id="routeAssociatedItemsContainer" styleClass="route-details-associated-sections" spacing="20">
                     <VBox styleClass="route-details-associated-section" spacing="12">
                         <SectionHeaderView fx:id="associatedTripsHeader" iconLiteral="fth-briefcase"/>
                         <CardGridPane fx:id="associatedTripsGrid"/>

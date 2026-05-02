@@ -1,6 +1,22 @@
 package com.triplify.ui.pages.routes;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
+
+import org.kordamp.ikonli.javafx.FontIcon;
+
+import com.gluonhq.maps.MapPoint;
 import com.google.inject.Inject;
+import com.triplify.application.shared.GeoCalculator;
+import com.triplify.application.shared.Pagination;
+import com.triplify.application.usecase.image.ImageService;
+import com.triplify.application.usecase.image.dto.GetImagesRequest;
+import com.triplify.application.usecase.image.dto.ImageResponse;
 import com.triplify.application.usecase.place.dto.PlaceResponse;
 import com.triplify.application.usecase.route.RouteService;
 import com.triplify.application.usecase.route.dto.DeleteRouteRequest;
@@ -13,27 +29,38 @@ import com.triplify.application.usecase.trip.TripService;
 import com.triplify.application.usecase.trip.dto.GetTripByIdRequest;
 import com.triplify.application.usecase.trip.dto.TripResponse;
 import com.triplify.application.usecase.triproute.TripRouteService;
+import com.triplify.application.usecase.triproute.dto.GetTripRouteByIdRequest;
 import com.triplify.application.usecase.triproute.dto.GetTripRoutesRequest;
 import com.triplify.application.usecase.triproute.dto.TripRouteResponse;
+import com.triplify.application.usecase.triproute.dto.UpdateTripRouteStatusRequest;
+import com.triplify.domain.model.enums.ImageOwnerType;
+import com.triplify.domain.model.enums.StatusEnum;
 import com.triplify.domain.pagination.PageRequest;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
-import com.gluonhq.maps.MapPoint;
 import com.triplify.ui.map.InteractiveMap;
-import com.triplify.ui.pages.places.PlaceDetailsController;
-import com.triplify.ui.routing.RouteIds;
+import com.triplify.ui.pages.images.ImageFormModalView;
+import com.triplify.ui.pages.images.ImageViewModalView;
+import com.triplify.ui.pages.images.view.ImageCardView;
 import com.triplify.ui.pages.stories.view.StoryCardView;
+import com.triplify.ui.pages.trips.view.TripCardView;
+import com.triplify.ui.routing.RouteIds;
+import com.triplify.ui.shared.component.add_card.view.AddCardView;
 import com.triplify.ui.shared.component.card_grid.CardGridPane;
 import com.triplify.ui.shared.component.detail_actions.view.DetailActionButtonsView;
-import com.triplify.ui.shared.component.empty_state.view.EmptyStateCardView;
 import com.triplify.ui.shared.component.section_header.view.SectionHeaderView;
+import com.triplify.ui.shared.component.select.entry.model.Entry;
+import com.triplify.ui.shared.component.select.model.Select;
+import com.triplify.ui.shared.component.select.view.SelectView;
+import com.triplify.ui.shared.model.AppComponentSize;
+import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.toast.ToastService;
-import com.triplify.application.shared.GeoCalculator;
 import com.triplify.ui.shared.util.DisplayUtils;
+import static com.triplify.ui.shared.util.DisplayUtils.toLocalDate;
 import com.triplify.ui.shared.util.EditorUtils;
 import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import com.triplify.ui.shared.util.Localization;
-import com.triplify.ui.pages.trips.view.TripCardView;
+
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
@@ -41,6 +68,7 @@ import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
@@ -53,28 +81,9 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.control.ScrollPane;
 import javafx.stage.Popup;
-import org.kordamp.ikonli.javafx.FontIcon;
 import rahulstech.jfx.routing.element.RouterArgument;
 import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
-
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.UUID;
-
-import static com.triplify.ui.shared.util.DisplayUtils.toLocalDate;
 
 public class RouteDetailsController extends SimpleLifecycleAwareController {
 
@@ -92,9 +101,6 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
     @FXML private Button backButton;
     @FXML private ImageView heroImageView;
     @FXML private Label routeTitleLabel;
-    @FXML private HBox countryRow;
-    @FXML private ImageView countryEmojiView;
-    @FXML private Label countryLabel;
     @FXML private Label descriptionTitleLabel;
     @FXML private Label descriptionValueLabel;
     @FXML private Label overviewTitleLabel;
@@ -109,16 +115,36 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
     @FXML private SectionHeaderView associatedStoriesHeader;
     @FXML private CardGridPane<StoryResponse> associatedStoriesGrid;
 
+    @FXML private VBox contextContainerCont;
+    @FXML private SectionHeaderView contextHeader;
+    @FXML private VBox contextContainer;
+    @FXML private VBox statusContainer;
+    @FXML private SectionHeaderView statusHeader;
+    @FXML private SelectView<StatusEnum> tripRouteStatusSelect;
+    @FXML private VBox tripRouteAssociatedItemsContainer;
+    @FXML private VBox routeAssociatedItemsContainer;
+    @FXML private SectionHeaderView tripImagesHeader;
+    @FXML private CardGridPane<ImageResponse> tripImagesGrid;
+    @FXML private SectionHeaderView tripStoriesHeader;
+    @FXML private CardGridPane<StoryResponse> tripStoriesGrid;
+
     @Inject private RouteService routeService;
     @Inject private TripService tripService;
     @Inject private TripRouteService tripRouteService;
     @Inject private StoryService storyService;
+    @Inject private ImageService imageService;
     @Inject private ToastService toast;
     @Inject private ErrorHandler errorHandler;
     @Inject private FxmlLoaderHelper fxmlLoader;
 
     private String routeId;
+    private String tripRouteId;
     private RouteResponse currentRoute;
+    private TripRouteResponse currentTripRoute;
+    private Select<StatusEnum> statusSelectModel;
+    private ImageFormModalView imageFormModal;
+    private ImageViewModalView imageViewModal;
+
     private final List<PlaceResponse> currentPlaces = new ArrayList<>();
     private List<TripResponse> currentTrips = List.of();
     private List<StoryResponse> currentStories = List.of();
@@ -161,6 +187,7 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
 
         configureAssociatedTripsGrid();
         configureAssociatedStoriesGrid();
+        initializeTripContext();
         initializeDragPreview();
         contentContainer.addEventFilter(MouseEvent.MOUSE_RELEASED, event -> finishDragging());
         contentContainer.addEventFilter(MouseEvent.MOUSE_DRAGGED, this::updateDragPreview);
@@ -168,14 +195,63 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
         I18n.bundleProperty().addListener((obs, oldBundle, newBundle) -> localize());
     }
 
-    @Override
-    public void onLifecycleInitialize() {
-        RouterArgument data = getRouter().getCurrentData();
-        routeId = data == null ? null : data.getValue("routeId");
+    private void initializeTripContext() {
+        contextContainerCont.setVisible(false);
+        contextContainerCont.setManaged(false);
+        statusContainer.setVisible(false);
+        statusContainer.setManaged(false);
+        tripRouteAssociatedItemsContainer.setVisible(false);
+        tripRouteAssociatedItemsContainer.setManaged(false);
+
+        Localization.bindText(contextHeader.titleProperty(), "story.details.section.context");
+        Localization.bindText(statusHeader.titleProperty(), "filter.status");
+        Localization.bindText(tripImagesHeader.titleProperty(), "triproute.context.images.header");
+        Localization.bindText(tripStoriesHeader.titleProperty(), "triproute.context.stories.header");
+
+        statusSelectModel = Select.<StatusEnum>builder()
+                .placeholder(I18n.t("triproute.context.status.placeholder"))
+                .items(javafx.collections.FXCollections.observableArrayList(buildStatusEntries()))
+                .variant(FieldVariant.GHOST)
+                .size(AppComponentSize.MIDDLE)
+                .onSelect(e -> onTripRouteStatusSelected(e.getValue()))
+                .build();
+        tripRouteStatusSelect.update(statusSelectModel);
+
+        imageFormModal = new ImageFormModalView(fxmlLoader, imageService, errorHandler);
+        imageViewModal = new ImageViewModalView(imageService, errorHandler, fxmlLoader);
+
+        tripImagesGrid.setManualLoadMore(true);
+        tripImagesGrid.setMinCardWidth(220);
+        tripImagesGrid.setMaxColumns(4);
+        tripImagesGrid.setPageSize(7);
+        tripImagesGrid.setEmptyTextKey("trip.details.empty.images");
+        tripImagesGrid.setVScrollPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        tripImagesGrid.addPinnedNode(new AddCardView(
+                "images.add.card.title",
+                "images.add.card.subtitle",
+                this::openAddImageModal
+        ));
+        tripImagesGrid.setCardFactory(image -> ImageCardView.create(image, () -> openImageViewModal(image)).getRoot());
+
+        tripStoriesGrid.setManualLoadMore(true);
+        tripStoriesGrid.setMinCardWidth(220);
+        tripStoriesGrid.setMaxColumns(4);
+        tripStoriesGrid.setPageSize(8);
+        tripStoriesGrid.setEmptyTextKey("trip.details.empty.stories");
+        tripStoriesGrid.setVScrollPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        tripStoriesGrid.addPinnedNode(new AddCardView(
+                "stories.add.card.title",
+                "stories.add.card.subtitle",
+                this::navigateToAddStory
+        ));
+        tripStoriesGrid.setCardFactory(story -> StoryCardView.create(story, () -> openStory(story)).getRoot());
     }
 
     @Override
     public void onLifecycleShow() {
+        RouterArgument data = getRouter().getCurrentData();
+        routeId = data == null ? null : data.getValue("routeId");
+        tripRouteId = data == null ? null : data.getValue("tripRouteId");
         loadRouteDetails();
     }
 
@@ -214,29 +290,153 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
     }
 
     private void loadRouteDetails() {
-        if (routeId == null || routeId.isBlank()) {
+        if ((routeId == null || routeId.isBlank()) && (tripRouteId == null || tripRouteId.isBlank()) ) {
             toast.warning(I18n.t("route.details.toast.notFound"));
             getRouter().popBackStack();
             return;
         }
 
-        UUID routeUuid = UUID.fromString(routeId);
-        var routeResult = routeService.getRouteById(new GetRouteByIdRequest(routeUuid));
-        if (routeResult.isFailure()) {
-            errorHandler.handle(routeResult.getError());
-            getRouter().popBackStack();
-            return;
+        if (tripRouteId != null && !tripRouteId.isBlank()) {
+            loadTripContext();
+            currentRoute = currentTripRoute.route();
+        }
+        else {
+            resetTripContext();
+            UUID routeUuid = UUID.fromString(routeId);
+            var routeResult = routeService.getRouteById(new GetRouteByIdRequest(routeUuid));
+            if (routeResult.isFailure()) {
+                errorHandler.handle(routeResult.getError());
+                getRouter().popBackStack();
+                return;
+            }
+            currentRoute = routeResult.getValue();
+
+            List<TripRouteResponse> matchedTripRoutes = loadMatchedTripRoutes(routeUuid);
+            currentTrips = loadAssociatedTrips(matchedTripRoutes);
+            currentStories = loadAssociatedStories(matchedTripRoutes);
         }
 
-        currentRoute = routeResult.getValue();
-        List<TripRouteResponse> matchedTripRoutes = loadMatchedTripRoutes(routeUuid);
-        currentTrips = loadAssociatedTrips(matchedTripRoutes);
-        currentStories = loadAssociatedStories(matchedTripRoutes);
         currentPlaces.clear();
         if (currentRoute.places() != null) {
             currentPlaces.addAll(currentRoute.places());
         }
+
         bind();
+    }
+
+    private void loadTripContext() {
+        routeAssociatedItemsContainer.setVisible(false);
+        routeAssociatedItemsContainer.setManaged(false);
+
+        tripRouteAssociatedItemsContainer.setVisible(true);
+        tripRouteAssociatedItemsContainer.setManaged(true);
+        statusContainer.setVisible(true);
+        statusContainer.setManaged(true);
+        contextContainerCont.setVisible(true);
+        contextContainerCont.setManaged(true);
+
+        var result = tripRouteService.getTripRouteById(new GetTripRouteByIdRequest(UUID.fromString(tripRouteId)));
+        if (result.isFailure()) {
+            return;
+        }
+
+        currentTripRoute = result.getValue();
+
+        Entry<StatusEnum> selectedEntry = buildStatusEntries().stream()
+                .filter(e -> e.getValue() == currentTripRoute.status())
+                .findFirst()
+                .orElse(null);
+        statusSelectModel.setSelectedItem(selectedEntry);
+        tripRouteStatusSelect.update(statusSelectModel);
+
+        UUID tripRouteUuid = UUID.fromString(tripRouteId);
+
+        tripImagesGrid.setPageLoader((page, size) -> {
+            var r = imageService.getImages(new GetImagesRequest(
+                    new PageRequest(page - 1, size),
+                    new GetImagesRequest.Filter(tripRouteUuid.toString(), ImageOwnerType.TRIP_ROUTE, null, null),
+                    null));
+            if (r.isFailure()) return new CardGridPane.PageResult<>(List.of(), null);
+            var p = r.getValue();
+            return new CardGridPane.PageResult<>(p.items(),
+                    new Pagination(page, size, null, p.hasNext() ? page + 1 : page));
+        });
+        tripImagesGrid.refresh();
+
+        tripStoriesGrid.setPageLoader((page, size) -> {
+            var r = storyService.getStories(new GetStoriesRequest(
+                    new PageRequest(page - 1, size),
+                    new GetStoriesRequest.Filter(null, tripRouteUuid, null, null, null, null),
+                    new GetStoriesRequest.OrderBy(false)));
+            if (r.isFailure()) return new CardGridPane.PageResult<>(List.of(), null);
+            var p = r.getValue();
+            return new CardGridPane.PageResult<>(p.items(),
+                    new Pagination(page, size, null, p.hasNext() ? page + 1 : page));
+        });
+        tripStoriesGrid.refresh();
+
+        DisplayUtils.renderTripRouteContext(getRouter(), contextContainer, currentTripRoute);
+    }
+
+    private void resetTripContext() {
+        contextContainerCont.setVisible(false);
+        contextContainerCont.setManaged(false);
+        statusContainer.setVisible(false);
+        statusContainer.setManaged(false);
+        tripRouteAssociatedItemsContainer.setVisible(false);
+        tripRouteAssociatedItemsContainer.setManaged(false);
+        routeAssociatedItemsContainer.setVisible(true);
+        routeAssociatedItemsContainer.setManaged(true);
+        currentTripRoute = null;
+    }
+
+    private void onTripRouteStatusSelected(StatusEnum status) {
+        if (currentTripRoute == null || status == null) return;
+        if (currentTripRoute.status() == status) return;
+        var result = tripRouteService.updateStatus(
+                new UpdateTripRouteStatusRequest(currentTripRoute.id(), status, null, null));
+        if (result.isFailure()) {
+            errorHandler.handle(result.getError());
+        } else {
+            currentTripRoute = result.getValue();
+            toast.success(I18n.t("triproute.context.status.updated"));
+        }
+    }
+
+    private void openAddImageModal() {
+        if (currentTripRoute == null) return;
+        imageFormModal.show(
+                contentContainer.getScene().getWindow(),
+                currentTripRoute.id(),
+                ImageOwnerType.TRIP_ROUTE,
+                currentTripRoute.tripId(),
+                image -> tripImagesGrid.refresh()
+        );
+    }
+
+    private void openImageViewModal(ImageResponse image) {
+        imageViewModal.show(
+                contentContainer.getScene().getWindow(),
+                image,
+                deleted -> tripImagesGrid.refresh()
+        );
+    }
+
+    private void navigateToAddStory() {
+        if (currentTripRoute == null) return;
+        RouterArgument args = new RouterArgument();
+        args.addArgument("tripId", currentTripRoute.tripId().toString());
+        args.addArgument("tripRouteId", currentTripRoute.id().toString());
+        getRouter().moveto(RouteIds.ADD_STORY, args);
+    }
+
+    private List<Entry<StatusEnum>> buildStatusEntries() {
+        return List.of(
+                Entry.builder(StatusEnum.PLANNED, Localization.textBinding("status.planned")).build(),
+                Entry.builder(StatusEnum.ONGOING, Localization.textBinding("status.ongoing")).build(),
+                Entry.builder(StatusEnum.VISITED, Localization.textBinding("status.visited")).build(),
+                Entry.builder(StatusEnum.CANCELED, Localization.textBinding("status.canceled")).build()
+        );
     }
 
     private List<TripRouteResponse> loadMatchedTripRoutes(UUID routeUuid) {
@@ -329,8 +529,11 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
         renderMap(currentRoute);
         renderPlaces(currentPlaces);
         localize();
-        associatedTripsGrid.refresh();
-        associatedStoriesGrid.refresh();
+
+        if (tripRouteId == null || tripRouteId.isBlank()) {
+            associatedTripsGrid.refresh();
+            associatedStoriesGrid.refresh();
+        }
     }
 
     private void localize(){
@@ -429,10 +632,8 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
         title.getStyleClass().add("route-details-place-title");
         title.setWrapText(true);
 
-        String subtitleText = place.country() == null
-                ? EditorUtils.safeText(place.description(), "")
-                : Localization.localize(place.country());
-        Label subtitle = new Label(subtitleText);
+        Label subtitle = new Label();
+        Localization.bindLocalizedText(subtitle.textProperty(), place.country());
         subtitle.getStyleClass().add("route-details-place-subtitle");
         subtitle.setWrapText(true);
         copy.getChildren().addAll(title, subtitle);
@@ -451,11 +652,11 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
             }
             openPlace(place);
         });
-        if (place.coverImage()==null){
+        if (place.coverImage()==null) {
             row.getChildren().addAll(orderLabel, copy, actions);
         }
         else {
-            row.getChildren().addAll(orderLabel,preview, copy, actions);
+            row.getChildren().addAll(orderLabel, preview, copy, actions);
         }
         return row;
     }
