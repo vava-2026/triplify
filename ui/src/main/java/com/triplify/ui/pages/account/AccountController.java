@@ -86,7 +86,9 @@ public class AccountController extends SimpleLifecycleAwareController {
     @FXML private StackPane profileNameInputContainer;
     @FXML private StackPane profileNameSaveButtonContainer;
     @FXML private Label badgesTitleLabel;
+    @FXML private VBox badgesSection;
     @FXML private VBox badgesGroupsContainer;
+    @FXML private VBox statisticsSection;
     @FXML private StatisticsController statisticsSectionController;
 
     @Inject private ToastService toast;
@@ -354,6 +356,7 @@ public class AccountController extends SimpleLifecycleAwareController {
         profileAvatarImage.setClip(new Circle(75, 75, 75));
         applyAvatarImage(null);
         renderUpgradeSection(user.role());
+        updateAccountSectionsVisibility(user.role());
 
         if (user.avatarImageId() != null) {
             var avatarResult = imageService.getImageById(new GetImageByIdRequest(user.avatarImageId()));
@@ -396,6 +399,21 @@ public class AccountController extends SimpleLifecycleAwareController {
         hideNameEditor();
         upgradeButtonContainer.getChildren().clear();
         showInitialAvatar();
+        updateAccountSectionsVisibility(null);
+    }
+
+    private void updateAccountSectionsVisibility(RoleEnum role) {
+        boolean hideStatsAndBadges = role == RoleEnum.CONFIGURATION_MANAGER;
+
+        if (statisticsSection != null) {
+            statisticsSection.setManaged(!hideStatsAndBadges);
+            statisticsSection.setVisible(!hideStatsAndBadges);
+        }
+
+        if (badgesSection != null) {
+            badgesSection.setManaged(!hideStatsAndBadges);
+            badgesSection.setVisible(!hideStatsAndBadges);
+        }
     }
 
     private boolean redirectToExpiredLicensePageIfNeeded(SessionUser user) {

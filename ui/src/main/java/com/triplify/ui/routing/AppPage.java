@@ -162,36 +162,6 @@ public enum AppPage {
             false,
             false
     ),
-    MY_BADGES(
-            RouteIds.MY_BADGES,
-            "nav.myBadges",
-            "fth-award",
-            EnumSet.of(RoleEnum.USER, RoleEnum.PRO_USER),
-            true,
-            false,
-            true,
-            false,
-            false,
-            null,
-            EnumSet.noneOf(RoleEnum.class),
-            true,
-            false
-    ),
-    MY_STATISTICS(
-            RouteIds.MY_STATISTICS,
-            "nav.myStatistics",
-            "fth-bar-chart-2",
-            EnumSet.of(RoleEnum.USER, RoleEnum.PRO_USER),
-            true,
-            false,
-            true,
-            false,
-            false,
-            null,
-            EnumSet.noneOf(RoleEnum.class),
-            false,
-            false
-    ),
     CALENDAR(
             RouteIds.CALENDAR,
             "nav.calendar",

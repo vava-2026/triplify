@@ -76,7 +76,7 @@
 
                 <fx:include fx:id="statisticsSection" source="StatisticsView.fxml" VBox.vgrow="ALWAYS"/>
 
-                <VBox spacing="20" alignment="TOP_CENTER">
+                <VBox fx:id="badgesSection" spacing="20" alignment="TOP_CENTER">
                     <HBox styleClass="section-header" alignment="CENTER_LEFT" spacing="8">
                         <FontIcon iconLiteral="fth-award" iconSize="24" styleClass="header-icon"/>
                         <Label fx:id="badgesTitleLabel"/>
