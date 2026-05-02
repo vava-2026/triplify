@@ -5,7 +5,6 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
@@ -32,18 +31,14 @@
     </top>
 
     <center>
-        <ScrollPane fx:id="calendarScroll" fitToWidth="true" styleClass="calendar-scroll" BorderPane.alignment="CENTER">
+        <ScrollPane fitToWidth="true" styleClass="calendar-scroll" BorderPane.alignment="CENTER">
             <GridPane fx:id="calendarGrid" styleClass="calendar-grid" maxWidth="Infinity"/>
         </ScrollPane>
     </center>
 
     <right>
         <VBox styleClass="calendar-side-panel" prefWidth="300" spacing="10">
-            <VBox fx:id="selectedTripPanel" styleClass="selected-trip-panel" managed="false" visible="false" spacing="8">
-                <ImageView fx:id="selectedCoverImage" fitWidth="260" preserveRatio="true"/>
-                <Label fx:id="selectedTripTitle" styleClass="selected-title" wrapText="true"/>
-                <Label fx:id="selectedCategoryChip" styleClass="category-chip"/>
-            </VBox>
+            <VBox fx:id="selectedTripPanel" styleClass="selected-trip-panel" managed="false" visible="false" spacing="8"/>
             <Separator/>
             <Label fx:id="undatedTitleLabel" styleClass="side-panel-section-label"/>
             <CardGridPane fx:id="undatedTripsGrid" VBox.vgrow="ALWAYS"/>
