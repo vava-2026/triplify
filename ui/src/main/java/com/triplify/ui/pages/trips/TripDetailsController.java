@@ -1,7 +1,9 @@
 package com.triplify.ui.pages.trips;
 
 import com.google.inject.Inject;
+import com.triplify.application.shared.ColorTheme;
 import com.triplify.application.shared.Pagination;
+import com.triplify.application.shared.localization.LocalizedName;
 import com.triplify.application.usecase.country.dto.CountryResponse;
 import com.triplify.application.usecase.image.ImageService;
 import com.triplify.application.usecase.image.dto.GetImagesRequest;
@@ -54,8 +56,12 @@ import static com.triplify.ui.shared.util.DisplayUtils.toLocalDate;
 import static com.triplify.ui.shared.util.EditorUtils.configureButtonIcon;
 import static com.triplify.ui.shared.util.EditorUtils.installRoundedClip;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.WeakChangeListener;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -68,9 +74,11 @@ import org.slf4j.LoggerFactory;
 import rahulstech.jfx.routing.element.RouterArgument;
 import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.UUID;
 
 public class TripDetailsController extends SimpleLifecycleAwareController {
@@ -78,14 +86,18 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
     private static final Logger log = LoggerFactory.getLogger(TripDetailsController.class);
     private static final String DEFAULT_IMAGE = "/com/triplify/ui/pages/trips/images/one.png";
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("MMM d, yyyy HH:mm").withZone(ZoneOffset.UTC);
+    private static final int TAG_COLOR_VARIANTS = 20;
 
     @FXML private VBox contentContainer;
     @FXML private StackPane heroContainer;
     @FXML private Button backButton;
     @FXML private ImageView heroImageView;
     @FXML private Label tripTitleLabel;
+    @FXML private Label heroStatusLabel;
     @FXML private Label descriptionTitleLabel;
     @FXML private Label descriptionValueLabel;
+    @FXML private Label categoryLabel;
+    @FXML private Label changeStatusLabel;
     @FXML private HBox tripCountriesContainer;
     @FXML private HBox categoryContainer;
     @FXML private FlowPane tagContainer;
@@ -118,15 +130,14 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
 
     private Select<StatusEnum> statusSelectModel;
     private StatusEnum currentTripStatus = StatusEnum.PLANNED;
-//
-//    private final javafx.beans.value.ChangeListener<java.util.ResourceBundle> i18nBundleListener = (obs, oldBundle, newBundle) -> {
-//        // when localization changes, make sure any status representation is re-applied
-//        if (statusSelectModel != null && statusSelectModel.getSelectedItem() != null) {
-//            Entry<StatusEnum> sel = statusSelectModel.getSelectedItem();
-//            currentTripStatus = sel == null ? currentTripStatus : sel.getValue();
-//        }
-//    };
-//    private final javafx.beans.value.WeakChangeListener<java.util.ResourceBundle> weakI18nBundleListener = new javafx.beans.value.WeakChangeListener<>(i18nBundleListener);
+    private List<Entry<StatusEnum>> cachedStatusEntries;
+
+    private final ChangeListener<ResourceBundle> i18nBundleListener = (obs, oldBundle, newBundle) -> {
+        if (heroStatusLabel != null) {
+            DisplayUtils.applyStatus(heroStatusLabel, currentTripStatus);
+        }
+    };
+    private final WeakChangeListener<ResourceBundle> weakI18nBundleListener = new WeakChangeListener<>(i18nBundleListener);
 
     @FXML
     public void initialize() {
@@ -137,18 +148,14 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         Localization.bindText(placesHeader.titleProperty(), "trip.details.section.places");
         Localization.bindText(storiesHeader.titleProperty(), "trip.details.section.stories");
         Localization.bindText(imagesHeader.titleProperty(), "trip.details.section.images");
-
-//        topRowFlow.prefWrapLengthProperty().bind(contentContainer.widthProperty());
+        Localization.bindText(categoryLabel.textProperty(), "trip.details.category");
+        Localization.bindText(changeStatusLabel.textProperty(), "trip.details.changeStatus");
 
         heroImageView.fitWidthProperty().bind(heroContainer.widthProperty());
         heroImageView.fitHeightProperty().bind(heroContainer.heightProperty());
         installRoundedClip(heroContainer, 28);
-//
-        //actionButtonsView.configurePrimary(fxmlLoader, Localization.textBinding("trip.details.action.edit"), "fth-edit-3", this::onEditTrip);
-//        actionButtonsView.configureDelete(fxmlLoader, Localization.textBinding("trip.details.action.delete"), "fth-trash-2", Localization.textBinding("trip.details.action.delete.confirm"), this::onDeleteTrip);
-//
 
-//        Localization.bindText(addStoryButton.textProperty(), "trip.details.action.addStory");
+        I18n.bundleProperty().addListener(weakI18nBundleListener);
 
         setupInputs();
         setupStatusSelect();
@@ -183,9 +190,10 @@ private void setupInputs()
 }
 
     private void setupStatusSelect() {
+        cachedStatusEntries = buildStatusEntries();
         statusSelectModel = Select.<StatusEnum>builder()
                 .placeholder(I18n.t("tripplace.context.status.placeholder"))
-                .items(FXCollections.observableArrayList(buildStatusEntries()))
+                .items(FXCollections.observableArrayList(cachedStatusEntries))
                 .variant(FieldVariant.GHOST)
                 .size(AppComponentSize.MIDDLE)
                 .onSelect(e -> onTripStatusSelected(e.getValue()))
@@ -304,39 +312,64 @@ private void setupInputs()
     }
 
     private void bind(TripResponse trip) {
+        currentTripStatus = trip.status() == null ? StatusEnum.PLANNED : trip.status();
+        if (heroStatusLabel != null) {
+            DisplayUtils.applyStatus(heroStatusLabel, currentTripStatus);
+        }
+
         heroImageView.setImage(loadImage(trip));
         tripTitleLabel.setText(safeText(trip.title(), I18n.t("trip.add.fallback.trip")));
         descriptionValueLabel.setText(safeText(trip.description(), I18n.t("trip.details.empty.description")));
 
         tripCountriesContainer.getChildren().clear();
         for (CountryResponse country : trip.countries()) {
-            Label countryLabel = new Label(safeText(country.name(), I18n.t("trip.details.empty.countries")));
-            countryLabel.getStyleClass().addAll("trip-editor-chip", "trip-editor-chip-soft");
-            tripCountriesContainer.getChildren().add(countryLabel);
+            HBox pill = new HBox(6);
+            pill.getStyleClass().addAll("trip-editor-chip", "trip-editor-chip-accent");
+            pill.setAlignment(Pos.CENTER_LEFT);
+
+            ImageView emojiView = new ImageView();
+            Label countryLabel = new Label();
+            DisplayUtils.bindCountry(pill, countryLabel, emojiView, country, 16);
+
+            pill.getChildren().addAll(emojiView, countryLabel);
+            tripCountriesContainer.getChildren().add(pill);
         }
 
         var categoryChildren = categoryContainer.getChildren();
         categoryChildren.remove(1, categoryChildren.size());
         if (trip.category() != null) {
-            Label categoryPill = new Label(safeText(Localization.localize(trip.category()), ""));
-            categoryPill.getStyleClass().addAll("trip-editor-chip", "trip-editor-chip-accent");
-            categoryContainer.getChildren().add(categoryPill);
+            HBox pill = new HBox(6);
+            pill.getStyleClass().addAll("trip-editor-chip", "trip-editor-chip-accent");
+            pill.setAlignment(Pos.CENTER_LEFT);
+
+            ImageView emojiView = new ImageView();
+            Label categoryLabel = new Label();
+            DisplayUtils.bindEmoji(pill, categoryLabel, emojiView, trip.category(), trip.category().emojiUnicode(), 16);
+
+            pill.getChildren().addAll(emojiView, categoryLabel);
+            categoryContainer.getChildren().add(pill);
         }
 
         tagContainer.getChildren().clear();
         if (trip.tags() != null && !trip.tags().isEmpty()) {
             for (TagResponse tag : trip.tags()) {
-                Label tagPill = new Label(safeText(tag.name(), ""));
-                tagPill.getStyleClass().addAll("trip-editor-chip", "trip-editor-chip-soft");
-                tagContainer.getChildren().add(tagPill);
+                String name = safeText(tag.name(), "");
+                Button tagChip = new Button(name);
+                tagChip.setFocusTraversable(false);
+                tagChip.getStyleClass().addAll("trip-editor-chip", tagColorClass(name));
+                tagContainer.getChildren().add(tagChip);
             }
         }
 
-        String dateRange = DisplayUtils.formatDateRange(toLocalDate(trip.startedAt()), toLocalDate(trip.endedAt()));
-        tripDateView.setTitle(dateRange);
+        LocalDate startDate = toLocalDate(trip.startedAt());
+        LocalDate endDate = toLocalDate(trip.endedAt());
+        tripDateView.titleProperty().unbind();
+        tripDateView.titleProperty().bind(Bindings.createStringBinding(
+                () -> DisplayUtils.formatDateRangeLocalized(startDate, endDate),
+                I18n.languageProperty()
+        ));
 
-        currentTripStatus = trip.status() == null ? StatusEnum.PLANNED : trip.status();
-        Entry<StatusEnum> selectedEntry = buildStatusEntries().stream()
+        Entry<StatusEnum> selectedEntry = cachedStatusEntries.stream()
                 .filter(e -> e.getValue() == currentTripStatus)
                 .findFirst()
                 .orElse(null);
@@ -459,10 +492,10 @@ private void setupInputs()
 
     private List<Entry<StatusEnum>> buildStatusEntries() {
         return List.of(
-                Entry.builder(StatusEnum.PLANNED, Localization.textBinding("status.planned")).build(),
-                Entry.builder(StatusEnum.ONGOING, Localization.textBinding("status.ongoing")).build(),
-                Entry.builder(StatusEnum.VISITED, Localization.textBinding("status.visited")).build(),
-                Entry.builder(StatusEnum.CANCELED, Localization.textBinding("status.canceled")).build()
+                Entry.builder(StatusEnum.PLANNED, Localization.textBinding("status.planned")).colorTheme(ColorTheme.STEEL_BLUE).build(),
+                Entry.builder(StatusEnum.ONGOING, Localization.textBinding("status.ongoing")).colorTheme(ColorTheme.PURPLE).build(),
+                Entry.builder(StatusEnum.VISITED, Localization.textBinding("status.visited")).colorTheme(ColorTheme.GREEN).build(),
+                Entry.builder(StatusEnum.CANCELED, Localization.textBinding("status.canceled")).colorTheme(ColorTheme.RED).build()
         );
     }
 
@@ -550,6 +583,11 @@ private void setupInputs()
 
     private static String safeText(String value, String fallback) {
         return value == null || value.isBlank() ? fallback : value;
+    }
+
+    private String tagColorClass(String tag) {
+        int index = Math.floorMod(tag == null ? 0 : tag.hashCode(), TAG_COLOR_VARIANTS);
+        return "app-tag-picker-chip-color-" + index;
     }
 
     private void configureButtonIcon(Button button, String iconLiteral, String styleClass) {

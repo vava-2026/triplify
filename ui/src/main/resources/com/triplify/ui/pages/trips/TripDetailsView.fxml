@@ -42,10 +42,9 @@
                                     styleClass="place-details-back-button"/>
                         </HBox>
                         <VBox styleClass="place-details-hero-copy,trip-details-hero-copy" spacing="8">
+                            <Label fx:id="heroStatusLabel" styleClass="trip-status,trip-details-hero-status"/>
                             <Label fx:id="tripTitleLabel" styleClass="place-details-title"/>
                             <HBox fx:id="tripCountriesContainer" spacing="8" alignment="CENTER_LEFT">
-<!--                                <Label fx:id="tripStatusLabel" styleClass="trip-details-status-badge"/>-->
-<!--                                <Label fx:id="tripDatesLabel" styleClass="place-details-country"/>-->
                             </HBox>
                         </VBox>
                     </VBox>
@@ -62,7 +61,7 @@
                         <VBox styleClass="place-details-side-column" spacing="14">
                             <VBox styleClass="page-card,place-details-card,place-details-side-column" spacing="14">
                                 <HBox fx:id="categoryContainer" spacing="8" alignment="CENTER_LEFT">
-                                    <Label style="-fx-font-size: 16px; -fx-font-weight: 700">Category: </Label>
+                                    <Label fx:id="categoryLabel" style="-fx-font-size: 16px; -fx-font-weight: 700" />
                                 </HBox>
                                     <FlowPane fx:id="tagContainer" alignment="CENTER_LEFT" hgap="8" vgap="8"/>
                                 <HBox>
@@ -70,7 +69,7 @@
                                 </HBox>
                             </VBox>
                             <VBox styleClass="page-card,place-details-card,place-details-side-column" spacing="14">
-                                <Label style="-fx-font-size: 16px; -fx-font-weight: 700">Change Status of your trip:</Label>
+                                <Label fx:id="changeStatusLabel" style="-fx-font-size: 16px; -fx-font-weight: 700">Change Status of your trip:</Label>
                                 <VBox fx:id="changeTripStatusContainer" spacing="8" alignment="CENTER_LEFT">
                                     <SelectView fx:id="tripStatusSelect" />
                                 </VBox>
@@ -79,45 +78,6 @@
                             <VBox fx:id="deleteTripButtonContainer"/>
                         </VBox>
                     </HBox>
-<!--                    <FlowPane fx:id="topRowFlow" styleClass="place-details-top-row" prefWrapLength="1000">-->
-<!--                        <VBox styleClass="place-details-main-column" spacing="20">-->
-<!--                            <VBox styleClass="page-card,place-details-card,place-details-description-card" spacing="12">-->
-<!--                                <Label fx:id="descriptionTitleLabel" styleClass="place-details-card-title"/>-->
-<!--                                <Label fx:id="descriptionValueLabel" styleClass="place-details-description" wrapText="true"/>-->
-<!--                            </VBox>-->
-<!--                        </VBox>-->
-
-<!--                        <VBox styleClass="place-details-side-column" spacing="14">-->
-<!--                            <VBox styleClass="page-card,place-details-card" spacing="10">-->
-<!--                                <Label fx:id="tripCountriesLabel" styleClass="trip-details-meta-label"/>-->
-<!--                                <Label fx:id="tripCategoryLabel" styleClass="trip-details-meta-label"/>-->
-<!--                            </VBox>-->
-<!--                            <DetailActionButtonsView fx:id="actionButtonsView"/>-->
-<!--                        </VBox>-->
-<!--                    </FlowPane>-->
-
-<!--                    <VBox spacing="20">-->
-<!--                        <VBox styleClass="place-details-trips-section" spacing="12">-->
-<!--                            <SectionHeaderView fx:id="routesHeader" iconLiteral="fth-map"/>-->
-<!--                            <CardGridPane fx:id="routesGrid"/>-->
-<!--                        </VBox>-->
-
-<!--                        <VBox spacing="12">-->
-<!--                            <SectionHeaderView fx:id="placesHeader" iconLiteral="fth-map-pin"/>-->
-<!--                            <CardGridPane fx:id="placesGrid"/>-->
-<!--                        </VBox>-->
-
-<!--                        <VBox spacing="16">-->
-<!--                            <SectionHeaderView fx:id="storiesHeader" iconLiteral="fth-book-open"/>-->
-<!--                            <Button fx:id="addStoryButton" styleClass="app-btn,app-btn-tint"/>-->
-<!--                            <CardGridPane fx:id="storiesGrid"/>-->
-<!--                        </VBox>-->
-
-<!--                        <VBox spacing="12">-->
-<!--                            <SectionHeaderView fx:id="imagesHeader" iconLiteral="fth-image"/>-->
-<!--                            <CardGridPane fx:id="imagesGrid"/>-->
-<!--                        </VBox>-->
-<!--                    </VBox>-->
                 </VBox>
 
                 <VBox styleClass="place-details-trips-section" spacing="12">

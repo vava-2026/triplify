@@ -23,12 +23,16 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.time.format.TextStyle;
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 
 public final class DisplayUtils {
 
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("MMM d, yyyy");
+    private static final DateTimeFormatter LOCALIZED_DATE_FORMAT = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM);
 
     private DisplayUtils() {}
 
@@ -38,6 +42,31 @@ public final class DisplayUtils {
 
     public static Instant toInstant(LocalDate value) {
         return value == null ? null : value.atStartOfDay().toInstant(ZoneOffset.UTC);
+    }
+
+    public static String formatDateRangeLocalized(LocalDate start, LocalDate end) {
+        Locale locale = I18n.getLanguage().getLocale();
+        DateTimeFormatter localizedDate = LOCALIZED_DATE_FORMAT.withLocale(locale);
+
+        if (start == null && end == null) return I18n.t("trip.details.dates.tba");
+        if (start != null && (end == null || start.equals(end))) {
+            return start.format(localizedDate);
+        }
+    if (start != null && end != null) {
+        if (start.getYear() == end.getYear() && start.getMonth() == end.getMonth()) {
+            DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("LLLL", locale);
+            String monthString = start.format(monthFormatter);
+            String capitalizedMonth = monthString.substring(0, 1).toUpperCase(locale) + monthString.substring(1);
+            return String.format("%s %d - %d, %d",
+                    capitalizedMonth,
+                    start.getDayOfMonth(),
+                    end.getDayOfMonth(),
+                    start.getYear()
+            );
+        }
+        return start.format(localizedDate) + " - " + end.format(localizedDate);
+    }
+        return start == null ? end.format(localizedDate) : start.format(localizedDate);
     }
 
     public static String formatDateRange(LocalDate start, LocalDate end) {
@@ -107,7 +136,7 @@ public final class DisplayUtils {
         }
     }
 
-    private static String resolveStatusLabel(StatusEnum status) {
+    public static String resolveStatusLabel(StatusEnum status) {
         if (status == null) {
             return I18n.t("trip.status.unknown");
         }
@@ -115,11 +144,12 @@ public final class DisplayUtils {
         return switch (status) {
             case VISITED -> I18n.t("trip.status.visited");
             case ONGOING -> I18n.t("trip.status.ongoing");
-            case PLANNED, CANCELED -> I18n.t("trip.status.planned");
+            case PLANNED -> I18n.t("trip.status.planned");
+            case CANCELED -> I18n.t("trip.status.canceled");
         };
     }
 
-    private static String resolveStatusCssClass(StatusEnum status) {
+    public static String resolveStatusCssClass(StatusEnum status) {
         if (status == null) {
             return null;
         }
@@ -127,7 +157,8 @@ public final class DisplayUtils {
         return switch (status) {
             case VISITED -> "trip-status-visited";
             case ONGOING -> "trip-status-ongoing";
-            case PLANNED, CANCELED -> "trip-status-planned";
+            case PLANNED -> "trip-status-planned";
+            case CANCELED -> "trip-status-rejected";
         };
     }
 
