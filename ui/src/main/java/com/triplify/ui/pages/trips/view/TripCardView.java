@@ -1,12 +1,10 @@
 package com.triplify.ui.pages.trips.view;
 
-import com.triplify.application.usecase.category.dto.CategoryResponse;
 import com.triplify.application.usecase.trip.dto.TripResponse;
 import com.triplify.domain.model.enums.StatusEnum;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.util.DisplayUtils;
 import com.triplify.ui.shared.util.EditorUtils;
-import com.triplify.ui.shared.util.Localization;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.WeakChangeListener;
 import javafx.fxml.FXML;
@@ -45,7 +43,7 @@ public class TripCardView implements Initializable {
     @Setter
     private Runnable onOpen;
     private StatusEnum currentStatus;
-    private final ChangeListener<ResourceBundle> i18nBundleListener = (obs, oldBundle, newBundle) -> applyStatus(currentStatus);
+    private final ChangeListener<ResourceBundle> i18nBundleListener = (obs, oldBundle, newBundle) -> DisplayUtils.applyStatus(statusLabel, currentStatus);
     private final WeakChangeListener<ResourceBundle> weakI18nBundleListener = new WeakChangeListener<>(i18nBundleListener);
 
     @Override
@@ -73,7 +71,17 @@ public class TripCardView implements Initializable {
     public void setTrip(TripResponse trip, String dateRange) {
         if (trip == null) return;
         titleLabel.setText(trip.title());
-        bindCategoryChip(trip.category());
+        if (trip.category() != null) {
+            DisplayUtils.bindEmoji(categoryRow, categoryLabel, categoryEmojiView, trip.category(), trip.category().emojiUnicode(), CATEGORY_EMOJI_SIZE);
+        } else {
+            categoryRow.setVisible(false);
+            categoryRow.setManaged(false);
+            categoryLabel.textProperty().unbind();
+            categoryLabel.setText("");
+            categoryEmojiView.setImage(null);
+            categoryEmojiView.setVisible(false);
+            categoryEmojiView.setManaged(false);
+        }
         dateLabel.setText(dateRange);
 
         String coverUrl = DisplayUtils.deriveCoverUrl(trip.coverImage());
@@ -81,65 +89,10 @@ public class TripCardView implements Initializable {
         EditorUtils.applyCoverBackground(media, image);
 
         currentStatus = trip.status();
-        applyStatus(currentStatus);
+        DisplayUtils.applyStatus(statusLabel, currentStatus);
     }
 
-    private void applyStatus(StatusEnum status) {
-        statusLabel.setText(resolveStatusLabel(status));
-        statusLabel.getStyleClass().removeIf(style -> style.startsWith("trip-status-"));
-        String statusClass = resolveStatusCssClass(status);
-        if (statusClass != null) {
-            statusLabel.getStyleClass().add(statusClass);
-        }
-    }
 
-    private void bindCategoryChip(CategoryResponse category) {
-        categoryLabel.textProperty().unbind();
-        Localization.bindLocalizedText(categoryLabel.textProperty(), category);
-
-        boolean rowVisible = category != null;
-        if (categoryRow != null) {
-            categoryRow.setVisible(rowVisible);
-            categoryRow.setManaged(rowVisible);
-        }
-
-        if (categoryEmojiView == null) {
-            return;
-        }
-
-        if (!rowVisible) {
-            categoryEmojiView.setVisible(false);
-            categoryEmojiView.setManaged(false);
-            categoryEmojiView.setImage(null);
-            return;
-        }
-
-        EditorUtils.applyEmojiImage(categoryEmojiView, category.emojiUnicode(), CATEGORY_EMOJI_SIZE);
-    }
-
-    private String resolveStatusLabel(StatusEnum status) {
-        if (status == null) {
-            return I18n.t("trip.status.unknown");
-        }
-
-        return switch (status) {
-            case VISITED -> I18n.t("trip.status.visited");
-            case ONGOING -> I18n.t("trip.status.ongoing");
-            case PLANNED, CANCELED -> I18n.t("trip.status.planned");
-        };
-    }
-
-    private String resolveStatusCssClass(StatusEnum status) {
-        if (status == null) {
-            return null;
-        }
-
-        return switch (status) {
-            case VISITED -> "trip-status-visited";
-            case ONGOING -> "trip-status-ongoing";
-            case PLANNED, CANCELED -> "trip-status-planned";
-        };
-    }
 
     public static TripCardView create(TripResponse trip, String dateRange, Runnable onOpen) {
         if (FXML_URL == null) throw new IllegalStateException("TripCard.fxml not found");

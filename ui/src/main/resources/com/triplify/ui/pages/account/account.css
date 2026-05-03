@@ -1,38 +1,56 @@
-/* Header */
 .section-header { -fx-padding: 1 0 4 0;}
 .section-header .label{ -fx-font-family: -font-family-base; -fx-font-size: 20px; -fx-font-weight: 700; -fx-text-fill: -color-ink; }
 .header-icon    { -fx-icon-color: -color-primary-dark;}
 
-/* Main cards */
-.stat-card {-fx-background-color: -color-on-surface; -fx-background-radius: 10px; -fx-cursor: hand;}
-.card-label { -fx-font-size: 16px; -fx-font-weight: 500; -fx-text-fill: -color-ink-muted; -fx-padding: 10 0 0 0;}
+.badges-group-title {
+    -fx-font-family: -font-family-base;
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+    -fx-text-fill: -color-ink;
+}
+
+#statisticsGrid {
+    -fx-pref-width: -1;
+    -fx-hgap: 12;
+    -fx-vgap: 12;
+}
+
+.stat-card {
+    -fx-background-color: -color-on-surface;
+    -fx-background-radius: 10px;
+    -fx-pref-width: -1;
+    -fx-pref-height: -1;
+}
+.card-label { -fx-font-size: 16px; -fx-font-weight: 500; -fx-text-fill: -color-ink-muted; -fx-padding: 10 0 0 0; -fx-wrap-text: true; -fx-text-alignment: left; }
 .card-value { -fx-font-size: 32px; -fx-font-weight: 700; -fx-text-fill: -color-ink; }
 .card-icon { -fx-border-width: thin;}
 .icon-circle { -fx-background-radius: 30%; }
 
-/* Icon colors */
 .icon-green .card-icon { -fx-icon-color: -color-stats-green-fg; }
 .icon-blue .card-icon { -fx-icon-color: -color-stats-blue-fg; }
 .icon-yellow .card-icon { -fx-icon-color: -color-stats-yellow-fg; }
 .icon-purple .card-icon { -fx-icon-color: -color-stats-purple-fg; }
 .icon-pink .card-icon { -fx-icon-color: -color-stats-pink-fg; }
 
-/* Icon background colors */
 .icon-green  { -fx-background-color: -color-stats-green-bg; }
 .icon-blue   { -fx-background-color: -color-stats-blue-bg; }
 .icon-yellow { -fx-background-color: -color-stats-yellow-bg; }
 .icon-purple { -fx-background-color: -color-stats-purple-bg; }
 .icon-pink   { -fx-background-color: -color-stats-pink-bg; }
 
+.badges-group {
+    -fx-alignment: center;
+}
+
 .badges-grid {
-    -fx-padding: 10;
+    -fx-padding: 0;
     -fx-hgap: 20;
     -fx-vgap: 20;
     -fx-alignment: center;
 }
 
 .account-scroll-content {
-    -fx-padding: 50 60 50 60;
+    -fx-padding: 50 30 50 30;
     -fx-alignment: top-center;
 }
 

@@ -199,6 +199,11 @@ public class AddRouteController extends WindowedPageController {
     private void onSave() {
         clearFieldErrors();
 
+        if (placeItems.size() <2) {
+            toast.warning(I18n.t("route.add.toast.places.min"));
+            return;
+        }
+
         Path coverImage = coverImagePath == null || coverImagePath.isBlank() ? null : Path.of(coverImagePath);
         String title = titleInput.getText().trim();
         String description = EditorUtils.normalizeNullable(descriptionInput.getText());

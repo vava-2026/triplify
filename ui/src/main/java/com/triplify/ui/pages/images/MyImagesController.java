@@ -53,9 +53,10 @@ public class MyImagesController extends SimpleLifecycleAwareController {
                 .placeholder(I18n.t("images.filter.placeholder"))
                 .size(AppComponentSize.BIG)
                 .items(List.of(
-                        Entry.<ImageOwnerType>builder(ImageOwnerType.TRIP, Localization.textBinding("images.filter.trip")).build(),
-                        Entry.<ImageOwnerType>builder(ImageOwnerType.TRIP_PLACE, Localization.textBinding("images.filter.place")).build(),
-                        Entry.<ImageOwnerType>builder(ImageOwnerType.TRIP_ROUTE, Localization.textBinding("images.filter.route")).build()
+                        Entry.builder(ImageOwnerType.TRIP, Localization.textBinding("images.filter.trip")).build(),
+                        Entry.builder(ImageOwnerType.TRIP_PLACE, Localization.textBinding("images.filter.place")).build(),
+                        Entry.builder(ImageOwnerType.TRIP_ROUTE, Localization.textBinding("images.filter.route")).build(),
+                        Entry.builder(ImageOwnerType.STORY, Localization.textBinding("images.filter.story")).build()
                 ))
                 .onSelect(entry -> {
                     selectedType = entry.getValue();

@@ -19,12 +19,15 @@ import com.triplify.application.usecase.route.dto.RouteResponse;
 import com.triplify.application.usecase.route.dto.UpdateRouteRequest;
 import com.triplify.application.usecase.session.SessionUser;
 import com.triplify.application.usecase.session.UserSessionContext;
+import com.triplify.application.usecase.statistic.StatisticService;
+import com.triplify.application.usecase.statistic.dto.IncrementStatisticRequest;
 import com.triplify.domain.error.PlaceError;
 import com.triplify.domain.model.Place;
 import com.triplify.domain.error.RouteError;
 import com.triplify.domain.filter.RouteFilter;
 import com.triplify.domain.model.Route;
 import com.triplify.domain.model.RoutePlace;
+import com.triplify.domain.model.enums.StatisticType;
 import com.triplify.domain.pagination.Page;
 import com.triplify.domain.repository.PlaceRepository;
 import com.triplify.domain.repository.RoutePlaceRepository;
@@ -53,6 +56,7 @@ public class RouteServiceImpl implements RouteService {
     private final PlaceRepository placeRepository;
     private final UserSessionContext userSessionContext;
     private final ImageService imageService;
+    private final StatisticService statisticService;
 
     @Inject
     RouteServiceImpl(
@@ -60,13 +64,15 @@ public class RouteServiceImpl implements RouteService {
             RoutePlaceRepository routePlaceRepository,
             PlaceRepository placeRepository,
             UserSessionContext userSessionContext,
-            ImageService imageService
+                ImageService imageService,
+                StatisticService statisticService
     ) {
         this.routeRepository = routeRepository;
         this.routePlaceRepository = routePlaceRepository;
         this.placeRepository = placeRepository;
         this.userSessionContext = userSessionContext;
         this.imageService = imageService;
+        this.statisticService = statisticService;
     }
 
     @Override
@@ -77,13 +83,14 @@ public class RouteServiceImpl implements RouteService {
         Route route = new Route(
                 user.userId(),
                 request.title(),
-                request.description(),
+                request.description() == null? "" : request.description(),
                 calculateLength(List.of())
         );
 
         replaceCoverImage(route, request.coverImage(), request.title()).orThrow();
 
         routeRepository.create(route);
+        statisticService.incrementStatistic(new IncrementStatisticRequest(user.userId(), StatisticType.ROUTES_CREATED)).orThrow();
         log.info("Added new route with id='{}', title='{}' by userId='{}'", route.getId(), route.getTitle(), user.userId());
         return Result.ok(RouteResponse.from(route, List.of()));
     }
@@ -95,7 +102,7 @@ public class RouteServiceImpl implements RouteService {
         Route route = requireOwnedRoute(request.id(), user.userId()).orThrow();
         List<RoutePlace> routePlaces = routePlaceRepository.findByRouteId(request.id());
         route.updateTitle(request.title());
-        route.updateDescription(request.description());
+        route.updateDescription(request.description()==null? "" : request.description());
         route.updateLength(calculateLength(routePlaces));
 
         replaceCoverImage(route, request.coverImage(), request.title()).orThrow();
@@ -142,8 +149,13 @@ public class RouteServiceImpl implements RouteService {
         RoutePlace routePlace = new RoutePlace(route.getId(), request.placeId(), nextOrder);
         routePlaceRepository.create(routePlace);
         List<RoutePlace> updatedRoutePlaces = routePlaceRepository.findByRouteId(request.routeId());
+        double previousLength = route.getLength();
         route.updateLength(calculateLength(updatedRoutePlaces));
         routeRepository.update(route);
+        long kmDelta = Math.round(route.getLength() - previousLength);
+        if (kmDelta > 0) {
+            statisticService.incrementStatistic(new IncrementStatisticRequest(user.userId(), StatisticType.KILOMETERS_TRAVELLED, kmDelta)).orThrow();
+        }
 
         log.info("Added placeId='{}' to routeId='{}' by userId='{}'", request.placeId(), request.routeId(), user.userId());
         return getRouteById(new GetRouteByIdRequest(request.routeId()));
@@ -163,8 +175,13 @@ public class RouteServiceImpl implements RouteService {
         routePlaceRepository.delete(routePlaceRes.get());
         resequenceRoutePlaces(request.routeId());
         List<RoutePlace> updatedRoutePlaces = routePlaceRepository.findByRouteId(request.routeId());
+        double previousLength = route.getLength();
         route.updateLength(calculateLength(updatedRoutePlaces));
         routeRepository.update(route);
+        long kmDelta = Math.round(route.getLength() - previousLength);
+        if (kmDelta > 0) {
+            statisticService.incrementStatistic(new IncrementStatisticRequest(user.userId(), StatisticType.KILOMETERS_TRAVELLED, kmDelta)).orThrow();
+        }
 
         log.info("Deleted placeId='{}' from routeId='{}' by userId='{}'", request.placeId(), request.routeId(), user.userId());
         return Result.ok(RouteResponse.from(route, updatedRoutePlaces));
@@ -209,8 +226,13 @@ public class RouteServiceImpl implements RouteService {
             }
         }
         List<RoutePlace> updatedRoutePlaces = routePlaceRepository.findByRouteId(request.id());
+        double previousLength = route.getLength();
         route.updateLength(calculateLength(updatedRoutePlaces));
         routeRepository.update(route);
+        long kmDelta = Math.round(route.getLength() - previousLength);
+        if (kmDelta > 0) {
+            statisticService.incrementStatistic(new IncrementStatisticRequest(user.userId(), StatisticType.KILOMETERS_TRAVELLED, kmDelta)).orThrow();
+        }
 
         log.info("Rearranged places in routeId='{}' by userId='{}'", request.id(), user.userId());
         return Result.ok(RouteResponse.from(route, updatedRoutePlaces));

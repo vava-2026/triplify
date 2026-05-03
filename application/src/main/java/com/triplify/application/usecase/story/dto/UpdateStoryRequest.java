@@ -12,7 +12,7 @@ import java.util.UUID;
 
 public record UpdateStoryRequest(
 
-        @NotBlank(message = ValidationMessage.Constants.REQUIRED)
+        @NotNull(message = ValidationMessage.Constants.REQUIRED)
         UUID id,
 
         @NotBlank(message = ValidationMessage.Constants.REQUIRED)
@@ -28,6 +28,8 @@ public record UpdateStoryRequest(
         UUID tripRouteId,
         UUID tripPlaceId,
         UUID emotionId,
-        Set<UUID> tagIds
+        Set<UUID> tagIds,
+        Double latitude,
+        Double longitude
 ) {
 }

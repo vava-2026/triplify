@@ -41,13 +41,14 @@
                                maxWidth="120"
                                text="Badge Name"/>
 
-                     <Label fx:id="badgeStat"
-                               styleClass="badge-stat"
+                     <Label fx:id="badgeDescription"
+                               styleClass="badge-description"
+                               wrapText="true"
                                alignment="CENTER"
                                minWidth="150"
                                prefWidth="150"
                                maxWidth="150"
-                               text="Countries visited: 0/0"/>
+                               text="Badge Description"/>
               </VBox>
        </VBox>
 

@@ -22,11 +22,13 @@
     </arguments>
 
     <arguments id="placeDetailsArgs">
-        <argument name="placeId" type="string" required="true"/>
+        <argument name="placeId" type="string" required="false"/>
+        <argument name="tripPlaceId" type="string" required="false"/>
     </arguments>
 
     <arguments id="routeDetailsArgs">
-        <argument name="routeId" type="string" required="true"/>
+        <argument name="routeId" type="string" required="false"/>
+        <argument name="tripRouteId" type="string" required="false"/>
     </arguments>
 
     <arguments id="tripDetailsArgs">
@@ -75,14 +77,6 @@
 
     <destination id="my_images"
                  fxml="com/triplify/ui/pages/images/MyImagesView.fxml"
-                 singleTop="true"/>
-
-    <destination id="my_badges"
-                 fxml="com/triplify/ui/pages/placeholder/PlaceholderPageView.fxml"
-                 singleTop="true"/>
-
-    <destination id="my_statistics"
-                 fxml="com/triplify/ui/pages/account/StatisticsView.fxml"
                  singleTop="true"/>
 
     <destination id="trip_details"

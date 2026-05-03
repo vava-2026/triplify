@@ -32,5 +32,6 @@ public class InfrastructureModule extends AbstractModule {
         bind(StoryRepository.class).to(StoryRepositoryImpl.class).in(Singleton.class);
         bind(EmotionRepository.class).to(EmotionRepositoryImpl.class).in(Singleton.class);
         bind(MapRepository.class).to(MapRepositoryImpl.class).in(Singleton.class);
+        bind(StatisticRepository.class).to(StatisticRepositoryImpl.class).in(Singleton.class);
     }
 }

@@ -30,7 +30,7 @@ public class StoryRepositoryImpl implements StoryRepository {
 
     private static final String SELECT_STORY =
             "SELECT s.id, s.user_id, s.trip_id, s.trip_route_id, s.trip_place_id, " +
-            "s.emotion_id, s.title, s.description, s.story_time, s.created_at, " +
+            "s.emotion_id, s.title, s.description, s.story_time, s.latitude, s.longitude, s.created_at, " +
             "e.id AS e_id, e.created_by AS e_created_by, e.name AS e_name, " +
             "e.name_sk AS e_name_sk, e.emoji_unicode AS e_emoji_unicode " +
             "FROM stories s " +
@@ -121,10 +121,10 @@ public class StoryRepositoryImpl implements StoryRepository {
     @Override
     public void create(Story story) {
         String sql = "INSERT INTO stories " +
-                "(id, user_id, trip_id, trip_route_id, trip_place_id, emotion_id, title, description, story_time, created_at) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "(id, user_id, trip_id, trip_route_id, trip_place_id, emotion_id, title, description, story_time, latitude, longitude, created_at) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        try (Connection conn = SQLiteConnectionFactory.getConnection()) {
+        try (Connection conn = SQLiteConnectionFactory.getSpatialConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 ps.setString(1,  story.getId().toString());
                 ps.setString(2,  story.getUserId().toString());
@@ -135,7 +135,9 @@ public class StoryRepositoryImpl implements StoryRepository {
                 ps.setString(7,  story.getTitle());
                 ps.setString(8,  story.getDescription());
                 ps.setString(9,  story.getStoryTime().toString());
-                ps.setString(10, story.getCreatedAt().toString());
+                if (story.getLatitude() != null) ps.setDouble(10, story.getLatitude()); else ps.setNull(10, java.sql.Types.REAL);
+                if (story.getLongitude() != null) ps.setDouble(11, story.getLongitude()); else ps.setNull(11, java.sql.Types.REAL);
+                ps.setString(12, story.getCreatedAt().toString());
                 ps.executeUpdate();
             }
             syncTags(conn, story);
@@ -148,15 +150,17 @@ public class StoryRepositoryImpl implements StoryRepository {
 
     @Override
     public void update(Story story) {
-        String sql = "UPDATE stories SET title = ?, description = ?, story_time = ?, emotion_id = ? WHERE id = ?";
+        String sql = "UPDATE stories SET title = ?, description = ?, story_time = ?, emotion_id = ?, latitude = ?, longitude = ? WHERE id = ?";
 
-        try (Connection conn = SQLiteConnectionFactory.getConnection()) {
+        try (Connection conn = SQLiteConnectionFactory.getSpatialConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(sql)) {
                 ps.setString(1, story.getTitle());
                 ps.setString(2, story.getDescription());
                 ps.setString(3, story.getStoryTime().toString());
                 ps.setString(4, RepositoryUtils.uuidOrNull(story.getEmotionId()));
-                ps.setString(5, story.getId().toString());
+                if (story.getLatitude() != null) ps.setDouble(5, story.getLatitude()); else ps.setNull(5, java.sql.Types.REAL);
+                if (story.getLongitude() != null) ps.setDouble(6, story.getLongitude()); else ps.setNull(6, java.sql.Types.REAL);
+                ps.setString(7, story.getId().toString());
                 ps.executeUpdate();
             }
             syncTags(conn, story);
@@ -188,12 +192,15 @@ public class StoryRepositoryImpl implements StoryRepository {
         if (emotionId != null) {
             emotion = new Emotion(
                     UUID.fromString(rs.getString("e_id")),
-                    UUID.fromString(rs.getString("e_created_by")),
+                    rs.getString("e_created_by")!=null? UUID.fromString(rs.getString("e_created_by")) : null,
                     rs.getString("e_name"),
                     rs.getString("e_name_sk"),
                     rs.getString("e_emoji_unicode")
             );
         }
+
+        Double latitude  = rs.getObject("latitude")  != null ? rs.getDouble("latitude")  : null;
+        Double longitude = rs.getObject("longitude") != null ? rs.getDouble("longitude") : null;
 
         return new Story(
                 UUID.fromString(rs.getString("id")),
@@ -206,6 +213,8 @@ public class StoryRepositoryImpl implements StoryRepository {
                 rs.getString("title"),
                 rs.getString("description"),
                 Instant.parse(rs.getString("story_time")),
+                latitude,
+                longitude,
                 Instant.parse(rs.getString("created_at")),
                 new LinkedHashSet<>(),
                 new LinkedHashSet<>()

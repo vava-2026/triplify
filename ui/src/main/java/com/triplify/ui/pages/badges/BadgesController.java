@@ -282,7 +282,6 @@ public class BadgesController extends SimpleLifecycleAwareController {
 	private void attachListeners() {
 		selectedBadge.addListener((obs, oldValue, newValue) -> {
 			refreshSelectionStyles();
-			// updateGroupSelectState();
 		});
 		I18n.languageProperty().addListener((obs, oldValue, newValue) -> {
 			badgesGrid.setEmptyTextKey("badges.empty");

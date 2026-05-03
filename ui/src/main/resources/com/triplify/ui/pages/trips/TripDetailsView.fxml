@@ -18,7 +18,6 @@
             fx:controller="com.triplify.ui.pages.trips.TripDetailsController"
             fitToWidth="true"
             hbarPolicy="NEVER"
-            vbarPolicy="AS_NEEDED"
             styleClass="page-scroll">
     <stylesheets>
         <String fx:value="/com/triplify/ui/pages/places/place_details.css"/>
@@ -32,12 +31,10 @@
                     <ImageView fx:id="heroImageView"
                                fitWidth="1120"
                                fitHeight="320"
-                               pickOnBounds="true"
-                               preserveRatio="false"
-                               styleClass="place-details-hero-image"/>
+                               pickOnBounds="true"/>
 
-                    <VBox styleClass="place-details-hero-overlay" spacing="0">
-                        <HBox alignment="TOP_LEFT">
+                    <VBox styleClass="place-details-hero-overlay">
+                        <HBox>
                             <Button fx:id="backButton"
                                     onAction="#onBack"
                                     styleClass="place-details-back-button"/>
@@ -45,7 +42,7 @@
                         <VBox styleClass="place-details-hero-copy" spacing="8">
                             <Label fx:id="tripTitleLabel" styleClass="place-details-title"/>
                             <HBox spacing="12" alignment="CENTER_LEFT">
-                                <Label fx:id="tripStatusLabel" styleClass="trip-details-status-badge"/>
+                                <Label fx:id="tripStatusLabel"/>
                                 <Label fx:id="tripDatesLabel" styleClass="place-details-country"/>
                             </HBox>
                         </VBox>
@@ -63,8 +60,8 @@
 
                         <VBox styleClass="place-details-side-column" spacing="14">
                             <VBox styleClass="page-card,place-details-card" spacing="10">
-                                <Label fx:id="tripCountriesLabel" styleClass="trip-details-meta-label"/>
-                                <Label fx:id="tripCategoryLabel" styleClass="trip-details-meta-label"/>
+                                <Label fx:id="tripCountriesLabel"/>
+                                <Label fx:id="tripCategoryLabel"/>
                             </VBox>
                             <DetailActionButtonsView fx:id="actionButtonsView"/>
                         </VBox>
@@ -83,7 +80,6 @@
 
                         <VBox spacing="16">
                             <SectionHeaderView fx:id="storiesHeader" iconLiteral="fth-book-open"/>
-                            <Button fx:id="addStoryButton" styleClass="app-btn,app-btn-tint"/>
                             <CardGridPane fx:id="storiesGrid"/>
                         </VBox>
 

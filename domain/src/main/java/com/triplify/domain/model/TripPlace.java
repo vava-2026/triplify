@@ -1,5 +1,6 @@
 package com.triplify.domain.model;
 
+import com.triplify.domain.model.enums.StatusEnum;
 import com.triplify.domain.model.enums.TripPlaceSourceType;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
@@ -17,11 +18,9 @@ public class TripPlace {
     @NonNull
     private final UUID id;
 
-    /** Reference to the owning Trip aggregate by ID only. */
     @NonNull
     private final UUID tripId;
 
-    /** Related Place reference by stable ID, with optional linked object. */
     @NonNull
     private final UUID placeId;
 
@@ -42,6 +41,10 @@ public class TripPlace {
     private Instant visitDate;
 
     @NonNull
+    @Setter(AccessLevel.PRIVATE)
+    private StatusEnum status;
+
+    @NonNull
     private final Instant createdAt;
 
     @NonNull
@@ -53,6 +56,7 @@ public class TripPlace {
         this.tripId = tripId;
         this.placeId = placeId;
         this.sourceType = TripPlaceSourceType.MANUAL;
+        this.status = StatusEnum.PLANNED;
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
     }
@@ -64,7 +68,14 @@ public class TripPlace {
         this.sourceType = TripPlaceSourceType.ROUTE;
         this.tripRouteId = tripRouteId;
         this.routePlaceId = routePlaceId;
+        this.status = StatusEnum.PLANNED;
         this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
+    }
+
+    public void updateStatus(@NonNull StatusEnum status) {
+        log.debug("TripPlace [{}] status: {} to {}", id, this.status, status);
+        setStatus(status);
         this.updatedAt = Instant.now();
     }
 

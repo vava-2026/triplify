@@ -1,6 +1,7 @@
 package com.triplify.ui.pages.calendar;
 
 import com.google.inject.Inject;
+import com.triplify.application.shared.ColorTheme;
 import com.triplify.application.shared.Pagination;
 import com.triplify.application.usecase.trip.TripService;
 import com.triplify.application.usecase.trip.dto.GetTripsForCalendarRequest;
@@ -16,16 +17,12 @@ import com.triplify.ui.shared.component.select.model.Select;
 import com.triplify.ui.shared.component.select.view.SelectView;
 import com.triplify.ui.pages.trips.view.TripCardView;
 import com.triplify.ui.shared.model.AppComponentSize;
-import com.triplify.ui.shared.util.EditorUtils;
 import com.triplify.ui.shared.util.Localization;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tooltip;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -37,7 +34,6 @@ import org.slf4j.LoggerFactory;
 import rahulstech.jfx.routing.element.RouterArgument;
 import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
@@ -55,28 +51,19 @@ import static com.triplify.ui.shared.util.DisplayUtils.toLocalDate;
 public class CalendarController extends SimpleLifecycleAwareController {
 
     private static final Logger log = LoggerFactory.getLogger(CalendarController.class);
-    private static final String DEFAULT_COVER = "/com/triplify/ui/pages/trips/images/one.png";
     private static final int UNDATED_PAGE_SIZE = 10;
 
-    // FXML
     @FXML private HBox navBar;
     @FXML private Button prevMonthBtn;
     @FXML private Button nextMonthBtn;
     @FXML private Label monthYearLabel;
-    @FXML private GridPane dayHeaderRow;
-    @FXML private ScrollPane calendarScroll;
     @FXML private GridPane calendarGrid;
     @FXML private VBox selectedTripPanel;
-    @FXML private ImageView selectedCoverImage;
-    @FXML private Label selectedTripTitle;
-    @FXML private Label selectedCategoryChip;
     @FXML private Label undatedTitleLabel;
     @FXML private CardGridPane<TripResponse> undatedTripsGrid;
 
-    // Injected
     @Inject private TripService tripService;
 
-    // State
     private YearMonth currentMonth;
     private StatusEnum selectedStatus;
     private Select<StatusEnum> statusSelect;
@@ -87,7 +74,6 @@ public class CalendarController extends SimpleLifecycleAwareController {
     @FXML
     private void initialize() {
         currentMonth = YearMonth.now();
-        buildDayHeaders();
         buildStatusFilter();
         setupNavButtons();
         setupUndatedGrid();
@@ -96,33 +82,6 @@ public class CalendarController extends SimpleLifecycleAwareController {
     @Override
     public void onLifecycleShow() {
         refreshAll();
-    }
-
-    // ── Setup ──────────────────────────────────────────────────────────
-
-    private void buildDayHeaders() {
-        DayOfWeek[] days = {
-            DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
-            DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY
-        };
-        String[] keys = {
-            "calendar.day.mon", "calendar.day.tue", "calendar.day.wed",
-            "calendar.day.thu", "calendar.day.fri", "calendar.day.sat", "calendar.day.sun"
-        };
-
-        dayHeaderRow.getColumnConstraints().clear();
-        for (int col = 0; col < 7; col++) {
-            ColumnConstraints cc = new ColumnConstraints();
-            cc.setPercentWidth(100.0 / 7);
-            cc.setHgrow(Priority.SOMETIMES);
-            dayHeaderRow.getColumnConstraints().add(cc);
-
-            Label lbl = new Label();
-            lbl.getStyleClass().add("day-header-cell");
-            lbl.setMaxWidth(Double.MAX_VALUE);
-            Localization.bindText(lbl.textProperty(), keys[col]);
-            dayHeaderRow.add(lbl, col, 0);
-        }
     }
 
     private void buildStatusFilter() {
@@ -139,10 +98,14 @@ public class CalendarController extends SimpleLifecycleAwareController {
                 .build();
 
         if (!statusSelect.getItems().isEmpty()) {
-            statusSelect.setSelectedItem(statusSelect.getItems().get(0));
+            statusSelect.setSelectedItem(statusSelect.getItems().getFirst());
         }
 
-        statusSelect.selectedItemProperty().addListener((obs, oldV, newV) -> refreshAll());
+        statusSelect.selectedItemProperty().addListener((obs, oldV, newV) -> {
+            if (oldV != newV) {
+                refreshAll();
+            }
+        });
 
         SelectView<StatusEnum> filterView = new SelectView<>();
         filterView.update(statusSelect);
@@ -154,11 +117,11 @@ public class CalendarController extends SimpleLifecycleAwareController {
     }
 
     private void setupNavButtons() {
-        prevMonthBtn.setOnAction(e -> {
+        prevMonthBtn.setOnAction(ignored -> {
             currentMonth = currentMonth.minusMonths(1);
             refreshAll();
         });
-        nextMonthBtn.setOnAction(e -> {
+        nextMonthBtn.setOnAction(ignored -> {
             currentMonth = currentMonth.plusMonths(1);
             refreshAll();
         });
@@ -174,8 +137,6 @@ public class CalendarController extends SimpleLifecycleAwareController {
         undatedTripsGrid.setCardFactory(this::buildUndatedCard);
         undatedTripsGrid.setPageLoader(this::loadUndatedPage);
     }
-
-    // ── Data refresh ──────────────────────────────────────────────────
 
     private void refreshAll() {
         selectedStatus = statusSelect != null && statusSelect.getSelectedItem() != null
@@ -207,8 +168,7 @@ public class CalendarController extends SimpleLifecycleAwareController {
         buildCalendarGrid();
     }
 
-    // ── Calendar grid construction ────────────────────────────────────
-
+    //partly generated with Copilot
     private void buildCalendarGrid() {
         calendarGrid.getChildren().clear();
         calendarGrid.getColumnConstraints().clear();
@@ -222,7 +182,7 @@ public class CalendarController extends SimpleLifecycleAwareController {
             calendarGrid.getColumnConstraints().add(cc);
         }
 
-        int startOffset = currentMonth.atDay(1).getDayOfWeek().getValue() - 1; // Mon=0
+        int startOffset = currentMonth.atDay(1).getDayOfWeek().getValue() - 1;
         int daysInMonth = currentMonth.lengthOfMonth();
         int totalCells = startOffset + daysInMonth;
         int rows = (int) Math.ceil(totalCells / 7.0);
@@ -267,17 +227,16 @@ public class CalendarController extends SimpleLifecycleAwareController {
             if (tripOccursOnDay(trip, date)) {
                 Node chip = buildChip(trip, date);
                 cell.getChildren().add(chip);
-                chipsByTripId.computeIfAbsent(trip.id(), k -> new ArrayList<>()).add(chip);
+                List<Node> chips = chipsByTripId.computeIfAbsent(trip.id(), k -> new ArrayList<>());
+                chips.add(chip);
             }
         }
         return cell;
     }
 
     private boolean tripOccursOnDay(TripResponse trip, LocalDate date) {
-        LocalDate start = trip.startedAt() != null
-                ? trip.startedAt().atZone(ZoneOffset.UTC).toLocalDate() : null;
-        LocalDate end = trip.endedAt() != null
-                ? trip.endedAt().atZone(ZoneOffset.UTC).toLocalDate() : null;
+        LocalDate start = trip.startedAt() != null ? trip.startedAt().atZone(ZoneOffset.UTC).toLocalDate() : null;
+        LocalDate end = trip.endedAt() != null ? trip.endedAt().atZone(ZoneOffset.UTC).toLocalDate() : null;
 
         if (start != null && end != null) return !date.isBefore(start) && !date.isAfter(end);
         if (start != null) return date.equals(start);
@@ -287,12 +246,9 @@ public class CalendarController extends SimpleLifecycleAwareController {
 
     private Node buildChip(TripResponse trip, LocalDate cellDate) {
         boolean isSpan = trip.startedAt() != null && trip.endedAt() != null;
-        String statusKey = trip.status() != null ? trip.status().name().toLowerCase() : "planned";
 
         HBox chip = new HBox();
-        chip.getStyleClass().addAll("trip-chip",
-                isSpan ? "trip-chip-span" : "trip-chip-point",
-                "trip-chip-" + statusKey);
+        chip.getStyleClass().addAll("trip-chip", isSpan ? "trip-chip-span" : "trip-chip-point", trip.category().color().getStyleClass());
 
         if (isSpan) {
             LocalDate effectiveStart = trip.startedAt().atZone(ZoneOffset.UTC).toLocalDate();
@@ -315,8 +271,6 @@ public class CalendarController extends SimpleLifecycleAwareController {
         });
         return chip;
     }
-
-    // ── Selection ─────────────────────────────────────────────────────
 
     private void handleChipClick(TripResponse trip) {
         boolean isSame = selectedTrip != null && selectedTrip.id().equals(trip.id());
@@ -355,24 +309,12 @@ public class CalendarController extends SimpleLifecycleAwareController {
     }
 
     private void showSelectedTripPanel(TripResponse trip) {
-        selectedTripTitle.setText(trip.title());
-
-        if (trip.category() != null) {
-            Localization.bindLocalizedText(selectedCategoryChip.textProperty(), trip.category());
-        } else {
-            selectedCategoryChip.textProperty().unbind();
-            selectedCategoryChip.setText("");
-        }
-
-        String imagePath = trip.coverImage() != null ? trip.coverImage().url().toString() : null;
-        Image img = EditorUtils.loadImage(imagePath, DEFAULT_COVER, CalendarController.class);
-        selectedCoverImage.setImage(img);
-
+        String dateRange = formatDateRange(toLocalDate(trip.startedAt()), toLocalDate(trip.endedAt()));
+        TripCardView card = TripCardView.create(trip, dateRange, () -> openTrip(trip));
+        selectedTripPanel.getChildren().setAll(card.getRoot());
         selectedTripPanel.setVisible(true);
         selectedTripPanel.setManaged(true);
     }
-
-    // ── Undated grid ──────────────────────────────────────────────────
 
     private Node buildUndatedCard(TripResponse trip) {
         String dateRange = formatDateRange(toLocalDate(trip.startedAt()), toLocalDate(trip.endedAt()));

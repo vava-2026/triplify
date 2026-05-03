@@ -1,9 +1,7 @@
-/* ── Root layout ──────────────────────────────────────────────────── */
 .calendar-root {
     -fx-background-color: -color-bg;
 }
 
-/* ── Top header: nav bar + day-of-week row ───────────────────────── */
 .calendar-header {
     -fx-padding: 12 16 0 16;
     -fx-spacing: 0;
@@ -46,13 +44,6 @@
     -fx-background-color: -color-surface-dark;
 }
 
-/* ── Day-of-week header row ──────────────────────────────────────── */
-.day-header-row {
-    -fx-background-color: -color-surface;
-    -fx-border-color: -color-border-muted;
-    -fx-border-width: 0 0 1 0;
-}
-
 .day-header-cell {
     -fx-font-size: 11px;
     -fx-font-weight: bold;
@@ -62,7 +53,6 @@
     -fx-text-transform: uppercase;
 }
 
-/* ── Calendar scroll + grid ──────────────────────────────────────── */
 .calendar-scroll {
     -fx-background: transparent;
     -fx-background-color: transparent;
@@ -80,7 +70,6 @@
     -fx-border-width: 1 0 0 1;
 }
 
-/* ── Day cells ───────────────────────────────────────────────────── */
 .calendar-cell {
     -fx-background-color: -color-surface;
     -fx-border-color: -color-border-muted;
@@ -114,7 +103,6 @@
     -fx-font-weight: bold;
 }
 
-/* ── Trip chips ──────────────────────────────────────────────────── */
 .trip-chip {
     -fx-padding: 2 6 2 6;
     -fx-background-radius: 4;
@@ -123,8 +111,9 @@
 }
 
 .trip-chip-span {
-    -fx-background-radius: 0;
+    -fx-background-radius: 4;
     -fx-min-width: 10;
+    -fx-min-height: 20;
 }
 
 .trip-chip-point {
@@ -142,35 +131,47 @@
     -fx-max-width: Infinity;
 }
 
-/* Status colours — use theme tokens */
-.trip-chip-planned {
-    -fx-background-color: -color-status-planned-bg;
-}
-.trip-chip-planned > .trip-chip-label {
-    -fx-text-fill: -color-status-planned-fg;
-}
+.trip-chip.app-theme-red-dark { -fx-background-color: -color-theme-red-dark-bg; }
+.trip-chip.app-theme-red { -fx-background-color: -color-theme-red-bg; }
+.trip-chip.app-theme-rose { -fx-background-color: -color-theme-rose-bg; }
+.trip-chip.app-theme-orange { -fx-background-color: -color-theme-orange-bg; }
+.trip-chip.app-theme-amber { -fx-background-color: -color-theme-amber-bg; }
+.trip-chip.app-theme-yellow { -fx-background-color: -color-theme-yellow-bg; }
+.trip-chip.app-theme-golden-brown { -fx-background-color: -color-theme-golden-brown-bg; }
+.trip-chip.app-theme-lime { -fx-background-color: -color-theme-lime-bg; }
+.trip-chip.app-theme-indigo { -fx-background-color: -color-theme-indigo-bg; }
+.trip-chip.app-theme-violet { -fx-background-color: -color-theme-violet-bg; }
+.trip-chip.app-theme-steel-blue { -fx-background-color: -color-theme-steel-blue-bg; }
+.trip-chip.app-theme-blue { -fx-background-color: -color-theme-blue-bg; }
+.trip-chip.app-theme-cyan { -fx-background-color: -color-theme-cyan-bg; }
+.trip-chip.app-theme-green { -fx-background-color: -color-theme-green-bg; }
+.trip-chip.app-theme-teal { -fx-background-color: -color-theme-teal-bg; }
+.trip-chip.app-theme-sage { -fx-background-color: -color-theme-sage-bg; }
+.trip-chip.app-theme-brown { -fx-background-color: -color-theme-brown-bg; }
+.trip-chip.app-theme-gray { -fx-background-color: -color-theme-gray-bg; }
+.trip-chip.app-theme-purple { -fx-background-color: -color-theme-violet-bg; }
+.trip-chip.app-theme-pink { -fx-background-color: -color-theme-rose-bg; }
 
-.trip-chip-ongoing {
-    -fx-background-color: -color-status-ongoing-bg;
-}
-.trip-chip-ongoing > .trip-chip-label {
-    -fx-text-fill: -color-status-ongoing-fg;
-}
-
-.trip-chip-visited {
-    -fx-background-color: -color-status-visited-bg;
-}
-.trip-chip-visited > .trip-chip-label {
-    -fx-text-fill: -color-status-visited-fg;
-}
-
-.trip-chip-canceled {
-    -fx-background-color: -color-stats-pink-bg;
-}
-.trip-chip-canceled > .trip-chip-label {
-    -fx-text-fill: -color-stats-pink-fg;
-    -fx-strikethrough: true;
-}
+.trip-chip.app-theme-red-dark > .trip-chip-label { -fx-text-fill: -color-theme-red-dark-fg; }
+.trip-chip.app-theme-red > .trip-chip-label { -fx-text-fill: -color-theme-red-fg; }
+.trip-chip.app-theme-rose > .trip-chip-label { -fx-text-fill: -color-theme-rose-fg; }
+.trip-chip.app-theme-orange > .trip-chip-label { -fx-text-fill: -color-theme-orange-fg; }
+.trip-chip.app-theme-amber > .trip-chip-label { -fx-text-fill: -color-theme-amber-fg; }
+.trip-chip.app-theme-yellow > .trip-chip-label { -fx-text-fill: -color-theme-yellow-fg; }
+.trip-chip.app-theme-golden-brown > .trip-chip-label { -fx-text-fill: -color-theme-golden-brown-fg; }
+.trip-chip.app-theme-lime > .trip-chip-label { -fx-text-fill: -color-theme-lime-fg; }
+.trip-chip.app-theme-indigo > .trip-chip-label { -fx-text-fill: -color-theme-indigo-fg; }
+.trip-chip.app-theme-violet > .trip-chip-label { -fx-text-fill: -color-theme-violet-fg; }
+.trip-chip.app-theme-steel-blue > .trip-chip-label { -fx-text-fill: -color-theme-steel-blue-fg; }
+.trip-chip.app-theme-blue > .trip-chip-label { -fx-text-fill: -color-theme-blue-fg; }
+.trip-chip.app-theme-cyan > .trip-chip-label { -fx-text-fill: -color-theme-cyan-fg; }
+.trip-chip.app-theme-green > .trip-chip-label { -fx-text-fill: -color-theme-green-fg; }
+.trip-chip.app-theme-teal > .trip-chip-label { -fx-text-fill: -color-theme-teal-fg; }
+.trip-chip.app-theme-sage > .trip-chip-label { -fx-text-fill: -color-theme-sage-fg; }
+.trip-chip.app-theme-brown > .trip-chip-label { -fx-text-fill: -color-theme-brown-fg; }
+.trip-chip.app-theme-gray > .trip-chip-label { -fx-text-fill: -color-theme-gray-fg; }
+.trip-chip.app-theme-purple > .trip-chip-label { -fx-text-fill: -color-theme-violet-fg; }
+.trip-chip.app-theme-pink > .trip-chip-label { -fx-text-fill: -color-theme-rose-fg; }
 
 .trip-chip-selected {
     -fx-effect: dropshadow(gaussian, rgba(47, 102, 144, 0.35), 6, 0, 0, 0);
@@ -179,23 +180,12 @@
     -fx-border-radius: 4;
 }
 
-/* ── Right side panel ────────────────────────────────────────────── */
 .calendar-side-panel {
     -fx-background-color: -color-surface;
     -fx-border-color: -color-border-muted;
     -fx-border-width: 0 0 0 1;
     -fx-padding: 12;
     -fx-spacing: 10;
-}
-
-.selected-trip-panel {
-    -fx-background-color: -color-surface;
-    -fx-background-radius: 8;
-    -fx-border-color: -color-border-muted;
-    -fx-border-radius: 8;
-    -fx-border-width: 1;
-    -fx-padding: 10;
-    -fx-effect: dropshadow(gaussian, rgba(12, 12, 13, 0.07), 12, 0, 0, 3);
 }
 
 .selected-title {
