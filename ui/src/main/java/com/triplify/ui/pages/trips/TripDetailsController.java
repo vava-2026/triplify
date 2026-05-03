@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import com.triplify.application.shared.Pagination;
 import com.triplify.application.usecase.image.ImageService;
 import com.triplify.application.usecase.image.dto.GetImagesRequest;
+import com.triplify.application.usecase.session.UserSessionContext;
 import com.triplify.domain.model.enums.ImageOwnerType;
 import com.triplify.application.usecase.image.dto.ImageResponse;
 import com.triplify.application.usecase.story.StoryService;
@@ -20,6 +21,7 @@ import com.triplify.application.usecase.triproute.TripRouteService;
 import com.triplify.application.usecase.triproute.dto.GetTripRoutesRequest;
 import com.triplify.application.usecase.triproute.dto.TripRouteResponse;
 import com.triplify.domain.model.enums.StatusEnum;
+import com.triplify.domain.model.enums.RoleEnum;
 import com.triplify.domain.model.enums.TripPlaceSourceType;
 import com.triplify.domain.pagination.PageRequest;
 import com.triplify.ui.error.ErrorHandler;
@@ -99,6 +101,7 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
     @Inject private TripPlaceService tripPlaceService;
     @Inject private StoryService storyService;
     @Inject private ImageService imageService;
+    @Inject private UserSessionContext userSessionContext;
     @Inject private ToastService toast;
     @Inject private ErrorHandler errorHandler;
     @Inject private FxmlLoaderHelper fxmlLoader;
@@ -115,6 +118,8 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         Localization.bindText(routesHeader.titleProperty(), "trip.details.section.routes");
         Localization.bindText(placesHeader.titleProperty(), "trip.details.section.places");
         Localization.bindText(storiesHeader.titleProperty(), "trip.details.section.stories");
+        Localization.bindText(storiesHeader.tagTextProperty(), "common.pro");
+        storiesHeader.setTagVisible(true);
 
         topRowFlow.prefWrapLengthProperty().bind(contentContainer.widthProperty());
 
@@ -164,7 +169,9 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         AddCardView addCard = new AddCardView(
                 "stories.add.card.title",
                 "stories.add.card.subtitle",
-                () -> navigateToAddStory(UUID.fromString(tripId))
+                () -> navigateToAddStory(UUID.fromString(tripId)),
+                isProUser(),
+                this::showProRequiredToast
         );
         storiesGrid.addPinnedNode(addCard);
     }
@@ -383,6 +390,16 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         RouterArgument args = new RouterArgument();
         args.addArgument("tripId", forTripId.toString());
         getRouter().moveto(RouteIds.ADD_STORY, args);
+    }
+
+    private boolean isProUser() {
+        return userSessionContext.getCurrent()
+                .map(user -> user.role() == RoleEnum.PRO_USER)
+                .orElse(false);
+    }
+
+    private void showProRequiredToast() {
+        toast.error(I18n.t("error.story.premium.required"));
     }
 
     private Image loadImage(TripResponse trip) {

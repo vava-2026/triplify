@@ -16,9 +16,24 @@ public class AddCardView extends StackPane {
     );
 
     public AddCardView(String titleKey, String subtitleKey, Runnable onAction) {
+        this(titleKey, subtitleKey, onAction, true, null);
+    }
+
+    public AddCardView(String titleKey, String subtitleKey, Runnable onAction, boolean enabled, Runnable onBlockedAction) {
         getStyleClass().add("add-card");
         setMaxWidth(Double.MAX_VALUE);
-        setOnMouseClicked(e -> onAction.run());
+        if (!enabled) {
+            getStyleClass().add("add-card-disabled");
+        }
+        setOnMouseClicked(e -> {
+            if (enabled) {
+                onAction.run();
+                return;
+            }
+            if (onBlockedAction != null) {
+                onBlockedAction.run();
+            }
+        });
 
         FontIcon icon = new FontIcon("fth-plus");
         icon.getStyleClass().add("add-card-icon");

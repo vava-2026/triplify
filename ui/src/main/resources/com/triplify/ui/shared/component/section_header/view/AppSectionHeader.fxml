@@ -15,5 +15,10 @@
                   styleClass="editor-section-icon"/>
         <Label fx:id="titleLabel"
                styleClass="editor-section-title"/>
+        <Label fx:id="tagLabel"
+               managed="false"
+               text="Pro"
+               visible="false"
+               styleClass="pro-tag,editor-section-tag"/>
     </children>
 </fx:root>

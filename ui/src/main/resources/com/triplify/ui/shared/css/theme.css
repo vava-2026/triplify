@@ -182,6 +182,18 @@
     -fx-text-fill: -color-ink-muted;
 }
 
+.pro-tag {
+    -fx-background-color: -color-pro;
+    -fx-text-fill: -color-on-pro;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 3 0 3;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-min-height: 12;
+    -fx-alignment: CENTER;
+}
+
 .page-card {
     -fx-background-color: -color-surface;
     -fx-background-radius: 12px;

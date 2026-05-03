@@ -28,3 +28,8 @@
     -fx-text-fill: -color-ink-muted;
     -fx-font-size: 12px;
 }
+
+.add-card-disabled {
+    -fx-opacity: 0.72;
+}
+

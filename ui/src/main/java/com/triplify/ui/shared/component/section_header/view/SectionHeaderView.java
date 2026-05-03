@@ -21,6 +21,7 @@ public class SectionHeaderView extends HBox {
 
     @FXML private FontIcon iconNode;
     @FXML private Label titleLabel;
+    @FXML private Label tagLabel;
 
     public SectionHeaderView() {
         FXMLLoader loader = new FXMLLoader(FXML_URL);
@@ -56,5 +57,26 @@ public class SectionHeaderView extends HBox {
 
     public void setIconLiteral(String iconLiteral) {
         iconNode.setIconLiteral(iconLiteral);
+    }
+
+    public StringProperty tagTextProperty() {
+        return tagLabel.textProperty();
+    }
+
+    public String getTagText() {
+        return tagLabel.getText();
+    }
+
+    public void setTagText(String tagText) {
+        tagLabel.setText(tagText);
+    }
+
+    public boolean isTagVisible() {
+        return tagLabel.isVisible();
+    }
+
+    public void setTagVisible(boolean visible) {
+        tagLabel.setVisible(visible);
+        tagLabel.setManaged(visible);
     }
 }
