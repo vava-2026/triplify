@@ -37,6 +37,12 @@
     -fx-background-color: -color-surface;
 }
 
+.trip-details-hero-copy {
+    -fx-padding: 280px 0 0 0;
+}
+
+/* ── Card Grid ── */
+
 .card-grid-root {
     -fx-padding: 0;
 }
@@ -191,6 +197,17 @@
     -fx-text-fill: -color-status-ongoing-fg;
 }
 
+.trip-status-canceled,
+.trip-status-rejected {
+    -fx-background-color: -color-status-rejected-bg;
+    -fx-text-fill: -color-status-rejected-fg;
+}
+
+.trip-details-hero-status {
+    -fx-font-size: 12px;
+    -fx-padding: 6px 12px;
+}
+
 .trip-cover-default {
     -fx-background-color: linear-gradient(to bottom right, #b5c7d6, #e6edf3);
 }
@@ -339,6 +356,7 @@
 
 .trip-editor-chip {
     -fx-background-radius: 999px;
+    -fx-background-color: transparent;
     -fx-border-radius: 999px;
     -fx-padding: 6 12 6 12;
     -fx-font-size: 12px;

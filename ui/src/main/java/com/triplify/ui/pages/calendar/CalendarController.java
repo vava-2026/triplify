@@ -309,16 +309,14 @@ public class CalendarController extends SimpleLifecycleAwareController {
     }
 
     private void showSelectedTripPanel(TripResponse trip) {
-        String dateRange = formatDateRange(toLocalDate(trip.startedAt()), toLocalDate(trip.endedAt()));
-        TripCardView card = TripCardView.create(trip, dateRange, () -> openTrip(trip));
+        TripCardView card = TripCardView.create(trip, () -> openTrip(trip));
         selectedTripPanel.getChildren().setAll(card.getRoot());
         selectedTripPanel.setVisible(true);
         selectedTripPanel.setManaged(true);
     }
 
     private Node buildUndatedCard(TripResponse trip) {
-        String dateRange = formatDateRange(toLocalDate(trip.startedAt()), toLocalDate(trip.endedAt()));
-        TripCardView card = TripCardView.create(trip, dateRange, () -> openTrip(trip));
+        TripCardView card = TripCardView.create(trip, () -> openTrip(trip));
         return card.getRoot();
     }
 
@@ -330,13 +328,11 @@ public class CalendarController extends SimpleLifecycleAwareController {
         var result = tripService.getUndatedTrips(request);
         if (result.isFailure()) {
             log.warn("Failed to load undated trips: {}", result.getError().message());
-            return new CardGridPane.PageResult<>(List.of(),
-                    Pagination.request(page, pageSize).withTotals(0));
+            return new CardGridPane.PageResult<>(List.of(), Pagination.request(page, pageSize).withTotals(0));
         }
         var pageData = result.getValue();
         int totalPages = pageData.hasNext() ? page + 1 : page;
-        return new CardGridPane.PageResult<>(pageData.items(),
-                new Pagination(page, pageSize, null, totalPages));
+        return new CardGridPane.PageResult<>(pageData.items(), new Pagination(page, pageSize, null, totalPages));
     }
 
     private void openTrip(TripResponse trip) {

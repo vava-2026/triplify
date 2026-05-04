@@ -1,13 +1,9 @@
 package com.triplify.ui.pages.routes;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
+import java.util.*;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.WeakChangeListener;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import com.gluonhq.maps.MapPoint;
@@ -127,6 +123,7 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
     @FXML private CardGridPane<ImageResponse> tripImagesGrid;
     @FXML private SectionHeaderView tripStoriesHeader;
     @FXML private CardGridPane<StoryResponse> tripStoriesGrid;
+    @FXML private Label heroStatusLabel;
 
     @Inject private RouteService routeService;
     @Inject private TripService tripService;
@@ -154,6 +151,7 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
     private Popup dragPreviewPopup;
     private ImageView dragPreviewImageView;
     private boolean placeOrderChanged;
+
 
     @FXML
     public void initialize() {
@@ -399,6 +397,7 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
             errorHandler.handle(result.getError());
         } else {
             currentTripRoute = result.getValue();
+            bindChangeStatus();
             toast.success(I18n.t("triproute.context.status.updated"));
         }
     }
@@ -525,6 +524,7 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
             Image image = EditorUtils.loadImage(coverUrl, DEFAULT_IMAGE, RouteDetailsController.class);
             EditorUtils.setCoverPreviewImage(heroImageView, heroContainer, image);
         }
+        bindChangeStatus();
 
         renderMap(currentRoute);
         renderPlaces(currentPlaces);
@@ -540,6 +540,7 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
         descriptionValueLabel.setText(EditorUtils.safeText(currentRoute.description(), I18n.t("route.details.empty.description")));
         distanceValueLabel.setText(String.format(Locale.US, I18n.t("route.details.metric.distance"), currentRoute.length()));
         placesValueLabel.setText(formatPlacesCount(currentPlaces.size()));
+        bindChangeStatus();
     }
 
     private void configureAssociatedTripsGrid() {
@@ -547,10 +548,7 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
         associatedTripsGrid.setMaxColumns(4);
         associatedTripsGrid.setVScrollPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         associatedTripsGrid.setEmptyTextKey("route.details.empty.trips");
-        associatedTripsGrid.setCardFactory(trip -> {
-            String dateRange = DisplayUtils.formatDateRange(toLocalDate(trip.startedAt()), toLocalDate(trip.endedAt()));
-            return TripCardView.create(trip, dateRange, () -> openTrip(trip)).getRoot();
-        });
+        associatedTripsGrid.setCardFactory(trip -> TripCardView.create(trip, () -> openTrip(trip)).getRoot());
         associatedTripsGrid.setPageLoader((page, size) -> new CardGridPane.PageResult<>(currentTrips, null));
     }
 
@@ -885,5 +883,11 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
             total += GeoCalculator.distanceKm(from.latitude(), from.longitude(), to.latitude(), to.longitude());
         }
         return total;
+    }
+
+    private void bindChangeStatus(){
+        if (heroStatusLabel != null && currentTripRoute != null) {
+            DisplayUtils.applyStatus(heroStatusLabel, currentTripRoute.status());
+        }
     }
 }

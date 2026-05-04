@@ -2,17 +2,17 @@
 
 <?import java.lang.String?>
 <?import com.triplify.ui.shared.component.card_grid.CardGridPane?>
-<?import com.triplify.ui.shared.component.detail_actions.view.DetailActionButtonsView?>
 <?import com.triplify.ui.shared.component.section_header.view.SectionHeaderView?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.layout.FlowPane?>
+<?import com.triplify.ui.shared.component.select.view.SelectView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
+<?import javafx.scene.layout.FlowPane?>
 <ScrollPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.triplify.ui.pages.trips.TripDetailsController"
@@ -39,55 +39,63 @@
                                     onAction="#onBack"
                                     styleClass="place-details-back-button"/>
                         </HBox>
-                        <VBox styleClass="place-details-hero-copy" spacing="8">
+                        <VBox styleClass="place-details-hero-copy,trip-details-hero-copy" spacing="8">
+                            <Label fx:id="heroStatusLabel" styleClass="trip-status,trip-details-hero-status"/>
                             <Label fx:id="tripTitleLabel" styleClass="place-details-title"/>
-                            <HBox spacing="12" alignment="CENTER_LEFT">
-                                <Label fx:id="tripStatusLabel"/>
-                                <Label fx:id="tripDatesLabel" styleClass="place-details-country"/>
+                            <HBox fx:id="tripCountriesContainer" spacing="8" alignment="CENTER_LEFT">
                             </HBox>
                         </VBox>
                     </VBox>
                 </StackPane>
 
                 <VBox styleClass="place-details-sections" spacing="20">
-                    <FlowPane fx:id="topRowFlow" styleClass="place-details-top-row" prefWrapLength="1000">
+                    <HBox spacing="20">
                         <VBox styleClass="place-details-main-column" spacing="20">
                             <VBox styleClass="page-card,place-details-card,place-details-description-card" spacing="12">
                                 <Label fx:id="descriptionTitleLabel" styleClass="place-details-card-title"/>
                                 <Label fx:id="descriptionValueLabel" styleClass="place-details-description" wrapText="true"/>
                             </VBox>
                         </VBox>
-
                         <VBox styleClass="place-details-side-column" spacing="14">
-                            <VBox styleClass="page-card,place-details-card" spacing="10">
-                                <Label fx:id="tripCountriesLabel"/>
-                                <Label fx:id="tripCategoryLabel"/>
+                            <VBox styleClass="page-card,place-details-card,place-details-side-column" spacing="14">
+                                <HBox fx:id="categoryContainer" spacing="8" alignment="CENTER_LEFT">
+                                    <Label fx:id="categoryLabel" style="-fx-font-size: 16px; -fx-font-weight: 700" />
+                                </HBox>
+                                    <FlowPane fx:id="tagContainer" alignment="CENTER_LEFT" hgap="8" vgap="8"/>
+                                <HBox>
+                                    <SectionHeaderView fx:id="tripDateView" iconLiteral="fth-calendar"/>
+                                </HBox>
                             </VBox>
-                            <DetailActionButtonsView fx:id="actionButtonsView"/>
+                            <VBox styleClass="page-card,place-details-card,place-details-side-column" spacing="14">
+                                <Label fx:id="changeStatusLabel" style="-fx-font-size: 16px; -fx-font-weight: 700">Change Status of your trip:</Label>
+                                <VBox fx:id="changeTripStatusContainer" spacing="8" alignment="CENTER_LEFT">
+                                    <SelectView fx:id="tripStatusSelect" />
+                                </VBox>
+                            </VBox>
+                            <VBox fx:id="editTripButtonContainer"/>
+                            <VBox fx:id="deleteTripButtonContainer"/>
                         </VBox>
-                    </FlowPane>
+                    </HBox>
+                </VBox>
 
-                    <VBox spacing="20">
-                        <VBox styleClass="place-details-trips-section" spacing="12">
-                            <SectionHeaderView fx:id="routesHeader" iconLiteral="fth-map"/>
-                            <CardGridPane fx:id="routesGrid"/>
-                        </VBox>
+                <VBox styleClass="place-details-trips-section" spacing="12">
+                    <SectionHeaderView fx:id="routesHeader" iconLiteral="fth-map"/>
+                    <CardGridPane fx:id="routesGrid"/>
+                </VBox>
 
-                        <VBox spacing="12">
-                            <SectionHeaderView fx:id="placesHeader" iconLiteral="fth-map-pin"/>
-                            <CardGridPane fx:id="placesGrid"/>
-                        </VBox>
+                <VBox spacing="12">
+                    <SectionHeaderView fx:id="placesHeader" iconLiteral="fth-map-pin"/>
+                    <CardGridPane fx:id="placesGrid"/>
+                </VBox>
 
-                        <VBox spacing="16">
-                            <SectionHeaderView fx:id="storiesHeader" iconLiteral="fth-book-open"/>
-                            <CardGridPane fx:id="storiesGrid"/>
-                        </VBox>
+                <VBox spacing="12">
+                    <SectionHeaderView fx:id="storiesHeader" iconLiteral="fth-book-open"/>
+                    <CardGridPane fx:id="storiesGrid"/>
+                </VBox>
 
-                        <VBox spacing="12">
-                            <SectionHeaderView fx:id="imagesHeader" iconLiteral="fth-image"/>
-                            <CardGridPane fx:id="imagesGrid"/>
-                        </VBox>
-                    </VBox>
+                <VBox spacing="12">
+                    <SectionHeaderView fx:id="imagesHeader" iconLiteral="fth-image"/>
+                    <CardGridPane fx:id="imagesGrid"/>
                 </VBox>
             </VBox>
         </StackPane>

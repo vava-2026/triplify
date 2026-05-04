@@ -68,7 +68,7 @@ public class TripCardView implements Initializable {
         return root;
     }
 
-    public void setTrip(TripResponse trip, String dateRange) {
+    public void setTrip(TripResponse trip) {
         if (trip == null) return;
         titleLabel.setText(trip.title());
         if (trip.category() != null) {
@@ -82,7 +82,7 @@ public class TripCardView implements Initializable {
             categoryEmojiView.setVisible(false);
             categoryEmojiView.setManaged(false);
         }
-        dateLabel.setText(dateRange);
+        DisplayUtils.bindLocalDate(trip.startedAt(), trip.endedAt(), dateLabel.textProperty());
 
         String coverUrl = DisplayUtils.deriveCoverUrl(trip.coverImage());
         Image image = EditorUtils.resolveCoverImage(coverUrl);
@@ -94,7 +94,7 @@ public class TripCardView implements Initializable {
 
 
 
-    public static TripCardView create(TripResponse trip, String dateRange, Runnable onOpen) {
+    public static TripCardView create(TripResponse trip, Runnable onOpen) {
         if (FXML_URL == null) throw new IllegalStateException("TripCard.fxml not found");
         FXMLLoader loader = new FXMLLoader(FXML_URL);
         try {
@@ -104,7 +104,7 @@ public class TripCardView implements Initializable {
         }
         TripCardView view = loader.getController();
         view.setOnOpen(onOpen);
-        view.setTrip(trip, dateRange);
+        view.setTrip(trip);
         return view;
     }
 }
