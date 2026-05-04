@@ -97,6 +97,31 @@ public class MapController extends SimpleLifecycleAwareController {
     private String highlightedRouteId;
 
     @FXML
+    private void onZoomIn() {
+        if (mapView != null && mapView.getZoom() < MAX_ZOOM) {
+            mapView.setZoom(Math.min(mapView.getZoom() + ZOOM_STEP, MAX_ZOOM));
+            viewportDebounce.playFromStart();
+        }
+    }
+
+    @FXML
+    private void onZoomOut() {
+        if (mapView != null && mapView.getZoom() > MIN_ZOOM) {
+            mapView.setZoom(Math.max(mapView.getZoom() - ZOOM_STEP, MIN_ZOOM));
+            viewportDebounce.playFromStart();
+        }
+    }
+
+    @FXML
+    private void onCenterMap() {
+        if (mapView != null) {
+            mapView.setZoom(DEFAULT_ZOOM);
+            mapView.setCenter(DEFAULT_LAT, DEFAULT_LON);
+            viewportDebounce.playFromStart();
+        }
+    }
+
+    @FXML
     private void initialize() {
         buildMap();
         buildFilterToolbar();

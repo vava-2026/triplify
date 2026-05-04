@@ -259,3 +259,34 @@
 .map-cluster-popup-load-more:hover {
     -fx-background-color: rgba(47, 102, 144, 0.06);
 }
+
+.map-controls-container {
+    -fx-background-color: rgba(255, 255, 255, 0.88);
+    -fx-background-radius: 24;
+    -fx-border-radius: 24;
+    -fx-border-color: rgba(0, 0, 0, 0.08);
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.12), 8, 0, 0, 2);
+    -fx-padding: 8;
+}
+
+.map-control-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 50%;
+    -fx-cursor: hand;
+    -fx-min-width: 32px;
+    -fx-min-height: 32px;
+    -fx-max-width: 32px;
+    -fx-max-height: 32px;
+    -fx-padding: 0;
+    -fx-alignment: center;
+}
+
+.map-control-button:hover {
+    -fx-background-color: rgba(0, 0, 0, 0.07);
+}
+
+.map-control-button > .ikonli-font-icon {
+    -fx-icon-color: #444;
+    -fx-icon-size: 16px;
+}
