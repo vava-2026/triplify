@@ -17,16 +17,6 @@
 
     <StackPane fx:id="mapContainer" styleClass="map-container"/>
 
-    <HBox fx:id="searchContainer"
-          styleClass="map-search-container"
-          pickOnBounds="false"
-          mouseTransparent="false"
-          StackPane.alignment="TOP_CENTER">
-        <StackPane.margin>
-            <Insets top="14"/>
-        </StackPane.margin>
-    </HBox>
-
     <HBox fx:id="filterToolbar"
           styleClass="map-filter-toolbar"
           maxWidth="-Infinity"
@@ -71,5 +61,15 @@
                pickOnBounds="false"
                mouseTransparent="false"
                StackPane.alignment="CENTER_RIGHT"/>
+
+    <HBox fx:id="searchContainer"
+          styleClass="map-search-container"
+          pickOnBounds="false"
+          mouseTransparent="false"
+          StackPane.alignment="TOP_CENTER">
+        <StackPane.margin>
+            <Insets top="14"/>
+        </StackPane.margin>
+    </HBox>
 
 </StackPane>
