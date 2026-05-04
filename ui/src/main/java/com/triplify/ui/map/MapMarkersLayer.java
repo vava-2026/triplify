@@ -51,6 +51,7 @@ public class MapMarkersLayer extends MapLayer {
 
     private List<MapObjectResponse> markers = List.of();
     private final Map<String, Image> imageCache = new HashMap<>();
+    private final Map<MapObjectResponse, Region> nodeCache = new HashMap<>();
     private long markersRevision = 0;
     private long renderedRevision = -1;
     private String renderedViewport = "";
@@ -91,16 +92,25 @@ public class MapMarkersLayer extends MapLayer {
             return;
         }
 
-        getChildren().removeIf(node -> node != hoverCard);
+        if (renderedRevision != markersRevision) {
+            nodeCache.keySet().retainAll(markers);
+            getChildren().removeIf(node -> node != hoverCard && !nodeCache.containsValue(node));
+        }
+
         hideHoverCard();
 
         for (MapObjectResponse marker : markers) {
             Point2D point = getMapPoint(marker.latitude(), marker.longitude());
             if (point == null) continue;
 
-            Region node = buildNode(marker, point);
-            node.setManaged(false);
-            node.applyCss();
+            Region node = nodeCache.get(marker);
+            if (node == null) {
+                node = buildNode(marker);
+                node.setManaged(false);
+                node.applyCss();
+                nodeCache.put(marker, node);
+                getChildren().add(node);
+            }
 
             if (marker.count() <= 1 && marker.objectType() == MapObjectType.PLACE) {
                 node.resize(PLACE_NODE_WIDTH, MARKER_SIZE + PLACE_LABEL_HEIGHT);
@@ -110,8 +120,6 @@ public class MapMarkersLayer extends MapLayer {
                 node.resize(size, size);
                 node.relocate(point.getX() - size / 2.0, point.getY() - size / 2.0);
             }
-
-            getChildren().add(node);
         }
 
         hoverCard.toFront();
@@ -119,9 +127,9 @@ public class MapMarkersLayer extends MapLayer {
         renderedViewport = viewport;
     }
 
-    private Region buildNode(MapObjectResponse marker, Point2D point) {
+    private Region buildNode(MapObjectResponse marker) {
         if (marker.count() > 1) return buildClusterNode(marker);
-        if (marker.objectType() == MapObjectType.PLACE) return buildPlaceNode(marker, point);
+        if (marker.objectType() == MapObjectType.PLACE) return buildPlaceNode(marker);
         return buildMarkerNode(marker);
     }
 
@@ -132,7 +140,7 @@ public class MapMarkersLayer extends MapLayer {
         return a.getX() + ":" + a.getY() + "|" + b.getX() + ":" + b.getY();
     }
 
-    private VBox buildPlaceNode(MapObjectResponse marker, Point2D point) {
+    private VBox buildPlaceNode(MapObjectResponse marker) {
         Circle bg = new Circle(MARKER_SIZE / 2.0);
         bg.setFill(colorFor(MapObjectType.PLACE));
 
@@ -155,7 +163,7 @@ public class MapMarkersLayer extends MapLayer {
         container.setBackground(Background.EMPTY);
         container.setPickOnBounds(false);
 
-        container.setOnMouseEntered(e -> showHoverCard(marker, point));
+        container.setOnMouseEntered(e -> showHoverCard(marker));
         container.setOnMouseExited(e -> hideDelay.playFromStart());
         container.setOnMouseClicked(e -> {
             onMarkerClick.accept(marker);
@@ -254,8 +262,11 @@ public class MapMarkersLayer extends MapLayer {
         return card;
     }
 
-    private void showHoverCard(MapObjectResponse marker, Point2D point) {
+    private void showHoverCard(MapObjectResponse marker) {
         hideDelay.stop();
+
+        Point2D point = getMapPoint(marker.latitude(), marker.longitude());
+        if (point == null) return;
 
         boolean hasImage = marker.coverImage() != null && marker.coverImage().url() != null;
         if (hasImage) {
