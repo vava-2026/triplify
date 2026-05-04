@@ -825,11 +825,11 @@ public class AddTripController extends WindowedPageController {
             itemsById.putIfAbsent(item.id(), item);
         }
 
-//        for (RouteItem route : routeItems) {
-//            for (PlaceItem item : route.derivedPlaces()) {
-//                itemsById.putIfAbsent(item.id(), item);
-//            }
-//        }
+        for (RouteItem route : routeItems) {
+            for (PlaceItem item : route.derivedPlaces()) {
+                itemsById.putIfAbsent(item.id(), item);
+            }
+        }
         return new ArrayList<>(itemsById.values());
     }
 
