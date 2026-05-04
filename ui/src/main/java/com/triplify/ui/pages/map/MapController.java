@@ -189,11 +189,21 @@ public class MapController extends SimpleLifecycleAwareController {
         viewportDebounce.playFromStart();
     }
 
+    private boolean isSearchTarget(Object target) {
+        if (!(target instanceof Node node)) return false;
+        Node current = node;
+        while (current != null) {
+            if (current == searchContainer) return true;
+            current = current.getParent();
+        }
+        return false;
+    }
+
     private void attachMapEvents() {
         mapView.addEventHandler(ScrollEvent.SCROLL, this::handleScroll);
 
         mapContainer.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
-            if (event.getButton() == MouseButton.PRIMARY && !isMarkerTarget(event.getTarget())) {
+            if (event.getButton() == MouseButton.PRIMARY && !isMarkerTarget(event.getTarget()) && !isSearchTarget(event.getTarget())) {
                 dragPanEnabled = true;
                 dragStartX = event.getSceneX();
                 dragStartY = event.getSceneY();

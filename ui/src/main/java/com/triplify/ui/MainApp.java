@@ -13,6 +13,7 @@ import com.triplify.ui.routing.GuardedNavigator;
 import com.triplify.ui.routing.PageAccessService;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.routing.TriplifyRouterContext;
+import com.triplify.ui.shared.header.model.GlobalSearchItem;
 import com.triplify.ui.shared.header.view.HeaderView;
 import com.triplify.ui.shared.menu.view.MenuView;
 import com.triplify.ui.shared.menu.view.SidebarIslandView;
@@ -90,11 +91,19 @@ public class MainApp extends Application {
         Node header = headerResult.node();
         HeaderView headerView = headerResult.controller();
         HBox.setHgrow(header, Priority.ALWAYS);
-        headerView.setNavigationHandler(tripId -> {
+        headerView.setNavigationHandler(item -> {
             if (router != null) {
                 RouterArgument args = new RouterArgument();
-                args.addArgument("tripId", tripId);
-                guardedNavigator.goTo(router, RouteIds.TRIP_DETAILS, args);
+                if (item.getType() == GlobalSearchItem.Type.TRIP) {
+                    args.addArgument("tripId", item.getId().toString());
+                    guardedNavigator.goTo(router, RouteIds.TRIP_DETAILS, args);
+                } else if (item.getType() == GlobalSearchItem.Type.ROUTE) {
+                    args.addArgument("routeId", item.getId().toString());
+                    guardedNavigator.goTo(router, RouteIds.ROUTE_DETAILS, args);
+                } else if (item.getType() == GlobalSearchItem.Type.PLACE) {
+                    args.addArgument("placeId", item.getId().toString());
+                    guardedNavigator.goTo(router, RouteIds.PLACE_DETAILS, args);
+                }
             }
         });
 

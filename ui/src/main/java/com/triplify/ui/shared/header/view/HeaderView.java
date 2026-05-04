@@ -12,12 +12,15 @@ import com.google.inject.Inject;
 import com.triplify.application.shared.ColorTheme;
 import com.triplify.application.usecase.trip.TripService;
 import com.triplify.application.usecase.trip.dto.TripResponse;
+import com.triplify.application.usecase.route.RouteService;
+import com.triplify.application.usecase.place.PlaceService;
 import com.triplify.domain.model.enums.StatusEnum;
 import com.triplify.ui.routing.AppPage;
 import com.triplify.ui.shared.component.search.model.Search;
 import com.triplify.ui.shared.component.search.view.SearchView;
 import com.triplify.ui.shared.component.select.entry.model.Entry;
-import com.triplify.ui.pages.trips.model.Trips;
+import com.triplify.ui.shared.header.model.AppSearchModel;
+import com.triplify.ui.shared.header.model.GlobalSearchItem;
 import com.triplify.ui.shared.header.viewmodel.HeaderViewModel;
 import com.triplify.ui.shared.model.FieldVariant;
 
@@ -41,8 +44,11 @@ public class HeaderView implements Initializable {
     @Getter private final HeaderViewModel viewModel = new HeaderViewModel();
 
     @Inject private TripService tripService;
+    @Inject private RouteService routeService;
+    @Inject private PlaceService placeService;
+    
     @Setter
-    private Consumer<String> navigationHandler;
+    private Consumer<GlobalSearchItem> navigationHandler;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -57,22 +63,19 @@ public class HeaderView implements Initializable {
     }
 
     private void buildSearch() {
-        Trips tripsModel = Trips.builder(tripService)
-                .onLoadFailed(error -> log.warn("Header trip search failed [code={}, message={}]", error.code(), error.message()))
-                .build();
+        var searchModel = new AppSearchModel(tripService, routeService, placeService, 
+            error -> log.warn("Header search failed [code={}, message={}]", error.code(), error.message()));
 
-        Search<TripResponse> search = Search.builder(query -> toEntries(tripsModel.search(query)))
-                .onLoadMore(query -> toEntries(tripsModel.loadMore(query)))
-                .placeholderKey("search.tripsPlaceholder")
+        Search<GlobalSearchItem> search = Search.builder(query -> toEntries(searchModel.search(query)))
+                .placeholderKey("search.placeholder")
                 .noResultKey("search.noResult")
                 .debounceMs(250)
                 .maxVisibleResults(7)
                 .variant(FieldVariant.GHOST)
                 .onResultSelected(entry -> {
-                    TripResponse trip = entry.getValue();
-                    tripsModel.reset();
+                    var item = entry.getValue();
                     if (navigationHandler != null) {
-                        navigationHandler.accept(trip.id().toString());
+                        navigationHandler.accept(item);
                     }
                 })
                 .build();
@@ -102,15 +105,24 @@ public class HeaderView implements Initializable {
         pageTitle.setVisible(showTitle);
     }
 
-    private List<Entry<TripResponse>> toEntries(List<TripResponse> trips) {
-        return trips.stream()
-                .map(trip -> Entry.<TripResponse>builder(
-                                trip,
-                                trip.title() != null && !trip.title().isBlank() ? trip.title() : "—")
-                        .icon("fth-map")
-                        .colorTheme(colorThemeForStatus(trip.status()))
+    private List<Entry<GlobalSearchItem>> toEntries(List<GlobalSearchItem> items) {
+        return items.stream()
+                .map(item -> Entry.<GlobalSearchItem>builder(
+                                item,
+                                item.getTitle())
+                        .icon(iconForType(item.getType()))
+                        .colorTheme(item.getColorTheme())
                         .build())
                 .toList();
+    }
+    
+    private String iconForType(GlobalSearchItem.Type type) {
+        if (type == null) return "fth-map";
+        return switch (type) {
+            case TRIP -> "fth-map";
+            case ROUTE -> "fth-corner-up-right";
+            case PLACE -> "fth-map-pin";
+        };
     }
 
     private ColorTheme colorThemeForStatus(StatusEnum status) {
