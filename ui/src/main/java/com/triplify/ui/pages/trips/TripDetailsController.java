@@ -7,6 +7,7 @@ import com.triplify.application.shared.localization.LocalizedName;
 import com.triplify.application.usecase.country.dto.CountryResponse;
 import com.triplify.application.usecase.image.ImageService;
 import com.triplify.application.usecase.image.dto.GetImagesRequest;
+import com.triplify.application.usecase.route.dto.RouteResponse;
 import com.triplify.application.usecase.tag.dto.TagResponse;
 import com.triplify.domain.model.enums.ImageOwnerType;
 import com.triplify.application.usecase.image.dto.ImageResponse;
@@ -32,6 +33,7 @@ import com.triplify.ui.pages.images.ImageFormModalView;
 import com.triplify.ui.pages.images.ImageViewModalView;
 import com.triplify.ui.pages.images.view.ImageCardView;
 import com.triplify.ui.pages.places.view.TripPlaceCardView;
+import com.triplify.ui.pages.routes.RouteDetailsController;
 import com.triplify.ui.routing.RouteIds;
 import com.triplify.ui.shared.component.add_card.view.AddCardView;
 import com.triplify.ui.shared.component.button.model.ButtonVariant;
@@ -62,6 +64,7 @@ import javafx.beans.value.WeakChangeListener;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -78,6 +81,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.UUID;
 
@@ -201,15 +205,14 @@ private void setupInputs()
         if (tripStatusSelect != null) {
             tripStatusSelect.update(statusSelectModel);
         }
-        // I18n.bundleProperty().addListener(weakI18nBundleListener);
     }
 
     private void setupRoutesGrid() {
         routesGrid.setManualLoadMore(true);
         routesGrid.setVScrollPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        routesGrid.setPageSize(3);
+        routesGrid.setPageSize(8);
         routesGrid.setMinCardWidth(220);
-        routesGrid.setMaxColumns(3);
+        routesGrid.setMaxColumns(4);
         routesGrid.setLoadMoreKey("trip.details.show.more.routes");
         routesGrid.setEmptyTextKey("trip.details.empty.routes");
     }
@@ -217,8 +220,8 @@ private void setupInputs()
     private void setupPlacesGrid() {
         placesGrid.setManualLoadMore(true);
         placesGrid.setVScrollPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        placesGrid.setPageSize(4);
-        placesGrid.setMinCardWidth(180);
+        placesGrid.setPageSize(8);
+        placesGrid.setMinCardWidth(220);
         placesGrid.setMaxColumns(4);
         placesGrid.setLoadMoreKey("trip.details.show.more.places");
         placesGrid.setEmptyTextKey("trip.details.empty.places");
@@ -229,9 +232,16 @@ private void setupInputs()
         storiesGrid.setVScrollPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         storiesGrid.setPageSize(8);
         storiesGrid.setMinCardWidth(220);
-        storiesGrid.setMaxColumns(3);
+        storiesGrid.setMaxColumns(4);
         storiesGrid.setLoadMoreKey("trip.details.show.more.stories");
         storiesGrid.setEmptyTextKey("trip.details.empty.stories");
+
+        AddCardView addCard = new AddCardView(
+                "stories.add.card.title",
+                "stories.add.card.subtitle",
+                () -> navigateToAddStory(UUID.fromString(tripId))
+        );
+        storiesGrid.addPinnedNode(addCard);
     }
 
     private void setupImagesGrid() {
@@ -239,7 +249,7 @@ private void setupInputs()
         imagesGrid.setVScrollPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         imagesGrid.setMinCardWidth(220);
         imagesGrid.setMaxColumns(4);
-        imagesGrid.setPageSize(7);
+        imagesGrid.setPageSize(8);
         imagesGrid.setEmptyTextKey("trip.details.empty.images");
 
         imageFormModal = new ImageFormModalView(fxmlLoader, imageService, errorHandler);
@@ -317,9 +327,13 @@ private void setupInputs()
             DisplayUtils.applyStatus(heroStatusLabel, currentTripStatus);
         }
 
-        heroImageView.setImage(loadImage(trip));
-        tripTitleLabel.setText(safeText(trip.title(), I18n.t("trip.add.fallback.trip")));
-        descriptionValueLabel.setText(safeText(trip.description(), I18n.t("trip.details.empty.description")));
+        if (trip.coverImage() != null) {
+            String coverUrl = DisplayUtils.deriveCoverUrl(trip.coverImage());
+            Image image = EditorUtils.loadImage(coverUrl, DEFAULT_IMAGE, RouteDetailsController.class);
+            EditorUtils.setCoverPreviewImage(heroImageView, heroContainer, image);
+        }
+        tripTitleLabel.setText(trip.title());
+        descriptionValueLabel.setText(EditorUtils.safeText(trip.description(), I18n.t("trip.details.empty.description")));
 
         tripCountriesContainer.getChildren().clear();
         for (CountryResponse country : trip.countries()) {
@@ -353,7 +367,7 @@ private void setupInputs()
         tagContainer.getChildren().clear();
         if (trip.tags() != null && !trip.tags().isEmpty()) {
             for (TagResponse tag : trip.tags()) {
-                String name = safeText(tag.name(), "");
+                String name = EditorUtils.safeText(tag.name(), "");
                 Button tagChip = new Button(name);
                 tagChip.setFocusTraversable(false);
                 tagChip.getStyleClass().addAll("trip-editor-chip", tagColorClass(name));
@@ -382,7 +396,7 @@ private void setupInputs()
 
         UUID tripUuid = trip.id();
 
-        routesGrid.setCardFactory(tr -> buildTripRouteCard(tr, tripUuid));
+        routesGrid.setCardFactory(this::buildTripRouteCard);
         routesGrid.setPageLoader((page, size) -> {
             var r = tripRouteService.getTripRoutes(new GetTripRoutesRequest(
                     new PageRequest(page - 1, size),
@@ -401,7 +415,7 @@ private void setupInputs()
         placesGrid.setPageLoader((page, size) -> {
             var r = tripPlaceService.getTripPlaces(new GetTripPlacesRequest(
                     new PageRequest(page - 1, size),
-                    new GetTripPlacesRequest.Filter(tripUuid, TripPlaceSourceType.MANUAL, null, null, null, null),
+                    new GetTripPlacesRequest.Filter(tripUuid, null, null, null, null, null),
                     new GetTripPlacesRequest.OrderBy(false)));
             if (r.isFailure()) {
                 log.warn("Failed to load trip places: {}", r.getError().message());
@@ -413,7 +427,7 @@ private void setupInputs()
         });
         placesGrid.refresh();
 
-        storiesGrid.setCardFactory(story -> buildStoryCard(story, tripUuid));
+        storiesGrid.setCardFactory(this::buildStoryCard);
         storiesGrid.setPageLoader((page, size) -> {
             var r = storyService.getStories(new GetStoriesRequest(
                     new PageRequest(page - 1, size),
@@ -485,7 +499,6 @@ private void setupInputs()
             return;
         }
         var updated = result.getValue();
-        // re-bind updated trip details
         bind(updated);
         toast.success(I18n.t("trip.details.status.updated"));
     }
@@ -499,66 +512,31 @@ private void setupInputs()
         );
     }
 
-    private VBox buildTripRouteCard(TripRouteResponse tripRoute, UUID forTripId) {
-        TripRouteCardView routeCard = TripRouteCardView.create(
-                tripRoute, () -> openRoute(tripRoute.route()));
-
-        VBox wrapper = new VBox(8);
-        wrapper.getChildren().addAll(routeCard.getRoot());
-        return wrapper;
+    private Node buildTripRouteCard(TripRouteResponse tripRoute) {
+        return Objects.requireNonNull(TripRouteCardView.create(tripRoute, () -> openTripRoute(tripRoute))).getRoot();
     }
 
-    private VBox buildPlaceCard(TripPlaceResponse tripPlace) {
-        TripPlaceCardView placeCard = TripPlaceCardView.create(
-                tripPlace, () -> openPlace(tripPlace.place().id()));
-
-        VBox wrapper = new VBox(8);
-        wrapper.getChildren().addAll(placeCard.getRoot());
-        return wrapper;
+    private Node buildPlaceCard(TripPlaceResponse tripPlace) {
+        return TripPlaceCardView.create(tripPlace, () -> openTripPlace(tripPlace.id(), tripPlace.place().id())).getRoot();
     }
 
-    private VBox buildStoryCard(StoryResponse story, UUID forTripId) {
-        VBox card = new VBox(6);
-        card.getStyleClass().add("trip-details-story-card");
-        card.setCursor(javafx.scene.Cursor.HAND);
-        card.setOnMouseClicked(e -> openStory(story));
-
-        Label title = new Label(safeText(story.title(), I18n.t("trip.details.story.fallback")));
-        title.getStyleClass().add("trip-details-story-title");
-        title.setWrapText(true);
-
-        String timeText = story.storyTime() == null ? "" : TIME_FORMAT.format(story.storyTime());
-        HBox meta = new HBox(10);
-        meta.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-        Label timeLabel = new Label(timeText);
-        timeLabel.getStyleClass().add("trip-details-story-time");
-
-        if (story.emotion() != null) {
-            String emotionText = story.emotion().emojiUnicode() != null
-                    ? story.emotion().emojiUnicode() + " " + Localization.localize(story.emotion())
-                    : Localization.localize(story.emotion());
-            Label emotionLabel = new Label(emotionText);
-            emotionLabel.getStyleClass().add("trip-details-story-emotion");
-            meta.getChildren().addAll(timeLabel, emotionLabel);
-        } else {
-            meta.getChildren().add(timeLabel);
-        }
-
-        card.getChildren().addAll(title, meta);
-        return card;
+    private Node buildStoryCard(StoryResponse story) {
+        return StoryCardView.create(story, () -> openStory(story)).getRoot();
     }
 
-    private void openRoute(com.triplify.application.usecase.route.dto.RouteResponse route) {
+    private void openTripRoute(TripRouteResponse route) {
         if (route == null || route.id() == null) return;
         RouterArgument args = new RouterArgument();
-        args.addArgument("routeId", route.id().toString());
+        args.addArgument("routeId", route.route().id().toString());
+        args.addArgument("tripRouteId", route.id().toString());
         getRouter().moveto(RouteIds.ROUTE_DETAILS, args);
     }
 
-    private void openPlace(UUID placeId) {
+    private void openTripPlace(UUID tripPlaceId, UUID placeId) {
         if (placeId == null) return;
         RouterArgument args = new RouterArgument();
         args.addArgument("placeId", placeId.toString());
+        args.addArgument("tripPlaceId", tripPlaceId.toString());
         getRouter().moveto(RouteIds.PLACE_DETAILS, args);
     }
 
@@ -573,16 +551,6 @@ private void setupInputs()
         RouterArgument args = new RouterArgument();
         args.addArgument("tripId", forTripId.toString());
         getRouter().moveto(RouteIds.ADD_STORY, args);
-    }
-
-    private Image loadImage(TripResponse trip) {
-        String url = trip.coverImage() != null && trip.coverImage().url() != null
-                ? trip.coverImage().url().toString() : DEFAULT_IMAGE;
-        return EditorUtils.loadImage(url, DEFAULT_IMAGE, getClass());
-    }
-
-    private static String safeText(String value, String fallback) {
-        return value == null || value.isBlank() ? fallback : value;
     }
 
     private String tagColorClass(String tag) {
