@@ -12,6 +12,7 @@ import com.triplify.application.usecase.badgegroup.dto.BadgeGroupType;
 import com.triplify.application.usecase.image.ImageService;
 import com.triplify.application.usecase.statistic.StatisticService;
 import com.triplify.application.usecase.statistic.dto.GetDisplayedStatisticsRequest;
+import com.triplify.application.usecase.statistic.dto.GetStatisticsRequest;
 import com.triplify.application.usecase.statistic.dto.StatisticResponse;
 import com.triplify.application.usecase.image.dto.GetImageByIdRequest;
 import com.triplify.application.usecase.image.dto.ImageResponse;
@@ -206,8 +207,8 @@ public class AccountController extends SimpleLifecycleAwareController {
             Map<String, Long> statsByBadgeGroupId = new java.util.HashMap<>();
             if (userSessionContext.isLoggedIn()) {
                 userSessionContext.getCurrent().ifPresent(user -> {
-                    Result<List<StatisticResponse>> statsResult = statisticService.getDisplayedStatistics(
-                            new GetDisplayedStatisticsRequest(user.userId())
+                    Result<List<StatisticResponse>> statsResult = statisticService.getStatistics(
+                            new GetStatisticsRequest(user.userId())
                     );
                     statsResult.onSuccess(list -> {
                         for (StatisticResponse s : list) {
@@ -293,7 +294,7 @@ public class AccountController extends SimpleLifecycleAwareController {
             return 0;
         }
 
-        long statValue = statsByBadgeGroupId.getOrDefault(response.group().id(), 0L);
+        long statValue = statsByBadgeGroupId.getOrDefault(response.group().id().toString(), 0L);
         return (int) Math.min(Integer.MAX_VALUE, statValue);
     }
 
