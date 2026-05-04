@@ -35,8 +35,7 @@
                 <StackPane fx:id="heroContainer" styleClass="place-details-hero" prefHeight="500" maxHeight="500">
                     <ImageView fx:id="heroImageView"
                                mouseTransparent="true"
-                               preserveRatio="true"
-                               smooth="true"/>
+                               preserveRatio="true"/>
                     <VBox styleClass="place-details-hero-overlay">
                         <HBox>
                             <Button fx:id="backButton"
@@ -44,6 +43,7 @@
                                     styleClass="place-details-back-button"/>
                         </HBox>
                         <VBox styleClass="place-details-hero-copy" spacing="8">
+                            <Label fx:id="heroStatusLabel" styleClass="trip-status,trip-details-hero-status"/>
                             <Label fx:id="placeTitleLabel" styleClass="place-details-title"/>
                             <HBox fx:id="countryRow" spacing="6" alignment="CENTER_LEFT" styleClass="route-card-places-row">
                                 <ImageView fx:id="countryEmojiView" fitWidth="18" fitHeight="18" preserveRatio="true"

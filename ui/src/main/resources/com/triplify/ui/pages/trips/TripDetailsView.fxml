@@ -31,12 +31,10 @@
                     <ImageView fx:id="heroImageView"
                                fitWidth="1120"
                                fitHeight="320"
-                               pickOnBounds="true"
-                               preserveRatio="false"
-                               styleClass="place-details-hero-image"/>
+                               pickOnBounds="true"/>
 
-                    <VBox styleClass="place-details-hero-overlay" spacing="0">
-                        <HBox alignment="TOP_LEFT">
+                    <VBox styleClass="place-details-hero-overlay">
+                        <HBox>
                             <Button fx:id="backButton"
                                     onAction="#onBack"
                                     styleClass="place-details-back-button"/>
