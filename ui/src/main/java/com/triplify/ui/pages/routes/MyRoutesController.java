@@ -91,10 +91,10 @@ public class MyRoutesController extends SimpleLifecycleAwareController {
 
         SelectView<Boolean> sortView = new SelectView<>();
         sortView.update(sortByModel);
-        sortView.setPrefWidth(160);
-        sortView.setMaxWidth(160);
-        sortView.getComboBox().setPrefWidth(160);
-        sortView.getComboBox().setMaxWidth(160);
+        sortView.setPrefWidth(200);
+        sortView.setMaxWidth(200);
+        sortView.getComboBox().setPrefWidth(200);
+        sortView.getComboBox().setMaxWidth(200);
         sortView.getComboBox().getStyleClass().add("trips-filter");
         sortSelectContainer.getChildren().setAll(sortView);
 

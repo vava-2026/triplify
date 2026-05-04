@@ -228,8 +228,7 @@ public class MyTripsController extends SimpleLifecycleAwareController {
     }
 
     private Node buildTripCard(TripResponse trip) {
-        String dateRange = formatDateRange(toLocalDate(trip.startedAt()), toLocalDate(trip.endedAt()));
-        TripCardView card = TripCardView.create(trip, dateRange, () -> openTrip(trip));
+        TripCardView card = TripCardView.create(trip, () -> openTrip(trip));
         return card.getRoot();
     }
 
@@ -238,15 +237,6 @@ public class MyTripsController extends SimpleLifecycleAwareController {
         RouterArgument args = new RouterArgument();
         args.addArgument("tripId", trip.id().toString());
         getRouter().moveto(RouteIds.TRIP_DETAILS, args);
-    }
-
-    private boolean matchesTagIds(Set<TagResponse> tags, Set<UUID> selectedIds) {
-        if (selectedIds == null || selectedIds.isEmpty()) return true;
-        if (tags == null || tags.isEmpty()) return false;
-        return tags.stream()
-                .map(TagResponse::id)
-                .filter(Objects::nonNull)
-                .anyMatch(selectedIds::contains);
     }
 
     private String normalizeFilter(String value) {

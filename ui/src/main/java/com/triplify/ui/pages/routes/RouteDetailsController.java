@@ -548,10 +548,7 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
         associatedTripsGrid.setMaxColumns(4);
         associatedTripsGrid.setVScrollPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         associatedTripsGrid.setEmptyTextKey("route.details.empty.trips");
-        associatedTripsGrid.setCardFactory(trip -> {
-            String dateRange = DisplayUtils.formatDateRange(toLocalDate(trip.startedAt()), toLocalDate(trip.endedAt()));
-            return TripCardView.create(trip, dateRange, () -> openTrip(trip)).getRoot();
-        });
+        associatedTripsGrid.setCardFactory(trip -> TripCardView.create(trip, () -> openTrip(trip)).getRoot());
         associatedTripsGrid.setPageLoader((page, size) -> new CardGridPane.PageResult<>(currentTrips, null));
     }
 

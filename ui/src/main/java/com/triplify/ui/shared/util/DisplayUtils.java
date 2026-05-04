@@ -11,6 +11,7 @@ import com.triplify.application.usecase.triproute.dto.TripRouteResponse;
 import com.triplify.domain.model.enums.StatusEnum;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.routing.RouteIds;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.StringProperty;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
@@ -160,6 +161,14 @@ public final class DisplayUtils {
             case PLANNED -> "trip-status-planned";
             case CANCELED -> "trip-status-rejected";
         };
+    }
+
+    public static void bindLocalDate(Instant startDate, Instant endDate, StringProperty dateProperty) {
+        dateProperty.unbind();
+        dateProperty.bind(Bindings.createStringBinding(
+                () -> DisplayUtils.formatDateRangeLocalized(toLocalDate(startDate), toLocalDate(endDate)),
+                I18n.languageProperty()
+        ));
     }
 
     public static void renderTripPlaceContext(Router router, VBox contextContainer, TripPlaceResponse tripPlace) {

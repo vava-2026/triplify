@@ -50,11 +50,11 @@ import java.util.UUID;
 public class StoryDetailsController extends SimpleLifecycleAwareController {
 
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("MMM d, yyyy  HH:mm").withZone(ZoneOffset.UTC);
+    private static final int TAG_COLOR_VARIANTS = 20;
 
     @FXML private VBox contentContainer;
     @FXML private Button backButton;
     @FXML private Label storyTitleLabel;
-    @FXML private HBox metaRow;
     @FXML private Label storyTimeLabel;
     @FXML private HBox emotionRow;
     @FXML private ImageView emotionEmojiView;
@@ -180,9 +180,11 @@ public class StoryDetailsController extends SimpleLifecycleAwareController {
         tagsFlow.getChildren().clear();
         if (story.tags() == null || story.tags().isEmpty()) return;
         for (TagResponse tag : story.tags()) {
-            if (tag == null || tag.name() == null) continue;
-            Label chip = new Label(tag.name());
-            chip.getStyleClass().addAll("trip-editor-chip", "trip-editor-chip-soft");
+            if (tag == null) continue;
+            String name = EditorUtils.safeText(tag.name(), "");
+            Button chip = new Button(name);
+            chip.setFocusTraversable(false);
+            chip.getStyleClass().addAll("trip-editor-chip", tagColorClass(name));
             tagsFlow.getChildren().add(chip);
         }
     }
@@ -235,13 +237,18 @@ public class StoryDetailsController extends SimpleLifecycleAwareController {
                 UUID.fromString(storyId),
                 ImageOwnerType.STORY,
                 null,
-                image -> imagesGrid.refresh());
+                ignored -> imagesGrid.refresh());
     }
 
     private void openImageViewModal(ImageResponse image) {
         imageViewModal.show(
                 contentContainer.getScene().getWindow(),
                 image,
-                deleted -> imagesGrid.refresh());
+                ignored -> imagesGrid.refresh());
+    }
+
+    private String tagColorClass(String tag) {
+        int index = Math.floorMod(tag == null ? 0 : tag.hashCode(), TAG_COLOR_VARIANTS);
+        return "app-tag-picker-chip-color-" + index;
     }
 }

@@ -333,10 +333,7 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
 
         UUID placeUuid = place.id();
 
-        tripsGrid.setCardFactory(trip -> {
-            String dateRange = formatDateRange(toLocalDate(trip.startedAt()), toLocalDate(trip.endedAt()));
-            return (Region) TripCardView.create(trip, dateRange, () -> openTrip(trip)).getRoot();
-        });
+        tripsGrid.setCardFactory(trip -> TripCardView.create(trip, () -> openTrip(trip)).getRoot());
         tripsGrid.setPageLoader((page, size) -> {
             var r = placeService.getPlaceTrips(new GetPlaceTripsRequest(placeUuid, new PageRequest(page - 1, size)));
             if (r.isFailure()) return new CardGridPane.PageResult<>(List.of(), null);
