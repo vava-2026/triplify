@@ -47,7 +47,7 @@ SELECT
     NULL AS cover_image_id,
     ts.route_title_en,
     ts.route_description_en,
-    NULL AS length
+    ROUND((RANDOM() % (2000 - 801) + 800),2) AS length
 FROM tmp_seed_routes ts;
 
 WITH places_in_routes AS (

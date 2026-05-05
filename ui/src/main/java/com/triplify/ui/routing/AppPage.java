@@ -237,21 +237,6 @@ public enum AppPage {
             true,
             false
     ),
-    SETTINGS(
-            RouteIds.SETTINGS,
-            "nav.settings",
-            "fth-settings",
-            EnumSet.allOf(RoleEnum.class),
-            true,
-            false,
-            true,
-            false,
-            false,
-            null,
-            EnumSet.noneOf(RoleEnum.class),
-            false,
-            false
-    ),
     ACCOUNT(
             RouteIds.ACCOUNT,
             "nav.account",

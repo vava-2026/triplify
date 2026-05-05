@@ -12,7 +12,6 @@ public final class RouteIds {
     public static final String CATEGORIES = "categories";
     public static final String EMOTIONS = "emotions";
     public static final String BADGES = "badges";
-    public static final String SETTINGS = "settings";
     public static final String ACCOUNT = "account";
     public static final String ADD_TRIP = "add_trip";
     public static final String TRIP_DETAILS = "trip_details";

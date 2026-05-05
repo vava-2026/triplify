@@ -89,7 +89,7 @@ public class MyPlacesController extends SimpleLifecycleAwareController {
     private void configureGrid() {
         cardGrid.setMinCardWidth(220);
         cardGrid.setMaxColumns(5);
-        cardGrid.setPageSize(8);
+        cardGrid.setPageSize(9);
         cardGrid.setEmptyTextKey("places.empty");
         cardGrid.addPinnedNode(new AddCardView("place.add.card.title", "place.add.card.subtitle", this::onCreatePlace));
         cardGrid.setCardFactory(this::buildPlaceCard);
