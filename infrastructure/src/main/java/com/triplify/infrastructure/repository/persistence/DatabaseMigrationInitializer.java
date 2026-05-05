@@ -1,5 +1,8 @@
 package com.triplify.infrastructure.repository.persistence;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import com.triplify.infrastructure.unsplash.UnsplashImageSeeder;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
@@ -30,12 +33,20 @@ public class DatabaseMigrationInitializer {
             new MigrationStep(11, "seeders/badge_seeder.sql"),
             new MigrationStep(12, "seeders/user_seeder.sql"),
             new MigrationStep(13, "seeders/tag_seeder.sql"),
-            new MigrationStep(14, "seeders/place_seeder.sql"),     
-            new MigrationStep(15, "seeders/route_seeder.sql"),     
-            new MigrationStep(16, "seeders/emotion_seeder.sql"),   
+            new MigrationStep(14, "seeders/place_seeder.sql"),
+            new MigrationStep(15, "seeders/route_seeder.sql"),
+            new MigrationStep(16, "seeders/emotion_seeder.sql"),
             new MigrationStep(17, "seeders/trip_seeder.sql"),
-            new MigrationStep(18, "seeders/story_seeder.sql") 
+            new MigrationStep(18, "seeders/story_seeder.sql")
+            // Step 19: Unsplash image seeding — handled in Java below, no SQL file.
     );
+
+    private final UnsplashImageSeeder unsplashImageSeeder;
+
+    @Inject
+    public DatabaseMigrationInitializer(UnsplashImageSeeder unsplashImageSeeder) {
+        this.unsplashImageSeeder = unsplashImageSeeder;
+    }
 
     public void initialize() {
         try (Connection connection = SQLiteConnectionFactory.getSpatialConnection()) {
@@ -45,6 +56,7 @@ public class DatabaseMigrationInitializer {
                 return;
             }
 
+            // SQL-based migrations (steps 1–18)
             for (MigrationStep migration : MIGRATIONS) {
                 if (migration.version() <= userVersion || migration.version() > CURRENT_SCHEMA_VERSION) {
                     continue;
@@ -56,6 +68,17 @@ public class DatabaseMigrationInitializer {
                 setUserVersion(connection, migration.version());
                 userVersion = migration.version();
                 logger.info("SQLite migration v{} applied", migration.version());
+            }
+
+            // Step 19: download Unsplash photos and store them locally
+            if (userVersion < 19) {
+                logger.info("Applying migration v19: Unsplash image seeding");
+                unsplashImageSeeder.seed();
+                setUserVersion(connection, 19);
+                userVersion = 19;
+                logger.info("Migration v19 applied");
+            }else if (userVersion == 19) {
+                unsplashImageSeeder.seed();
             }
 
             if (userVersion < CURRENT_SCHEMA_VERSION) {

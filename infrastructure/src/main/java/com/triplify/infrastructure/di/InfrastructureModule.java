@@ -9,6 +9,8 @@ import com.triplify.infrastructure.repository.*;
 import com.triplify.infrastructure.repository.MapRepositoryImpl;
 import com.triplify.infrastructure.security.BCryptPasswordEncoder;
 import com.triplify.infrastructure.storage.DiscImageStorage;
+import com.triplify.infrastructure.unsplash.UnsplashClient;
+import com.triplify.infrastructure.unsplash.UnsplashImageSeeder;
 
 public class InfrastructureModule extends AbstractModule {
 
@@ -32,5 +34,7 @@ public class InfrastructureModule extends AbstractModule {
         bind(StoryRepository.class).to(StoryRepositoryImpl.class).in(Singleton.class);
         bind(EmotionRepository.class).to(EmotionRepositoryImpl.class).in(Singleton.class);
         bind(MapRepository.class).to(MapRepositoryImpl.class).in(Singleton.class);
+        bind(UnsplashClient.class).in(Singleton.class);
+        bind(UnsplashImageSeeder.class).in(Singleton.class);
     }
 }
