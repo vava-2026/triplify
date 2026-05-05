@@ -30,9 +30,11 @@ import com.triplify.application.usecase.trip.dto.UpdateTripRequest;
 import com.triplify.application.usecase.tripplace.TripPlaceService;
 import com.triplify.application.usecase.tripplace.dto.ReplaceManualTripPlacesRequest;
 import com.triplify.application.usecase.tripplace.dto.TripPlaceResponse;
+import com.triplify.application.usecase.session.UserSessionContext;
 import com.triplify.application.usecase.triproute.TripRouteService;
 import com.triplify.application.usecase.triproute.dto.ReplaceTripRoutesRequest;
 import com.triplify.application.usecase.triproute.dto.TripRouteResponse;
+import com.triplify.domain.model.enums.RoleEnum;
 import com.triplify.domain.model.enums.StatusEnum;
 import com.triplify.domain.model.enums.TripPlaceSourceType;
 import com.triplify.domain.result.Result;
@@ -137,6 +139,7 @@ public class AddTripController extends WindowedPageController {
 
     @Inject private ToastService toast;
     @Inject private ErrorHandler errorHandler;
+    @Inject private UserSessionContext userSessionContext;
     @Inject private TripService tripService;
     @Inject private CategoryService categoryService;
     @Inject private TagService tagService;
@@ -264,6 +267,10 @@ public class AddTripController extends WindowedPageController {
 
     @FXML
     private void onAddRoute() {
+        if (!isProUser() && !routeItems.isEmpty()) {
+            toast.error(I18n.t("trip.add.toast.route.pro.required"));
+            return;
+        }
         boolean nextState = !routePickerContainer.isVisible();
         setRoutePickerVisible(nextState);
         if (nextState) setPlacePickerVisible(false);
@@ -288,6 +295,11 @@ public class AddTripController extends WindowedPageController {
 
     @FXML
     private void onCreateRoute() {
+        if (!isProUser() && !routeItems.isEmpty()) {
+            toast.error(I18n.t("trip.add.toast.route.pro.required"));
+            setRoutePickerVisible(false);
+            return;
+        }
         setRoutePickerVisible(false);
         EditorDraftStorage.saveTripDraft(captureTripDraft());
         RouterArgument args = new RouterArgument();
@@ -776,6 +788,11 @@ public class AddTripController extends WindowedPageController {
     }
 
     private void addExistingRoute(RouteItem route) {
+        if (!isProUser() && !routeItems.isEmpty()) {
+            toast.error(I18n.t("trip.add.toast.route.pro.required"));
+            setRoutePickerVisible(false);
+            return;
+        }
         if (containsRoute(route.id())) {
             toast.info(I18n.t("trip.add.toast.route.duplicate"));
             return;
@@ -809,6 +826,12 @@ public class AddTripController extends WindowedPageController {
         refreshPlacePicker();
         setPlacePickerVisible(false);
         toast.success(I18n.t("trip.add.toast.place.added.title"), place.title());
+    }
+
+    private boolean isProUser() {
+        return userSessionContext.getCurrent()
+                .map(user -> user.role() == RoleEnum.PRO_USER || user.role() == RoleEnum.CONFIGURATION_MANAGER)
+                .orElse(false);
     }
 
     private boolean containsRoute(String routeId) {

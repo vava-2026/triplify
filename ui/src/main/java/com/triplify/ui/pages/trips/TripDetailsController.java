@@ -7,6 +7,7 @@ import com.triplify.application.shared.localization.LocalizedName;
 import com.triplify.application.usecase.country.dto.CountryResponse;
 import com.triplify.application.usecase.image.ImageService;
 import com.triplify.application.usecase.image.dto.GetImagesRequest;
+import com.triplify.application.usecase.session.UserSessionContext;
 import com.triplify.application.usecase.route.dto.RouteResponse;
 import com.triplify.application.usecase.tag.dto.TagResponse;
 import com.triplify.domain.model.enums.ImageOwnerType;
@@ -25,6 +26,7 @@ import com.triplify.application.usecase.triproute.TripRouteService;
 import com.triplify.application.usecase.triproute.dto.GetTripRoutesRequest;
 import com.triplify.application.usecase.triproute.dto.TripRouteResponse;
 import com.triplify.domain.model.enums.StatusEnum;
+import com.triplify.domain.model.enums.RoleEnum;
 import com.triplify.domain.model.enums.TripPlaceSourceType;
 import com.triplify.domain.pagination.PageRequest;
 import com.triplify.ui.error.ErrorHandler;
@@ -124,6 +126,7 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
     @Inject private TripPlaceService tripPlaceService;
     @Inject private StoryService storyService;
     @Inject private ImageService imageService;
+    @Inject private UserSessionContext userSessionContext;
     @Inject private ToastService toast;
     @Inject private ErrorHandler errorHandler;
     @Inject private FxmlLoaderHelper fxmlLoader;
@@ -151,6 +154,9 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         Localization.bindText(routesHeader.titleProperty(), "trip.details.section.routes");
         Localization.bindText(placesHeader.titleProperty(), "trip.details.section.places");
         Localization.bindText(storiesHeader.titleProperty(), "trip.details.section.stories");
+        Localization.bindText(storiesHeader.tagTextProperty(), "common.pro");
+        storiesHeader.setTagVisible(true);
+
         Localization.bindText(imagesHeader.titleProperty(), "trip.details.section.images");
         Localization.bindText(categoryLabel.textProperty(), "trip.details.category");
         Localization.bindText(changeStatusLabel.textProperty(), "trip.details.changeStatus");
@@ -239,7 +245,9 @@ private void setupInputs()
         AddCardView addCard = new AddCardView(
                 "stories.add.card.title",
                 "stories.add.card.subtitle",
-                () -> navigateToAddStory(UUID.fromString(tripId))
+                () -> navigateToAddStory(UUID.fromString(tripId)),
+                isProUser(),
+                this::showProRequiredToast
         );
         storiesGrid.addPinnedNode(addCard);
     }
@@ -551,6 +559,16 @@ private void setupInputs()
         RouterArgument args = new RouterArgument();
         args.addArgument("tripId", forTripId.toString());
         getRouter().moveto(RouteIds.ADD_STORY, args);
+    }
+
+    private boolean isProUser() {
+        return userSessionContext.getCurrent()
+                .map(user -> user.role() == RoleEnum.PRO_USER)
+                .orElse(false);
+    }
+
+    private void showProRequiredToast() {
+        toast.error(I18n.t("error.story.premium.required"));
     }
 
     private String tagColorClass(String tag) {
