@@ -9,6 +9,8 @@ Run the app using:
 ./gradlew :bootstrap:run
 ```
 
+Configure git lfs: [Git LFS](https://git-lfs.com/)
+
 ## Seed user
 The application has users with seeded data
 ### Pro User
