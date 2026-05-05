@@ -17,6 +17,7 @@ Each of modules contains jar executable. There are strict prerequisites:
 For executing the program, execute run.bat or run.sh as administrator, depending on your OS:
 - Windows - run.bat
 - Linux or mac - run.sh
+- On mac with arm processor, run `brew install --cask zulufx` before execution
 
 You can also directly execute .jar file with command:
 Windows:
@@ -26,8 +27,10 @@ java --enable-native-access=ALL-UNNAMED -jar "triplify.jar"
 pause
 ```
 
-Linux:
+Linux or mac:
+
 ```
 #!/bin/sh
+brew install --cask zulufx
 java --enable-native-access=ALL-UNNAMED -jar "triplify.jar"
 ```
