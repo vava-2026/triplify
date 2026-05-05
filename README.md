@@ -1,5 +1,9 @@
 # Triplify
 
+## Builds
+For installation instructions, follow [Build instractions](./documentation/builds/README.md)
+
+## Project Execution
 Run the app using:
 ```
 ./gradlew :bootstrap:run
