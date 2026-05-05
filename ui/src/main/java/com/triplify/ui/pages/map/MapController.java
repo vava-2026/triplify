@@ -30,6 +30,7 @@ import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.component.search.model.Search;
 import com.triplify.ui.shared.component.search.view.SearchView;
 import com.triplify.ui.shared.component.select.entry.model.Entry;
+import com.triplify.ui.shared.model.AppComponentSize;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.util.Localization;
 
@@ -191,10 +192,11 @@ public class MapController extends SimpleLifecycleAwareController {
         Search<PlaceResponse> search = Search.<PlaceResponse>builder(this::searchPlaces)
                 .placeholderKey("map.search.placeholder")
                 .maxVisibleResults(6)
-                .variant(FieldVariant.OUTLINED)
                 .onResultSelected(entry -> navigateToPlace(entry.getValue()))
                 .build();
-        searchContainer.getChildren().add(new SearchView<>(search));
+        var searchView = new SearchView<>(search);
+        searchView.setMinWidth(600);
+        searchContainer.getChildren().add(searchView);
     }
 
     private List<Entry<PlaceResponse>> searchPlaces(String query) {

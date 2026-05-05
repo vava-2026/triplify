@@ -22,7 +22,6 @@
           maxWidth="-Infinity"
           maxHeight="-Infinity"
           pickOnBounds="false"
-          mouseTransparent="false"
           StackPane.alignment="BOTTOM_LEFT">
         <StackPane.margin>
             <Insets bottom="24" left="24" right="24"/>
@@ -35,7 +34,6 @@
           maxWidth="-Infinity"
           maxHeight="-Infinity"
           pickOnBounds="false"
-          mouseTransparent="false"
           StackPane.alignment="BOTTOM_RIGHT">
         <StackPane.margin>
             <Insets bottom="24" right="24"/>
@@ -59,13 +57,11 @@
 
     <StackPane fx:id="clusterPopupContainer"
                pickOnBounds="false"
-               mouseTransparent="false"
                StackPane.alignment="CENTER_RIGHT"/>
 
     <HBox fx:id="searchContainer"
           styleClass="map-search-container"
           pickOnBounds="false"
-          mouseTransparent="false"
           StackPane.alignment="TOP_CENTER">
         <StackPane.margin>
             <Insets top="14"/>

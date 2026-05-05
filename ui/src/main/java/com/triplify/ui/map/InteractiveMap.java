@@ -22,6 +22,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Polyline;
+import lombok.Setter;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.util.ArrayList;
@@ -57,6 +58,7 @@ public class InteractiveMap extends StackPane {
     private double mapDragSceneX;
     private double mapDragSceneY;
     private boolean rightMouseDragging;
+    @Setter
     private boolean selectionEnabled = true;
 
     private final ObjectProperty<MapPoint> selectedPoint = new SimpleObjectProperty<>();
@@ -231,10 +233,6 @@ public class InteractiveMap extends StackPane {
         selectedPoint.set(new MapPoint(latitude, longitude));
         CountryBoundary countryBoundary = findCountry(latitude, longitude);
         selectedCountryName.set(countryBoundary == null ? null : countryBoundary.name());
-    }
-
-    public void setSelectionEnabled(boolean selectionEnabled) {
-        this.selectionEnabled = selectionEnabled;
     }
 
     public void setControlsVisible(boolean controlsVisible) {
