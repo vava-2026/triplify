@@ -26,9 +26,11 @@ import com.triplify.ui.map.MapMarkersLayer;
 import com.triplify.ui.map.MapRouteHighlightLayer;
 import com.triplify.ui.routing.GuardedNavigator;
 import com.triplify.ui.routing.RouteIds;
+import com.triplify.ui.routing.TriplifyRouterContext;
 import com.triplify.ui.shared.component.search.model.Search;
 import com.triplify.ui.shared.component.search.view.SearchView;
 import com.triplify.ui.shared.component.select.entry.model.Entry;
+import com.triplify.ui.shared.model.AppComponentSize;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.util.Localization;
 
@@ -61,6 +63,8 @@ public class MapController extends SimpleLifecycleAwareController {
     private static final double ZOOM_STEP = 1.0;
     private static final double TRACKPAD_THRESHOLD = 12.0;
     private static final double PAN_FACTOR = 1.15;
+    private static final double FILTER_MARGIN_DEFAULT = 24.0;
+    private static final double FILTER_MARGIN_MENU_OPEN = 300.0;
     private static final Duration ROUTE_HOVER_DEBOUNCE = Duration.millis(120);
 
     @Inject private MapService mapService;
@@ -88,9 +92,35 @@ public class MapController extends SimpleLifecycleAwareController {
     private boolean dragging = false;
     private boolean dragPanEnabled = false;
     private boolean firstShow = true;
+    private boolean filterPositionListenersAttached = false;
     private long routeHoverVersion = 0L;
     private String pendingRouteHoverId;
     private String highlightedRouteId;
+
+    @FXML
+    private void onZoomIn() {
+        if (mapView != null && mapView.getZoom() < MAX_ZOOM) {
+            mapView.setZoom(Math.min(mapView.getZoom() + ZOOM_STEP, MAX_ZOOM));
+            viewportDebounce.playFromStart();
+        }
+    }
+
+    @FXML
+    private void onZoomOut() {
+        if (mapView != null && mapView.getZoom() > MIN_ZOOM) {
+            mapView.setZoom(Math.max(mapView.getZoom() - ZOOM_STEP, MIN_ZOOM));
+            viewportDebounce.playFromStart();
+        }
+    }
+
+    @FXML
+    private void onCenterMap() {
+        if (mapView != null) {
+            mapView.setZoom(DEFAULT_ZOOM);
+            mapView.setCenter(DEFAULT_LAT, DEFAULT_LON);
+            viewportDebounce.playFromStart();
+        }
+    }
 
     @FXML
     private void initialize() {
@@ -107,8 +137,31 @@ public class MapController extends SimpleLifecycleAwareController {
             mapView.setZoom(DEFAULT_ZOOM);
             mapView.setCenter(DEFAULT_LAT, DEFAULT_LON);
         }
+
+        ensureFilterFollowsMenuState();
+        
         clusterPopup.hide();
         loadMarkers();
+    }
+
+    private void ensureFilterFollowsMenuState() {
+        if (getRouter() == null || !(getRouter().getContext() instanceof TriplifyRouterContext context)) {
+            return;
+        }
+
+        if (!filterPositionListenersAttached) {
+            context.fullScreenContentProperty().addListener((obs, oldVal, newVal) -> applyFilterMargin(context));
+            context.menuCollapsedProperty().addListener((obs, oldVal, newVal) -> applyFilterMargin(context));
+            filterPositionListenersAttached = true;
+        }
+
+        applyFilterMargin(context);
+    }
+
+    private void applyFilterMargin(TriplifyRouterContext context) {
+        boolean menuIsBlockingMap = !context.isFullScreenContent() && !context.isMenuCollapsed();
+        double left = menuIsBlockingMap ? FILTER_MARGIN_MENU_OPEN : FILTER_MARGIN_DEFAULT;
+        StackPane.setMargin(filterToolbar, new Insets(24, 24, 24, left));
     }
 
     private void buildMap() {
@@ -139,10 +192,11 @@ public class MapController extends SimpleLifecycleAwareController {
         Search<PlaceResponse> search = Search.<PlaceResponse>builder(this::searchPlaces)
                 .placeholderKey("map.search.placeholder")
                 .maxVisibleResults(6)
-                .variant(FieldVariant.OUTLINED)
                 .onResultSelected(entry -> navigateToPlace(entry.getValue()))
                 .build();
-        searchContainer.getChildren().add(new SearchView<>(search));
+        var searchView = new SearchView<>(search);
+        searchView.setMinWidth(600);
+        searchContainer.getChildren().add(searchView);
     }
 
     private List<Entry<PlaceResponse>> searchPlaces(String query) {
@@ -162,11 +216,21 @@ public class MapController extends SimpleLifecycleAwareController {
         viewportDebounce.playFromStart();
     }
 
+    private boolean isSearchTarget(Object target) {
+        if (!(target instanceof Node node)) return false;
+        Node current = node;
+        while (current != null) {
+            if (current == searchContainer) return true;
+            current = current.getParent();
+        }
+        return false;
+    }
+
     private void attachMapEvents() {
         mapView.addEventHandler(ScrollEvent.SCROLL, this::handleScroll);
 
         mapContainer.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> {
-            if (event.getButton() == MouseButton.PRIMARY && !isMarkerTarget(event.getTarget())) {
+            if (event.getButton() == MouseButton.PRIMARY && !isMarkerTarget(event.getTarget()) && !isSearchTarget(event.getTarget())) {
                 dragPanEnabled = true;
                 dragStartX = event.getSceneX();
                 dragStartY = event.getSceneY();
@@ -256,8 +320,10 @@ public class MapController extends SimpleLifecycleAwareController {
         all.setSelected(true);
 
         filterToolbar.getChildren().addAll(all, places, routes, stories);
-        filterToolbar.setSpacing(6);
-        filterToolbar.setPadding(new Insets(10));
+        filterToolbar.setSpacing(8);
+        filterToolbar.setPadding(new Insets(12));
+        filterToolbar.setStyle("-fx-focus-color: transparent; -fx-faint-focus-color: transparent;");
+        filterToolbar.setViewOrder(-1);
         filterToolbar.setAlignment(Pos.CENTER);
     }
 
