@@ -157,7 +157,6 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
         Localization.bindText(storiesHeader.tagTextProperty(), "common.pro");
         storiesHeader.setTagVisible(true);
 
-        topRowFlow.prefWrapLengthProperty().bind(contentContainer.widthProperty());
         Localization.bindText(imagesHeader.titleProperty(), "trip.details.section.images");
         Localization.bindText(categoryLabel.textProperty(), "trip.details.category");
         Localization.bindText(changeStatusLabel.textProperty(), "trip.details.changeStatus");
@@ -572,10 +571,6 @@ private void setupInputs()
         toast.error(I18n.t("error.story.premium.required"));
     }
 
-    private Image loadImage(TripResponse trip) {
-        String url = trip.coverImage() != null && trip.coverImage().url() != null
-                ? trip.coverImage().url().toString() : DEFAULT_IMAGE;
-        return EditorUtils.loadImage(url, DEFAULT_IMAGE, getClass());
     private String tagColorClass(String tag) {
         int index = Math.floorMod(tag == null ? 0 : tag.hashCode(), TAG_COLOR_VARIANTS);
         return "app-tag-picker-chip-color-" + index;
