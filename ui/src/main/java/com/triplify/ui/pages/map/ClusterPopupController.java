@@ -21,7 +21,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import org.kordamp.ikonli.javafx.FontIcon;
 
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -104,7 +103,10 @@ public class ClusterPopupController extends StackPane {
         this.onItemClick = onItemClick;
         this.currentPage = 0;
 
-        titleLabel.setText(MessageFormat.format(I18n.t("map.cluster.title"), cluster.count()));
+        titleLabel.textProperty().bind(javafx.beans.binding.Bindings.createStringBinding(
+                () -> java.text.MessageFormat.format(com.triplify.ui.i18n.I18n.t("map.cluster.title"), cluster.count()),
+                com.triplify.ui.i18n.I18n.bundleProperty()
+        ));
         itemsContainer.getChildren().clear();
         loadMoreButton.setVisible(false);
         loadMoreButton.setManaged(false);

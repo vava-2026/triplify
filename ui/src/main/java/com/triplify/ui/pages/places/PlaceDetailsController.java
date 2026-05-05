@@ -55,6 +55,8 @@ import com.triplify.ui.shared.util.Localization;
 
 import static com.triplify.ui.shared.util.DisplayUtils.*;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.WeakChangeListener;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -69,6 +71,7 @@ import rahulstech.jfx.routing.element.RouterArgument;
 import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
 
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.UUID;
 
 public class PlaceDetailsController extends SimpleLifecycleAwareController {
@@ -94,6 +97,8 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
     @FXML private CardGridPane<TripResponse> tripsGrid;
     @FXML private CardGridPane<RouteResponse> routesGrid;
     @FXML private CardGridPane<StoryResponse> storiesGrid;
+
+    @FXML private Label heroStatusLabel;
 
     @FXML private HBox countryRow;
     @FXML private ImageView countryEmojiView;
@@ -132,6 +137,10 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
     private ImageFormModalView imageFormModal;
     private ImageViewModalView imageViewModal;
 
+    private final ChangeListener<ResourceBundle> i18nBundleListener = (obs, oldBundle, newBundle) -> bindChangeStatus();
+    private final WeakChangeListener<ResourceBundle> weakI18nBundleListener = new WeakChangeListener<>(i18nBundleListener);
+
+
     @FXML
     public void initialize() {
         FontIcon icon = new FontIcon("fth-chevron-left");
@@ -159,6 +168,8 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         placeMap.setControlsVisible(false);
         actionButtonsView.configurePrimary(fxmlLoader, Localization.textBinding("place.details.action.edit"), "fth-edit-3", this::onEditPlace);
         actionButtonsView.configureDelete(fxmlLoader, Localization.textBinding("place.details.action.delete"), "fth-trash-2", Localization.textBinding("place.details.action.delete.confirm"), this::onDeletePlace);
+
+        I18n.bundleProperty().addListener(weakI18nBundleListener);
 
         setupAssociatedGrids();
         initializeTripContext();
@@ -319,6 +330,7 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
             Image image = EditorUtils.loadImage(coverUrl, DEFAULT_IMAGE, PlaceDetailsController.class);
             EditorUtils.setCoverPreviewImage(heroImageView, heroContainer, image);
         }
+        bindChangeStatus();
 
         placeTitleLabel.setText(place.title());
         descriptionValueLabel.setText(EditorUtils.safeText(place.description(), I18n.t("place.details.empty.description")));
@@ -330,10 +342,7 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
 
         UUID placeUuid = place.id();
 
-        tripsGrid.setCardFactory(trip -> {
-            String dateRange = formatDateRange(toLocalDate(trip.startedAt()), toLocalDate(trip.endedAt()));
-            return (Region) TripCardView.create(trip, dateRange, () -> openTrip(trip)).getRoot();
-        });
+        tripsGrid.setCardFactory(trip -> TripCardView.create(trip, () -> openTrip(trip)).getRoot());
         tripsGrid.setPageLoader((page, size) -> {
             var r = placeService.getPlaceTrips(new GetPlaceTripsRequest(placeUuid, new PageRequest(page - 1, size)));
             if (r.isFailure()) return new CardGridPane.PageResult<>(List.of(), null);
@@ -438,6 +447,7 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         Result<TripPlaceResponse> result = tripPlaceService.updateTripPlaceStatus(new UpdateTripPlaceStatusRequest(currentTripPlace.id(), status));
         result.onSuccess(updated -> {
             currentTripPlace = updated;
+            bindChangeStatus();
             toast.success(I18n.t("tripplace.context.status.updated"));
         });
         result.onFailure(error -> errorHandler.handle(error));
@@ -511,5 +521,11 @@ public class PlaceDetailsController extends SimpleLifecycleAwareController {
         RouterArgument args = new RouterArgument();
         args.addArgument("storyId", story.id().toString());
         getRouter().moveto(RouteIds.STORY_DETAILS, args);
+    }
+
+    private void bindChangeStatus(){
+        if (heroStatusLabel != null && currentTripPlace != null) {
+            DisplayUtils.applyStatus(heroStatusLabel, currentTripPlace.status());
+        }
     }
 }

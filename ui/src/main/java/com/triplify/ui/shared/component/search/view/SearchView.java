@@ -104,7 +104,6 @@ public class SearchView<T> extends VBox {
             }
         });
 
-        searchField.setFocusTraversable(false);
         sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene != null) {
                 newScene.addEventFilter(MouseEvent.MOUSE_PRESSED, outsideClickFilter);
@@ -174,6 +173,12 @@ public class SearchView<T> extends VBox {
 
     private void update(Search<T> model) {
         this.model = model;
+
+        searchBox.setOnMouseClicked(e -> {
+            if (!searchField.isFocused()) {
+                searchField.requestFocus();
+            }
+        });
 
         searchField.promptTextProperty().bind(model.getPlaceholder());
         noResultsLabel.textProperty().bind(model.getNoResult());

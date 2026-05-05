@@ -847,6 +847,7 @@ public class AddTripController extends WindowedPageController {
         for (PlaceItem item : placeItems) {
             itemsById.putIfAbsent(item.id(), item);
         }
+
         for (RouteItem route : routeItems) {
             for (PlaceItem item : route.derivedPlaces()) {
                 itemsById.putIfAbsent(item.id(), item);

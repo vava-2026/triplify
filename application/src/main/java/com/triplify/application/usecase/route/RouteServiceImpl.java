@@ -226,7 +226,7 @@ public class RouteServiceImpl implements RouteService {
             }
         }
         List<RoutePlace> updatedRoutePlaces = routePlaceRepository.findByRouteId(request.id());
-        double previousLength = route.getLength();
+        double previousLength = route.getLength()==null?0:route.getLength();
         route.updateLength(calculateLength(updatedRoutePlaces));
         routeRepository.update(route);
         long kmDelta = Math.round(route.getLength() - previousLength);
