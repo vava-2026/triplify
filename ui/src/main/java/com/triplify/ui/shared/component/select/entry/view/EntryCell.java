@@ -1,0 +1,32 @@
+package com.triplify.ui.shared.component.select.entry.view;
+
+import com.triplify.ui.shared.component.select.entry.model.Entry;
+import javafx.scene.control.ListCell;
+
+public class EntryCell<T> extends ListCell<Entry<T>> {
+
+    private final EntryView<T> entryView = new EntryView<>();
+
+    public EntryCell() {
+        setText(null);
+        setPadding(javafx.geometry.Insets.EMPTY);
+        entryView.setMaxWidth(Double.MAX_VALUE);
+        entryView.setMaxHeight(Double.MAX_VALUE);
+    }
+
+    @Override
+    protected void updateItem(Entry<T> entry, boolean empty) {
+        super.updateItem(entry, empty);
+
+        setText(null);
+
+        if (empty || entry == null) {
+            entryView.update(null);
+            setGraphic(null);
+        }
+        else {
+            entryView.update(entry);
+            setGraphic(entryView);
+        }
+    }
+}

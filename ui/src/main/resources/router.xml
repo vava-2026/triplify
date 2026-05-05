@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<router xmlns="https://github.com/rahulstech/javafx-routing"
+        home="start">
+
+    <arguments id="addTripArgs">
+        <argument name="tripId" type="string" required="false"/>
+    </arguments>
+
+    <arguments id="addPlaceArgs">
+        <argument name="tripId" type="string" required="true"/>
+        <argument name="tripName" type="string" required="true"/>
+        <argument name="placeId" type="string" required="false"/>
+        <argument name="editorReturnTarget" type="string" required="false"/>
+    </arguments>
+
+    <arguments id="addRouteArgs">
+        <argument name="tripId" type="string" required="true"/>
+        <argument name="tripName" type="string" required="true"/>
+        <argument name="routeId" type="string" required="false"/>
+        <argument name="editorReturnTarget" type="string" required="false"/>
+    </arguments>
+
+    <arguments id="placeDetailsArgs">
+        <argument name="placeId" type="string" required="false"/>
+        <argument name="tripPlaceId" type="string" required="false"/>
+    </arguments>
+
+    <arguments id="routeDetailsArgs">
+        <argument name="routeId" type="string" required="false"/>
+        <argument name="tripRouteId" type="string" required="false"/>
+    </arguments>
+
+    <arguments id="tripDetailsArgs">
+        <argument name="tripId" type="string" required="true"/>
+    </arguments>
+
+    <arguments id="addStoryArgs">
+        <argument name="tripId" type="string" required="false"/>
+        <argument name="tripRouteId" type="string" required="false"/>
+        <argument name="tripPlaceId" type="string" required="false"/>
+        <argument name="storyId" type="string" required="false"/>
+        <argument name="editorReturnTarget" type="string" required="false"/>
+    </arguments>
+
+    <arguments id="storyDetailsArgs">
+        <argument name="storyId" type="string" required="true"/>
+    </arguments>
+
+    <destination id="start"
+                 fxml="com/triplify/ui/pages/start/StartPageView.fxml"
+                 singleTop="true"/>
+
+    <destination id="login"
+                 fxml="com/triplify/ui/pages/login/LoginView.fxml"
+                 singleTop="true"/>
+
+    <destination id="sign_up"
+                 fxml="com/triplify/ui/pages/login/SignUpView.fxml"
+                 singleTop="true"/>
+
+    <destination id="map"
+                 fxml="com/triplify/ui/pages/map/MapView.fxml"
+                 singleTop="true"/>
+
+    <destination id="my_places"
+                 fxml="com/triplify/ui/pages/places/MyPlacesView.fxml"
+                 singleTop="true"/>
+
+    <destination id="my_routes"
+                 fxml="com/triplify/ui/pages/routes/MyRoutesView.fxml"
+                 singleTop="true"/>
+
+    <destination id="my_trips"
+                 fxml="com/triplify/ui/pages/trips/MyTripsView.fxml"
+                 singleTop="true"/>
+
+    <destination id="my_images"
+                 fxml="com/triplify/ui/pages/images/MyImagesView.fxml"
+                 singleTop="true"/>
+
+    <destination id="trip_details"
+                 fxml="com/triplify/ui/pages/trips/TripDetailsView.fxml"
+                 arguments="tripDetailsArgs"
+                 singleTop="true"/>
+    <destination id="add_trip"
+                 fxml="com/triplify/ui/pages/trips/AddTripView.fxml"
+                 arguments="addTripArgs"
+                 singleTop="true"/>
+
+    <destination id="add_place"
+                 fxml="com/triplify/ui/pages/places/AddPlaceView.fxml"
+                 arguments="addPlaceArgs"
+                 singleTop="true"/>
+
+    <destination id="place_details"
+                 fxml="com/triplify/ui/pages/places/PlaceDetailsView.fxml"
+                 arguments="placeDetailsArgs"
+                 singleTop="true"/>
+
+    <destination id="add_route"
+                 fxml="com/triplify/ui/pages/routes/AddRouteView.fxml"
+                 arguments="addRouteArgs"
+                 singleTop="true"/>
+
+    <destination id="route_details"
+                 fxml="com/triplify/ui/pages/routes/RouteDetailsView.fxml"
+                 arguments="routeDetailsArgs"
+                 singleTop="true"/>
+
+    <destination id="add_story"
+                 fxml="com/triplify/ui/pages/stories/AddStoryView.fxml"
+                 arguments="addStoryArgs"
+                 singleTop="true"/>
+
+    <destination id="story_details"
+                 fxml="com/triplify/ui/pages/stories/StoryDetailsView.fxml"
+                 arguments="storyDetailsArgs"
+                 singleTop="true"/>
+
+    <destination id="calendar"
+                 fxml="com/triplify/ui/pages/calendar/CalendarView.fxml"
+                 singleTop="true"/>
+
+    <destination id="admin_dashboard"
+                 fxml="com/triplify/ui/pages/placeholder/PlaceholderPageView.fxml"
+                 singleTop="true"/>
+
+    <destination id="countries"
+                 fxml="com/triplify/ui/pages/countries/CountriesConfigurationView.fxml"
+                 singleTop="true"/>
+
+    <destination id="categories"
+                 fxml="com/triplify/ui/pages/categories/CategoriesConfigurationView.fxml"
+                 singleTop="true"/>
+
+    <destination id="emotions"
+                 fxml="com/triplify/ui/pages/emotions/EmotionsConfigurationView.fxml"
+                 singleTop="true"/>
+
+    <destination id="badge_groups"
+                 fxml="com/triplify/ui/pages/placeholder/PlaceholderPageView.fxml"
+                 singleTop="true"/>
+
+    <destination id="badges"
+                 fxml="com/triplify/ui/pages/badges/BadgesConfigurationView.fxml"
+                 singleTop="true"/>
+
+    <destination id="settings"
+                 fxml="com/triplify/ui/pages/settings/SettingsView.fxml"
+                 singleTop="true"/>
+
+    <destination id="account"
+                 fxml="com/triplify/ui/pages/account/AccountView.fxml"
+                 singleTop="true"/>
+
+    <destination id="license-expired"
+                 fxml="com/triplify/ui/pages/license/LicenseExpiredView.fxml"
+                 singleTop="true"/>
+</router>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.triplify.ui.shared.header.view.HeaderView"
+           fx:id="headerRoot"
+           styleClass="header-root"
+           stylesheets="@../css/header.css"
+           prefHeight="70"
+           minHeight="70"
+           maxHeight="70">
+
+       <BorderPane styleClass="header-hbox" StackPane.alignment="CENTER">
+              <left>
+                     <Label fx:id="pageTitle"
+                               styleClass="header-title"
+                               BorderPane.alignment="CENTER_LEFT" />
+              </left>
+
+              <center>
+                     <StackPane fx:id="searchContainer"
+                                      styleClass="header-search-container"
+                                      BorderPane.alignment="CENTER" />
+              </center>
+
+              <right>
+                     <fx:include fx:id="languageIsland" source="LanguageIsland.fxml" BorderPane.alignment="CENTER_RIGHT" />
+              </right>
+       </BorderPane>
+
+</StackPane>
+
+

@@ -1,0 +1,368 @@
+.app-btn {
+    -fx-font-family: -font-family-base;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-cursor: hand;
+    -fx-padding: 0 20 0 20;
+    -fx-min-height: 40;
+    -fx-pref-height: 40;
+    -fx-alignment: CENTER;
+    -fx-text-alignment: CENTER;
+    -fx-content-display: LEFT;
+    -fx-graphic-text-gap: 6;
+}
+
+.app-btn-size-small {
+    -fx-font-size: 13px;
+    -fx-padding: 0 16 0 16;
+    -fx-min-height: 34;
+    -fx-pref-height: 34;
+}
+
+.app-btn-size-middle {
+    -fx-font-size: 14px;
+    -fx-padding: 0 20 0 20;
+    -fx-min-height: 40;
+    -fx-pref-height: 40;
+}
+
+.app-btn-size-big {
+    -fx-font-size: 16px;
+    -fx-padding: 0 20 0 20;
+    -fx-min-height: 52;
+    -fx-pref-height: 52;
+}
+
+.app-btn:disabled {
+    -fx-opacity: 0.45;
+    -fx-cursor:  default;
+}
+
+.app-btn-primary {
+    -fx-background-color: -color-primary;
+    -fx-border-color: transparent;
+    -fx-text-fill: -color-on-primary;
+}
+
+.app-btn-primary .app-btn-icon {
+    -fx-icon-color: -color-on-primary;
+}
+
+.app-btn-primary:hover {
+    -fx-background-color: -color-primary-hover;
+}
+
+.app-btn-secondary {
+    -fx-background-color: transparent;
+    -fx-border-color: -color-primary;
+    -fx-border-width: 2;
+    -fx-text-fill: -color-primary-dark;
+}
+
+.app-btn-secondary .app-btn-icon {
+    -fx-icon-color: -color-primary-dark;
+}
+
+.app-btn-secondary:hover {
+    -fx-background-color: -color-primary;
+    -fx-border-color: -color-primary;
+    -fx-text-fill: -color-on-primary;
+}
+
+.app-btn-secondary:hover .app-btn-icon {
+    -fx-icon-color: -color-on-primary;
+}
+
+.app-btn-secondary:pressed {
+    -fx-background-color: -color-primary-pressed;
+    -fx-border-color: -color-primary-pressed;
+    -fx-text-fill: -color-on-primary;
+}
+
+.app-btn-danger {
+    -fx-background-color: -color-danger;
+    -fx-border-color: transparent;
+    -fx-text-fill: white;
+}
+
+.app-btn-danger .app-btn-icon {
+    -fx-icon-color: white;
+}
+
+.app-btn-danger:hover {
+    -fx-background-color: -color-danger-hover;
+}
+
+.app-btn-danger:pressed {
+    -fx-background-color: -color-danger-pressed;
+}
+
+.app-btn-danger-outline {
+    -fx-background-color: transparent;
+    -fx-border-color: #e43f3f;
+    -fx-border-width: 1.5;
+    -fx-text-fill: #e43f3f;
+}
+
+.app-btn-danger-outline .app-btn-icon {
+    -fx-icon-color: #e43f3f;
+}
+
+.app-btn-danger-outline:hover {
+    -fx-background-color: #e43f3f;
+    -fx-border-color: #e43f3f;
+    -fx-text-fill: white;
+}
+
+.app-btn-danger-outline:hover .app-btn-icon {
+    -fx-icon-color: white;
+}
+
+.app-btn-danger-outline:pressed {
+    -fx-background-color: #c83535;
+    -fx-border-color: #c83535;
+    -fx-text-fill: white;
+}
+
+.app-btn-danger-outline:pressed .app-btn-icon {
+    -fx-icon-color: white;
+}
+
+.app-btn-ghost {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: -color-primary-dark;
+}
+
+.app-btn-ghost .app-btn-icon {
+    -fx-icon-color: -color-primary-dark;
+}
+
+.app-btn-ghost:hover {
+    -fx-background-color: -color-surface-tint;
+}
+
+.app-btn-ghost:pressed {
+    -fx-background-color: -color-primary-light;
+}
+
+.app-btn-white {
+    -fx-background-color: -color-btn-white-bg;
+    -fx-border-color: transparent;
+    -fx-text-fill: -color-btn-white-text;
+}
+
+.app-btn-white .app-btn-icon {
+    -fx-icon-color: -color-btn-white-text;
+}
+
+.app-btn-white:hover {
+    -fx-background-color: -color-btn-white-hover;
+}
+
+.app-btn-white:pressed {
+    -fx-background-color: -color-btn-white-pressed;
+}
+
+.app-btn-white-muted {
+    -fx-background-color: -color-btn-white-muted-bg;
+    -fx-border-color: transparent;
+    -fx-text-fill: -color-btn-white-text;
+}
+
+.app-btn-white-muted .app-btn-icon {
+    -fx-icon-color: -color-btn-white-text;
+}
+
+.app-btn-white-muted:hover {
+    -fx-background-color: -color-btn-white-muted-hover;
+}
+
+.app-btn-white-muted:pressed {
+    -fx-background-color: -color-btn-white-muted-pressed;
+}
+
+.app-btn-tint {
+    -fx-background-color: -color-primary-light;
+    -fx-border-color: transparent;
+    -fx-text-fill: -color-primary-dark;
+}
+
+.app-btn-tint .app-btn-icon {
+    -fx-icon-color: -color-primary-dark;
+}
+
+.app-btn-tint:hover {
+    -fx-background-color: #e3eef7;
+}
+
+.app-btn-tint:hover .app-btn-icon {
+    -fx-icon-color: -color-primary-dark;
+}
+
+.app-btn-tint:pressed {
+    -fx-background-color: #d7e8f2;
+}
+
+.app-btn-dashed-tint {
+    -fx-background-color: -color-primary-light;
+    -fx-border-color: #7aa5c9;
+    -fx-border-width: 1.4;
+    -fx-border-style: segments(7, 5);
+    -fx-text-fill: -color-primary-dark;
+}
+
+.app-btn-dashed-tint .app-btn-icon {
+    -fx-icon-color: -color-primary-dark;
+}
+
+.app-btn-dashed-tint:hover {
+    -fx-background-color: #e5eff8;
+    -fx-border-color: #6796bf;
+}
+
+.app-btn-dashed-tint:hover .app-btn-icon {
+    -fx-icon-color: -color-primary-dark;
+}
+
+.app-btn-dashed-tint:pressed {
+    -fx-background-color: #dce9f4;
+    -fx-border-color: #5e89af;
+}
+
+.app-btn-spinner {
+    -fx-progress-color: -color-on-primary;
+    -fx-pref-width: 18;
+    -fx-pref-height: 18;
+    -fx-max-width: 18;
+    -fx-max-height: 18;
+    -fx-min-width: 18;
+    -fx-min-height: 18;
+}
+
+.app-btn-secondary .app-btn-spinner,
+.app-btn-ghost     .app-btn-spinner,
+.app-btn-white     .app-btn-spinner,
+.app-btn-white-muted .app-btn-spinner,
+.app-btn-tint      .app-btn-spinner,
+.app-btn-dashed-tint .app-btn-spinner {
+    -fx-progress-color: -color-primary;
+}
+
+.app-btn-danger .app-btn-spinner {
+    -fx-progress-color: white;
+}
+
+.app-btn-login {
+    -fx-background-color: -color-login;
+    -fx-text-fill: -color-on-login;
+    -fx-min-width: 150;
+    -fx-pref-width: 150;
+    -fx-min-height: 52;
+    -fx-pref-height: 52;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.app-btn-login:hover {
+    -fx-background-color: -color-login-hover;
+}
+
+.app-btn-sign-up {
+    -fx-background-color: -color-sign-up;
+    -fx-text-fill: -color-on-sign-up;
+    -fx-min-width: 150;
+    -fx-pref-width: 150;
+    -fx-min-height: 52;
+    -fx-pref-height: 52;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.app-btn-sign-up:hover {
+    -fx-background-color: -color-sign-up-hover;
+}
+
+.app-btn-pro {
+    -fx-background-color: -color-pro;
+    -fx-text-fill: -color-on-pro;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-padding: 0 10 0 10;
+    -fx-min-height: 25;
+    -fx-pref-height: 25;
+    -fx-max-height: 25;
+    -fx-alignment: center;
+}
+
+.app-btn-pro:hover {
+    -fx-background-color: -color-pro-hover;
+}
+
+.app-btn-user {
+    -fx-background-color: transparent;
+    -fx-border-color: -color-primary;
+    -fx-border-width: 2;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-text-fill: -color-ink;
+    -fx-min-width: 200;
+    -fx-pref-width: 200;
+    -fx-min-height: 45;
+    -fx-pref-height: 45;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.app-btn-user:hover {
+    -fx-background-color: -color-primary;
+    -fx-border-color: -color-primary;
+    -fx-text-fill: -color-on-primary;
+}
+
+.app-btn-user:pressed {
+    -fx-background-color: -color-primary-hover;
+    -fx-border-color: -color-primary-hover;
+    -fx-text-fill: -color-on-primary;
+}
+
+.app-btn-user .app-btn-icon {
+    -fx-icon-color: -color-ink;
+}
+
+.app-btn-user:hover .app-btn-icon,
+.app-btn-user:pressed .app-btn-icon {
+    -fx-icon-color: -color-on-primary;
+}
+
+.app-btn-user .app-btn-spinner {
+    -fx-progress-color: -color-primary;
+}
+
+.app-btn-user:hover .app-btn-spinner,
+.app-btn-user:pressed .app-btn-spinner {
+    -fx-progress-color: -color-on-primary;
+}
+
+.confirm-dialog-root {
+    -fx-background-color: -color-overlay-modal;
+}
+
+.confirm-dialog-backdrop {
+    -fx-background-color: transparent;
+}
+
+.confirm-dialog-card {
+    -fx-background-color: -color-surface;
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-effect: dropshadow(gaussian, -color-shadow-modal, 28, 0, 0, 8);
+}
+
+.confirm-dialog-message {
+    -fx-font-family: -font-family-base;
+    -fx-font-size: 15px;
+    -fx-text-fill: -color-ink;
+}

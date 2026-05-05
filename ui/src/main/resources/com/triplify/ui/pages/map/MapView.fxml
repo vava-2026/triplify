@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.triplify.ui.pages.map.MapController"
+           styleClass="map-page-root">
+    <stylesheets>
+        <String fx:value="/com/triplify/ui/pages/map/map.css"/>
+    </stylesheets>
+
+    <StackPane fx:id="mapContainer" styleClass="map-container"/>
+
+    <HBox fx:id="filterToolbar"
+          styleClass="map-filter-toolbar"
+          maxWidth="-Infinity"
+          maxHeight="-Infinity"
+          pickOnBounds="false"
+          StackPane.alignment="BOTTOM_LEFT">
+        <StackPane.margin>
+            <Insets bottom="24" left="24" right="24"/>
+        </StackPane.margin>
+    </HBox>
+
+    <VBox fx:id="mapControls"
+          styleClass="map-controls-container"
+          spacing="8"
+          maxWidth="-Infinity"
+          maxHeight="-Infinity"
+          pickOnBounds="false"
+          StackPane.alignment="BOTTOM_RIGHT">
+        <StackPane.margin>
+            <Insets bottom="24" right="24"/>
+        </StackPane.margin>
+        <Button fx:id="zoomInButton" onAction="#onZoomIn" styleClass="map-control-button">
+            <graphic>
+                <org.kordamp.ikonli.javafx.FontIcon iconLiteral="fth-plus"/>
+            </graphic>
+        </Button>
+        <Button fx:id="zoomOutButton" onAction="#onZoomOut" styleClass="map-control-button">
+            <graphic>
+                <org.kordamp.ikonli.javafx.FontIcon iconLiteral="fth-minus"/>
+            </graphic>
+        </Button>
+        <Button fx:id="centerMapButton" onAction="#onCenterMap" styleClass="map-control-button">
+            <graphic>
+                <org.kordamp.ikonli.javafx.FontIcon iconLiteral="fth-crosshair"/>
+            </graphic>
+        </Button>
+    </VBox>
+
+    <StackPane fx:id="clusterPopupContainer"
+               pickOnBounds="false"
+               StackPane.alignment="CENTER_RIGHT"/>
+
+    <HBox fx:id="searchContainer"
+          styleClass="map-search-container"
+          pickOnBounds="false"
+          StackPane.alignment="TOP_CENTER">
+        <StackPane.margin>
+            <Insets top="14"/>
+        </StackPane.margin>
+    </HBox>
+
+</StackPane>

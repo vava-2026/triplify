@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<StackPane fx:id="root"
+           xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           styleClass="image-modal-root">
+    <Region styleClass="image-modal-backdrop" maxWidth="Infinity" maxHeight="Infinity"/>
+
+    <StackPane maxWidth="600" maxHeight="700">
+        <VBox styleClass="image-modal-card">
+        <padding>
+            <Insets top="50" right="24" bottom="20" left="24"/>
+        </padding>
+        <ScrollPane fx:id="card" styleClass="card-grid-scroll" prefHeight="700" vbarPolicy="ALWAYS" hbarPolicy="NEVER">
+            <VBox spacing="8">
+                <ImageView fx:id="imageView" fitWidth="600" preserveRatio="true"/>
+                <Label fx:id="descriptionLabel" styleClass="image-modal-description"
+                       maxWidth="Infinity" wrapText="true"/>
+                <HBox fx:id="deleteButtonContainer"/>
+            </VBox>
+        </ScrollPane>
+        </VBox>
+
+        <Button fx:id="closeButton" styleClass="window-close-btn" focusTraversable="false"
+                StackPane.alignment="TOP_RIGHT">
+            <graphic>
+                <FontIcon iconLiteral="fth-x" iconSize="20" styleClass="window-close-icon"/>
+            </graphic>
+            <StackPane.margin>
+                <Insets top="20" right="20"/>
+            </StackPane.margin>
+        </Button>
+    </StackPane>
+</StackPane>

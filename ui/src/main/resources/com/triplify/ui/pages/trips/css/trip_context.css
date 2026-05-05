@@ -1,0 +1,23 @@
+.trip-context-section {
+    -fx-padding: 0;
+}
+
+.trip-context-card {
+    -fx-padding: 16px 20px;
+}
+
+.trip-context-header {
+    -fx-alignment: center-left;
+}
+
+.trip-context-icon {
+    -fx-icon-size: 18px;
+    -fx-fill: -color-ink-muted;
+    -fx-icon-color: -color-ink-muted;
+}
+
+.trip-context-trip-name {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-ink;
+}

@@ -1,0 +1,211 @@
+.calendar-root {
+    -fx-background-color: -color-bg;
+}
+
+.calendar-header {
+    -fx-padding: 12 16 0 16;
+    -fx-spacing: 0;
+}
+
+.calendar-nav-bar {
+    -fx-padding: 4 0 10 0;
+    -fx-spacing: 8;
+    -fx-alignment: center-left;
+}
+
+.month-year-label {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-primary-dark;
+    -fx-alignment: center;
+}
+
+.nav-btn {
+    -fx-background-color: -color-surface;
+    -fx-background-radius: 6;
+    -fx-border-color: -color-border-muted;
+    -fx-border-radius: 6;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-primary;
+    -fx-cursor: hand;
+    -fx-min-width: 32;
+    -fx-min-height: 32;
+    -fx-pref-width: 32;
+    -fx-pref-height: 32;
+    -fx-padding: 0;
+}
+
+.nav-btn:hover {
+    -fx-background-color: -color-surface-tint;
+}
+
+.nav-btn:pressed {
+    -fx-background-color: -color-surface-dark;
+}
+
+.day-header-cell {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #8a97a4;
+    -fx-alignment: center;
+    -fx-padding: 6 4;
+    -fx-text-transform: uppercase;
+}
+
+.calendar-scroll {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.calendar-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.calendar-grid {
+    -fx-background-color: -color-surface;
+    -fx-border-color: -color-border-muted;
+    -fx-border-width: 1 0 0 1;
+}
+
+.calendar-cell {
+    -fx-background-color: -color-surface;
+    -fx-border-color: -color-border-muted;
+    -fx-border-width: 0 1 1 0;
+    -fx-padding: 4 4 4 4;
+    -fx-min-height: 84;
+    -fx-spacing: 2;
+}
+
+.calendar-cell-today {
+    -fx-background-color: -color-primary-light;
+}
+
+.calendar-cell-filler {
+    -fx-background-color: -color-bg;
+    -fx-border-color: -color-border-muted;
+    -fx-border-width: 0 1 1 0;
+    -fx-min-height: 84;
+}
+
+.day-number {
+    -fx-font-size: 11px;
+    -fx-text-fill: #8a97a4;
+    -fx-alignment: center-right;
+    -fx-max-width: Infinity;
+    -fx-padding: 0 2 2 0;
+}
+
+.calendar-cell-today > .day-number {
+    -fx-text-fill: -color-primary;
+    -fx-font-weight: bold;
+}
+
+.trip-chip {
+    -fx-padding: 2 6 2 6;
+    -fx-background-radius: 4;
+    -fx-cursor: hand;
+    -fx-max-width: Infinity;
+}
+
+.trip-chip-span {
+    -fx-background-radius: 4;
+    -fx-min-width: 10;
+    -fx-min-height: 20;
+}
+
+.trip-chip-point {
+    -fx-background-radius: 10;
+    -fx-min-width: 12;
+    -fx-min-height: 12;
+    -fx-max-width: 12;
+    -fx-max-height: 12;
+    -fx-padding: 0;
+}
+
+.trip-chip-label {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-max-width: Infinity;
+}
+
+.trip-chip.app-theme-red-dark { -fx-background-color: -color-theme-red-dark-bg; }
+.trip-chip.app-theme-red { -fx-background-color: -color-theme-red-bg; }
+.trip-chip.app-theme-rose { -fx-background-color: -color-theme-rose-bg; }
+.trip-chip.app-theme-orange { -fx-background-color: -color-theme-orange-bg; }
+.trip-chip.app-theme-amber { -fx-background-color: -color-theme-amber-bg; }
+.trip-chip.app-theme-yellow { -fx-background-color: -color-theme-yellow-bg; }
+.trip-chip.app-theme-golden-brown { -fx-background-color: -color-theme-golden-brown-bg; }
+.trip-chip.app-theme-lime { -fx-background-color: -color-theme-lime-bg; }
+.trip-chip.app-theme-indigo { -fx-background-color: -color-theme-indigo-bg; }
+.trip-chip.app-theme-violet { -fx-background-color: -color-theme-violet-bg; }
+.trip-chip.app-theme-steel-blue { -fx-background-color: -color-theme-steel-blue-bg; }
+.trip-chip.app-theme-blue { -fx-background-color: -color-theme-blue-bg; }
+.trip-chip.app-theme-cyan { -fx-background-color: -color-theme-cyan-bg; }
+.trip-chip.app-theme-green { -fx-background-color: -color-theme-green-bg; }
+.trip-chip.app-theme-teal { -fx-background-color: -color-theme-teal-bg; }
+.trip-chip.app-theme-sage { -fx-background-color: -color-theme-sage-bg; }
+.trip-chip.app-theme-brown { -fx-background-color: -color-theme-brown-bg; }
+.trip-chip.app-theme-gray { -fx-background-color: -color-theme-gray-bg; }
+.trip-chip.app-theme-purple { -fx-background-color: -color-theme-violet-bg; }
+.trip-chip.app-theme-pink { -fx-background-color: -color-theme-rose-bg; }
+
+.trip-chip.app-theme-red-dark > .trip-chip-label { -fx-text-fill: -color-theme-red-dark-fg; }
+.trip-chip.app-theme-red > .trip-chip-label { -fx-text-fill: -color-theme-red-fg; }
+.trip-chip.app-theme-rose > .trip-chip-label { -fx-text-fill: -color-theme-rose-fg; }
+.trip-chip.app-theme-orange > .trip-chip-label { -fx-text-fill: -color-theme-orange-fg; }
+.trip-chip.app-theme-amber > .trip-chip-label { -fx-text-fill: -color-theme-amber-fg; }
+.trip-chip.app-theme-yellow > .trip-chip-label { -fx-text-fill: -color-theme-yellow-fg; }
+.trip-chip.app-theme-golden-brown > .trip-chip-label { -fx-text-fill: -color-theme-golden-brown-fg; }
+.trip-chip.app-theme-lime > .trip-chip-label { -fx-text-fill: -color-theme-lime-fg; }
+.trip-chip.app-theme-indigo > .trip-chip-label { -fx-text-fill: -color-theme-indigo-fg; }
+.trip-chip.app-theme-violet > .trip-chip-label { -fx-text-fill: -color-theme-violet-fg; }
+.trip-chip.app-theme-steel-blue > .trip-chip-label { -fx-text-fill: -color-theme-steel-blue-fg; }
+.trip-chip.app-theme-blue > .trip-chip-label { -fx-text-fill: -color-theme-blue-fg; }
+.trip-chip.app-theme-cyan > .trip-chip-label { -fx-text-fill: -color-theme-cyan-fg; }
+.trip-chip.app-theme-green > .trip-chip-label { -fx-text-fill: -color-theme-green-fg; }
+.trip-chip.app-theme-teal > .trip-chip-label { -fx-text-fill: -color-theme-teal-fg; }
+.trip-chip.app-theme-sage > .trip-chip-label { -fx-text-fill: -color-theme-sage-fg; }
+.trip-chip.app-theme-brown > .trip-chip-label { -fx-text-fill: -color-theme-brown-fg; }
+.trip-chip.app-theme-gray > .trip-chip-label { -fx-text-fill: -color-theme-gray-fg; }
+.trip-chip.app-theme-purple > .trip-chip-label { -fx-text-fill: -color-theme-violet-fg; }
+.trip-chip.app-theme-pink > .trip-chip-label { -fx-text-fill: -color-theme-rose-fg; }
+
+.trip-chip-selected {
+    -fx-effect: dropshadow(gaussian, rgba(47, 102, 144, 0.35), 6, 0, 0, 0);
+    -fx-border-color: -color-primary;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 4;
+}
+
+.calendar-side-panel {
+    -fx-background-color: -color-surface;
+    -fx-border-color: -color-border-muted;
+    -fx-border-width: 0 0 0 1;
+    -fx-padding: 12;
+    -fx-spacing: 10;
+}
+
+.selected-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-primary-dark;
+    -fx-wrap-text: true;
+}
+
+.category-chip {
+    -fx-font-size: 11px;
+    -fx-text-fill: -color-primary;
+    -fx-background-color: -color-primary-light;
+    -fx-background-radius: 12;
+    -fx-padding: 3 10 3 10;
+}
+
+.side-panel-section-label {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #8a97a4;
+    -fx-padding: 4 0 0 0;
+}

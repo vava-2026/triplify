@@ -1,0 +1,118 @@
+.app-select {
+    -fx-background-color: -color-surface;
+    -fx-text-color: -color-primary;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-pref-height: 36;
+    -fx-cursor: hand;
+    -fx-border-width: 1;
+}
+
+.app-select:showing {
+    -fx-background-radius: 6 6 0 0;
+    -fx-border-radius: 6 6 0 0;
+}
+
+.app-select > .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-ink-muted;
+}
+
+.app-select .list-view {
+    -fx-background-color: -color-surface;
+    -fx-background-radius: 0 0 6 6;
+}
+
+.app-select .list-view .list-cell {
+    -fx-padding: 5 10 5 10;
+    -fx-background-color: transparent;
+}
+
+.app-select .list-view .list-cell:hover {
+    -fx-background-color: -color-surface-tint;
+}
+
+
+.select-emoji {
+    -fx-font-family: "Segoe UI Emoji";
+    -fx-font-size: 18;
+}
+
+.select-placeholder {
+    -fx-text-fill: -color-ink-muted;
+}
+
+.app-select-size-small {
+    -fx-font-size: 13px;
+    -fx-pref-height: 28;
+    -fx-min-height: 28;
+}
+
+.app-select-size-middle {
+    -fx-font-size: 14px;
+    -fx-pref-height: 36;
+    -fx-min-height: 36;
+}
+
+.app-select-size-big {
+    -fx-font-size: 16px;
+    -fx-pref-height: 46;
+    -fx-min-height: 46;
+}
+
+.app-select-variant-filled {
+    -fx-background-color: -color-surface;
+    -fx-border-color: transparent;
+    -fx-border-width: 1;
+}
+
+.app-select-variant-outlined {
+    -fx-background-color: -color-on-surface;
+    -fx-border-color: -color-primary;
+    -fx-border-width: 1;
+}
+
+.app-select-variant-ghost {
+    -fx-background-color: -color-primary-light;
+    -fx-border-color: transparent;
+    -fx-border-width: 1;
+}
+
+.app-select-variant-filled:showing {
+    -fx-border-color: -color-surface-tint;
+    -fx-border-width: 0 0 1 0;
+}
+
+.app-select-variant-outlined:showing {
+    -fx-border-color: -color-primary -color-primary -color-surface-tint -color-primary;
+    -fx-border-width: 1;
+}
+
+.app-select-variant-ghost:showing {
+    -fx-border-color: -color-surface-tint;
+    -fx-border-width: 0 0 1 0;
+}
+
+.app-select-variant-outlined .list-view {
+    -fx-border-color: -color-primary;
+    -fx-border-width: 0 1 1 1;
+    -fx-border-radius: 0 0 6 6;
+}
+
+.app-select-variant-ghost .list-view {
+    -fx-background-color: -color-primary-light;
+    -fx-effect: null;
+}
+
+.app-select-variant-ghost .list-view .list-cell:hover {
+    -fx-background-color: -color-surface-dark;
+}
+
+.app-select.app-select-error {
+    -fx-border-color: -color-danger;
+    -fx-border-width: 1.5;
+}
+
+.app-select.app-select-error:showing {
+    -fx-border-color: -color-danger -color-danger -color-surface-tint -color-danger;
+}

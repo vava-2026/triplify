@@ -1,0 +1,316 @@
+.app-tag-picker {
+    -fx-max-width: Infinity;
+}
+
+.app-tag-picker-shell {
+    -fx-alignment: center-left;
+    -fx-spacing: 8px;
+    -fx-min-height: 44px;
+    -fx-background-color: #eef4fb;
+    -fx-background-radius: 12px;
+    -fx-border-color: transparent;
+    -fx-border-radius: 12px;
+    -fx-border-width: 0;
+    -fx-padding: 0 12px 0 14px;
+}
+
+.app-tag-picker-shell-open {
+    -fx-background-color: #eef4fb;
+    -fx-background-radius: 12px;
+    -fx-border-radius: 12px;
+}
+
+.app-tag-picker-input-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+    -fx-padding: 0;
+    -fx-font-size: 14px;
+    -fx-text-fill: -color-primary-dark;
+    -fx-prompt-text-fill: -color-control-prompt;
+}
+
+.app-tag-picker-selected-flow {
+    -fx-hgap: 6px;
+    -fx-vgap: 6px;
+}
+
+.app-tag-picker-toggle {
+    -fx-min-width: 24px;
+    -fx-pref-width: 24px;
+    -fx-max-width: 24px;
+    -fx-min-height: 24px;
+    -fx-pref-height: 24px;
+    -fx-max-height: 24px;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-radius: 8px;
+    -fx-padding: 0;
+}
+
+.app-tag-picker-toggle:hover {
+    -fx-background-color: transparent;
+}
+
+.app-tag-picker-toggle-icon {
+    -fx-icon-color: #8f9eab;
+}
+
+.app-tag-picker-toggle-open .app-tag-picker-toggle-icon {
+    -fx-rotate: 180;
+}
+
+.app-tag-picker-clear {
+    -fx-min-width: 28px;
+    -fx-pref-width: 28px;
+    -fx-max-width: 28px;
+    -fx-min-height: 28px;
+    -fx-pref-height: 28px;
+    -fx-max-height: 28px;
+    -fx-background-color: #a6adb6;
+    -fx-border-color: transparent;
+    -fx-background-radius: 999px;
+    -fx-padding: 0;
+}
+
+.app-tag-picker-clear:hover {
+    -fx-background-color: #979ea8;
+}
+
+.app-tag-picker-clear-icon {
+    -fx-icon-color: white;
+}
+
+.app-tag-picker-popup {
+    -fx-background-color: #eef4fb;
+    -fx-background-radius: 16px;
+    -fx-border-color: transparent;
+    -fx-border-radius: 16px;
+    -fx-padding: 10px 8px 12px 8px;
+    -fx-effect: dropshadow(gaussian, rgba(12, 12, 13, 0.10), 18, 0, 0, 8);
+}
+
+.app-tag-picker-popup-title {
+    -fx-text-fill: #8c97a4;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 0 2px;
+}
+
+.app-tag-picker-popup-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.app-tag-picker-popup-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.app-tag-picker-popup-content {
+    -fx-spacing: 10px;
+}
+
+.app-tag-picker-popup-chip-flow {
+    -fx-hgap: 10px;
+    -fx-vgap: 12px;
+}
+
+.app-tag-picker-popup-scroll .scroll-bar:vertical {
+    -fx-pref-width: 12px;
+    -fx-background-color: transparent;
+}
+
+.app-tag-picker-popup-scroll .scroll-bar:vertical .track {
+    -fx-background-color: rgba(140, 151, 164, 0.20);
+    -fx-background-radius: 999px;
+}
+
+.app-tag-picker-popup-scroll .scroll-bar:vertical .thumb {
+    -fx-background-color: rgba(140, 151, 164, 0.85);
+    -fx-background-radius: 999px;
+}
+
+.app-tag-picker-popup-scroll .scroll-bar:vertical .increment-button,
+.app-tag-picker-popup-scroll .scroll-bar:vertical .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.app-tag-picker-empty-row {
+    -fx-padding: 6px 2px 2px 2px;
+}
+
+.app-tag-picker-empty {
+    -fx-text-fill: -color-control-prompt;
+    -fx-font-size: 12px;
+}
+
+.app-tag-picker-option,
+.app-tag-picker-chip {
+    -fx-background-radius: 999px;
+    -fx-border-radius: 999px;
+    -fx-border-width: 1.4px;
+    -fx-font-size: 12px;
+    -fx-padding: 7px 18px 7px 18px;
+    -fx-cursor: hand;
+    -fx-font-weight: bold;
+}
+
+.app-tag-picker-option {
+    -fx-background-color: rgba(255, 255, 255, 0.55);
+}
+
+.app-tag-picker-option:hover {
+    -fx-background-color: white;
+}
+
+.app-tag-picker-option-selected {
+    -fx-background-color: white;
+    -fx-effect: dropshadow(gaussian, rgba(12, 12, 13, 0.06), 8, 0, 0, 2);
+}
+
+.app-tag-picker-option-new {
+    -fx-border-style: segments(6, 4);
+}
+
+.app-tag-picker-chip-selected {
+    -fx-background-color: white;
+}
+
+.app-tag-picker-chip-color-0 {
+    -fx-border-color: -color-theme-red-dark-fg;
+    -fx-text-fill: -color-theme-red-dark-fg;
+}
+
+.app-tag-picker-chip-color-1 {
+    -fx-border-color: -color-theme-red-fg;
+    -fx-text-fill: -color-theme-red-fg;
+}
+
+.app-tag-picker-chip-color-2 {
+    -fx-border-color: -color-theme-rose-fg;
+    -fx-text-fill: -color-theme-rose-fg;
+}
+
+.app-tag-picker-chip-color-3 {
+    -fx-border-color: -color-theme-orange-fg;
+    -fx-text-fill: -color-theme-orange-fg;
+}
+
+.app-tag-picker-chip-color-4 {
+    -fx-border-color: -color-theme-amber-fg;
+    -fx-text-fill: -color-theme-amber-fg;
+}
+
+.app-tag-picker-chip-color-5 {
+    -fx-border-color: -color-theme-yellow-fg;
+    -fx-text-fill: -color-theme-yellow-fg;
+}
+
+.app-tag-picker-chip-color-6 {
+    -fx-border-color: -color-theme-golden-brown-fg;
+    -fx-text-fill: -color-theme-golden-brown-fg;
+}
+
+.app-tag-picker-chip-color-7 {
+    -fx-border-color: -color-theme-lime-fg;
+    -fx-text-fill: -color-theme-lime-fg;
+}
+
+.app-tag-picker-chip-color-8 {
+    -fx-border-color: -color-theme-green-fg;
+    -fx-text-fill: -color-theme-green-fg;
+}
+
+.app-tag-picker-chip-color-9 {
+    -fx-border-color: -color-theme-indigo-fg;
+    -fx-text-fill: -color-theme-indigo-fg;
+}
+
+.app-tag-picker-chip-color-10 {
+    -fx-border-color: -color-theme-violet-fg;
+    -fx-text-fill: -color-theme-violet-fg;
+}
+
+.app-tag-picker-chip-color-11 {
+    -fx-border-color: -color-theme-steel-blue-fg;
+    -fx-text-fill: -color-theme-steel-blue-fg;
+}
+
+.app-tag-picker-chip-color-12 {
+    -fx-border-color: -color-theme-blue-fg;
+    -fx-text-fill: -color-theme-blue-fg;
+}
+
+.app-tag-picker-chip-color-13 {
+    -fx-border-color: -color-theme-cyan-fg;
+    -fx-text-fill: -color-theme-cyan-fg;
+}
+
+.app-tag-picker-chip-color-14 {
+    -fx-border-color: -color-theme-teal-fg;
+    -fx-text-fill: -color-theme-teal-fg;
+}
+
+.app-tag-picker-chip-color-15 {
+    -fx-border-color: -color-theme-sage-fg;
+    -fx-text-fill: -color-theme-sage-fg;
+}
+
+.app-tag-picker-chip-color-16 {
+    -fx-border-color: -color-theme-brown-fg;
+    -fx-text-fill: -color-theme-brown-fg;
+}
+
+.app-tag-picker-chip-color-17 {
+    -fx-border-color: -color-theme-violet-fg;
+    -fx-text-fill: -color-theme-violet-fg;
+}
+
+.app-tag-picker-chip-color-18 {
+    -fx-border-color: -color-theme-rose-fg;
+    -fx-text-fill: -color-theme-rose-fg;
+}
+
+.app-tag-picker-chip-color-19 {
+    -fx-border-color: -color-theme-gray-fg;
+    -fx-text-fill: -color-theme-gray-fg;
+}
+
+.app-tag-picker-variant-filled .app-tag-picker-shell {
+    -fx-background-color: -color-surface;
+    -fx-border-color: transparent;
+    -fx-border-width: 1px;
+}
+
+.app-tag-picker-variant-filled .app-tag-picker-shell.app-tag-picker-shell-open {
+    -fx-background-color: -color-surface;
+    -fx-border-color: -color-surface-tint;
+    -fx-border-width: 0 0 1 0;
+}
+
+.app-tag-picker-variant-outlined .app-tag-picker-shell {
+    -fx-background-color: -color-on-surface;
+    -fx-border-color: -color-primary;
+    -fx-border-width: 1px;
+}
+
+.app-tag-picker-variant-outlined .app-tag-picker-shell.app-tag-picker-shell-open {
+    -fx-background-color: -color-on-surface;
+    -fx-border-color: -color-primary;
+    -fx-border-width: 1px;
+}
+
+.app-tag-picker-variant-ghost .app-tag-picker-shell {
+    -fx-background-color: -color-primary-light;
+    -fx-border-color: transparent;
+    -fx-border-width: 1px;
+}
+
+.app-tag-picker-variant-ghost .app-tag-picker-shell.app-tag-picker-shell-open {
+    -fx-background-color: -color-primary-light;
+    -fx-border-color: -color-surface-tint;
+    -fx-border-width: 0 0 1 0;
+}

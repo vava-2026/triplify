@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import com.triplify.ui.map.InteractiveMap?>
+<?import com.triplify.ui.shared.component.card_grid.CardGridPane?>
+<?import com.triplify.ui.shared.component.detail_actions.view.DetailActionButtonsView?>
+<?import com.triplify.ui.shared.component.section_header.view.SectionHeaderView?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<?import javafx.scene.image.ImageView?>
+<ScrollPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.triplify.ui.pages.stories.StoryDetailsController"
+            fitToWidth="true"
+            hbarPolicy="NEVER"
+            styleClass="page-scroll">
+    <stylesheets>
+        <String fx:value="/com/triplify/ui/pages/places/add_place.css"/>
+        <String fx:value="/com/triplify/ui/pages/places/place_details.css"/>
+        <String fx:value="/com/triplify/ui/pages/trips/css/trips.css"/>
+        <String fx:value="/com/triplify/ui/pages/images/css/images.css"/>
+    </stylesheets>
+    <StackPane styleClass="page-root,place-details-root">
+        <VBox fx:id="contentContainer" styleClass="place-details-content" spacing="20">
+            <VBox styleClass="page-card,place-details-card" spacing="14">
+                <HBox>
+                    <Button fx:id="backButton" onAction="#onBack"
+                            styleClass="place-details-back-button"/>
+                </HBox>
+                <Label fx:id="storyTitleLabel" styleClass="story-details-page-title" wrapText="true"/>
+                <HBox fx:id="emotionRow" spacing="12" alignment="CENTER_LEFT">
+                    <Label fx:id="storyTimeLabel" styleClass="story-details-time"/>
+                    <HBox spacing="6" alignment="CENTER_LEFT" styleClass="story-emotion-row">
+                        <ImageView fx:id="emotionEmojiView" fitWidth="18" fitHeight="18" preserveRatio="true"
+                                   visible="false" managed="false"/>
+                        <Label fx:id="emotionLabel" styleClass="story-emotion-value"/>
+                    </HBox>
+                </HBox>
+                <FlowPane fx:id="tagsFlow" styleClass="trip-editor-chip-flow" hgap="8" vgap="8"/>
+            </VBox>
+            <FlowPane fx:id="topRowFlow" styleClass="place-details-top-row" prefWrapLength="1000">
+                <VBox styleClass="place-details-main-column" spacing="20">
+                    <VBox styleClass="page-card,place-details-card,place-details-description-card" spacing="12">
+                        <Label fx:id="descriptionTitleLabel" styleClass="place-details-card-title"/>
+                        <Label fx:id="descriptionValueLabel" styleClass="place-details-description" wrapText="true"/>
+                    </VBox>
+
+                    <VBox styleClass="page-card,place-details-card" spacing="12">
+                        <SectionHeaderView fx:id="contextHeader" iconLiteral="fth-link"/>
+                        <VBox fx:id="contextContainer" spacing="8"/>
+                    </VBox>
+                </VBox>
+
+                <VBox styleClass="place-details-side-column" spacing="14">
+                    <VBox fx:id="mapCard" styleClass="page-card,place-details-card,place-details-map-card" spacing="12">
+                        <Label fx:id="mapTitleLabel" styleClass="place-details-card-title"/>
+                        <InteractiveMap fx:id="storyMap"/>
+                    </VBox>
+                    <DetailActionButtonsView fx:id="actionButtonsView"/>
+                </VBox>
+            </FlowPane>
+            <VBox spacing="12">
+                <SectionHeaderView fx:id="imagesHeader" iconLiteral="fth-image"/>
+                <CardGridPane fx:id="imagesGrid"/>
+            </VBox>
+
+        </VBox>
+    </StackPane>
+</ScrollPane>

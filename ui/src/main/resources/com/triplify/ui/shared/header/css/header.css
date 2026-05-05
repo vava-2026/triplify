@@ -1,0 +1,80 @@
+.header-root {
+    -fx-background-color: -color-surface;
+    -fx-pref-height: -height-topbar;
+    -fx-min-height: -height-topbar;
+    -fx-max-height: -height-topbar;
+}
+
+.header-hbox {
+    -fx-padding: 0 35 0 40;
+    -fx-pref-height: -height-topbar;
+    -fx-min-height: -height-topbar;
+    -fx-max-height: -height-topbar;
+}
+
+.header-search-container {
+    -fx-padding: 0 0 0 20;
+}
+
+.header-title {
+    -fx-text-fill: -color-ink;
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+    -fx-font-family: -font-family-base;
+}
+
+.search-icon {
+    -fx-icon-color: -color-ink-muted;
+    -fx-icon-size: 18;
+}
+
+.search-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: -color-ink;
+    -fx-prompt-text-fill: -color-ink-muted;
+    -fx-font-size: 14px;
+    -fx-font-family: -font-family-base;
+    -fx-padding: 0;
+    -fx-max-width: Infinity;
+}
+
+.search-field:focused {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.language-island {
+    -fx-background-color: -color-surface;
+    -fx-background-radius: 8;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-min-width: 74;
+    -fx-pref-width: 74;
+    -fx-max-width: 74;
+    -fx-min-height: 48;
+    -fx-pref-height: 48;
+    -fx-max-height: 48;
+    -fx-padding: 10 15 10 15;
+    -fx-cursor: hand;
+}
+
+.language-island:hover .language-icon {
+    -fx-icon-color: -color-ink;
+}
+
+.language-island:hover .language-label {
+    -fx-text-fill: -color-ink;
+}
+
+.language-icon {
+    -fx-icon-color: -color-primary-dark;
+    -fx-icon-size: 20;
+}
+
+.language-label {
+    -fx-text-fill: -color-primary-dark;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-font-family: -font-family-base;
+}

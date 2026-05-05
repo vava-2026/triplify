@@ -1,0 +1,120 @@
+.editor-section-header {
+    -fx-alignment: center-left;
+    -fx-spacing: 8px;
+}
+
+.editor-section-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-ink;
+}
+
+.editor-section-icon {
+    -fx-icon-color: -color-primary;
+    -fx-opacity: 0.9;
+}
+
+.editor-section-tag {
+    -fx-translate-y: -1;
+}
+
+.editor-upload-area {
+    -fx-min-height: 208px;
+    -fx-pref-height: 208px;
+    -fx-max-height: 208px;
+    -fx-background-color: #eef5fb;
+    -fx-background-radius: 16px;
+    -fx-border-color: #93b7d6;
+    -fx-border-radius: 16px;
+    -fx-border-style: dashed;
+    -fx-cursor: hand;
+}
+
+.editor-upload-area-active {
+    -fx-background-color: #e4f0fa;
+    -fx-border-color: -color-primary;
+}
+
+.editor-upload-placeholder {
+    -fx-alignment: center;
+    -fx-spacing: 8px;
+    -fx-padding: 18px;
+}
+
+.editor-upload-icon {
+    -fx-icon-color: -color-primary-dark;
+}
+
+.editor-upload-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-ink;
+    -fx-text-alignment: center;
+}
+
+.editor-upload-subtitle {
+    -fx-font-size: 12px;
+    -fx-text-fill: #8698a8;
+}
+
+.editor-helper-text {
+    -fx-font-size: 12px;
+    -fx-text-fill: #8698a8;
+}
+
+.editor-cover-preview {
+    -fx-smooth: true;
+}
+
+.editor-media-card {
+    -fx-pref-width: 152px;
+    -fx-background-color: #f8fbfe;
+    -fx-background-radius: 14px;
+    -fx-padding: 10px;
+    -fx-border-color: rgba(47, 102, 144, 0.08);
+    -fx-border-radius: 14px;
+}
+
+.editor-media-preview-shell {
+    -fx-padding: 0;
+}
+
+.editor-media-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-ink;
+}
+
+.editor-media-subtitle {
+    -fx-font-size: 11px;
+    -fx-text-fill: #8698a8;
+}
+
+.editor-media-icon-button {
+    -fx-min-width: 26px;
+    -fx-pref-width: 26px;
+    -fx-max-width: 26px;
+    -fx-min-height: 26px;
+    -fx-pref-height: 26px;
+    -fx-max-height: 26px;
+    -fx-background-color: white;
+    -fx-background-radius: 10px;
+    -fx-border-color: rgba(47, 102, 144, 0.08);
+    -fx-border-radius: 10px;
+    -fx-cursor: hand;
+    -fx-padding: 0;
+}
+
+.editor-media-icon-button-glyph {
+    -fx-icon-color: -color-primary-dark;
+}
+
+.editor-media-remove-button {
+    -fx-translate-x: -6px;
+    -fx-translate-y: 6px;
+    -fx-effect: dropshadow(gaussian, rgba(12, 25, 38, 0.10), 10, 0, 0, 2);
+}
+
+.editor-media-thumb {
+    -fx-smooth: true;
+}

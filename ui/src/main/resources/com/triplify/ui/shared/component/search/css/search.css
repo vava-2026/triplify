@@ -1,0 +1,212 @@
+.search-container {
+    -fx-background-color: transparent;
+}
+
+.search-input-box {
+    -fx-background-color: -color-surface;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-min-height: 36;
+    -fx-pref-height: 36;
+    -fx-max-height: 36;
+    -fx-border-width: 1;
+    -fx-cursor: text;
+    -fx-padding: 0 10 0 12;
+}
+
+.search-showing .search-input-box {
+    -fx-background-radius: 6 6 0 0;
+    -fx-border-radius: 6 6 0 0;
+}
+
+
+.search-icon {
+    -fx-icon-size: 14;
+    -fx-icon-color: -color-ink-muted;
+    -fx-cursor: default;
+}
+
+.search-icon:hover {
+    -fx-icon-color: -color-primary;
+    -fx-cursor: hand;
+}
+
+.search-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-font-size: 14px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 0;
+}
+
+.search-field:focused {
+    -fx-border-color: transparent;
+}
+
+.search-field,
+.search-field:focused {
+    -fx-text-fill: -color-primary-dark;
+    -fx-prompt-text-fill: -color-ink-muted
+}
+
+
+.search-results {
+    -fx-background-color: -color-surface;
+    -fx-background-radius: 0 0 6 6;
+    -fx-border-width: 0;
+    -fx-padding: 0;
+    -fx-background-insets: 0;
+}
+
+.search-results .list-cell {
+    -fx-padding: 5 10 5 10;
+    -fx-background-color: transparent;
+}
+
+.search-no-results {
+    -fx-background-color: -color-surface;
+    -fx-background-radius: 0 0 6 6;
+    -fx-text-fill: -color-ink-muted;
+    -fx-font-size: 14px;
+    -fx-padding: 8 10 8 10;
+}
+
+.search-popup-content {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.search-inline-content {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-spacing: 0;
+}
+
+.app-search-size-small .search-input-box {
+    -fx-min-height: 36;
+    -fx-pref-height: 36;
+    -fx-max-height: 36;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+}
+
+.app-search-size-small.search-showing .search-input-box {
+    -fx-background-radius: 6 6 0 0;
+    -fx-border-radius: 6 6 0 0;
+}
+
+.app-search-size-small .search-results,
+.app-search-size-small .search-no-results {
+    -fx-background-radius: 0 0 6 6;
+}
+
+.app-search-size-middle .search-input-box {
+    -fx-min-height: 44;
+    -fx-pref-height: 44;
+    -fx-max-height: 44;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+}
+
+.app-search-size-middle.search-showing .search-input-box {
+    -fx-background-radius: 10 10 0 0;
+    -fx-border-radius: 10 10 0 0;
+}
+
+.app-search-size-middle .search-results,
+.app-search-size-middle .search-no-results {
+    -fx-background-radius: 0 0 10 10;
+}
+
+.app-search-size-big .search-input-box {
+    -fx-min-height: 52;
+    -fx-pref-height: 52;
+    -fx-max-height: 52;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+}
+
+.app-search-size-big.search-showing .search-input-box {
+    -fx-background-radius: 12 12 0 0;
+    -fx-border-radius: 12 12 0 0;
+}
+
+.app-search-size-big .search-results,
+.app-search-size-big .search-no-results {
+    -fx-background-radius: 0 0 12 12;
+}
+
+.app-search-variant-filled .search-input-box {
+    -fx-background-color: -color-surface;
+    -fx-border-color: transparent;
+}
+
+.app-search-variant-filled.search-showing .search-input-box {
+    -fx-border-color: -color-surface-tint;
+    -fx-border-width: 0 0 1 0;
+}
+
+.app-search-variant-filled .search-results {
+    -fx-background-color: -color-surface;
+    -fx-padding: 0;
+    -fx-border-width: 0;
+}
+
+.app-search-variant-filled .search-results .list-cell:hover {
+    -fx-background-color: -color-surface-tint;
+}
+
+
+.app-search-variant-outlined .search-input-box {
+    -fx-background-color: -color-on-surface;
+    -fx-border-color: -color-primary;
+    -fx-border-width: 1;
+}
+
+.app-search-variant-outlined.search-showing .search-input-box {
+    -fx-border-color: -color-primary -color-primary -color-surface-tint -color-primary;
+    -fx-border-width: 1;
+}
+
+.app-search-variant-outlined .search-results,
+.app-search-variant-outlined .search-no-results{
+    -fx-background-color: -color-on-surface;
+    -fx-border-color: -color-primary;
+    -fx-border-width: 0 1 1 1;
+    -fx-border-radius: 0 0 6 6;
+}
+
+.app-search-variant-outlined .search-results .list-cell:hover {
+    -fx-background-color: -color-surface-tint;
+}
+
+
+.app-search-variant-ghost .search-input-box {
+    -fx-background-color: -color-primary-light;
+    -fx-border-color: transparent;
+    -fx-border-width: 1;
+}
+
+.app-search-variant-ghost.search-showing .search-input-box{
+    -fx-border-color: -color-surface-tint;
+    -fx-border-width: 0 0 1 0;
+}
+
+.app-search-variant-ghost .search-results,
+.app-search-variant-ghost .search-no-results{
+    -fx-background-color: -color-primary-light;
+    -fx-effect: null;
+}
+
+.app-search-variant-ghost .search-results .list-cell:hover {
+    -fx-background-color: -color-surface-dark;
+}
+
+.search-container.search-has-error .search-input-box {
+    -fx-border-color: -color-danger;
+    -fx-border-width: 1.5;
+}
+
+.search-container.search-has-error.search-showing .search-input-box {
+    -fx-border-color: -color-danger -color-danger -color-surface-tint -color-danger;
+}

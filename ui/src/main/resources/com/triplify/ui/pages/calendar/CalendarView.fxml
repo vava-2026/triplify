@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import com.triplify.ui.shared.component.card_grid.CardGridPane?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.triplify.ui.pages.calendar.CalendarController"
+            styleClass="calendar-root">
+    <stylesheets>
+        <String fx:value="/com/triplify/ui/pages/calendar/calendar.css"/>
+    </stylesheets>
+
+    <top>
+        <VBox styleClass="calendar-header">
+            <HBox fx:id="navBar" styleClass="calendar-nav-bar" alignment="CENTER_LEFT" spacing="8">
+                <Button fx:id="prevMonthBtn" styleClass="nav-btn" text="&lt;"/>
+                <Label fx:id="monthYearLabel" styleClass="month-year-label" HBox.hgrow="ALWAYS" maxWidth="Infinity" alignment="CENTER"/>
+                <Button fx:id="nextMonthBtn" styleClass="nav-btn" text="&gt;"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="calendar-scroll" BorderPane.alignment="CENTER">
+            <GridPane fx:id="calendarGrid" styleClass="calendar-grid" maxWidth="Infinity"/>
+        </ScrollPane>
+    </center>
+
+    <right>
+        <VBox styleClass="calendar-side-panel" prefWidth="300" spacing="10">
+            <VBox fx:id="selectedTripPanel" managed="false" visible="false" spacing="8"/>
+            <Separator/>
+            <Label fx:id="undatedTitleLabel" styleClass="side-panel-section-label"/>
+            <CardGridPane fx:id="undatedTripsGrid" VBox.vgrow="ALWAYS"/>
+        </VBox>
+    </right>
+</BorderPane>

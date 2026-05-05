@@ -1,0 +1,271 @@
+@import url("/com/triplify/ui/shared/component/entry/css/entry.css");
+@import url("/com/triplify/ui/shared/component/select/css/select.css");
+@import url("/com/triplify/ui/shared/component/search/css/search.css");
+@import url("/com/triplify/ui/shared/component/button/css/button.css");
+@import url("/com/triplify/ui/shared/component/input_item/input_item.css");
+@import url("/com/triplify/ui/shared/component/checkbox_item/checkbox_item.css");
+@import url("/com/triplify/ui/shared/component/date_picker/css/date_picker.css");
+@import url("/com/triplify/ui/shared/component/tag_picker/css/tag_picker.css");
+@import url("/com/triplify/ui/pages/routes/css/route.css");
+
+@import url("/com/triplify/ui/shared/toast/toast.css");
+@import url("/com/triplify/ui/pages/trips/css/trips.css");
+@import url("/com/triplify/ui/pages/routes/css/add_route.css");
+@import url("/com/triplify/ui/pages/stories/stories.css");
+
+.root {
+    -color-bg: #f0f0f0;
+    -color-surface: #fafafa;
+    -color-surface-tint: #ecf3f9;
+    -color-surface-dark: #d5e5ed;
+    -color-surface-muted: #00000026;
+    -color-ink: #0a090c;
+    -color-ink-muted: #999999;
+
+    -color-primary: #2f6690;
+    -color-primary-dark: #1d3f59;
+    -color-primary-light: #ecf3f9;
+    -color-primary-hover: #2a5a80;
+    -color-primary-pressed: #24506f;
+    -color-primary-hover-strong: #225379;
+
+    -color-danger: #c0392b;
+    -color-danger-hover: #a83224;
+    -color-danger-pressed: #95291e;
+
+    -color-pro: #e53935;
+    -color-pro-hover: #B41D19;
+    -color-on-pro: #ecf3f9;
+
+    -color-on-primary: #ecf3f9;
+    -color-on-surface: white;
+    -color-ink-muted-soft: #9d9d9d;
+    -color-shadow-ink-soft: rgba(12, 12, 13, 0.05);
+    -color-overlay-modal: rgba(15, 23, 42, 0.62);
+    -color-shadow-modal: rgba(15, 23, 42, 0.28);
+
+    -color-start-bg: #06070e;
+
+    -color-login: #2f658d;
+    -color-login-hover: #245168;
+    -color-on-login: #EBF2F8;
+    -color-sign-up: #d9e0e6;
+    -color-sign-up-hover: #bbbec1;
+    -color-on-sign-up: #000000;
+    -color-btn-white-bg: #d9e0e6;
+    -color-btn-white-hover: #d1d9df;
+    -color-btn-white-pressed: #c5ced6;
+    -color-btn-white-muted-bg: #bbbec1;
+    -color-btn-white-muted-hover: #b2b6ba;
+    -color-btn-white-muted-pressed: #a8adb2;
+    -color-btn-white-text: #111111;
+
+    -color-theme-red-dark-bg: #F5C1C1;
+    -color-theme-red-dark-fg: #B71C1C;
+    -color-theme-red-bg: #F29997;
+    -color-theme-red-fg: #E53935;
+    -color-theme-rose-bg: #F7BFD4;
+    -color-theme-rose-fg: #D81B60;
+    -color-theme-orange-bg: #FFDFB8;
+    -color-theme-orange-fg: #FB8C00;
+    -color-theme-amber-bg: #F0DCAD;
+    -color-theme-amber-fg: #FFB100;
+    -color-theme-yellow-bg: #FEF1B8;
+    -color-theme-yellow-fg: #FDD835;
+    -color-theme-golden-brown-bg: #F9E0B5;
+    -color-theme-golden-brown-fg: #C77B00;
+    -color-theme-lime-bg: #EEF1C6;
+    -color-theme-lime-fg: #C0CA33;
+    -color-theme-indigo-bg: #D6D1F0;
+    -color-theme-indigo-fg: #5B4BA8;
+    -color-theme-violet-bg: #C1B2D7;
+    -color-theme-violet-fg: #6A4C93;
+    -color-theme-steel-blue-bg: #C9DEEE;
+    -color-theme-steel-blue-fg: #2F6690;
+    -color-theme-blue-bg: #BBDFFB;
+    -color-theme-blue-fg: #42A5F5;
+    -color-theme-cyan-bg: #B8F7FF;
+    -color-theme-cyan-fg: #00ACC1;
+    -color-theme-green-bg: #B2D7BB;
+    -color-theme-green-fg: #025B42;
+    -color-theme-teal-bg: #B8FFF8;
+    -color-theme-teal-fg: #00897B;
+    -color-theme-sage-bg: #E2ECE9;
+    -color-theme-sage-fg: #52796F;
+    -color-theme-brown-bg: #E4D7D2;
+    -color-theme-brown-fg: #6D4C41;
+    -color-theme-gray-bg: #DBDBDB;
+    -color-theme-gray-fg: #757575;
+
+    -color-theme-red: -color-theme-red-fg;
+    -color-theme-orange: -color-theme-orange-fg;
+    -color-theme-yellow: -color-theme-yellow-fg;
+    -color-theme-green: -color-theme-green-fg;
+    -color-theme-teal: -color-theme-teal-fg;
+    -color-theme-blue: -color-theme-blue-fg;
+    -color-theme-purple: -color-theme-violet-fg;
+    -color-theme-pink: -color-theme-rose-fg;
+
+    -color-stats-green-bg: #B2D7BB;
+    -color-stats-green-fg: #3F784C;
+    -color-stats-blue-bg: #C9DEEE;
+    -color-stats-blue-fg: #2F6690;
+    -color-stats-yellow-bg: #F0DCAD;
+    -color-stats-yellow-fg: #FFB100;
+    -color-stats-purple-bg: #C1B2D7;
+    -color-stats-purple-fg: #6A4C93;
+    -color-stats-pink-bg: #FABDCA;
+    -color-stats-pink-fg: #B20D30;
+
+    -color-status-visited-bg: -color-stats-green-bg;
+    -color-status-visited-fg: #025B42;
+    -color-status-drafted-bg: -color-stats-yellow-bg;
+    -color-status-drafted-fg: -color-stats-yellow-fg;
+    -color-status-rejected-bg: -color-stats-pink-bg;
+    -color-status-rejected-fg: -color-stats-pink-fg;
+    -color-status-planned-bg: -color-stats-blue-bg;
+    -color-status-planned-fg: -color-stats-blue-fg;
+    -color-status-ongoing-bg: -color-stats-purple-bg;
+    -color-status-ongoing-fg: -color-stats-purple-fg;
+
+    -color-border-muted: rgba(10, 9, 12, 0.08);
+    -color-scrollbar-track: rgba(47, 102, 144, 0.08);
+    -color-scrollbar-thumb: rgba(47, 102, 144, 0.45);
+    -color-scrollbar-thumb-hover: rgba(47, 102, 144, 0.7);
+    -color-create-border: #8fb0c8;
+    -color-control-prompt: #9aa6b2;
+
+
+    -font-family-base: "Plus Jakarta Sans", "Segoe UI", System;
+
+    -height-topbar: 70px;
+
+    -shadow-card: dropshadow(gaussian, rgba(12,12,13,0.05), 4, 0, 0, 1);
+}
+
+
+.app-scene-root {
+    -fx-background-color: -color-bg;
+}
+
+.app-root {
+    -fx-background-color: transparent;
+}
+
+.app-top-bar {
+    -fx-background-color: transparent;
+    -fx-min-height: -height-topbar;
+    -fx-pref-height: -height-topbar;
+    -fx-max-height: -height-topbar;
+}
+
+.app-bottom-row {
+    -fx-background-color: transparent;
+}
+
+.app-content {
+    -fx-background-color: -color-bg;
+}
+
+.page-root {
+    -fx-background-color: -color-bg;
+    -fx-padding: 24px;
+}
+
+.page-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-ink;
+}
+
+.page-subtitle {
+    -fx-text-fill: -color-ink-muted;
+}
+
+.pro-tag {
+    -fx-background-color: -color-pro;
+    -fx-text-fill: -color-on-pro;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 3 0 3;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-min-height: 12;
+    -fx-alignment: CENTER;
+}
+
+.page-card {
+    -fx-background-color: -color-surface;
+    -fx-background-radius: 12px;
+    -fx-padding: 16px;
+    -fx-effect: -shadow-card;
+}
+
+.page-card-muted {
+    -fx-background-color: -color-surface-tint;
+}
+
+.page-actions {
+    -fx-spacing: 10px;
+}
+
+.map-canvas {
+    -fx-background-radius: 12px;
+    -fx-min-height: 340px;
+}
+
+.input-error {
+    -fx-border-color: -color-danger;
+}
+
+.field-error-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-danger;
+}
+
+.error-banner {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-danger;
+    -fx-background-color: -color-danger, 90%;
+    -fx-background-radius: 8;
+    -fx-border-color: -color-danger;
+    -fx-border-radius: 8;
+    -fx-padding: 10 14 10 14;
+}
+
+.success-banner {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-theme-green;
+    -fx-background-color:-color-theme-green, 85%;
+    -fx-background-radius: 8;
+    -fx-border-color: -color-theme-green;
+    -fx-border-radius: 8;
+    -fx-padding: 10 14 10 14;
+}
+
+.page-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.page-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+
+.window-close-btn {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+}
+
+.window-close-icon {
+    -fx-icon-color: -color-primary-dark;
+}
+
+.window-close-btn:hover .window-close-icon {
+    -fx-icon-color: -color-ink;
+}

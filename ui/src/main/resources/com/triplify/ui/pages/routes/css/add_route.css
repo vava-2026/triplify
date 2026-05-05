@@ -1,0 +1,240 @@
+.add-route-root {
+    -fx-padding: 20px 28px 32px 28px;
+}
+
+.add-route-content {
+    -fx-spacing: 18px;
+    -fx-max-width: 1120px;
+}
+
+.add-route-page-title {
+    -fx-font-size: 16px;
+    -fx-text-fill: #6c737b;
+}
+
+.add-route-flow {
+    -fx-hgap: 24px;
+    -fx-vgap: 24px;
+}
+
+.add-route-main-column {
+    -fx-spacing: 24px;
+    -fx-pref-width: 760px;
+    -fx-min-width: 320px;
+}
+
+.add-route-side-column {
+    -fx-spacing: 16px;
+    -fx-pref-width: 280px;
+    -fx-min-width: 240px;
+}
+
+.add-route-card {
+    -fx-background-color: white;
+    -fx-background-radius: 18px;
+    -fx-padding: 16px 18px 18px 18px;
+    -fx-effect: dropshadow(gaussian, rgba(12, 12, 13, 0.06), 16, 0, 0, 4);
+}
+
+.add-route-section-header {
+    -fx-alignment: center-left;
+    -fx-spacing: 8px;
+}
+
+.add-route-section-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-ink;
+}
+
+.add-route-section-icon {
+    -fx-icon-color: -color-primary;
+    -fx-opacity: 0.9;
+}
+
+.add-route-form-group {
+    -fx-spacing: 6px;
+}
+
+.add-route-field .input-item {
+    -fx-pref-height: 44px;
+}
+
+.add-route-textarea-field .textarea-item {
+    -fx-pref-height: 108px;
+    -fx-min-height: 108px;
+    -fx-pref-row-count: 4;
+    -fx-padding: 12 14 12 14;
+}
+
+.add-route-upload-card {
+    -fx-spacing: 14px;
+}
+
+.add-route-upload-area {
+    -fx-min-height: 208px;
+    -fx-pref-height: 208px;
+    -fx-max-height: 208px;
+    -fx-background-color: #eef5fb;
+    -fx-background-radius: 16px;
+    -fx-border-color: #93b7d6;
+    -fx-border-radius: 16px;
+    -fx-border-style: dashed;
+    -fx-cursor: hand;
+}
+
+.add-route-upload-area-active {
+    -fx-background-color: #e4f0fa;
+    -fx-border-color: -color-primary;
+}
+
+.add-route-upload-placeholder {
+    -fx-alignment: center;
+    -fx-spacing: 8px;
+    -fx-padding: 18px;
+}
+
+.add-route-upload-icon {
+    -fx-icon-color: -color-primary-dark;
+}
+
+.add-route-upload-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-ink;
+    -fx-text-alignment: center;
+}
+
+.add-route-upload-subtitle {
+    -fx-font-size: 12px;
+    -fx-text-fill: #8698a8;
+}
+
+.add-route-helper-text {
+    -fx-font-size: 12px;
+    -fx-text-fill: #8698a8;
+}
+
+.add-route-cover-preview {
+    -fx-smooth: true;
+}
+
+.add-route-length-label {
+    -fx-text-fill: #8b96a1;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.add-route-places-list {
+    -fx-spacing: 12px;
+}
+
+.add-route-place-row {
+    -fx-alignment: center-left;
+    -fx-background-color: #eef5fb;
+    -fx-background-radius: 12px;
+    -fx-padding: 10px 14px 10px 14px;
+}
+
+.add-route-place-row-dragging {
+    -fx-background-color: #dbeaf7;
+    -fx-border-color: rgba(47, 102, 144, 0.28);
+    -fx-border-radius: 12px;
+    -fx-border-width: 1px;
+    -fx-opacity: 0.62;
+}
+
+.add-route-place-index {
+    -fx-min-width: 18px;
+    -fx-text-fill: #a6b1bb;
+    -fx-font-size: 15px;
+}
+
+.add-route-thumb {
+    -fx-smooth: true;
+}
+
+.add-route-place-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-ink;
+}
+
+.add-route-place-subtitle {
+    -fx-font-size: 11px;
+    -fx-text-fill: #8698a8;
+}
+
+.add-route-icon-button {
+    -fx-min-width: 28px;
+    -fx-pref-width: 28px;
+    -fx-max-width: 28px;
+    -fx-min-height: 28px;
+    -fx-pref-height: 28px;
+    -fx-max-height: 28px;
+    -fx-background-color: transparent;
+    -fx-background-radius: 8px;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+}
+
+.add-route-icon-button:hover {
+    -fx-background-color: rgba(47, 102, 144, 0.08);
+}
+
+.add-route-icon-button-glyph {
+    -fx-icon-color: -color-primary-dark;
+}
+
+.add-route-handle {
+    -fx-min-width: 16px;
+    -fx-pref-width: 16px;
+    -fx-max-width: 16px;
+    -fx-padding: 6px 0 6px 0;
+    -fx-cursor: open-hand;
+}
+
+.add-route-handle-dragging {
+    -fx-translate-y: -1px;
+}
+
+.add-route-handle-dot {
+    -fx-fill: #9aa6b2;
+}
+
+.add-route-handle-dragging .add-route-handle-dot,
+.add-route-place-row-dragging .add-route-handle-dot {
+    -fx-fill: -color-primary-dark;
+}
+
+.add-route-drag-preview-shell {
+    -fx-opacity: 0.96;
+    -fx-effect: dropshadow(gaussian, rgba(12, 25, 38, 0.22), 24, 0.24, 0, 10);
+}
+
+.add-route-drag-preview {
+    -fx-rotate: -1.2;
+}
+
+.add-route-add-place-button {
+    -fx-pref-height: 46px;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-padding: 0 16 0 16;
+}
+
+.add-route-empty-card {
+    -fx-min-height: 88px;
+    -fx-background-color: #f8fbfe;
+    -fx-background-radius: 14px;
+    -fx-border-color: rgba(47, 102, 144, 0.12);
+    -fx-border-radius: 14px;
+    -fx-border-style: segments(8, 5);
+    -fx-padding: 14px;
+}
+
+.add-route-empty-state {
+    -fx-text-fill: #8698a8;
+    -fx-font-size: 12px;
+}

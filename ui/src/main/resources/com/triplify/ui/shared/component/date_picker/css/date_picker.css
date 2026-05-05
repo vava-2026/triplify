@@ -1,0 +1,194 @@
+.app-date-item {
+    -fx-max-width: Infinity;
+}
+
+.app-date-shell {
+    -fx-alignment: center-left;
+    -fx-spacing: 6px;
+    -fx-pref-height: 44px;
+    -fx-background-radius: 12px;
+    -fx-border-radius: 12px;
+    -fx-border-width: 1.2px;
+    -fx-padding: 0 8px 0 0;
+}
+
+.app-date-shell-filled {
+    -fx-background-color: -color-primary-light;
+    -fx-border-color: transparent;
+}
+
+.app-date-shell-outlined {
+    -fx-background-color: -color-on-surface;
+    -fx-border-color: -color-primary;
+}
+
+.app-date-shell-ghost {
+    -fx-background-color: -color-surface-tint;
+    -fx-border-color: transparent;
+}
+
+.app-date-shell-focused {
+    -fx-background-color: -color-on-surface;
+    -fx-border-color: #7fb0d7;
+    -fx-effect: dropshadow(gaussian, rgba(47, 102, 144, 0.10), 10, 0, 0, 1);
+}
+
+.app-date-shell-error {
+    -fx-border-color: -color-danger;
+    -fx-border-width: 1.5px;
+}
+
+.app-date-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-insets: 0;
+    -fx-border-insets: 0;
+    -fx-padding: 0 12 0 14;
+    -fx-font-size: 14px;
+    -fx-text-fill: -color-primary-dark;
+    -fx-prompt-text-fill: #9aa6b2;
+    -fx-highlight-fill: transparent;
+    -fx-highlight-text-fill: -color-primary-dark;
+}
+
+.app-date-field:focused {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.app-date-trigger {
+    -fx-min-width: 32px;
+    -fx-pref-width: 32px;
+    -fx-max-width: 32px;
+    -fx-min-height: 32px;
+    -fx-pref-height: 32px;
+    -fx-max-height: 32px;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+}
+
+.app-date-trigger:hover {
+    -fx-background-color: rgba(47, 102, 144, 0.08);
+}
+
+.app-date-trigger-icon {
+    -fx-icon-color: #8ea0af;
+    -fx-icon-size: 14px;
+}
+
+.app-date-calendar-popup {
+    -fx-background-color: white;
+    -fx-border-color: rgba(47, 102, 144, 0.14);
+    -fx-border-width: 1px;
+    -fx-background-radius: 18px;
+    -fx-border-radius: 18px;
+    -fx-padding: 14px;
+    -fx-effect: dropshadow(gaussian, rgba(12, 12, 13, 0.16), 22, 0, 0, 10);
+}
+
+.app-date-calendar-header {
+    -fx-alignment: center;
+    -fx-spacing: 12px;
+}
+
+.app-date-nav-group {
+    -fx-alignment: center;
+    -fx-spacing: 4px;
+    -fx-background-color: #f4f7fa;
+    -fx-background-radius: 12px;
+    -fx-padding: 6px 8px 6px 8px;
+}
+
+.app-date-nav-button {
+    -fx-min-width: 24px;
+    -fx-pref-width: 24px;
+    -fx-max-width: 24px;
+    -fx-min-height: 24px;
+    -fx-pref-height: 24px;
+    -fx-max-height: 24px;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-radius: 8px;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+}
+
+.app-date-nav-button:hover {
+    -fx-background-color: rgba(47, 102, 144, 0.10);
+}
+
+.app-date-nav-icon {
+    -fx-icon-color: -color-primary-dark;
+    -fx-icon-size: 13px;
+}
+
+.app-date-calendar-title {
+    -fx-text-fill: -color-primary-dark;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-min-width: 48px;
+    -fx-alignment: center;
+}
+
+.app-date-weekday-grid {
+    -fx-hgap: 6px;
+}
+
+.app-date-weekday-cell {
+    -fx-text-fill: #8091a0;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-alignment: center;
+    -fx-min-width: 34px;
+    -fx-pref-width: 34px;
+}
+
+.app-date-day-grid {
+    -fx-hgap: 6px;
+    -fx-vgap: 6px;
+}
+
+.app-date-day-cell {
+    -fx-min-width: 34px;
+    -fx-pref-width: 34px;
+    -fx-max-width: 34px;
+    -fx-min-height: 34px;
+    -fx-pref-height: 34px;
+    -fx-max-height: 34px;
+    -fx-background-color: white;
+    -fx-border-color: rgba(47, 102, 144, 0.10);
+    -fx-border-width: 1px;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-text-fill: -color-ink;
+    -fx-font-size: 13px;
+    -fx-font-weight: normal;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+}
+
+.app-date-day-cell:hover {
+    -fx-background-color: -color-primary-light;
+    -fx-border-color: rgba(47, 102, 144, 0.22);
+}
+
+.app-date-day-cell-muted {
+    -fx-text-fill: #b3bcc6;
+}
+
+.app-date-day-cell-today {
+    -fx-border-color: rgba(47, 102, 144, 0.36);
+}
+
+.app-date-day-cell-selected,
+.app-date-day-cell-selected:hover {
+    -fx-background-color: #dff0ff;
+    -fx-border-color: #2f6690;
+    -fx-border-width: 1.4px;
+    -fx-text-fill: #1d3f59;
+    -fx-font-weight: bold;
+}

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.triplify.ui.shared.component.upload_panel.view.ImageUploadPanelView?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<StackPane fx:id="root"
+           xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           styleClass="image-modal-root">
+    <Region styleClass="image-modal-backdrop" maxWidth="Infinity" maxHeight="Infinity"/>
+
+    <StackPane styleClass="image-modal-card-shell"
+               minWidth="520" prefWidth="520" maxWidth="520"
+               prefHeight="550" maxHeight="550">
+        <VBox fx:id="card" styleClass="image-modal-card"
+              minWidth="520" prefWidth="520" maxWidth="520">
+            <padding>
+                <Insets top="28" right="28" bottom="28" left="28"/>
+            </padding>
+            <VBox spacing="16">
+                <ImageUploadPanelView fx:id="uploadPanel"/>
+                <VBox fx:id="descriptionContainer"/>
+            </VBox>
+            <Region VBox.vgrow="ALWAYS"/>
+            <HBox spacing="12" alignment="CENTER_RIGHT" styleClass="image-modal-actions">
+                <padding>
+                    <Insets top="20"/>
+                </padding>
+                <StackPane fx:id="cancelButtonContainer"/>
+                <StackPane fx:id="saveButtonContainer"/>
+            </HBox>
+        </VBox>
+
+        <Button fx:id="closeButton" styleClass="image-modal-close-btn" focusTraversable="false"
+                StackPane.alignment="TOP_RIGHT">
+            <graphic>
+                <FontIcon iconLiteral="fth-x" iconSize="20" styleClass="image-modal-close-icon"/>
+            </graphic>
+            <StackPane.margin>
+                <Insets top="20" right="20"/>
+            </StackPane.margin>
+        </Button>
+    </StackPane>
+</StackPane>

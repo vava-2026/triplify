@@ -1,0 +1,145 @@
+.add-place-root {
+    -fx-padding: 28px 28px 32px 28px;
+}
+
+.add-place-content {
+    -fx-spacing: 24px;
+    -fx-max-width: 1120px;
+}
+
+.add-place-flow {
+    -fx-hgap: 24px;
+    -fx-vgap: 24px;
+}
+
+.add-place-main-column {
+    -fx-spacing: 24px;
+    -fx-pref-width: 760px;
+    -fx-min-width: 320px;
+}
+
+.add-place-side-column {
+    -fx-spacing: 16px;
+    -fx-pref-width: 280px;
+    -fx-min-width: 240px;
+}
+
+.add-place-card {
+    -fx-background-color: -color-on-surface;
+    -fx-background-radius: 18px;
+    -fx-padding: 16px 18px 18px 18px;
+    -fx-effect: dropshadow(gaussian, rgba(12, 12, 13, 0.06), 16, 0, 0, 4);
+}
+
+.add-place-form-group {
+    -fx-spacing: 6px;
+}
+
+.add-place-map-card {
+    -fx-spacing: 16px;
+}
+
+.add-place-map-shell {
+    -fx-min-height: 360px;
+    -fx-pref-height: 360px;
+    -fx-background-color: -color-surface-tint;
+    -fx-background-radius: 18px;
+}
+
+.add-place-map-container {
+    -fx-background-color: linear-gradient(to bottom, -color-surface-tint, -color-surface-dark);
+    -fx-background-radius: 18px;
+}
+
+.add-place-map-view {
+    -fx-background-radius: 18px;
+}
+
+.add-place-map-pin {
+    -fx-icon-color: -color-primary;
+    -fx-effect: dropshadow(gaussian, rgba(7, 33, 54, 0.28), 10, 0, 0, 3);
+}
+
+.add-place-helper-text {
+    -fx-font-size: 12px;
+    -fx-text-fill: -color-ink-muted;
+}
+
+.add-place-country-hover {
+    -fx-fill: rgba(47, 102, 144, 0.18);
+    -fx-stroke: -color-primary;
+    -fx-stroke-width: 2.25px;
+    -fx-stroke-line-cap: round;
+    -fx-stroke-line-join: round;
+    -fx-effect: dropshadow(gaussian, rgba(23, 53, 75, 0.16), 8, 0, 0, 1);
+}
+
+.add-place-country-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-on-primary;
+    -fx-background-color: -color-primary-dark;
+    -fx-background-radius: 999px;
+    -fx-padding: 7 12 7 12;
+}
+
+.add-place-map-controls {
+    -fx-spacing: 8px;
+}
+
+.add-place-map-control {
+    -fx-min-width: 34px;
+    -fx-pref-width: 34px;
+    -fx-max-width: 34px;
+    -fx-min-height: 34px;
+    -fx-pref-height: 34px;
+    -fx-max-height: 34px;
+    -fx-padding: 0;
+    -fx-background-color: -color-on-surface;
+    -fx-background-radius: 10px;
+    -fx-border-color: -color-border-muted;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 10px;
+    -fx-text-fill: -color-primary-dark;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(12, 12, 13, 0.08), 8, 0, 0, 2);
+}
+
+.add-place-map-control:hover {
+    -fx-background-color: -color-surface;
+}
+
+.add-place-coordinate-label {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-primary-dark;
+    -fx-background-color: -color-surface-tint;
+    -fx-background-radius: 12px;
+    -fx-padding: 10 12 10 12;
+}
+
+.interactive-map-marker-badge {
+    -fx-background-color: #2a9d8f;
+    -fx-background-radius: 50%;
+    -fx-border-radius: 50%;
+    -fx-border-color: white;
+    -fx-border-width: 2;
+    -fx-text-fill: white;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER;
+    -fx-min-width: 24px;
+    -fx-min-height: 24px;
+    -fx-padding: 2 5 2 5;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.32), 5, 0, 0, 1);
+}
+
+.interactive-map-polyline {
+    -fx-stroke: #2a9d8f;
+    -fx-stroke-width: 2.5;
+    -fx-stroke-line-cap: round;
+    -fx-stroke-line-join: round;
+    -fx-opacity: 0.72;
+}

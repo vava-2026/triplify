@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<fx:root type="VBox"
+         xmlns="http://javafx.com/javafx"
+         xmlns:fx="http://javafx.com/fxml"
+         spacing="12"
+         styleClass="detail-action-group">
+
+    <StackPane fx:id="primaryContainer" maxWidth="Infinity"/>
+    <StackPane fx:id="secondaryContainer" maxWidth="Infinity"/>
+
+</fx:root>

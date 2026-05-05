@@ -1,0 +1,601 @@
+package com.triplify.ui.pages.account;
+
+import com.google.inject.Inject;
+import com.triplify.application.license.LicenseManager;
+import com.triplify.application.usecase.auth.AuthService;
+import com.triplify.application.usecase.badge.BadgeService;
+import com.triplify.application.usecase.badge.dto.BadgeResponse;
+import com.triplify.application.usecase.badge.dto.GetBadgesRequest;
+import com.triplify.application.usecase.badgegroup.BadgeGroupService;
+import com.triplify.application.usecase.badgegroup.dto.BadgeGroupResponse;
+import com.triplify.application.usecase.badgegroup.dto.BadgeGroupType;
+import com.triplify.application.usecase.image.ImageService;
+import com.triplify.application.usecase.statistic.StatisticService;
+import com.triplify.application.usecase.statistic.dto.GetDisplayedStatisticsRequest;
+import com.triplify.application.usecase.statistic.dto.GetStatisticsRequest;
+import com.triplify.application.usecase.statistic.dto.StatisticResponse;
+import com.triplify.application.usecase.image.dto.GetImageByIdRequest;
+import com.triplify.application.usecase.image.dto.ImageResponse;
+import com.triplify.application.usecase.session.SessionUser;
+import com.triplify.application.usecase.session.UserSessionContext;
+import com.triplify.application.usecase.user.UserService;
+import com.triplify.application.usecase.user.dto.UpdateUserAvatarRequest;
+import com.triplify.application.usecase.user.dto.UpdateUserProfileRequest;
+import com.triplify.application.usecase.user.dto.UserResponse;
+import com.triplify.domain.error.ValidationError;
+import com.triplify.domain.model.enums.RoleEnum;
+import com.triplify.domain.result.Result;
+import com.triplify.ui.error.ErrorHandler;
+import com.triplify.ui.i18n.I18n;
+import com.triplify.ui.routing.PageAccessService;
+import com.triplify.ui.routing.GuardedNavigator;
+import com.triplify.ui.routing.RouteIds;
+import com.triplify.ui.shared.component.button.model.ButtonVariant;
+import com.triplify.ui.shared.component.button.view.AppButtonView;
+import com.triplify.ui.shared.component.badge.viewmodel.BadgeViewModel;
+import com.triplify.ui.shared.component.badge.view.BadgeView;
+import com.triplify.ui.shared.component.license.view.LicenseModalView;
+import com.triplify.ui.shared.component.input_item.InputItem;
+import com.triplify.ui.shared.toast.ToastService;
+import com.triplify.ui.shared.util.AvatarImageHelper;
+import com.triplify.ui.shared.util.FxmlLoaderHelper;
+import com.triplify.ui.shared.util.Localization;
+import javafx.beans.binding.Bindings;
+import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.shape.Circle;
+import javafx.stage.FileChooser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import rahulstech.jfx.routing.lifecycle.SimpleLifecycleAwareController;
+
+import java.io.File;
+import java.net.URL;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.List;
+import java.util.UUID;
+
+public class AccountController extends SimpleLifecycleAwareController {
+
+    private static final Logger log = LoggerFactory.getLogger(AccountController.class);
+    private static final int BADGE_COLUMNS = 5;
+    private static final double PROFILE_AVATAR_SIZE = 150;
+
+    @FXML private Label profileNameLabel;
+    @FXML private Label profileEmailLabel;
+    @FXML private Label profileRolePill;
+    @FXML private Label profileAvatarInitial;
+    @FXML private ImageView profileAvatarImage;
+    @FXML private HBox profileNameDisplayRow;
+    @FXML private StackPane upgradeButtonContainer;
+    @FXML private StackPane logoutButtonContainer;
+    @FXML private Button profileAvatarEditBtn;
+    @FXML private Button profileEditNameBtn;
+    @FXML private HBox profileNameEditorRow;
+    @FXML private StackPane profileNameInputContainer;
+    @FXML private StackPane profileNameSaveButtonContainer;
+    @FXML private Label badgesTitleLabel;
+    @FXML private VBox badgesSection;
+    @FXML private VBox badgesGroupsContainer;
+    @FXML private VBox statisticsSection;
+    @FXML private StatisticsController statisticsSectionController;
+
+    @Inject private ToastService toast;
+    @Inject private AuthService authService;
+    @Inject private BadgeService badgeService;
+    @Inject private BadgeGroupService badgeGroupService;
+    @Inject private ImageService imageService;
+    @Inject private StatisticService statisticService;
+    @Inject private UserService userService;
+    @Inject private UserSessionContext userSessionContext;
+    @Inject private ErrorHandler errorHandler;
+    @Inject private GuardedNavigator guardedNavigator;
+    @Inject private PageAccessService pageAccessService;
+    @Inject private FxmlLoaderHelper fxmlLoader;
+    @Inject private LicenseManager licenseManager;
+
+    private InputItem profileNameInput;
+    private LicenseModalView licenseModal;
+
+    @FXML
+    public void initialize() {
+        Localization.bindText(badgesTitleLabel.textProperty(), "account.badges.title");
+        licenseModal = new LicenseModalView(
+                fxmlLoader,
+                licenseManager,
+                userService,
+                userSessionContext,
+                toast,
+            errorHandler,
+            this::refreshProfileHero);
+        setupAvatarButton();
+        setupLogoutButton();
+        setupProfileNameEditor();
+        refreshProfileHero();
+        loadBadges();
+    }
+
+    private void setupAvatarButton() {
+        if (profileAvatarEditBtn != null) {
+            profileAvatarEditBtn.setOnAction(event -> onChangeAvatar());
+            profileAvatarEditBtn.setFocusTraversable(false);
+        }
+    }
+
+    private void setupLogoutButton() {
+        Button logoutButton = AppButtonView.builder(fxmlLoader)
+                .variant(ButtonVariant.PRIMARY)
+                .labelBinding(Bindings.createStringBinding(() -> I18n.t("account.logout"), I18n.bundleProperty()))
+                .icon("fth-log-out")
+                .onAction(this::onLogOut)
+                .build();
+
+        logoutButton.setFocusTraversable(false);
+        logoutButton.getStyleClass().add("profile-logout-btn");
+        logoutButtonContainer.getChildren().setAll(logoutButton);
+    }
+
+    private void setupProfileNameEditor() {
+        profileNameInput = new InputItem("input.placeholder.username");
+        profileNameInput.getStyleClass().add("profile-name-input");
+        profileNameInputContainer.getChildren().setAll(profileNameInput);
+
+        Button saveNameButton = AppButtonView.builder(fxmlLoader)
+                .variant(ButtonVariant.PRIMARY)
+                .labelBinding(Bindings.createStringBinding(() -> I18n.t("account.profile.save"), I18n.bundleProperty()))
+                .icon("fth-check")
+                .onAction(this::onSaveProfileName)
+                .build();
+        saveNameButton.setFocusTraversable(false);
+        saveNameButton.getStyleClass().add("profile-name-save-btn");
+        profileNameSaveButtonContainer.getChildren().setAll(saveNameButton);
+
+        if (profileEditNameBtn != null) {
+            profileEditNameBtn.setOnAction(ignored -> onEditName());
+            profileEditNameBtn.setFocusTraversable(false);
+        }
+    }
+
+    @Override
+    public void onLifecycleShow() {
+        if (statisticsSectionController != null) {
+            statisticsSectionController.onLifecycleShow();
+        }
+
+        refreshProfileHero();
+        loadBadges();
+    }
+
+    private void refreshProfileHero() {
+        if (userSessionContext.isLoggedIn()) {
+            SessionUser user = userSessionContext.getCurrent().orElseThrow();
+            if (redirectToExpiredLicensePageIfNeeded(user)) {
+                return;
+            }
+            renderProfileHero(user);
+        } else {
+            clearProfileHero();
+        }
+    }
+
+    private void loadBadges() {
+        badgesGroupsContainer.getChildren().clear();
+        try {
+            Result<List<BadgeGroupResponse>> groupsResult = badgeGroupService.getAllBadgeGroups();
+            Result<List<BadgeResponse>> result = badgeService.getBadges(new GetBadgesRequest(null));
+            groupsResult.onFailure(error -> {
+                log.warn("Failed to load badge groups for account page: {}", error.message());
+                errorHandler.handle(error);
+            });
+            result.onFailure(error -> {
+                log.warn("Failed to load badges for account page: {}", error.message());
+                errorHandler.handle(error);
+            });
+
+            Map<String, Long> statsByBadgeGroupId = new java.util.HashMap<>();
+            if (userSessionContext.isLoggedIn()) {
+                userSessionContext.getCurrent().ifPresent(user -> {
+                    Result<List<StatisticResponse>> statsResult = statisticService.getStatistics(
+                            new GetStatisticsRequest(user.userId())
+                    );
+                    statsResult.onSuccess(list -> {
+                        for (StatisticResponse s : list) {
+                            if (s.type() != null && s.type().getBadgeGroupId() != null) {
+                                statsByBadgeGroupId.put(s.type().getBadgeGroupId(), s.amount());
+                            }
+                        }
+                    });
+                });
+            }
+
+            if (groupsResult.isSuccess() && result.isSuccess()) {
+                renderBadgesByGroups(groupsResult.getValue(), result.getValue(), statsByBadgeGroupId);
+            }
+        } catch (Exception ex) {
+            log.error("Unexpected error while loading badges for account page", ex);
+        }
+    }
+
+    private void renderBadgesByGroups(List<BadgeGroupResponse> groups, List<BadgeResponse> badges, Map<String, Long> statsByBadgeGroupId) {
+        Map<BadgeGroupType, List<BadgeResponse>> badgesByGroup = new EnumMap<>(BadgeGroupType.class);
+        for (BadgeResponse badge : badges) {
+            badgesByGroup.computeIfAbsent(badge.group(), ignored -> new ArrayList<>()).add(badge);
+        }
+
+        List<BadgeGroupResponse> orderedGroups = groups.stream()
+                .sorted(Comparator.comparingInt(group -> BadgeGroupType.fromIdOrThrow(group.id().toString()).ordinal()))
+                .toList();
+
+        for (BadgeGroupResponse group : orderedGroups) {
+            BadgeGroupType groupType = BadgeGroupType.fromIdOrThrow(group.id().toString());
+            List<BadgeResponse> groupBadges = badgesByGroup.getOrDefault(groupType, List.of());
+            badgesGroupsContainer.getChildren().add(createBadgeGroupSection(group, groupBadges, statsByBadgeGroupId));
+        }
+    }
+
+    private VBox createBadgeGroupSection(BadgeGroupResponse group, List<BadgeResponse> badges, Map<String, Long> statsByBadgeGroupId) {
+        VBox groupSection = new VBox(15);
+        groupSection.getStyleClass().add("badges-group");
+        groupSection.setAlignment(javafx.geometry.Pos.TOP_CENTER);
+        groupSection.setMinWidth(880);
+        groupSection.setPrefWidth(880);
+        groupSection.setMaxWidth(880);
+
+        Label groupTitle = new Label();
+        Localization.bindLocalizedText(groupTitle.textProperty(), group);
+        groupTitle.getStyleClass().add("badges-group-title");
+        groupTitle.setWrapText(true);
+        groupTitle.setMinWidth(880);
+        groupTitle.setPrefWidth(880);
+        groupTitle.setMaxWidth(880);
+
+        GridPane groupGrid = new GridPane();
+        groupGrid.getStyleClass().add("badges-grid");
+        groupGrid.setAlignment(javafx.geometry.Pos.CENTER);
+        groupGrid.setMinWidth(880);
+        groupGrid.setPrefWidth(880);
+        groupGrid.setMaxWidth(880);
+
+        double columnWidth = 100.0 / BADGE_COLUMNS;
+        for (int i = 0; i < BADGE_COLUMNS; i++) {
+            javafx.scene.layout.ColumnConstraints column = new javafx.scene.layout.ColumnConstraints();
+            column.setPercentWidth(columnWidth);
+            groupGrid.getColumnConstraints().add(column);
+        }
+
+        for (int i = 0; i < badges.size(); i++) {
+            BadgeResponse response = badges.get(i);
+            BadgeView badgeView = new BadgeView();
+            int currentValue = resolveCurrentValue(response, statsByBadgeGroupId);
+            badgeView.update(toUiBadge(response, currentValue), group, currentValue, response.requiredValue());
+
+            int col = i % BADGE_COLUMNS;
+            int row = i / BADGE_COLUMNS;
+            groupGrid.add(badgeView, col, row);
+        }
+
+        groupSection.getChildren().addAll(groupTitle, groupGrid);
+        return groupSection;
+    }
+    private int resolveCurrentValue(BadgeResponse response, Map<String, Long> statsByBadgeGroupId) {
+        if (response.group() == null || response.group().id() == null) {
+            return 0;
+        }
+
+        long statValue = statsByBadgeGroupId.getOrDefault(response.group().id().toString(), 0L);
+        return (int) Math.min(Integer.MAX_VALUE, statValue);
+    }
+
+
+
+    private BadgeViewModel toUiBadge(BadgeResponse response, int currentValue) {
+        boolean unlocked = response.requiredValue() <= currentValue;
+
+        return new BadgeViewModel(
+                response.name(),
+                response.nameSk(),
+                response.description(),
+                response.descriptionSk(),
+                resolveImageUrl(response.image()),
+                response.group(),
+                response.level(),
+                response.requiredValue(),
+                currentValue,
+                unlocked
+        );
+    }
+
+
+    private String resolveImageUrl(ImageResponse image) {
+        if (image == null || image.url() == null) {
+            return null;
+        }
+
+        String rawPath = image.url().toString().replace("\\", "/");
+        String fileName = rawPath.substring(rawPath.lastIndexOf('/') + 1);
+
+        URL classpathUrl = getClass().getResource("/com/triplify/ui/shared/component/badge/images/" + fileName);
+        if (classpathUrl != null) {
+            return classpathUrl.toExternalForm();
+        }
+
+        Path path = image.url();
+        if (path.isAbsolute()) {
+            return path.toUri().toString();
+        }
+
+        return rawPath;
+    }
+
+    private void renderProfileHero(SessionUser user) {
+        profileNameLabel.setText(user.username());
+        profileEmailLabel.setText(user.email() == null || user.email().isBlank() ? "youremail@gmail.com" : user.email());
+
+        String roleLabelKey = pageAccessService.getRoleLabelKey(user.role());
+        profileRolePill.textProperty().unbind();
+        profileRolePill.textProperty().bind(Bindings.createStringBinding(
+            () -> I18n.t(roleLabelKey),
+            I18n.bundleProperty()));
+
+        profileAvatarInitial.setText(AvatarImageHelper.extractInitial(user.username()));
+        if (profileNameInput != null) {
+            profileNameInput.setText(user.username());
+            profileNameInput.clearError();
+        }
+        profileAvatarImage.setClip(new Circle(75, 75, 75));
+        applyAvatarImage(null);
+        renderUpgradeSection(user.role());
+        updateAccountSectionsVisibility(user.role());
+
+        if (user.avatarImageId() != null) {
+            var avatarResult = imageService.getImageById(new GetImageByIdRequest(user.avatarImageId()));
+            avatarResult.onSuccess(image -> applyAvatarImage(image.url()));
+            avatarResult.onFailure(error -> {
+                log.debug("Avatar image not available for account hero '{}': {}", user.username(), error.message());
+                applyAvatarImage(null);
+            });
+        }
+    }
+
+    private void renderUpgradeSection(RoleEnum role) {
+        if (role == RoleEnum.CONFIGURATION_MANAGER) {
+            upgradeButtonContainer.getChildren().clear();
+            return;
+        }
+
+        String labelKey = role == RoleEnum.PRO_USER ? "Pro" : "account.upgrade";
+
+        Button upgradeButton = AppButtonView.builder(fxmlLoader)
+                .variant(ButtonVariant.PRO)
+                .labelBinding(Bindings.createStringBinding(() -> I18n.t(labelKey), I18n.bundleProperty()))
+                .build();
+
+        upgradeButton.setFocusTraversable(false);
+        upgradeButton.setOnAction(evt -> {
+            if (licenseModal != null && upgradeButton.getScene() != null) {
+                licenseModal.show(upgradeButton.getScene().getWindow());
+            }
+        });
+        upgradeButtonContainer.getChildren().setAll(upgradeButton);
+    }
+
+    private void clearProfileHero() {
+        profileRolePill.textProperty().unbind();
+        profileNameLabel.setText("-");
+        profileEmailLabel.setText("-");
+        profileRolePill.setText(I18n.t("account.role"));
+        profileAvatarInitial.setText("?");
+        hideNameEditor();
+        upgradeButtonContainer.getChildren().clear();
+        showInitialAvatar();
+        updateAccountSectionsVisibility(null);
+    }
+
+    private void updateAccountSectionsVisibility(RoleEnum role) {
+        boolean hideStatsAndBadges = role == RoleEnum.CONFIGURATION_MANAGER;
+
+        if (statisticsSection != null) {
+            statisticsSection.setManaged(!hideStatsAndBadges);
+            statisticsSection.setVisible(!hideStatsAndBadges);
+        }
+
+        if (badgesSection != null) {
+            badgesSection.setManaged(!hideStatsAndBadges);
+            badgesSection.setVisible(!hideStatsAndBadges);
+        }
+    }
+
+    private boolean redirectToExpiredLicensePageIfNeeded(SessionUser user) {
+        if (user.role() != RoleEnum.PRO_USER) {
+            return false;
+        }
+
+        LicenseManager.CheckStatus status = licenseManager.checkStoredLicense(user.userId().toString()).status;
+        if (status == LicenseManager.CheckStatus.VALID) {
+            return false;
+        }
+
+        guardedNavigator.goTo(getRouter(), RouteIds.LICENSE_EXPIRED);
+        return true;
+    }
+
+    private void onEditName() {
+        if (!userSessionContext.isLoggedIn() || profileNameInput == null) {
+            return;
+        }
+
+        SessionUser currentUser = userSessionContext.getCurrent().orElseThrow();
+        profileNameInput.setText(currentUser.username());
+        profileNameInput.clearError();
+
+        if (profileNameDisplayRow != null) {
+            profileNameDisplayRow.setManaged(false);
+            profileNameDisplayRow.setVisible(false);
+        }
+        profileNameEditorRow.setManaged(true);
+        profileNameEditorRow.setVisible(true);
+    }
+
+    private void hideNameEditor() {
+        if (profileNameEditorRow == null) {
+            return;
+        }
+
+        if (profileNameDisplayRow != null) {
+            profileNameDisplayRow.setManaged(true);
+            profileNameDisplayRow.setVisible(true);
+        }
+        profileNameEditorRow.setManaged(false);
+        profileNameEditorRow.setVisible(false);
+
+        if (profileNameInput != null) {
+            profileNameInput.clearError();
+        }
+    }
+
+    private void onSaveProfileName() {
+        if (profileNameInput == null || !userSessionContext.isLoggedIn()) {
+            return;
+        }
+
+        SessionUser currentUser = userSessionContext.getCurrent().orElseThrow();
+        String username = profileNameInput.getText() == null ? "" : profileNameInput.getText().trim();
+        profileNameInput.setText(username);
+        profileNameInput.clearError();
+
+        if (username.equals(currentUser.username())) {
+            hideNameEditor();
+            return;
+        }
+
+        Result<UserResponse> result = userService.updateUserProfile(new UpdateUserProfileRequest(username));
+        result.onSuccess(this::onProfileUpdated);
+        result.onFailure(error -> {
+            if (error instanceof ValidationError validationError) {
+                boolean usernameViolation = validationError.violations().stream()
+                        .anyMatch(violation -> "username".equals(violation.field()));
+                if (usernameViolation) {
+                    profileNameInput.showErrorHighlightOnly();
+                }
+            }
+            errorHandler.handle(error);
+        });
+    }
+
+    private void onProfileUpdated(UserResponse userResponse) {
+        SessionUser currentUser = userSessionContext.getCurrent().orElseThrow();
+        SessionUser updatedUser = new SessionUser(
+                currentUser.userId(),
+                userResponse.username(),
+                userResponse.email(),
+                userResponse.role(),
+                currentUser.avatarImageId()
+        );
+        userSessionContext.set(updatedUser);
+        userSessionContext.save();
+
+        toast.success(I18n.t("account.profile.saved"));
+        hideNameEditor();
+        refreshProfileHero();
+    }
+
+    private void applyAvatarImage(Path imagePath) {
+        Image image = AvatarImageHelper.resolveAvatarImage(imagePath);
+        if (image == null) {
+            if (imagePath != null) {
+                log.debug("Failed to render profile avatar from path '{}'", imagePath);
+            }
+            showInitialAvatar();
+            return;
+        }
+
+        AvatarImageHelper.applyCoverSquare(profileAvatarImage, image, PROFILE_AVATAR_SIZE);
+        profileAvatarImage.setManaged(true);
+        profileAvatarImage.setVisible(true);
+        profileAvatarInitial.setManaged(false);
+        profileAvatarInitial.setVisible(false);
+    }
+
+    private void showInitialAvatar() {
+        profileAvatarImage.setImage(null);
+        profileAvatarImage.setManaged(false);
+        profileAvatarImage.setVisible(false);
+        profileAvatarInitial.setManaged(true);
+        profileAvatarInitial.setVisible(true);
+    }
+
+    private void onChangeAvatar() {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle(I18n.t("account.avatar.dialog.title"));
+        chooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter(I18n.t("account.avatar.dialog.filter"), "*.png", "*.jpg", "*.jpeg", "*.svg")
+        );
+
+        File file = chooser.showOpenDialog(profileAvatarEditBtn.getScene() == null ? null : profileAvatarEditBtn.getScene().getWindow());
+        if (file != null) {
+            handleAvatarChange(file);
+        }
+    }
+
+    private void handleAvatarChange(File file) {
+        if (!isSupportedImageFile(file)) {
+            toast.warning(I18n.t("account.avatar.toast.unsupported"));
+            return;
+        }
+
+        Result<UserResponse> result = userService.updateUserAvatar(new UpdateUserAvatarRequest(file.toPath()));
+        result.onSuccess(userResponse -> {
+            SessionUser currentUser = userSessionContext.getCurrent().orElseThrow();
+
+            UUID avatarId = null;
+            if (userResponse.avatar() != null && userResponse.avatar().id() != null) {
+                try {
+                    avatarId = userResponse.avatar().id();
+                } catch (IllegalArgumentException e) {
+                    log.warn("Invalid avatar ID in response: {}", userResponse.avatar().id(), e);
+                }
+            }
+
+            SessionUser updatedUser = new SessionUser(
+                    currentUser.userId(),
+                    currentUser.username(),
+                    currentUser.email(),
+                    currentUser.role(),
+                    avatarId
+            );
+            userSessionContext.set(updatedUser);
+            userSessionContext.save();
+
+            toast.success(I18n.t("account.avatar.toast.updated"));
+            refreshProfileHero();
+        });
+        result.onFailure(error -> {
+            log.warn("Failed to update avatar: {}", error.message());
+            errorHandler.handle(error);
+        });
+    }
+
+    private boolean isSupportedImageFile(File file) {
+        String name = file.getName().toLowerCase();
+        return name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".svg");
+    }
+
+    private void onLogOut() {
+        authService.logout();
+        toast.success("Logged off successfully");
+        guardedNavigator.goTo(getRouter(), RouteIds.START);
+        refreshProfileHero();
+    }
+}

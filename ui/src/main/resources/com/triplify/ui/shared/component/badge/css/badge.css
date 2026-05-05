@@ -1,0 +1,67 @@
+
+.badge-root {
+    -fx-padding: 24px;
+    -fx-background-color: transparent;
+}
+
+.badge-card {
+    -fx-background-color: -color-surface;
+    -fx-background-radius: 10;
+    -fx-border-width: 0;
+    -fx-padding: 10 30 10 30;
+    -fx-min-width: 160;
+    -fx-pref-width: 160;
+    -fx-max-width: 160;
+    -fx-min-height: 180;
+    -fx-pref-height: 180;
+    -fx-max-height: 180;
+}
+
+.badge-card.badge-locked {
+    -fx-background-color: -color-surface-muted;
+    -fx-opacity: 0.8;
+}
+
+.badge-image {
+    -fx-fit-width: 100px;
+    -fx-fit-height: 100px;
+    -fx-background-color: transparent;
+}
+
+.badge-card.badge-locked badge-image {
+    -fx-opacity: 0.8;
+}
+
+
+.badge-name {
+    -fx-text-fill: -color-ink;
+    -fx-font-family: "Plus Jakarta Sans";
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-min-height: 20px;
+    -fx-max-height: 40px;
+    -fx-line-spacing: 0;
+    -fx-text-alignment: center;
+    -fx-alignment: center;
+}
+
+.badge-card.badge-locked badge-name {
+    -fx-opacity: 0.8;
+}
+
+.badge-description {
+    -fx-text-fill: -color-ink-muted;
+    -fx-font-family: "Plus Jakarta Sans";
+    -fx-font-weight: normal;
+    -fx-font-size: 10px;
+    -fx-min-height: 20px;
+    -fx-pref-height: 20px;
+    -fx-max-height: 20px;
+    -fx-line-spacing: 0;
+    -fx-text-alignment: center;
+    -fx-alignment: center;
+}
+
+.badge-card.badge-locked badge-description {
+    -fx-opacity: 0.8;
+}

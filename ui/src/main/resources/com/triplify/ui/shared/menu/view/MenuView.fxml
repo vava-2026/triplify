@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.image.ImageView?>
+
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.triplify.ui.shared.menu.view.MenuView"
+           fx:id="sidebarRoot"
+           prefWidth="260"
+           maxWidth="260"
+           minWidth="260"
+           stylesheets="@../css/menu.css"
+           styleClass="sidebar-root">
+
+    <VBox fx:id="mainPageInner" styleClass="main-page-inner" prefWidth="260">
+
+        <VBox fx:id="navContainer"
+              spacing="8" prefWidth="220"
+              VBox.vgrow="ALWAYS"
+              style="-fx-padding: 20 20 0 20;" />
+
+        <Region VBox.vgrow="ALWAYS" />
+
+        <HBox fx:id="accountIsland"
+              styleClass="account-island"
+              prefWidth="220" prefHeight="48"
+              alignment="CENTER_LEFT" spacing="10"
+              VBox.vgrow="NEVER"
+              onMouseClicked="#onAccountClicked">
+            <VBox.margin>
+                <Insets right="20" left="20" />
+            </VBox.margin>
+
+            <StackPane fx:id="avatarCircle" styleClass="avatar-circle">
+                <ImageView fx:id="avatarImageView" styleClass="avatar-image" />
+                <Label fx:id="avatarLabel" styleClass="avatar-label" />
+            </StackPane>
+
+            <VBox HBox.hgrow="ALWAYS">
+                <Label fx:id="accountNameLabel" styleClass="account-name" />
+                <HBox spacing="3" alignment="CENTER_LEFT">
+                    <Label fx:id="accountProTag" styleClass="account-pro-tag" visible="false" managed="false" />
+                    <Label fx:id="accountRole" styleClass="account-role" />
+                </HBox>
+            </VBox>
+        </HBox>
+    </VBox>
+
+
+</StackPane>
+

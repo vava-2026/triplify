@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+
+<fx:root type="HBox"
+         xmlns="http://javafx.com/javafx"
+         xmlns:fx="http://javafx.com/fxml"
+         styleClass="editor-section-header">
+    <children>
+        <FontIcon fx:id="iconNode"
+                  iconLiteral="fth-info"
+                  iconSize="14"
+                  styleClass="editor-section-icon"/>
+        <Label fx:id="titleLabel"
+               styleClass="editor-section-title"/>
+        <Label fx:id="tagLabel"
+               managed="false"
+               text="Pro"
+               visible="false"
+               styleClass="pro-tag,editor-section-tag"/>
+    </children>
+</fx:root>

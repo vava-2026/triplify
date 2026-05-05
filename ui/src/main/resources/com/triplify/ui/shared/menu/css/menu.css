@@ -1,0 +1,195 @@
+.sidebar-root {
+    -fx-background-color: transparent;
+}
+
+.main-page-inner {
+    -fx-background-color: -color-surface;
+    -fx-background-radius: 0;
+    -fx-min-width: 260;
+    -fx-pref-width: 260;
+    -fx-padding: 0 0 15 0;
+    -fx-spacing: 0;
+}
+
+.collapsed-pane {
+    -fx-background-color: transparent;
+    -fx-pref-width: 260;
+}
+
+.sidebar-island {
+    -fx-background-color: -color-surface;
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-border-color: transparent;
+    -fx-pref-height: -height-topbar;
+    -fx-min-height: -height-topbar;
+    -fx-max-height: -height-topbar;
+    -fx-padding: 0 15 0 15;
+}
+
+.sidebar-island-pill {
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-pref-width: 200;
+    -fx-min-width: 200;
+    -fx-max-width: 200;
+    -fx-pref-height: 50;
+    -fx-min-height: 50;
+    -fx-max-height: 50;
+    -fx-padding: 0 15 0 10;
+}
+
+.logo-box {
+    -fx-background-color: -color-primary;
+    -fx-background-radius: 8;
+    -fx-min-width: 30;
+    -fx-pref-width: 30;
+    -fx-max-width: 30;
+    -fx-min-height: 30;
+    -fx-pref-height: 30;
+    -fx-max-height: 30;
+    -fx-alignment: CENTER;
+    -fx-padding: 0;
+}
+
+.logo-icon {
+    -fx-icon-color: black;
+    -fx-icon-size: 18;
+}
+
+.app-title {
+    -fx-text-fill: -color-ink;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-font-family: -font-family-base;
+    -fx-letter-spacing: -0.5px;
+}
+
+.nav-btn {
+    -fx-background-color: transparent;
+    -fx-background-radius: 8;
+    -fx-border-color: transparent;
+    -fx-border-width: 2;
+    -fx-border-radius: 8;
+    -fx-text-fill: -color-primary-dark;
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+    -fx-font-family: -font-family-base;
+    -fx-cursor: hand;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 0 13 0 13;
+}
+
+.nav-btn-active {
+    -fx-background-color: -color-primary;
+    -fx-border-color: transparent;
+    -fx-text-fill: -color-on-primary;
+}
+
+.nav-btn-active:hover {
+    -fx-background-color: -color-primary;
+    -fx-border-color: transparent;
+}
+
+.nav-btn-active .nav-label {
+    -fx-text-fill: -color-on-primary;
+}
+
+.nav-btn-active .nav-icon {
+    -fx-icon-color: -color-on-primary;
+}
+
+.nav-icon {
+    -fx-icon-color: -color-primary-dark;
+    -fx-icon-size: 18;
+}
+
+.nav-label {
+    -fx-text-fill: -color-primary-dark;
+    -fx-font-size: 14px;
+    -fx-font-weight: 500;
+    -fx-font-family: -font-family-base;
+}
+
+.account-island {
+    -fx-background-color: -color-surface;
+    -fx-max-width: 220;
+    -fx-max-height: 48;
+    -fx-background-radius: 8;
+    -fx-border-color: transparent;
+    -fx-border-width: 2;
+    -fx-border-radius: 8;
+    -fx-padding: 5 5 5 5;
+    -fx-cursor: hand;
+}
+
+.avatar-circle {
+    -fx-background-color: -color-primary;
+    -fx-background-radius: 50;
+    -fx-min-width: 38;
+    -fx-pref-width: 38;
+    -fx-min-height: 38;
+    -fx-pref-height: 38;
+}
+
+.avatar-label {
+    -fx-text-fill: -color-on-surface;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.account-name {
+    -fx-text-fill: -color-ink;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-font-family: -font-family-base;
+}
+
+.account-role {
+    -fx-text-fill: -color-primary;
+    -fx-font-size: 11px;
+    -fx-font-family: -font-family-base;
+}
+
+.pro-tag,
+.nav-pro-tag,
+.account-pro-tag {
+    -fx-background-color: -color-pro;
+    -fx-text-fill: -color-on-pro;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 3 0 3;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-min-height: 12;
+    -fx-alignment: CENTER;
+}
+
+.toggle-box {
+    -fx-background-color: transparent;
+    -fx-background-radius: 8;
+    -fx-min-width: 28;
+    -fx-pref-width: 28;
+    -fx-max-width: 28;
+    -fx-min-height: 28;
+    -fx-pref-height: 28;
+    -fx-max-height: 28;
+    -fx-alignment: CENTER;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+}
+
+.toggle-icon {
+    -fx-icon-color: -color-primary-dark;
+    -fx-icon-size: 24;
+}
+
+.toggle-icon:hover {
+    -fx-icon-color: -color-ink;
+}
+
+.avatar-image {
+    -fx-fit-width: 38;
+    -fx-fit-height: 38;
+    -fx-preserve-ratio: true;
+}
