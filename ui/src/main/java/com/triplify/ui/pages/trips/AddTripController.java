@@ -16,6 +16,7 @@ import com.triplify.application.usecase.category.CategoryService;
 import com.triplify.application.usecase.category.dto.CategoryResponse;
 import com.triplify.application.usecase.country.CountryService;
 import com.triplify.application.usecase.place.PlaceService;
+import com.triplify.application.usecase.place.dto.GetPlaceByIdRequest;
 import com.triplify.application.usecase.place.dto.PlaceResponse;
 import com.triplify.application.usecase.route.RouteService;
 import com.triplify.application.usecase.route.dto.GetRouteByIdRequest;
@@ -94,6 +95,8 @@ public class AddTripController extends WindowedPageController {
 
     private static final Logger log = LoggerFactory.getLogger(AddTripController.class);
     private static final String DEFAULT_IMAGE = "/com/triplify/ui/pages/trips/images/one.png";
+    private static final String PLACE_NOT_FOUND_CODE = "error.place.not.found";
+    private static final String ROUTE_NOT_FOUND_CODE = "error.route.not.found";
 
     @FXML private VBox contentContainer;
     @FXML private FlowPane contentFlow;
@@ -234,6 +237,7 @@ public class AddTripController extends WindowedPageController {
     public void onWindowedShow() {
         EditorDraftStorage.clearTripDraft();
         consumeReturnedEditorResults();
+        refreshSelectedItems();
     }
 
     @FXML
@@ -936,6 +940,81 @@ public class AddTripController extends WindowedPageController {
 
         PlaceResponse createdPlace = EditorDraftStorage.consumePendingPlace(EditorDraftStorage.TARGET_TRIP);
         if (createdPlace != null) addExistingPlace(toManualPlaceItem(createdPlace));
+    }
+
+    private void refreshSelectedItems() {
+        refreshRouteItems();
+        refreshManualPlaceItems();
+        renderRoutes();
+        renderPlaces();
+    }
+
+    private void refreshRouteItems() {
+        if (routeItems.isEmpty()) {
+            return;
+        }
+
+        List<RouteItem> existingItems = new ArrayList<>(routeItems);
+        routeItems.clear();
+        for (RouteItem routeItem : existingItems) {
+            RouteItem refreshedItem = refreshRouteItem(routeItem);
+            if (refreshedItem != null) {
+                routeItems.add(refreshedItem);
+            }
+        }
+    }
+
+    private RouteItem refreshRouteItem(RouteItem routeItem) {
+        try {
+            Result<RouteResponse> result = routeService.getRouteById(new GetRouteByIdRequest(UUID.fromString(routeItem.id())));
+            if (result.isSuccess()) {
+                return toRouteItem(result.getValue());
+            }
+            if (ROUTE_NOT_FOUND_CODE.equals(result.getError().code())) {
+                log.info("Removing deleted route from trip draft [routeId={}]", routeItem.id());
+                return null;
+            }
+            log.warn("Keeping stale route in trip draft after refresh failure [routeId={}, code={}, message={}]",
+                    routeItem.id(), result.getError().code(), result.getError().message());
+            return routeItem;
+        } catch (IllegalArgumentException ex) {
+            log.warn("Removing trip draft route with invalid id [routeId={}]", routeItem.id(), ex);
+            return null;
+        }
+    }
+
+    private void refreshManualPlaceItems() {
+        if (placeItems.isEmpty()) {
+            return;
+        }
+
+        List<PlaceItem> existingItems = new ArrayList<>(placeItems);
+        placeItems.clear();
+        for (PlaceItem placeItem : existingItems) {
+            PlaceItem refreshedItem = refreshManualPlaceItem(placeItem);
+            if (refreshedItem != null) {
+                placeItems.add(refreshedItem);
+            }
+        }
+    }
+
+    private PlaceItem refreshManualPlaceItem(PlaceItem placeItem) {
+        try {
+            Result<PlaceResponse> result = placeService.getPlaceById(new GetPlaceByIdRequest(UUID.fromString(placeItem.id())));
+            if (result.isSuccess()) {
+                return toManualPlaceItem(result.getValue());
+            }
+            if (PLACE_NOT_FOUND_CODE.equals(result.getError().code())) {
+                log.info("Removing deleted place from trip draft [placeId={}]", placeItem.id());
+                return null;
+            }
+            log.warn("Keeping stale place in trip draft after refresh failure [placeId={}, code={}, message={}]",
+                    placeItem.id(), result.getError().code(), result.getError().message());
+            return placeItem;
+        } catch (IllegalArgumentException ex) {
+            log.warn("Removing trip draft place with invalid id [placeId={}]", placeItem.id(), ex);
+            return null;
+        }
     }
 
     private EditorDraftStorage.TripDraft captureTripDraft() {

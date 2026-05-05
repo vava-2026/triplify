@@ -2,6 +2,7 @@ package com.triplify.ui.pages.routes;
 
 import com.google.inject.Inject;
 import com.triplify.application.usecase.place.PlaceService;
+import com.triplify.application.usecase.place.dto.GetPlaceByIdRequest;
 import com.triplify.application.usecase.place.dto.PlaceResponse;
 import com.triplify.ui.pages.places.model.Places;
 import com.triplify.application.usecase.route.RouteService;
@@ -75,6 +76,7 @@ public class AddRouteController extends WindowedPageController {
 
     private static final String DEFAULT_IMAGE = "/com/triplify/ui/pages/trips/images/one.png";
     private static final Logger log = LoggerFactory.getLogger(AddRouteController.class);
+    private static final String PLACE_NOT_FOUND_CODE = "error.place.not.found";
 
     @FXML private VBox contentContainer;
     @FXML private FlowPane contentFlow;
@@ -192,6 +194,7 @@ public class AddRouteController extends WindowedPageController {
         }
         EditorDraftStorage.clearRouteDraft();
         consumeReturnedPlace();
+        refreshSelectedPlaces();
         renderPlaces();
     }
 
@@ -736,6 +739,40 @@ public class AddRouteController extends WindowedPageController {
             return;
         }
         addExistingPlace(toRoutePlaceItem(place));
+    }
+
+    private void refreshSelectedPlaces() {
+        if (placeItems.isEmpty()) {
+            return;
+        }
+
+        List<RoutePlaceItem> existingItems = new ArrayList<>(placeItems);
+        placeItems.clear();
+        for (RoutePlaceItem placeItem : existingItems) {
+            RoutePlaceItem refreshedItem = refreshSelectedPlace(placeItem);
+            if (refreshedItem != null) {
+                placeItems.add(refreshedItem);
+            }
+        }
+    }
+
+    private RoutePlaceItem refreshSelectedPlace(RoutePlaceItem placeItem) {
+        try {
+            var result = placeService.getPlaceById(new GetPlaceByIdRequest(UUID.fromString(placeItem.id())));
+            if (result.isSuccess()) {
+                return toRoutePlaceItem(result.getValue());
+            }
+            if (PLACE_NOT_FOUND_CODE.equals(result.getError().code())) {
+                log.info("Removing deleted place from route draft [placeId={}]", placeItem.id());
+                return null;
+            }
+            log.warn("Keeping stale place in route draft after refresh failure [placeId={}, code={}, message={}]",
+                    placeItem.id(), result.getError().code(), result.getError().message());
+            return placeItem;
+        } catch (IllegalArgumentException ex) {
+            log.warn("Removing route draft place with invalid id [placeId={}]", placeItem.id(), ex);
+            return null;
+        }
     }
 
     private void loadRouteForEdit(String routeId) {
