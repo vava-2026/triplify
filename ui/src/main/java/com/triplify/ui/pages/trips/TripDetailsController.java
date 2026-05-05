@@ -134,6 +134,7 @@ public class TripDetailsController extends SimpleLifecycleAwareController {
     private String tripId;
     private ImageFormModalView imageFormModal;
     private ImageViewModalView imageViewModal;
+    private AddCardView storiesAddCard;
 
     private Select<StatusEnum> statusSelectModel;
     private StatusEnum currentTripStatus = StatusEnum.PLANNED;
@@ -242,14 +243,14 @@ private void setupInputs()
         storiesGrid.setLoadMoreKey("trip.details.show.more.stories");
         storiesGrid.setEmptyTextKey("trip.details.empty.stories");
 
-        AddCardView addCard = new AddCardView(
+        storiesAddCard = new AddCardView(
                 "stories.add.card.title",
                 "stories.add.card.subtitle",
                 () -> navigateToAddStory(UUID.fromString(tripId)),
                 isProUser(),
                 this::showProRequiredToast
         );
-        storiesGrid.addPinnedNode(addCard);
+        storiesGrid.addPinnedNode(storiesAddCard);
     }
 
     private void setupImagesGrid() {
@@ -284,6 +285,7 @@ private void setupInputs()
 
     @Override
     public void onLifecycleShow() {
+        storiesAddCard.setEnabled(isProUser());
         loadTripDetails();
     }
 

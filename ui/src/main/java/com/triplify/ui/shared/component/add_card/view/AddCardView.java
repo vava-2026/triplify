@@ -15,18 +15,25 @@ public class AddCardView extends StackPane {
             "/com/triplify/ui/shared/component/add_card/css/add_card.css"
     );
 
+    private boolean enabled;
+    private final Runnable onAction;
+    private final Runnable onBlockedAction;
+
     public AddCardView(String titleKey, String subtitleKey, Runnable onAction) {
         this(titleKey, subtitleKey, onAction, true, null);
     }
 
     public AddCardView(String titleKey, String subtitleKey, Runnable onAction, boolean enabled, Runnable onBlockedAction) {
+        this.onAction = onAction;
+        this.onBlockedAction = onBlockedAction;
+        this.enabled = enabled;
         getStyleClass().add("add-card");
         setMaxWidth(Double.MAX_VALUE);
         if (!enabled) {
             getStyleClass().add("add-card-disabled");
         }
         setOnMouseClicked(e -> {
-            if (enabled) {
+            if (this.enabled) {
                 onAction.run();
                 return;
             }
@@ -52,6 +59,15 @@ public class AddCardView extends StackPane {
 
         if (CSS_URL != null) {
             getStylesheets().add(CSS_URL.toExternalForm());
+        }
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+        if (enabled) {
+            getStyleClass().remove("add-card-disabled");
+        } else if (!getStyleClass().contains("add-card-disabled")) {
+            getStyleClass().add("add-card-disabled");
         }
     }
 }
