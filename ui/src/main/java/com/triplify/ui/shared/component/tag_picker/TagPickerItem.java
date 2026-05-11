@@ -2,15 +2,7 @@ package com.triplify.ui.shared.component.tag_picker;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 
 import org.kordamp.ikonli.javafx.FontIcon;
@@ -522,9 +514,7 @@ public class TagPickerItem extends VBox {
         Button chip = new Button(tag.name() + "  x");
         chip.setFocusTraversable(false);
         chip.getStyleClass().addAll("app-tag-picker-chip", colorClass(tag.name()), "app-tag-picker-chip-selected");
-        chip.setOnAction(event -> {
-            deleteTag(tag);
-        });
+        chip.setOnAction(event -> deleteTag(tag));
         return chip;
     }
 
@@ -630,7 +620,7 @@ public class TagPickerItem extends VBox {
         selectedTagNamesById.clear();
         if (tagIds != null) {
             tagIds.stream()
-                    .filter(id -> id != null)
+                    .filter(Objects::nonNull)
                     .forEach(id -> {
                         selectedTagIds.add(id);
                         TagItem availableTag = findTagById(id);

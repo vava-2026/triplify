@@ -28,8 +28,7 @@
         </StackPane.margin>
     </HBox>
 
-    <VBox fx:id="mapControls"
-          styleClass="map-controls-container"
+    <VBox styleClass="map-controls-container"
           spacing="8"
           maxWidth="-Infinity"
           maxHeight="-Infinity"
@@ -38,17 +37,17 @@
         <StackPane.margin>
             <Insets bottom="24" right="24"/>
         </StackPane.margin>
-        <Button fx:id="zoomInButton" onAction="#onZoomIn" styleClass="map-control-button">
+        <Button onAction="#onZoomIn" styleClass="map-control-button">
             <graphic>
                 <org.kordamp.ikonli.javafx.FontIcon iconLiteral="fth-plus"/>
             </graphic>
         </Button>
-        <Button fx:id="zoomOutButton" onAction="#onZoomOut" styleClass="map-control-button">
+        <Button onAction="#onZoomOut" styleClass="map-control-button">
             <graphic>
                 <org.kordamp.ikonli.javafx.FontIcon iconLiteral="fth-minus"/>
             </graphic>
         </Button>
-        <Button fx:id="centerMapButton" onAction="#onCenterMap" styleClass="map-control-button">
+        <Button onAction="#onCenterMap" styleClass="map-control-button">
             <graphic>
                 <org.kordamp.ikonli.javafx.FontIcon iconLiteral="fth-crosshair"/>
             </graphic>

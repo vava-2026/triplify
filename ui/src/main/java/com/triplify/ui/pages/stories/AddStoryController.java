@@ -12,6 +12,7 @@ import com.triplify.application.usecase.story.dto.AddStoryRequest;
 import com.triplify.application.usecase.story.dto.GetStoryByIdRequest;
 import com.triplify.application.usecase.story.dto.UpdateStoryRequest;
 import com.triplify.application.usecase.tag.TagService;
+import com.triplify.application.usecase.tag.dto.TagResponse;
 import com.triplify.domain.model.enums.ImageOwnerType;
 import com.triplify.ui.error.ErrorHandler;
 import com.triplify.ui.i18n.I18n;
@@ -258,7 +259,7 @@ public class AddStoryController extends WindowedPageController {
         }
 
         if (story.tags() != null) {
-            tagPicker.setSelectedTagIds(story.tags().stream().map(t -> t.id()).toList());
+            tagPicker.setSelectedTagIds(story.tags().stream().map(TagResponse::id).toList());
         }
 
         if (story.latitude() != null && story.longitude() != null) {

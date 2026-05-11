@@ -17,7 +17,6 @@
                    fitWidth="152"
                    fitHeight="96"
                    pickOnBounds="true"
-                   preserveRatio="false"
                    styleClass="editor-media-thumb"/>
         <Button fx:id="removeButton"
                 focusTraversable="false"

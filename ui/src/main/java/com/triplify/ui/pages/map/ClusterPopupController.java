@@ -166,8 +166,10 @@ public class ClusterPopupController extends StackPane {
         row.getStyleClass().add("map-cluster-popup-item");
         row.setAlignment(Pos.CENTER_LEFT);
         row.setPadding(new Insets(10, 16, 10, 16));
-        row.setOnMouseClicked(e -> {
+        row.setOnMousePressed(e -> {
+            hide();
             if (onItemClick != null) onItemClick.accept(item);
+            e.consume();
         });
 
         return row;

@@ -24,7 +24,7 @@
             <Label fx:id="countryLabel" styleClass="route-card-places"/>
         </HBox>
         <HBox spacing="6" styleClass="route-card-distance-row">
-            <FontIcon fx:id="coordIcon" iconLiteral="fth-map-pin" iconSize="14" styleClass="route-card-distance-icon"/>
+            <FontIcon iconLiteral="fth-map-pin" iconSize="14" styleClass="route-card-distance-icon"/>
             <Label fx:id="coordLabel" styleClass="route-card-distance"/>
         </HBox>
     </VBox>

@@ -24,7 +24,7 @@ public class SettingsController extends SimpleLifecycleAwareController {
                 .variant(FieldVariant.GHOST)
                 .items(Arrays.asList(
                         Entry.builder(1, "One").colorTheme(ColorTheme.BLUE).icon("fth-globe").build(),
-                        Entry.builder(2, "Two").colorTheme(ColorTheme.GREEN).emoji("\uD83C\uDFD6\uFE0F").build(),
+                        Entry.builder(2, "Two").colorTheme(ColorTheme.GREEN).emoji("\uD83C\uDFD6️").build(),
                         Entry.builder(3, "Three").colorTheme(ColorTheme.RED).emoji("\uD83D\uDD25").build(),
                         Entry.builder(1, "Option A").build(),
                         Entry.builder(2, "Option B").colorTheme(ColorTheme.ORANGE).build(),

@@ -43,7 +43,7 @@ public class GuardedNavigator {
         }
 
         if (currentUser.role() == RoleEnum.PRO_USER) {
-            LicenseManager.CheckStatus status = licenseManager.checkStoredLicense(currentUser.userId().toString()).status;
+            LicenseManager.CheckStatus status = licenseManager.checkStoredLicense(currentUser.userId().toString()).status();
             if (status != LicenseManager.CheckStatus.VALID) {
                 SessionUser downgradedUser = new SessionUser(
                         currentUser.userId(),

@@ -86,7 +86,7 @@ public class AuthServiceImpl implements AuthService {
 
         if (user.getRole() == RoleEnum.PRO_USER) {
             LicenseManager.LicenseCheckResult lcr = licenseManager.checkStoredLicense(user.getId().toString());
-            if (lcr.status != LicenseManager.CheckStatus.VALID) {
+            if (lcr.status() != LicenseManager.CheckStatus.VALID) {
                 user.promoteRole(RoleEnum.USER);
                 userRepository.update(user);
                 sessionContext.set(new SessionUser(

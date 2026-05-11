@@ -62,8 +62,8 @@ public class CardGridPane<T> extends VBox {
 
     @Setter
     private boolean manualLoadMore = false;
-    private HBox loadMoreFooter;
-    private Label loadMoreLabel;
+    private final HBox loadMoreFooter;
+    private final Label loadMoreLabel;
 
     public CardGridPane() {
         getStyleClass().add("card-grid-root");

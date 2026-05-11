@@ -37,13 +37,6 @@ public class PageAccessService {
                 .orElse(List.of());
     }
 
-    public List<AppPage> getAccountPages(Optional<SessionUser> currentUser) {
-        return currentUser
-                .map(SessionUser::role)
-                .map(AppPage::accountPagesFor)
-                .orElse(List.of());
-    }
-
     public NavigationGuardResult guard(String routeId, Optional<SessionUser> currentUser) {
         AppPage targetPage = getPage(routeId);
 

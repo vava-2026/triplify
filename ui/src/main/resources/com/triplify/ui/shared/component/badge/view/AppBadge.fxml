@@ -12,8 +12,7 @@
          styleClass="badge-card"
          stylesheets="@../css/badge.css"
                alignment="TOP_CENTER"
-               spacing="0"
-               minWidth="160"
+         minWidth="160"
                prefWidth="160"
                maxWidth="160"
                minHeight="180"
@@ -24,14 +23,14 @@
               <Insets top="10" right="30" bottom="10" left="30"/>
        </padding>
 
-       <VBox alignment="TOP_CENTER" spacing="0">
+       <VBox alignment="TOP_CENTER">
               <ImageView fx:id="badgeImage"
                                fitWidth="100"
                                fitHeight="100"
                                preserveRatio="true"
                                styleClass="badge-image"/>
 
-              <VBox alignment="TOP_CENTER" spacing="0" prefWidth="150" maxWidth="150">
+              <VBox alignment="TOP_CENTER" prefWidth="150" maxWidth="150">
                      <Label fx:id="badgeName"
                                styleClass="badge-name"
                                wrapText="true"

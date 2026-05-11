@@ -6,7 +6,6 @@
 <fx:root type="StackPane"
          xmlns="http://javafx.com/javafx"
          xmlns:fx="http://javafx.com/fxml"
-         alignment="CENTER"
          styleClass="empty-state-card">
     <Label fx:id="textLabel"
            wrapText="true"

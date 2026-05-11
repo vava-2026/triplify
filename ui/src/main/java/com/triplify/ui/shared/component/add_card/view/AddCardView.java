@@ -16,16 +16,12 @@ public class AddCardView extends StackPane {
     );
 
     private boolean enabled;
-    private final Runnable onAction;
-    private final Runnable onBlockedAction;
 
     public AddCardView(String titleKey, String subtitleKey, Runnable onAction) {
         this(titleKey, subtitleKey, onAction, true, null);
     }
 
     public AddCardView(String titleKey, String subtitleKey, Runnable onAction, boolean enabled, Runnable onBlockedAction) {
-        this.onAction = onAction;
-        this.onBlockedAction = onBlockedAction;
         this.enabled = enabled;
         getStyleClass().add("add-card");
         setMaxWidth(Double.MAX_VALUE);

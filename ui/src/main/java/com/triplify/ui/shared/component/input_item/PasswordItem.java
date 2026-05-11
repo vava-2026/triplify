@@ -14,13 +14,13 @@ public class PasswordItem extends VBox {
     private static final double FIELD_HEIGHT = 45;
     private static final double ACTION_BTN_SIZE = 36;
 
-    private TextField textField;
-    private PasswordField passwordField;
-    private Label errorLabel;
-    private Button toggleButton;
+    private final TextField textField;
+    private final PasswordField passwordField;
+    private final Label errorLabel;
+    private final Button toggleButton;
     private boolean isVisible = false;
-    private StackPane fieldPane;
-    private FontIcon toggleIcon;
+    private final StackPane fieldPane;
+    private final FontIcon toggleIcon;
 
     public PasswordItem(String placeholderKey) {
         this(placeholderKey, FieldVariant.OUTLINED);

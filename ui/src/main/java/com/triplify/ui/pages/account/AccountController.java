@@ -11,7 +11,6 @@ import com.triplify.application.usecase.badgegroup.dto.BadgeGroupResponse;
 import com.triplify.application.usecase.badgegroup.dto.BadgeGroupType;
 import com.triplify.application.usecase.image.ImageService;
 import com.triplify.application.usecase.statistic.StatisticService;
-import com.triplify.application.usecase.statistic.dto.GetDisplayedStatisticsRequest;
 import com.triplify.application.usecase.statistic.dto.GetStatisticsRequest;
 import com.triplify.application.usecase.statistic.dto.StatisticResponse;
 import com.triplify.application.usecase.image.dto.GetImageByIdRequest;
@@ -62,7 +61,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.UUID;
@@ -422,7 +420,7 @@ public class AccountController extends SimpleLifecycleAwareController {
             return false;
         }
 
-        LicenseManager.CheckStatus status = licenseManager.checkStoredLicense(user.userId().toString()).status;
+        LicenseManager.CheckStatus status = licenseManager.checkStoredLicense(user.userId().toString()).status();
         if (status == LicenseManager.CheckStatus.VALID) {
             return false;
         }

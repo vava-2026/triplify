@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.control.*?>
-<?import org.kordamp.ikonli.javafx.FontIcon?>
-
 <StackPane xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
            fx:controller="com.triplify.ui.shared.header.view.HeaderView"
@@ -28,7 +26,7 @@
               </center>
 
               <right>
-                     <fx:include fx:id="languageIsland" source="LanguageIsland.fxml" BorderPane.alignment="CENTER_RIGHT" />
+                     <fx:include source="LanguageIsland.fxml" BorderPane.alignment="CENTER_RIGHT" />
               </right>
        </BorderPane>
 

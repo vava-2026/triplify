@@ -1,6 +1,7 @@
 package com.triplify.application.license;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.security.*;
 import java.security.spec.*;
@@ -39,14 +40,7 @@ public class LicenseManager {
         }
     }
 
-    public static class LicenseCheckResult {
-        public final CheckStatus status;
-        public final LicenseResult license;
-
-        public LicenseCheckResult(CheckStatus status, LicenseResult license) {
-            this.status = status;
-            this.license = license;
-        }
+    public record LicenseCheckResult(CheckStatus status, LicenseResult license) {
     }
 
     private final PublicKey publicKey;
@@ -204,7 +198,7 @@ public class LicenseManager {
             byte[] iv = Base64.getDecoder().decode(payloadIv);
             byte[] encData = Base64.getDecoder().decode(payloadB64);
             byte[] decData = aesDecrypt(encData, aesKeyBytes, iv);
-            String payload = new String(decData, "UTF-8");
+            String payload = new String(decData, StandardCharsets.UTF_8);
 
             Map<String, String> p = parseJsonFields(payload);
 
@@ -234,7 +228,7 @@ public class LicenseManager {
     private static boolean rsaVerify(String data, String signatureB64, PublicKey key) throws Exception {
         Signature sig = Signature.getInstance("SHA256withRSA");
         sig.initVerify(key);
-        sig.update(data.getBytes("UTF-8"));
+        sig.update(data.getBytes(StandardCharsets.UTF_8));
         return sig.verify(Base64.getDecoder().decode(signatureB64));
     }
 
@@ -248,7 +242,7 @@ public class LicenseManager {
 
         byte[] derivedKey = Arrays.copyOf(sha256Bytes(signedKey), 32);
         byte[] iv = Arrays.copyOf(
-                sha256Bytes(("IV:" + Base64.getEncoder().encodeToString(signedKey)).getBytes("UTF-8")), 16);
+                sha256Bytes(("IV:" + Base64.getEncoder().encodeToString(signedKey)).getBytes(StandardCharsets.UTF_8)), 16);
 
         return aesDecrypt(encAesKey, derivedKey, iv);
     }

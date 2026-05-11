@@ -173,6 +173,7 @@ public class MainApp extends Application {
         topBar.getStyleClass().add("app-top-bar");
         topBar.visibleProperty().bind(showIsland);
         topBar.managedProperty().bind(showIsland);
+        topBar.pickOnBoundsProperty().bind(showHeader);
 
         StackPane.setAlignment(topBar, Pos.TOP_LEFT);
         StackPane.setAlignment(menu, Pos.TOP_LEFT);
@@ -214,7 +215,7 @@ public class MainApp extends Application {
         stage.show();
     }
 
-    public static void main(String[] args) {
+    static void main(String[] args) {
         launch();
     }
 

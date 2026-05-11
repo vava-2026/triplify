@@ -49,7 +49,7 @@ public final class ImageViewModalView {
     private final Stage stage;
     private final StackPane root;
 
-    private FxmlLoaderHelper fxmlLoader;
+    private final FxmlLoaderHelper fxmlLoader;
 
     @FXML private StackPane root_fxml;
     @FXML private ImageView imageView;

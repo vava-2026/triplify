@@ -930,7 +930,7 @@ public class AddTripController extends WindowedPageController {
         }
         result.getValue().stream()
                 .map(TripRouteResponse::route)
-                .filter(route -> route != null)
+                .filter(Objects::nonNull)
                 .map(this::toRouteItem)
                 .forEach(routeItems::add);
         renderRoutes();

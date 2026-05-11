@@ -275,7 +275,7 @@ public class CountriesController extends SimpleLifecycleAwareController {
 		nameInput = new InputItem("countries.input.name", FieldVariant.GHOST);
 		nameSkInput = new InputItem("countries.input.nameSk", FieldVariant.GHOST);
 		emojiInput = new EmojiInputItem("countries.input.emoji", FieldVariant.GHOST);
-        searchView = new SearchView<String>(Search.builder(this::search).placeholderKey("countries.search.placeholder").variant(FieldVariant.OUTLINED).build());
+        searchView = new SearchView<>(Search.builder(this::search).placeholderKey("countries.search.placeholder").variant(FieldVariant.OUTLINED).build());
 
 		nameInputContainer.getChildren().setAll(nameInput);
 		nameSkInputContainer.getChildren().setAll(nameSkInput);

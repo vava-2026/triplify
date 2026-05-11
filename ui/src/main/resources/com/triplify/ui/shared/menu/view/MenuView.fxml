@@ -24,8 +24,7 @@
 
         <Region VBox.vgrow="ALWAYS" />
 
-        <HBox fx:id="accountIsland"
-              styleClass="account-island"
+        <HBox styleClass="account-island"
               prefWidth="220" prefHeight="48"
               alignment="CENTER_LEFT" spacing="10"
               VBox.vgrow="NEVER"
@@ -34,7 +33,7 @@
                 <Insets right="20" left="20" />
             </VBox.margin>
 
-            <StackPane fx:id="avatarCircle" styleClass="avatar-circle">
+            <StackPane styleClass="avatar-circle">
                 <ImageView fx:id="avatarImageView" styleClass="avatar-image" />
                 <Label fx:id="avatarLabel" styleClass="avatar-label" />
             </StackPane>

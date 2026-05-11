@@ -18,7 +18,7 @@
     <VBox styleClass="toast-accent" minWidth="4" maxWidth="4"/>
     <FontIcon fx:id="toastIcon" styleClass="toast-icon" iconSize="22"/>
     <VBox spacing="2" HBox.hgrow="ALWAYS">
-        <Label fx:id="titleLabel"   styleClass="toast-title"   wrapText="false"/>
+        <Label fx:id="titleLabel"   styleClass="toast-title"/>
         <Label fx:id="messageLabel" styleClass="toast-message" wrapText="true"/>
     </VBox>
     <Button styleClass="toast-close" onAction="#onClose" focusTraversable="false">

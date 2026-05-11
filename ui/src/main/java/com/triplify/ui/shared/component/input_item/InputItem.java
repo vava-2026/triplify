@@ -17,11 +17,11 @@ public class InputItem extends VBox {
     private static final double FIELD_HEIGHT = 45;
     private static final double ACTION_BTN_SIZE = 36;
 
-    private TextField textField;
-    private Label errorLabel;
-    private Button clearButton;
-    private FontIcon clearIcon;
-    private StackPane fieldPane;
+    private final TextField textField;
+    private final Label errorLabel;
+    private final Button clearButton;
+    private final FontIcon clearIcon;
+    private final StackPane fieldPane;
 
     public InputItem(String placeholderKey) {
         this(placeholderKey, FieldVariant.OUTLINED);

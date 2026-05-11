@@ -16,69 +16,67 @@
             fx:controller="com.triplify.ui.pages.routes.AddRouteController"
             fitToWidth="true"
             hbarPolicy="NEVER"
-            vbarPolicy="AS_NEEDED"
             styleClass="page-scroll">
     <stylesheets>
         <String fx:value="/com/triplify/ui/pages/routes/css/add_route.css"/>
     </stylesheets>
-    <content>
-        <StackPane styleClass="page-root,add-route-root">
-            <VBox fx:id="contentContainer" styleClass="add-route-content">
-                <Label fx:id="routePageTitleLabel" styleClass="add-route-page-title"/>
+    <StackPane styleClass="page-root,add-route-root">
+        <VBox fx:id="contentContainer" styleClass="add-route-content">
+            <Label fx:id="routePageTitleLabel" styleClass="add-route-page-title"/>
 
-                <FlowPane fx:id="contentFlow" styleClass="add-route-flow">
-                    <VBox styleClass="add-route-main-column">
-                        <VBox styleClass="page-card,add-route-card" spacing="18">
-                            <SectionHeaderView fx:id="generalSectionHeader" iconLiteral="fth-info"/>
+            <FlowPane fx:id="contentFlow" styleClass="add-route-flow">
+                <VBox styleClass="add-route-main-column">
+                    <VBox styleClass="page-card,add-route-card" spacing="18">
+                        <SectionHeaderView fx:id="generalSectionHeader" iconLiteral="fth-info"/>
 
-                            <VBox styleClass="add-route-form-group">
-                                <Label fx:id="routeTitleLabel" styleClass="form-label"/>
-                                <VBox fx:id="titleInputContainer"/>
-                            </VBox>
-
-                            <VBox styleClass="add-route-form-group">
-                                <Label fx:id="descriptionLabel" styleClass="form-label"/>
-                                <VBox fx:id="descriptionInputContainer"/>
-                            </VBox>
+                        <VBox styleClass="add-route-form-group">
+                            <Label fx:id="routeTitleLabel" styleClass="form-label"/>
+                            <VBox fx:id="titleInputContainer"/>
                         </VBox>
 
-                        <VBox styleClass="page-card,add-route-card" spacing="16">
-                            <HBox styleClass="add-route-section-header">
-                                <SectionHeaderView fx:id="placesSectionHeader" iconLiteral="fth-map-pin" HBox.hgrow="ALWAYS"/>
-                                <Label fx:id="routeLengthLabel" styleClass="add-route-length-label"/>
-                            </HBox>
+                        <VBox styleClass="add-route-form-group">
+                            <Label fx:id="descriptionLabel" styleClass="form-label"/>
+                            <VBox fx:id="descriptionInputContainer"/>
+                        </VBox>
+                    </VBox>
 
-                            <VBox fx:id="placesListContainer" styleClass="add-route-places-list"/>
+                    <VBox styleClass="page-card,add-route-card" spacing="16">
+                        <HBox styleClass="add-route-section-header">
+                            <SectionHeaderView fx:id="placesSectionHeader" iconLiteral="fth-map-pin"
+                                               HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="routeLengthLabel" styleClass="add-route-length-label"/>
+                        </HBox>
 
-                            <Button fx:id="addPlaceButton"
+                        <VBox fx:id="placesListContainer" styleClass="add-route-places-list"/>
+
+                        <Button fx:id="addPlaceButton"
+                                maxWidth="Infinity"
+                                onAction="#onAddPlace"
+                                styleClass="app-btn,app-btn-dashed-tint,add-route-add-place-button"/>
+
+                        <VBox fx:id="placePickerContainer"
+                              managed="false"
+                              visible="false"
+                              spacing="12">
+                            <VBox fx:id="placeSearchContainer"/>
+                            <Button fx:id="placeCreateButton"
                                     maxWidth="Infinity"
-                                    onAction="#onAddPlace"
-                                    styleClass="app-btn,app-btn-dashed-tint,add-route-add-place-button"/>
-
-                            <VBox fx:id="placePickerContainer"
-                                  managed="false"
-                                  visible="false"
-                                  spacing="12">
-                                <VBox fx:id="placeSearchContainer"/>
-                                <Button fx:id="placeCreateButton"
-                                        maxWidth="Infinity"
-                                        onAction="#onCreatePlace"
-                                        styleClass="app-btn,app-btn-tint"/>
-                            </VBox>
+                                    onAction="#onCreatePlace"
+                                    styleClass="app-btn,app-btn-tint"/>
                         </VBox>
                     </VBox>
+                </VBox>
 
-                    <VBox styleClass="add-route-side-column">
-                        <VBox styleClass="page-card,add-route-card,add-route-upload-card" spacing="14">
-                            <ImageUploadPanelView fx:id="imageUploadPanel"
-                                                  sectionIconLiteral="fth-image"
-                                                  />
-                        </VBox>
-
-                        <VBox fx:id="actionButtonsContainer" spacing="12"/>
+                <VBox styleClass="add-route-side-column">
+                    <VBox styleClass="page-card,add-route-card,add-route-upload-card" spacing="14">
+                        <ImageUploadPanelView fx:id="imageUploadPanel"
+                                              sectionIconLiteral="fth-image"
+                        />
                     </VBox>
-                </FlowPane>
-            </VBox>
-        </StackPane>
-    </content>
+
+                    <VBox fx:id="actionButtonsContainer" spacing="12"/>
+                </VBox>
+            </FlowPane>
+        </VBox>
+    </StackPane>
 </ScrollPane>

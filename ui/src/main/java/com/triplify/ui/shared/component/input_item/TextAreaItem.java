@@ -17,11 +17,9 @@ public class TextAreaItem extends VBox {
     private static final double FIELD_HEIGHT = 120;
     private static final double ACTION_BTN_SIZE = 36;
 
-    private TextArea textArea;
-    private Label errorLabel;
-    private Button clearButton;
-    private FontIcon clearIcon;
-    private StackPane fieldPane;
+    private final TextArea textArea;
+    private final Label errorLabel;
+    private final Button clearButton;
 
     public TextAreaItem(String placeholderKey) {
         this(placeholderKey, FieldVariant.OUTLINED);
@@ -47,7 +45,7 @@ public class TextAreaItem extends VBox {
         errorLabel.setVisible(false);
         errorLabel.setManaged(false);
 
-        clearIcon = new FontIcon("fth-x");
+        FontIcon clearIcon = new FontIcon("fth-x");
         clearIcon.getStyleClass().add("input-action-icon");
 
         clearButton = new Button();
@@ -72,7 +70,7 @@ public class TextAreaItem extends VBox {
             }
         });
 
-        fieldPane = new StackPane();
+        StackPane fieldPane = new StackPane();
         fieldPane.getChildren().addAll(textArea, clearButton);
         StackPane.setAlignment(clearButton, Pos.TOP_RIGHT);
         clearButton.translateXProperty().set(-5);

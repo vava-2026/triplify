@@ -132,6 +132,10 @@ public class MapController extends SimpleLifecycleAwareController {
 
     @Override
     public void onLifecycleShow() {
+        if (getRouter() != null) {
+            guardedNavigator.syncContext(getRouter());
+        }
+
         if (firstShow) {
             firstShow = false;
             mapView.setZoom(DEFAULT_ZOOM);
@@ -383,15 +387,26 @@ public class MapController extends SimpleLifecycleAwareController {
 
     private void navigate(MapObjectResponse item) {
         if (item.objectType() == null) return;
+        if (getRouter().getContext() instanceof TriplifyRouterContext context) {
+            context.setCurrentPage(null);
+        }
         switch (item.objectType()) {
             case PLACE -> {
                 RouterArgument args = new RouterArgument();
                 args.addArgument("placeId", item.id());
-                guardedNavigator.goTo(getRouter(), RouteIds.PLACE_DETAILS, args);
+                getRouter().moveto(RouteIds.PLACE_DETAILS, args);
             }
-            case ROUTE -> guardedNavigator.goTo(getRouter(), RouteIds.MY_ROUTES);
-            case STORY -> guardedNavigator.goTo(getRouter(), RouteIds.MY_TRIPS);
-            default    -> {}
+            case ROUTE -> {
+                RouterArgument args = new RouterArgument();
+                args.addArgument("routeId", item.id());
+                getRouter().moveto(RouteIds.ROUTE_DETAILS, args);
+            }
+            case STORY -> {
+                RouterArgument args = new RouterArgument();
+                args.addArgument("storyId", item.id());
+                getRouter().moveto(RouteIds.STORY_DETAILS, args);
+            }
+            default -> {}
         }
     }
 

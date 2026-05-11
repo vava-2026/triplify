@@ -21,8 +21,7 @@
 
     <Region HBox.hgrow="ALWAYS" />
 
-    <StackPane fx:id="toggleBox"
-               styleClass="toggle-box"
+    <StackPane styleClass="toggle-box"
                onMouseClicked="#onToggleCollapse">
         <FontIcon fx:id="toggleIcon" iconLiteral="fth-chevron-left" iconSize="24" styleClass="toggle-icon" />
     </StackPane>

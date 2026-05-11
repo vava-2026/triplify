@@ -11,6 +11,6 @@
       styleClass="image-card">
     <StackPane fx:id="media" styleClass="image-card-media"/>
     <VBox spacing="4" styleClass="image-card-body">
-        <Label fx:id="descriptionLabel" styleClass="image-card-description" wrapText="false"/>
+        <Label fx:id="descriptionLabel" styleClass="image-card-description"/>
     </VBox>
 </VBox>

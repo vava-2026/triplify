@@ -15,8 +15,7 @@
            styleClass="image-modal-root">
     <Region styleClass="image-modal-backdrop" maxWidth="Infinity" maxHeight="Infinity"/>
 
-    <StackPane styleClass="image-modal-card-shell"
-               minWidth="520" prefWidth="520" maxWidth="520"
+    <StackPane minWidth="520" prefWidth="520" maxWidth="520"
                prefHeight="550" maxHeight="550">
         <VBox fx:id="card" styleClass="image-modal-card"
               minWidth="520" prefWidth="520" maxWidth="520">
@@ -28,7 +27,7 @@
                 <VBox fx:id="descriptionContainer"/>
             </VBox>
             <Region VBox.vgrow="ALWAYS"/>
-            <HBox spacing="12" alignment="CENTER_RIGHT" styleClass="image-modal-actions">
+            <HBox spacing="12" alignment="CENTER_RIGHT">
                 <padding>
                     <Insets top="20"/>
                 </padding>

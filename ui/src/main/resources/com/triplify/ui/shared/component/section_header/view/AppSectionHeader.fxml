@@ -8,17 +8,15 @@
          xmlns="http://javafx.com/javafx"
          xmlns:fx="http://javafx.com/fxml"
          styleClass="editor-section-header">
-    <children>
-        <FontIcon fx:id="iconNode"
-                  iconLiteral="fth-info"
-                  iconSize="14"
-                  styleClass="editor-section-icon"/>
-        <Label fx:id="titleLabel"
-               styleClass="editor-section-title"/>
-        <Label fx:id="tagLabel"
-               managed="false"
-               text="Pro"
-               visible="false"
-               styleClass="pro-tag,editor-section-tag"/>
-    </children>
+    <FontIcon fx:id="iconNode"
+              iconLiteral="fth-info"
+              iconSize="14"
+              styleClass="editor-section-icon"/>
+    <Label fx:id="titleLabel"
+           styleClass="editor-section-title"/>
+    <Label fx:id="tagLabel"
+           managed="false"
+           text="Pro"
+           visible="false"
+           styleClass="pro-tag,editor-section-tag"/>
 </fx:root>

@@ -1,73 +1,65 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.String?>
+<?import com.triplify.ui.map.InteractiveMap?>
 <?import com.triplify.ui.shared.component.section_header.view.SectionHeaderView?>
 <?import com.triplify.ui.shared.component.upload_panel.view.ImageUploadPanelView?>
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.layout.FlowPane?>
-<?import javafx.scene.layout.StackPane?>
-<?import javafx.scene.layout.VBox?>
-<?import com.triplify.ui.map.InteractiveMap?>
-
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import java.lang.String?>
 <ScrollPane xmlns="http://javafx.com/javafx"
-           xmlns:fx="http://javafx.com/fxml"
-           fx:controller="com.triplify.ui.pages.places.AddPlaceController"
-           fitToWidth="true"
-           hbarPolicy="NEVER"
-           vbarPolicy="AS_NEEDED"
-           styleClass="page-scroll">
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.triplify.ui.pages.places.AddPlaceController"
+            fitToWidth="true"
+            hbarPolicy="NEVER"
+            styleClass="page-scroll">
     <stylesheets>
         <String fx:value="/com/triplify/ui/pages/places/add_place.css"/>
     </stylesheets>
-    <content>
-        <StackPane styleClass="page-root,add-place-root">
-            <VBox fx:id="contentContainer" styleClass="add-place-content">
-                <FlowPane fx:id="contentFlow" styleClass="add-place-flow">
-                    <VBox styleClass="add-place-main-column">
-                        <VBox styleClass="page-card,add-place-card" spacing="18">
-                            <SectionHeaderView fx:id="generalSectionHeader" iconLiteral="fth-info"/>
+    <StackPane styleClass="page-root,add-place-root">
+        <VBox fx:id="contentContainer" styleClass="add-place-content">
+            <FlowPane fx:id="contentFlow" styleClass="add-place-flow">
+                <VBox styleClass="add-place-main-column">
+                    <VBox styleClass="page-card,add-place-card" spacing="18">
+                        <SectionHeaderView fx:id="generalSectionHeader" iconLiteral="fth-info"/>
 
-                            <VBox styleClass="add-place-form-group">
-                                <Label fx:id="placeTitleLabel" styleClass="form-label"/>
-                                <VBox fx:id="titleInputContainer"/>
-                            </VBox>
-
-                            <VBox styleClass="add-place-form-group">
-                                <Label fx:id="countryLabel" styleClass="form-label"/>
-                                <VBox fx:id="countryInputContainer"/>
-                            </VBox>
-
-                            <VBox styleClass="add-place-form-group">
-                                <Label fx:id="descriptionLabel" styleClass="form-label"/>
-                                <VBox fx:id="descriptionInputContainer"/>
-                            </VBox>
+                        <VBox styleClass="add-place-form-group">
+                            <Label fx:id="placeTitleLabel" styleClass="form-label"/>
+                            <VBox fx:id="titleInputContainer"/>
                         </VBox>
 
-                        <VBox styleClass="page-card,add-place-card,add-place-map-card" spacing="16">
-                            <SectionHeaderView fx:id="locationSectionHeader" iconLiteral="fth-map-pin"/>
+                        <VBox styleClass="add-place-form-group">
+                            <Label fx:id="countryLabel" styleClass="form-label"/>
+                            <VBox fx:id="countryInputContainer"/>
+                        </VBox>
 
-                            <InteractiveMap fx:id="interactiveMap" />
-
-                            <Label fx:id="mapHelperLabel"
-                                   wrapText="true"
-                                   styleClass="add-place-helper-text"/>
-
-                            <Label fx:id="selectedCoordinatesLabel"
-                                   styleClass="add-place-coordinate-label"/>
+                        <VBox styleClass="add-place-form-group">
+                            <Label fx:id="descriptionLabel" styleClass="form-label"/>
+                            <VBox fx:id="descriptionInputContainer"/>
                         </VBox>
                     </VBox>
 
-                    <VBox styleClass="add-place-side-column">
-                        <VBox styleClass="page-card,add-place-card" spacing="14">
-                            <ImageUploadPanelView fx:id="imageUploadPanel"/>
-                        </VBox>
+                    <VBox styleClass="page-card,add-place-card,add-place-map-card" spacing="16">
+                        <SectionHeaderView fx:id="locationSectionHeader" iconLiteral="fth-map-pin"/>
 
-                        <VBox fx:id="actionButtonsContainer" spacing="12"/>
+                        <InteractiveMap fx:id="interactiveMap"/>
+
+                        <Label fx:id="mapHelperLabel"
+                               wrapText="true"
+                               styleClass="add-place-helper-text"/>
+
+                        <Label fx:id="selectedCoordinatesLabel"
+                               styleClass="add-place-coordinate-label"/>
                     </VBox>
-                </FlowPane>
-            </VBox>
-        </StackPane>
-    </content>
+                </VBox>
+
+                <VBox styleClass="add-place-side-column">
+                    <VBox styleClass="page-card,add-place-card" spacing="14">
+                        <ImageUploadPanelView fx:id="imageUploadPanel"/>
+                    </VBox>
+
+                    <VBox fx:id="actionButtonsContainer" spacing="12"/>
+                </VBox>
+            </FlowPane>
+        </VBox>
+    </StackPane>
 </ScrollPane>

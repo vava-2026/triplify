@@ -11,7 +11,7 @@ public class Launcher {
 
     private static final Logger log = LoggerFactory.getLogger(Launcher.class);
 
-    public static void main(String[] args) {
+    static void main(String[] args) {
         log.info("Creating Guice injector");
         Injector injector = Guice.createInjector(new BootstrapModule());
         log.info("Guice injector created successfully");

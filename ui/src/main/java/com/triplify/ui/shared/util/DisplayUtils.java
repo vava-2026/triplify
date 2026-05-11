@@ -53,21 +53,21 @@ public final class DisplayUtils {
         if (start != null && (end == null || start.equals(end))) {
             return start.format(localizedDate);
         }
-    if (start != null && end != null) {
-        if (start.getYear() == end.getYear() && start.getMonth() == end.getMonth()) {
-            DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("LLLL", locale);
-            String monthString = start.format(monthFormatter);
-            String capitalizedMonth = monthString.substring(0, 1).toUpperCase(locale) + monthString.substring(1);
-            return String.format("%s %d - %d, %d",
-                    capitalizedMonth,
-                    start.getDayOfMonth(),
-                    end.getDayOfMonth(),
-                    start.getYear()
-            );
+        if (start != null) {
+            if (start.getYear() == end.getYear() && start.getMonth() == end.getMonth()) {
+                DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("LLLL", locale);
+                String monthString = start.format(monthFormatter);
+                String capitalizedMonth = monthString.substring(0, 1).toUpperCase(locale) + monthString.substring(1);
+                return String.format("%s %d - %d, %d",
+                        capitalizedMonth,
+                        start.getDayOfMonth(),
+                        end.getDayOfMonth(),
+                        start.getYear()
+                );
+            }
+            return start.format(localizedDate) + " - " + end.format(localizedDate);
         }
-        return start.format(localizedDate) + " - " + end.format(localizedDate);
-    }
-        return start == null ? end.format(localizedDate) : start.format(localizedDate);
+        return end.format(localizedDate);
     }
 
     public static String formatDateRange(LocalDate start, LocalDate end) {
@@ -75,7 +75,7 @@ public final class DisplayUtils {
         if (start != null && (end == null || start.equals(end))) {
             return start.format(DATE_FORMAT);
         }
-        if (start != null && end != null) {
+        if (start != null) {
             if (start.getYear() == end.getYear() && start.getMonth() == end.getMonth()) {
                 return String.format("%s %d - %d, %d",
                         start.getMonth().name().substring(0, 1) + start.getMonth().name().substring(1).toLowerCase(),
@@ -86,13 +86,7 @@ public final class DisplayUtils {
             }
             return start.format(DATE_FORMAT) + " - " + end.format(DATE_FORMAT);
         }
-        return start == null ? end.format(DATE_FORMAT) : start.format(DATE_FORMAT);
-    }
-
-    public static String deriveCountryLabel(Set<CountryResponse> countries) {
-        if (countries == null || countries.isEmpty()) return "";
-        if (countries.size() == 1) return countries.iterator().next().name();
-        return countries.iterator().next().name() + " +" + (countries.size() - 1);
+        return end.format(DATE_FORMAT);
     }
 
     public static String deriveCoverUrl(ImageResponse coverImage) {
