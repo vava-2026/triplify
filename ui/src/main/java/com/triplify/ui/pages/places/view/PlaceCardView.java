@@ -64,7 +64,7 @@ public class PlaceCardView implements Initializable {
         if (place == null) return;
 
         String coverUrl = DisplayUtils.deriveCoverUrl(place.coverImage());
-        EditorUtils.applyCoverBackground(media, EditorUtils.resolveCoverImage(coverUrl));
+        EditorUtils.applyCoverBackgroundAsync(media, coverUrl);
 
         titleLabel.setText(EditorUtils.safeText(place.title(), "Untitled place"));
         DisplayUtils.bindCountry(countryRow, countryLabel, countryEmojiView, place.country(), COUNTRY_EMOJI_SIZE);

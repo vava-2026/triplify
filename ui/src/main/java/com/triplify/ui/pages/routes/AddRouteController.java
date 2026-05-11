@@ -606,7 +606,7 @@ public class AddRouteController extends WindowedPageController {
     }
 
     private ImageView createImageView(String imagePath, double width, double height) {
-        ImageView view = new ImageView(EditorUtils.loadImage(imagePath, DEFAULT_IMAGE, getClass()));
+        ImageView view = new ImageView(EditorUtils.loadImageAsync(imagePath, DEFAULT_IMAGE, getClass(), width * 2, height * 2));
         view.setFitWidth(width);
         view.setFitHeight(height);
         view.setPreserveRatio(false);

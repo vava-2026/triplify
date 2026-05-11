@@ -634,7 +634,7 @@ public class RouteDetailsController extends SimpleLifecycleAwareController {
         orderLabel.getStyleClass().add("route-details-place-index");
 
         String path = DisplayUtils.deriveCoverUrl(place.coverImage());
-        ImageView preview = new ImageView(EditorUtils.loadImage(path, "", getClass()));
+        ImageView preview = new ImageView(EditorUtils.loadImageAsync(path, DEFAULT_IMAGE, getClass(), 184, 116));
         preview.setFitWidth(92);
         preview.setFitHeight(58);
         preview.setPreserveRatio(false);

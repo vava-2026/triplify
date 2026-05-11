@@ -85,8 +85,7 @@ public class TripCardView implements Initializable {
         DisplayUtils.bindLocalDate(trip.startedAt(), trip.endedAt(), dateLabel.textProperty());
 
         String coverUrl = DisplayUtils.deriveCoverUrl(trip.coverImage());
-        Image image = EditorUtils.resolveCoverImage(coverUrl);
-        EditorUtils.applyCoverBackground(media, image);
+        EditorUtils.applyCoverBackgroundAsync(media, coverUrl);
 
         currentStatus = trip.status();
         DisplayUtils.applyStatus(statusLabel, currentStatus);

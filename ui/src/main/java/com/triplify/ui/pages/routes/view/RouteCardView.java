@@ -11,7 +11,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -78,8 +77,7 @@ public class RouteCardView implements Initializable {
         distanceLabel.setText(formatDistance(route.length()));
 
         String coverUrl = DisplayUtils.deriveCoverUrl(route.coverImage());
-        Image image = EditorUtils.resolveCoverImage(coverUrl);
-        EditorUtils.applyCoverBackground(media, image);
+        EditorUtils.applyCoverBackgroundAsync(media, coverUrl);
     }
 
     public static RouteCardView create(RouteResponse route, Runnable onOpen) {

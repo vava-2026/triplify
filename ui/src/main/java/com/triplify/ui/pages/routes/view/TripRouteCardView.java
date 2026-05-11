@@ -76,7 +76,7 @@ public class TripRouteCardView implements Initializable {
         this.currentTripRoute = tripRoute;
 
         String coverUrl = DisplayUtils.deriveCoverUrl(tripRoute.route().coverImage());
-        EditorUtils.applyCoverBackground(media, EditorUtils.resolveCoverImage(coverUrl));
+        EditorUtils.applyCoverBackgroundAsync(media, coverUrl);
 
         titleLabel.setText(tripRoute.route().title());
         currentStatus = tripRoute.status();

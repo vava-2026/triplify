@@ -8,7 +8,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
@@ -47,8 +46,7 @@ public class ImageCardView implements Initializable {
         if (image == null) return;
 
         if (image.url() != null) {
-            Image cover = EditorUtils.resolveCoverImage(image.url().toUri().toString());
-            EditorUtils.applyCoverBackground(media, cover);
+            EditorUtils.applyCoverBackgroundAsync(media, image.url().toUri().toString());
         }
 
         String desc = image.description();

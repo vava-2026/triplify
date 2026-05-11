@@ -40,7 +40,9 @@ import com.triplify.domain.model.enums.StatisticType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Path;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -117,16 +119,18 @@ public class PlaceServiceImpl implements PlaceService {
         }
 
         CountryResponse countryResponse = countryService.getCountryById(new GetCountryByIdRequest(request.countryId())).orThrow();
-        UUID imageId = null;
-        if (old.getCoverImage() != null && !old.getCoverImage().getUrl().equals(request.coverImage())){
-            imageService.deleteImage(new DeleteImageRequest(old.getCoverImage().getId())).orThrow();
+        UUID imageId = old.getCoverImageId();
 
+        Path oldPath = old.getCoverImage() != null ? old.getCoverImage().getUrl() : null;
+        if (!Objects.equals(oldPath, request.coverImage())) {
+            if (old.getCoverImage() != null) {
+                imageService.deleteImage(new DeleteImageRequest(old.getCoverImage().getId())).orThrow();
+            }
             if (request.coverImage() != null) {
                 var imageResult = imageService.addImage(new AddImageRequest(request.coverImage(), DEFAULT_IMAGE_DESCRIPTION + request.title()));
                 imageId = imageResult.orThrow().id();
-            }
-            else {
-                imageId = old.getCoverImage().getId();
+            } else {
+                imageId = null;
             }
         }
 

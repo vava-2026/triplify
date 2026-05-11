@@ -12,7 +12,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
@@ -88,15 +87,14 @@ public class StoryCardView implements Initializable {
                 } catch (Exception ignored) {}
             }
         }
-        Image image = EditorUtils.resolveCoverImage(coverUrl);
-        if (image != null) {
-            media.getStyleClass().remove("story-cover-default");
-            EditorUtils.applyCoverBackground(media, image);
-        } else {
+        if (coverUrl == null) {
             if (!media.getStyleClass().contains("story-cover-default")) {
                 media.getStyleClass().add("story-cover-default");
             }
+            return;
         }
+        media.getStyleClass().remove("story-cover-default");
+        EditorUtils.applyCoverBackgroundAsync(media, coverUrl);
     }
 
     public static StoryCardView create(StoryResponse story, Runnable onOpen) {

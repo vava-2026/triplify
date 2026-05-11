@@ -12,6 +12,7 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.toast.ToastService;
 
+import javafx.application.Platform;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -28,7 +29,7 @@ import javafx.scene.shape.Rectangle;
 
 public final class EditorUtils {
 
-    private static final Map<String, Image> COVER_IMAGE_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, Image> IMAGE_CACHE = new ConcurrentHashMap<>();
     private static final BackgroundSize CARD_COVER_SIZE = new BackgroundSize(1, 1, true, true, false, true);
 
     private EditorUtils() {}
@@ -245,9 +246,49 @@ public final class EditorUtils {
         return value == null || value.isBlank() ? fallback : value;
     }
 
+    private static String resolveImageUrl(String imagePath, String defaultImage, Class<?> resourceContext) {
+        String resolved = (imagePath == null || imagePath.isBlank()) ? defaultImage : imagePath;
+        if (resolved.startsWith("/")) {
+            var resource = resourceContext.getResource(resolved);
+            if (resource != null) return resource.toExternalForm();
+        }
+        if (resolved.startsWith("file:/") || resolved.matches("^[a-zA-Z][a-zA-Z0-9+.-]*://.*")) {
+            return resolved;
+        }
+        File file = new File(resolved);
+        if (file.exists()) return file.toURI().toString();
+        var fallback = resourceContext.getResource(defaultImage);
+        return fallback != null ? fallback.toExternalForm() : null;
+    }
+
+    public static Image loadImageAsync(String imagePath, String defaultImage, Class<?> resourceContext,
+                                       double width, double height) {
+        String url = resolveImageUrl(imagePath, defaultImage, resourceContext);
+        if (url == null) return null;
+        return IMAGE_CACHE.computeIfAbsent(url + "@" + (int) width + "x" + (int) height,
+                k -> new Image(url, width, height, true, true, true));
+    }
+
     public static Image resolveCoverImage(String coverUrl) {
         if (coverUrl == null || coverUrl.isBlank()) return null;
-        return COVER_IMAGE_CACHE.computeIfAbsent(coverUrl, url -> new Image(url, 600, 400, true, true));
+        return IMAGE_CACHE.computeIfAbsent(coverUrl + "@600x400",
+                k -> new Image(coverUrl, 600, 400, true, true, true));
+    }
+
+    public static void applyCoverBackgroundAsync(StackPane media, String coverUrl) {
+        if (coverUrl == null || coverUrl.isBlank()) {
+            applyCoverBackground(media, null);
+            return;
+        }
+        Image img = resolveCoverImage(coverUrl);
+        applyCoverBackground(media, img);
+        if (img.getProgress() < 1.0 && !img.isError()) {
+            img.progressProperty().addListener((obs, old, progress) -> {
+                if (progress.doubleValue() >= 1.0 && !img.isError()) {
+                    Platform.runLater(() -> applyCoverBackground(media, img));
+                }
+            });
+        }
     }
 
     public static void applyCoverBackground(StackPane media, Image image) {

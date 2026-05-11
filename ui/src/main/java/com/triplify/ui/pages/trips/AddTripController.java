@@ -565,7 +565,7 @@ public class AddTripController extends WindowedPageController {
 
     private VBox buildRouteCard(RouteItem item) {
         EditorMediaCardView card = new EditorMediaCardView();
-        card.setPreviewImage(EditorUtils.loadImage(item.imagePath(), DEFAULT_IMAGE, getClass()));
+        card.setPreviewImage(EditorUtils.loadImageAsync(item.imagePath(), DEFAULT_IMAGE, getClass(), 304, 192));
         card.setTitle(item.title());
         card.setSubtitle(item.subtitle());
         card.setCursor(Cursor.HAND);
@@ -588,7 +588,7 @@ public class AddTripController extends WindowedPageController {
 
     private VBox buildPlaceCard(PlaceItem item) {
         EditorMediaCardView card = new EditorMediaCardView();
-        card.setPreviewImage(EditorUtils.loadImage(item.imagePath(), DEFAULT_IMAGE, getClass()));
+        card.setPreviewImage(EditorUtils.loadImageAsync(item.imagePath(), DEFAULT_IMAGE, getClass(), 304, 192));
         card.setTitle(item.title());
         card.setSubtitle(item.subtitle());
         card.setRemoveVisible(item.isManual());

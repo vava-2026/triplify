@@ -77,7 +77,7 @@ public class TripPlaceCardView implements Initializable {
         if (tripPlace == null) return;
 
         String coverUrl = DisplayUtils.deriveCoverUrl(tripPlace.place().coverImage());
-        EditorUtils.applyCoverBackground(media, EditorUtils.resolveCoverImage(coverUrl));
+        EditorUtils.applyCoverBackgroundAsync(media, coverUrl);
 
         titleLabel.setText(tripPlace.place().title());
         DisplayUtils.bindCountry(countryRow, countryLabel, countryEmojiView, tripPlace.place().country(), COUNTRY_EMOJI_SIZE);
