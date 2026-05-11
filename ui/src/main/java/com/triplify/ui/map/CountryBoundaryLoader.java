@@ -13,11 +13,28 @@ public final class CountryBoundaryLoader {
 
     private static final String RESOURCE_PATH = "/com/triplify/ui/map/countries.geo.json";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static volatile List<CountryBoundary> cachedBoundaries;
 
     private CountryBoundaryLoader() {
     }
 
     public static List<CountryBoundary> load() {
+        List<CountryBoundary> boundaries = cachedBoundaries;
+        if (boundaries != null) {
+            return boundaries;
+        }
+
+        synchronized (CountryBoundaryLoader.class) {
+            boundaries = cachedBoundaries;
+            if (boundaries == null) {
+                boundaries = loadFromResource();
+                cachedBoundaries = boundaries;
+            }
+        }
+        return boundaries;
+    }
+
+    private static List<CountryBoundary> loadFromResource() {
         try (InputStream inputStream = CountryBoundaryLoader.class.getResourceAsStream(RESOURCE_PATH)) {
             if (inputStream == null) {
                 throw new IllegalStateException("Country boundaries resource not found: " + RESOURCE_PATH);

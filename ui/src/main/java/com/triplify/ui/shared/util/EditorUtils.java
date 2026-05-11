@@ -2,16 +2,18 @@ package com.triplify.ui.shared.util;
 
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import com.triplify.ui.i18n.I18n;
 import com.triplify.ui.shared.toast.ToastService;
 
+import javafx.beans.value.ChangeListener;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -28,7 +30,25 @@ import javafx.scene.shape.Rectangle;
 
 public final class EditorUtils {
 
-    private static final Map<String, Image> COVER_IMAGE_CACHE = new ConcurrentHashMap<>();
+    private static final int COVER_IMAGE_CACHE_LIMIT = 256;
+    private static final int IMAGE_CACHE_LIMIT = 512;
+    private static final String COVER_PREVIEW_LISTENER_STATE_KEY = "triplify.coverPreviewListenerState";
+    private static final Map<String, Image> COVER_IMAGE_CACHE = Collections.synchronizedMap(
+            new LinkedHashMap<>(128, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<String, Image> eldest) {
+                    return size() > COVER_IMAGE_CACHE_LIMIT;
+                }
+            }
+    );
+    private static final Map<String, Image> IMAGE_CACHE = Collections.synchronizedMap(
+            new LinkedHashMap<>(256, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<String, Image> eldest) {
+                    return size() > IMAGE_CACHE_LIMIT;
+                }
+            }
+    );
     private static final BackgroundSize CARD_COVER_SIZE = new BackgroundSize(1, 1, true, true, false, true);
 
     private EditorUtils() {}
@@ -87,32 +107,20 @@ public final class EditorUtils {
         boolean keepRatio = preserveRatio != null && preserveRatio;
         boolean smoothScaling = smooth == null || smooth;
 
-        String resolved = imagePath == null || imagePath.isBlank() ? defaultImage : imagePath;
-        if (resolved.startsWith("/")) {
-            var resource = resourceContext.getResource(resolved);
-            if (resource != null) {
-                return hasRequestedSize
-                        ? new Image(resource.toExternalForm(), width, height, keepRatio, smoothScaling, true)
-                        : new Image(resource.toExternalForm(), true);
+        String source = resolveImageSource(imagePath, defaultImage, resourceContext);
+        String cacheKey = buildImageCacheKey(source, width, height, keepRatio, smoothScaling, hasRequestedSize);
+        synchronized (IMAGE_CACHE) {
+            Image cached = IMAGE_CACHE.get(cacheKey);
+            if (cached != null) {
+                return cached;
             }
-        }
 
-        if (resolved.startsWith("file:/") || resolved.matches("^[a-zA-Z][a-zA-Z0-9+.-]*://.*")) {
-            return hasRequestedSize
-                    ? new Image(resolved, width, height, keepRatio, smoothScaling, true)
-                    : new Image(resolved, true);
+            Image loaded = hasRequestedSize
+                    ? new Image(source, width, height, keepRatio, smoothScaling, true)
+                    : new Image(source, true);
+            IMAGE_CACHE.put(cacheKey, loaded);
+            return loaded;
         }
-
-        File file = new File(resolved);
-        if (file.exists()) {
-            return hasRequestedSize
-                    ? new Image(file.toURI().toString(), width, height, keepRatio, smoothScaling, true)
-                    : new Image(file.toURI().toString(), true);
-        }
-        var fallback = resourceContext.getResource(defaultImage);
-        return hasRequestedSize
-                ? new Image(fallback.toExternalForm(), width, height, keepRatio, smoothScaling, true)
-                : new Image(fallback.toExternalForm(), true);
     }
 
     public static Image loadImage(String imagePath, String defaultImage, Class<?> resourceContext, double requestedWidth, double requestedHeight, boolean preserveRatio, boolean smooth) {
@@ -165,15 +173,19 @@ public final class EditorUtils {
     }
 
     public static void setCoverPreviewImage(ImageView coverPreview, StackPane uploadArea, Image image) {
+        removeCoverPreviewImageListeners(coverPreview);
         coverPreview.setImage(image);
         updateCoverViewport(coverPreview, uploadArea);
         if (image == null) {
             coverPreview.setViewport(null);
             return;
         }
-        image.widthProperty().addListener((obs, o, n) -> updateCoverViewport(coverPreview, uploadArea));
-        image.heightProperty().addListener((obs, o, n) -> updateCoverViewport(coverPreview, uploadArea));
-        image.progressProperty().addListener((obs, o, n) -> updateCoverViewport(coverPreview, uploadArea));
+
+        ChangeListener<Number> listener = (obs, o, n) -> updateCoverViewport(coverPreview, uploadArea);
+        image.widthProperty().addListener(listener);
+        image.heightProperty().addListener(listener);
+        image.progressProperty().addListener(listener);
+        coverPreview.getProperties().put(COVER_PREVIEW_LISTENER_STATE_KEY, new CoverPreviewListenerState(image, listener));
     }
 
     // Partly generated by Copilot
@@ -247,7 +259,15 @@ public final class EditorUtils {
 
     public static Image resolveCoverImage(String coverUrl) {
         if (coverUrl == null || coverUrl.isBlank()) return null;
-        return COVER_IMAGE_CACHE.computeIfAbsent(coverUrl, url -> new Image(url, 600, 400, true, true));
+        synchronized (COVER_IMAGE_CACHE) {
+            Image cached = COVER_IMAGE_CACHE.get(coverUrl);
+            if (cached != null) {
+                return cached;
+            }
+            Image loaded = new Image(coverUrl, 600, 400, true, true);
+            COVER_IMAGE_CACHE.put(coverUrl, loaded);
+            return loaded;
+        }
     }
 
     public static void applyCoverBackground(StackPane media, Image image) {
@@ -279,5 +299,54 @@ public final class EditorUtils {
         view.setVisible(show);
         view.setManaged(show);
         view.setImage(show ? img : null);
+    }
+
+    private static void removeCoverPreviewImageListeners(ImageView coverPreview) {
+        Object state = coverPreview.getProperties().remove(COVER_PREVIEW_LISTENER_STATE_KEY);
+        if (!(state instanceof CoverPreviewListenerState listenerState) || listenerState.image() == null) {
+            return;
+        }
+        listenerState.image().widthProperty().removeListener(listenerState.listener());
+        listenerState.image().heightProperty().removeListener(listenerState.listener());
+        listenerState.image().progressProperty().removeListener(listenerState.listener());
+    }
+
+    private static String resolveImageSource(String imagePath, String defaultImage, Class<?> resourceContext) {
+        String resolved = imagePath == null || imagePath.isBlank() ? defaultImage : imagePath;
+        if (resolved.startsWith("/")) {
+            var resource = resourceContext.getResource(resolved);
+            if (resource != null) {
+                return resource.toExternalForm();
+            }
+        }
+
+        if (resolved.startsWith("file:/") || resolved.matches("^[a-zA-Z][a-zA-Z0-9+.-]*://.*")) {
+            return resolved;
+        }
+
+        File file = new File(resolved);
+        if (file.exists()) {
+            return file.toURI().toString();
+        }
+
+        var fallback = resourceContext.getResource(defaultImage);
+        return fallback.toExternalForm();
+    }
+
+    private static String buildImageCacheKey(
+            String source,
+            double width,
+            double height,
+            boolean preserveRatio,
+            boolean smooth,
+            boolean hasRequestedSize
+    ) {
+        if (!hasRequestedSize) {
+            return source + "|original";
+        }
+        return source + "|" + width + "|" + height + "|" + preserveRatio + "|" + smooth;
+    }
+
+    private record CoverPreviewListenerState(Image image, ChangeListener<Number> listener) {
     }
 }

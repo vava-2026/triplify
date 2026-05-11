@@ -2,6 +2,8 @@ package com.triplify.ui.shared.component.card_grid;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 
 import org.kordamp.ikonli.javafx.FontIcon;
@@ -10,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import com.triplify.application.shared.Pagination;
 import com.triplify.ui.shared.util.Localization;
+import com.triplify.ui.shared.util.UiBackgroundExecutor;
 
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -29,6 +32,7 @@ import lombok.Setter;
 public class CardGridPane<T> extends VBox {
 
     private static final Logger log = LoggerFactory.getLogger(CardGridPane.class);
+    private static final ExecutorService LOADER_EXECUTOR = UiBackgroundExecutor.get();
 
     @FunctionalInterface
     public interface PageLoader<T> {
@@ -54,6 +58,7 @@ public class CardGridPane<T> extends VBox {
     private boolean hasMore = true;
     private int currentColumns = 0;
     private double lastViewportWidth = 0;
+    private long loadGeneration = 0L;
 
     private double gap = 16;
     @Setter
@@ -162,10 +167,12 @@ public class CardGridPane<T> extends VBox {
     private final List<Node> cardNodes = new ArrayList<>();
 
     public void refresh() {
+        loadGeneration++;
         page = 1;
         hasMore = true;
         loading = false;
         cardNodes.clear();
+        grid.getChildren().clear();
         scrollPane.setVvalue(0);
         setLoadMoreVisible(false);
         showEmpty(false);
@@ -176,17 +183,38 @@ public class CardGridPane<T> extends VBox {
         if (loading || !hasMore || pageLoader == null || cardFactory == null) return;
         loading = true;
         setLoadMoreVisible(false);
+        int pageToLoad = page;
+        long requestGeneration = loadGeneration;
 
-        PageResult<T> result = pageLoader.load(page, pageSize);
-        List<T> items = result.items();
+        CompletableFuture
+                .supplyAsync(() -> pageLoader.load(pageToLoad, pageSize), LOADER_EXECUTOR)
+                .whenComplete((result, throwable) -> Platform.runLater(() ->
+                        applyLoadedPage(pageToLoad, requestGeneration, result, throwable)));
+    }
 
-        if (items == null || items.isEmpty()) {
+    private void applyLoadedPage(int pageToLoad, long requestGeneration, PageResult<T> result, Throwable throwable) {
+        if (requestGeneration != loadGeneration) {
+            return;
+        }
+
+        loading = false;
+
+        if (throwable != null) {
             hasMore = false;
-            if (page == 1 && cardNodes.isEmpty()) {
-                log.debug("No items found for page {}", page);
+            log.error("Failed to load card grid page {}", pageToLoad, throwable);
+            if (pageToLoad == 1 && cardNodes.isEmpty()) {
                 showEmpty(true);
             }
-            loading = false;
+            return;
+        }
+
+        List<T> items = result == null ? null : result.items();
+        if (items == null || items.isEmpty()) {
+            hasMore = false;
+            if (pageToLoad == 1 && cardNodes.isEmpty()) {
+                log.debug("No items found for page {}", pageToLoad);
+                showEmpty(true);
+            }
             return;
         }
 
@@ -197,7 +225,6 @@ public class CardGridPane<T> extends VBox {
 
         updatePagination(result.pagination());
         relayout(false);
-        loading = false;
         if (!manualLoadMore) {
             ensureScrollable();
         } else {

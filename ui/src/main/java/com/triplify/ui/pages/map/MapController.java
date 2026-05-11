@@ -31,6 +31,7 @@ import com.triplify.ui.shared.component.search.view.SearchView;
 import com.triplify.ui.shared.component.select.entry.model.Entry;
 import com.triplify.ui.shared.model.FieldVariant;
 import com.triplify.ui.shared.util.Localization;
+import com.triplify.ui.shared.util.UiBackgroundExecutor;
 
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
@@ -303,7 +304,7 @@ public class MapController extends SimpleLifecycleAwareController {
                 Set.copyOf(activeFilter)
         );
 
-        CompletableFuture.supplyAsync(() -> mapService.getMapObjects(request))
+        CompletableFuture.supplyAsync(() -> mapService.getMapObjects(request), UiBackgroundExecutor.get())
                 .thenAccept(result -> Platform.runLater(() -> {
                     result.onSuccess(markers -> markersLayer.setMarkers(markers));
                     result.onFailure(e -> errorHandler.handle(e, Map.of()));
@@ -370,7 +371,7 @@ public class MapController extends SimpleLifecycleAwareController {
         long requestVersion = routeHoverVersion;
 
         CompletableFuture.supplyAsync(() ->
-                routeService.getRouteById(new GetRouteByIdRequest(parsedRouteId)))
+                routeService.getRouteById(new GetRouteByIdRequest(parsedRouteId)), UiBackgroundExecutor.get())
                 .thenAccept(result -> Platform.runLater(() -> {
                     if (requestVersion != routeHoverVersion) {
                         return;

@@ -20,6 +20,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 public class PlaceRepositoryImpl implements PlaceRepository {
@@ -59,6 +60,34 @@ public class PlaceRepositoryImpl implements PlaceRepository {
                 throw new RuntimeException("Database error while finding place by id", e);
         }
         return Optional.empty();
+    }
+
+    @Override
+    public List<Place> findByIds(Set<UUID> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+
+        String placeholders = String.join(", ", java.util.Collections.nCopies(ids.size(), "?"));
+        String sql = PLACE_WITH_COUNTRY_AND_IMAGE_SELECT + " WHERE p.id IN (" + placeholders + ")";
+
+        try (Connection conn = SQLiteConnectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            int index = 1;
+            for (UUID id : ids) {
+                ps.setString(index++, id.toString());
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                List<Place> places = new ArrayList<>();
+                while (rs.next()) {
+                    places.add(mapPlaceWithRelations(rs));
+                }
+                return places;
+            }
+        } catch (SQLException e) {
+            log.error("Error fetching Places by ids='{}'", ids, e);
+            throw new RuntimeException("Database error while finding places by ids", e);
+        }
     }
 
     @Override

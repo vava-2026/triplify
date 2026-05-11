@@ -7,11 +7,13 @@ import com.triplify.domain.pagination.PageRequest;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 public interface RoutePlaceRepository {
     Optional<RoutePlace> findByRouteIdAndPlaceId(UUID routeId, UUID placeId);
     List<RoutePlace> findByRouteId(UUID routeId);
+    List<RoutePlace> findByRouteIds(Set<UUID> routeIds);
     List<RoutePlace> findByPlaceId(UUID placeId);
     Page<RouteWithPlaces> findRoutesWithPlacesByPlaceId(PageRequest pageRequest, UUID placeId, UUID userId);
     void create(RoutePlace routePlace);

@@ -4,8 +4,6 @@ import com.google.inject.Inject;
 import com.triplify.application.shared.error.ApplicationError;
 import com.triplify.application.security.Authenticated;
 import com.triplify.application.usecase.image.dto.ImageResponse;
-import com.triplify.application.usecase.place.PlaceService;
-import com.triplify.application.usecase.place.dto.GetPlaceByIdRequest;
 import com.triplify.application.usecase.place.dto.PlaceResponse;
 import com.triplify.application.usecase.session.SessionUser;
 import com.triplify.application.usecase.session.UserSessionContext;
@@ -20,6 +18,7 @@ import com.triplify.application.usecase.tripplace.dto.UpdateTripPlaceStatusReque
 import com.triplify.domain.error.PlaceError;
 import com.triplify.domain.error.TripError;
 import com.triplify.domain.error.TripPlaceError;
+import com.triplify.domain.model.Place;
 import com.triplify.domain.model.RoutePlace;
 import com.triplify.domain.model.Trip;
 import com.triplify.domain.model.TripPlace;
@@ -38,7 +37,10 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -53,7 +55,6 @@ public class TripPlaceServiceImpl implements TripPlaceService {
     private final TripRouteRepository tripRouteRepository;
     private final RoutePlaceRepository routePlaceRepository;
     private final PlaceRepository placeRepository;
-    private final PlaceService placeService;
     private final UserSessionContext userSessionContext;
 
     @Inject
@@ -63,7 +64,6 @@ public class TripPlaceServiceImpl implements TripPlaceService {
             TripRouteRepository tripRouteRepository,
             RoutePlaceRepository routePlaceRepository,
             PlaceRepository placeRepository,
-            PlaceService placeService,
             UserSessionContext userSessionContext
     ) {
         this.tripPlaceRepository = tripPlaceRepository;
@@ -71,7 +71,6 @@ public class TripPlaceServiceImpl implements TripPlaceService {
         this.tripRouteRepository = tripRouteRepository;
         this.routePlaceRepository = routePlaceRepository;
         this.placeRepository = placeRepository;
-        this.placeService = placeService;
         this.userSessionContext = userSessionContext;
     }
 
@@ -153,7 +152,9 @@ public class TripPlaceServiceImpl implements TripPlaceService {
 
     @Override
     public Result<TripPlaceResponse> getTripPlaceById(GetTripPlaceByIdRequest request) {
-        return toResponse(requireTripPlace(request.id()).orThrow());
+        TripPlace tripPlace = requireTripPlace(request.id()).orThrow();
+        Map<UUID, Place> placesById = loadPlacesById(List.of(tripPlace));
+        return toResponse(tripPlace, placesById);
     }
 
     @Override
@@ -172,9 +173,10 @@ public class TripPlaceServiceImpl implements TripPlaceService {
                 orderBy == null || orderBy.visitTimeAsc()
         );
 
+        Map<UUID, Place> placesById = loadPlacesById(page.items());
         List<TripPlaceResponse> responses = new ArrayList<>(page.items().size());
         for (TripPlace tripPlace : page.items()) {
-            responses.add(toResponse(tripPlace).orThrow());
+            responses.add(toResponse(tripPlace, placesById).orThrow());
         }
 
         return Result.ok(new Page<>(responses, page.page(), page.size(), page.hasNext()));
@@ -272,15 +274,17 @@ public class TripPlaceServiceImpl implements TripPlaceService {
         return Result.ok(new RouteSourceRefs(tripRoute.getId(), routePlace.getId()));
     }
 
-    private Result<TripPlaceResponse> toResponse(TripPlace tripPlace) {
-        PlaceResponse place = placeService.getPlaceById(
-                new GetPlaceByIdRequest(tripPlace.getPlaceId())
-        ).orThrow();
+    private Result<TripPlaceResponse> toResponse(TripPlace tripPlace, Map<UUID, Place> placesById) {
+        Place place = placesById.get(tripPlace.getPlaceId());
+        if (place == null) {
+            return Result.fail(new PlaceError.NotFound(tripPlace.getPlaceId().toString()));
+        }
+        PlaceResponse placeResponse = PlaceResponse.from(place);
 
         return Result.ok(new TripPlaceResponse(
                 tripPlace.getId(),
                 tripPlace.getTripId(),
-                place,
+                placeResponse,
                 tripPlace.getSourceType(),
                 tripPlace.getTripRouteId(),
                 tripPlace.getRoutePlaceId(),
@@ -290,6 +294,19 @@ public class TripPlaceServiceImpl implements TripPlaceService {
                 tripPlace.getUpdatedAt(),
                 Set.<ImageResponse>of()
         ));
+    }
+
+    private Map<UUID, Place> loadPlacesById(List<TripPlace> tripPlaces) {
+        LinkedHashSet<UUID> placeIds = new LinkedHashSet<>();
+        for (TripPlace tripPlace : tripPlaces) {
+            placeIds.add(tripPlace.getPlaceId());
+        }
+
+        Map<UUID, Place> placesById = new LinkedHashMap<>();
+        for (Place place : placeRepository.findByIds(placeIds)) {
+            placesById.put(place.getId(), place);
+        }
+        return placesById;
     }
 
     private record RouteSourceRefs(UUID tripRouteId, UUID routePlaceId) {

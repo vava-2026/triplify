@@ -9,7 +9,9 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -21,8 +23,16 @@ public final class EmojiUtil {
     private static final String CDN = "https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/";
     //TODO: Remove DISK_CACHE on release and move all the created emojis to BUNDLED_BASE
     private static final Path DISK_CACHE = Path.of(System.getProperty("user.home"), ".triplify", "emoji");
+    private static final int MEMORY_CACHE_LIMIT = 512;
 
-    private static final Map<String, Image> memCache = new HashMap<>();
+    private static final Map<String, Image> memCache = Collections.synchronizedMap(
+            new LinkedHashMap<>(128, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<String, Image> eldest) {
+                    return size() > MEMORY_CACHE_LIMIT;
+                }
+            }
+    );
     private static final Logger logger = LoggerFactory.getLogger(EmojiUtil.class);
     static {
         try {
@@ -35,7 +45,18 @@ public final class EmojiUtil {
     private EmojiUtil() {}
 
     public static Image toImage(String emoji, int size) {
-        return memCache.computeIfAbsent(emoji + ":" + size, k -> load(emoji, size));
+        String cacheKey = emoji + ":" + size;
+        synchronized (memCache) {
+            Image cached = memCache.get(cacheKey);
+            if (cached != null) {
+                return cached;
+            }
+            Image loaded = load(emoji, size);
+            if (loaded != null) {
+                memCache.put(cacheKey, loaded);
+            }
+            return loaded;
+        }
     }
 
     private static Image load(String emoji, int size) {
@@ -61,14 +82,12 @@ public final class EmojiUtil {
     }
 
     private static void downloadToDiskAsync(String url, Path dest) {
-        Thread t = new Thread(() -> {
+        UiBackgroundExecutor.get().execute(() -> {
             try {
                 byte[] data = URI.create(url).toURL().openStream().readAllBytes();
                 Files.write(dest, data);
             } catch (Exception ignored) {}
         });
-        t.setDaemon(true);
-        t.start();
     }
 
     private static String toCodepoints(String emoji) {

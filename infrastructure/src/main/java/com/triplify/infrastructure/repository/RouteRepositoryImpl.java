@@ -19,6 +19,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 public class RouteRepositoryImpl implements RouteRepository {
@@ -62,6 +63,34 @@ public class RouteRepositoryImpl implements RouteRepository {
         }
 
         return Optional.empty();
+    }
+
+    @Override
+    public List<Route> findByIds(Set<UUID> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+
+        String placeholders = String.join(", ", java.util.Collections.nCopies(ids.size(), "?"));
+        String sql = ROUTE_WITH_IMAGE_SELECT + " WHERE r.id IN (" + placeholders + ")";
+
+        try (Connection conn = SQLiteConnectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            int index = 1;
+            for (UUID id : ids) {
+                ps.setString(index++, id.toString());
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                List<Route> routes = new ArrayList<>();
+                while (rs.next()) {
+                    routes.add(mapRouteWithRelations(rs));
+                }
+                return routes;
+            }
+        } catch (SQLException e) {
+            log.error("Error fetching Routes by ids='{}'", ids, e);
+            throw new RuntimeException("Database error while finding routes by ids", e);
+        }
     }
 
     @Override

@@ -4,6 +4,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -75,6 +76,7 @@ import static com.triplify.ui.shared.util.EditorUtils.normalizeNullable;
 import static com.triplify.ui.shared.util.EditorUtils.safeText;
 import com.triplify.ui.shared.util.FxmlLoaderHelper;
 import com.triplify.ui.shared.util.Localization;
+import com.triplify.ui.shared.util.UiBackgroundExecutor;
 import com.triplify.ui.storage.EditorDraftStorage;
 
 import javafx.application.Platform;
@@ -97,6 +99,8 @@ public class AddTripController extends WindowedPageController {
     private static final String DEFAULT_IMAGE = "/com/triplify/ui/pages/trips/images/one.png";
     private static final String PLACE_NOT_FOUND_CODE = "error.place.not.found";
     private static final String ROUTE_NOT_FOUND_CODE = "error.route.not.found";
+    private static final double CARD_PREVIEW_WIDTH = 152;
+    private static final double CARD_PREVIEW_HEIGHT = 96;
 
     @FXML private VBox contentContainer;
     @FXML private FlowPane contentFlow;
@@ -176,6 +180,10 @@ public class AddTripController extends WindowedPageController {
     private Places placesModel;
     private List<CategoryResponse> availableCategories = List.of();
     private boolean coverImageDirty;
+    private boolean shownOnce;
+    private int categoryLoadGeneration;
+    private int tripLoadGeneration;
+    private int selectedItemsRefreshGeneration;
 
     @FXML
     public void initialize() {
@@ -203,8 +211,8 @@ public class AddTripController extends WindowedPageController {
         configureTagPicker();
         initializeCountrySelector();
         categoriesComponent = Categories.builder(categoryService).build();
-        loadAvailableCategories();
         refreshLocalizedUi();
+        loadAvailableCategoriesAsync();
         initializeActionPickers();
         I18n.bundleProperty().addListener((obs, oldBundle, newBundle) -> refreshLocalizedUi());
         renderCountryChips();
@@ -226,7 +234,7 @@ public class AddTripController extends WindowedPageController {
         } else if (createMode) {
             currentTripDisplayName = I18n.t("trip.add.default.name");
         } else {
-            loadExistingTrip();
+            loadExistingTripAsync();
         }
 
         consumeReturnedEditorResults();
@@ -237,7 +245,11 @@ public class AddTripController extends WindowedPageController {
     public void onWindowedShow() {
         EditorDraftStorage.clearTripDraft();
         consumeReturnedEditorResults();
-        refreshSelectedItems();
+        if (!shownOnce) {
+            shownOnce = true;
+            return;
+        }
+        refreshSelectedItemsAsync();
     }
 
     @FXML
@@ -481,14 +493,22 @@ public class AddTripController extends WindowedPageController {
         renderPlaces();
     }
 
-    private void loadAvailableCategories() {
-        var result = categoriesComponent.loadAll();
-        if (result.isFailure()) {
-            log.warn("Failed to load categories [code={}, message={}]", result.getError().code(), result.getError().message());
-            availableCategories = List.of();
-            return;
-        }
-        availableCategories = result.getValue();
+    private void loadAvailableCategoriesAsync() {
+        int requestId = ++categoryLoadGeneration;
+        CompletableFuture
+                .supplyAsync(categoriesComponent::loadAll, UiBackgroundExecutor.get())
+                .thenAccept(result -> Platform.runLater(() -> {
+                    if (requestId != categoryLoadGeneration) {
+                        return;
+                    }
+                    if (result.isFailure()) {
+                        log.warn("Failed to load categories [code={}, message={}]", result.getError().code(), result.getError().message());
+                        availableCategories = List.of();
+                        return;
+                    }
+                    availableCategories = result.getValue();
+                    refreshLocalizedUi();
+                }));
     }
 
     private void renderCountryChips() {
@@ -557,7 +577,15 @@ public class AddTripController extends WindowedPageController {
 
     private VBox buildRouteCard(RouteItem item) {
         EditorMediaCardView card = new EditorMediaCardView();
-        card.setPreviewImage(EditorUtils.loadImage(item.imagePath(), DEFAULT_IMAGE, getClass()));
+        card.setPreviewImage(EditorUtils.loadImage(
+                item.imagePath(),
+                DEFAULT_IMAGE,
+                getClass(),
+                CARD_PREVIEW_WIDTH,
+                CARD_PREVIEW_HEIGHT,
+                false,
+                true
+        ));
         card.setTitle(item.title());
         card.setSubtitle(item.subtitle());
         card.setCursor(Cursor.HAND);
@@ -580,7 +608,15 @@ public class AddTripController extends WindowedPageController {
 
     private VBox buildPlaceCard(PlaceItem item) {
         EditorMediaCardView card = new EditorMediaCardView();
-        card.setPreviewImage(EditorUtils.loadImage(item.imagePath(), DEFAULT_IMAGE, getClass()));
+        card.setPreviewImage(EditorUtils.loadImage(
+                item.imagePath(),
+                DEFAULT_IMAGE,
+                getClass(),
+                CARD_PREVIEW_WIDTH,
+                CARD_PREVIEW_HEIGHT,
+                false,
+                true
+        ));
         card.setTitle(item.title());
         card.setSubtitle(item.subtitle());
         card.setRemoveVisible(item.isManual());
@@ -846,15 +882,36 @@ public class AddTripController extends WindowedPageController {
         return tripPlaceService.replaceManualTripPlaces(new ReplaceManualTripPlacesRequest(savedTripId, placeIds));
     }
 
-    private void loadExistingTrip() {
-        var result = tripService.getTripById(new GetTripByIdRequest(UUID.fromString(tripId)));
-        if (result.isFailure()) {
-            log.warn("Failed to load trip [tripId={}, code={}, message={}]", tripId, result.getError().code(), result.getError().message());
-            toast.error(I18n.t("trip.add.toast.title.saved"), result.getError().message());
+    private void loadExistingTripAsync() {
+        UUID targetTripId;
+        try {
+            targetTripId = UUID.fromString(tripId);
+        } catch (IllegalArgumentException ex) {
+            log.warn("Invalid trip id for editor load [tripId={}]", tripId, ex);
+            toast.error(I18n.t("trip.add.toast.title.saved"), ex.getMessage());
             Platform.runLater(() -> getRouter().popBackStack());
             return;
         }
-        applyTripResponse(result.getValue());
+
+        int requestId = ++tripLoadGeneration;
+        CompletableFuture
+                .supplyAsync(() -> tripService.getTripById(new GetTripByIdRequest(targetTripId)), UiBackgroundExecutor.get())
+                .thenAccept(result -> Platform.runLater(() -> {
+                    if (requestId != tripLoadGeneration || !Objects.equals(targetTripId.toString(), tripId)) {
+                        return;
+                    }
+                    if (result.isFailure()) {
+                        log.warn("Failed to load trip [tripId={}, code={}, message={}]",
+                                tripId, result.getError().code(), result.getError().message());
+                        toast.error(I18n.t("trip.add.toast.title.saved"), result.getError().message());
+                        getRouter().popBackStack();
+                        return;
+                    }
+
+                    applyTripResponse(result.getValue());
+                    loadTripRoutesAsync(result.getValue().id(), requestId);
+                    loadTripPlacesAsync(result.getValue().id(), requestId);
+                }));
     }
 
     private void applyTripResponse(TripResponse trip) {
@@ -896,42 +953,57 @@ public class AddTripController extends WindowedPageController {
         coverImageDirty = false;
         showCoverImage(coverPath, trip.title());
 
-        loadTripRoutes(trip.id());
-        loadTripPlaces(trip.id());
     }
 
-    private void loadTripRoutes(UUID targetTripId) {
-        routeItems.clear();
-        var result = tripRouteService.getAllTripRoutes(targetTripId);
-        if (result.isFailure()) {
-            log.warn("Failed to load trip routes [tripId={}, code={}, message={}]", targetTripId, result.getError().code(), result.getError().message());
-            toast.warning(I18n.t("trip.add.toast.routes.loadFailed"));
-            renderRoutes();
-            return;
-        }
-        result.getValue().stream()
-                .map(TripRouteResponse::route)
-                .filter(route -> route != null)
-                .map(this::toRouteItem)
-                .forEach(routeItems::add);
-        renderRoutes();
+    private void loadTripRoutesAsync(UUID targetTripId, int requestId) {
+        CompletableFuture
+                .supplyAsync(() -> tripRouteService.getAllTripRoutes(targetTripId), UiBackgroundExecutor.get())
+                .thenAccept(result -> Platform.runLater(() -> {
+                    if (requestId != tripLoadGeneration || !Objects.equals(targetTripId.toString(), tripId)) {
+                        return;
+                    }
+                    routeItems.clear();
+                    if (result.isFailure()) {
+                        log.warn("Failed to load trip routes [tripId={}, code={}, message={}]",
+                                targetTripId, result.getError().code(), result.getError().message());
+                        toast.warning(I18n.t("trip.add.toast.routes.loadFailed"));
+                        renderRoutes();
+                        return;
+                    }
+                    result.getValue().stream()
+                            .map(TripRouteResponse::route)
+                            .filter(route -> route != null)
+                            .map(this::toRouteItem)
+                            .forEach(routeItems::add);
+                    renderRoutes();
+                    refreshRoutePicker();
+                    refreshPlacePicker();
+                }));
     }
 
-    private void loadTripPlaces(UUID targetTripId) {
-        placeItems.clear();
-        var result = tripPlaceService.getAllManualTripPlaces(targetTripId);
-        if (result.isFailure()) {
-            log.warn("Failed to load trip places [tripId={}, code={}, message={}]", targetTripId, result.getError().code(), result.getError().message());
-            toast.warning(I18n.t("trip.add.toast.places.loadFailed"));
-            renderPlaces();
-            return;
-        }
-        result.getValue().stream()
-                .map(TripPlaceResponse::place)
-                .filter(Objects::nonNull)
-                .map(this::toManualPlaceItem)
-                .forEach(placeItems::add);
-        renderPlaces();
+    private void loadTripPlacesAsync(UUID targetTripId, int requestId) {
+        CompletableFuture
+                .supplyAsync(() -> tripPlaceService.getAllManualTripPlaces(targetTripId), UiBackgroundExecutor.get())
+                .thenAccept(result -> Platform.runLater(() -> {
+                    if (requestId != tripLoadGeneration || !Objects.equals(targetTripId.toString(), tripId)) {
+                        return;
+                    }
+                    placeItems.clear();
+                    if (result.isFailure()) {
+                        log.warn("Failed to load trip places [tripId={}, code={}, message={}]",
+                                targetTripId, result.getError().code(), result.getError().message());
+                        toast.warning(I18n.t("trip.add.toast.places.loadFailed"));
+                        renderPlaces();
+                        return;
+                    }
+                    result.getValue().stream()
+                            .map(TripPlaceResponse::place)
+                            .filter(Objects::nonNull)
+                            .map(this::toManualPlaceItem)
+                            .forEach(placeItems::add);
+                    renderPlaces();
+                    refreshPlacePicker();
+                }));
     }
 
     private void consumeReturnedEditorResults() {
@@ -942,26 +1014,51 @@ public class AddTripController extends WindowedPageController {
         if (createdPlace != null) addExistingPlace(toManualPlaceItem(createdPlace));
     }
 
-    private void refreshSelectedItems() {
-        refreshRouteItems();
-        refreshManualPlaceItems();
-        renderRoutes();
-        renderPlaces();
-    }
-
-    private void refreshRouteItems() {
-        if (routeItems.isEmpty()) {
+    private void refreshSelectedItemsAsync() {
+        if (routeItems.isEmpty() && placeItems.isEmpty()) {
             return;
         }
 
-        List<RouteItem> existingItems = new ArrayList<>(routeItems);
-        routeItems.clear();
+        int requestId = ++selectedItemsRefreshGeneration;
+        List<RouteItem> currentRoutes = new ArrayList<>(routeItems);
+        List<PlaceItem> currentPlaces = new ArrayList<>(placeItems);
+        CompletableFuture
+                .supplyAsync(() -> refreshSelectedItems(currentRoutes, currentPlaces), UiBackgroundExecutor.get())
+                .thenAccept(refreshedItems -> Platform.runLater(() -> {
+                    if (requestId != selectedItemsRefreshGeneration) {
+                        return;
+                    }
+                    routeItems.clear();
+                    routeItems.addAll(refreshedItems.routes());
+                    placeItems.clear();
+                    placeItems.addAll(refreshedItems.manualPlaces());
+                    renderRoutes();
+                    renderPlaces();
+                    refreshRoutePicker();
+                    refreshPlacePicker();
+                }));
+    }
+
+    private RefreshedSelectedItems refreshSelectedItems(List<RouteItem> currentRoutes, List<PlaceItem> currentPlaces) {
+        return new RefreshedSelectedItems(
+                refreshRouteItems(currentRoutes),
+                refreshManualPlaceItems(currentPlaces)
+        );
+    }
+
+    private List<RouteItem> refreshRouteItems(List<RouteItem> existingItems) {
+        if (existingItems.isEmpty()) {
+            return List.of();
+        }
+
+        List<RouteItem> refreshedItems = new ArrayList<>(existingItems.size());
         for (RouteItem routeItem : existingItems) {
             RouteItem refreshedItem = refreshRouteItem(routeItem);
             if (refreshedItem != null) {
-                routeItems.add(refreshedItem);
+                refreshedItems.add(refreshedItem);
             }
         }
+        return refreshedItems;
     }
 
     private RouteItem refreshRouteItem(RouteItem routeItem) {
@@ -983,19 +1080,19 @@ public class AddTripController extends WindowedPageController {
         }
     }
 
-    private void refreshManualPlaceItems() {
-        if (placeItems.isEmpty()) {
-            return;
+    private List<PlaceItem> refreshManualPlaceItems(List<PlaceItem> existingItems) {
+        if (existingItems.isEmpty()) {
+            return List.of();
         }
 
-        List<PlaceItem> existingItems = new ArrayList<>(placeItems);
-        placeItems.clear();
+        List<PlaceItem> refreshedItems = new ArrayList<>(existingItems.size());
         for (PlaceItem placeItem : existingItems) {
             PlaceItem refreshedItem = refreshManualPlaceItem(placeItem);
             if (refreshedItem != null) {
-                placeItems.add(refreshedItem);
+                refreshedItems.add(refreshedItem);
             }
         }
+        return refreshedItems;
     }
 
     private PlaceItem refreshManualPlaceItem(PlaceItem placeItem) {
@@ -1244,5 +1341,8 @@ public class AddTripController extends WindowedPageController {
         private PlaceItem manualCopy() {
             return new PlaceItem(id, title, subtitle, imagePath, TripPlaceSourceType.MANUAL, null);
         }
+    }
+
+    private record RefreshedSelectedItems(List<RouteItem> routes, List<PlaceItem> manualPlaces) {
     }
 }

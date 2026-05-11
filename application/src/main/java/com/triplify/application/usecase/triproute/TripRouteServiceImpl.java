@@ -4,8 +4,6 @@ import com.google.inject.Inject;
 import com.triplify.application.shared.error.ApplicationError;
 import com.triplify.application.security.Authenticated;
 import com.triplify.application.usecase.image.dto.ImageResponse;
-import com.triplify.application.usecase.route.RouteService;
-import com.triplify.application.usecase.route.dto.GetRouteByIdRequest;
 import com.triplify.application.usecase.route.dto.RouteResponse;
 import com.triplify.application.usecase.session.SessionUser;
 import com.triplify.application.usecase.session.UserSessionContext;
@@ -21,6 +19,7 @@ import com.triplify.application.usecase.triproute.dto.UpdateTripRouteStatusReque
 import com.triplify.domain.error.RouteError;
 import com.triplify.domain.error.TripError;
 import com.triplify.domain.error.TripRouteError;
+import com.triplify.domain.model.Route;
 import com.triplify.domain.model.RoutePlace;
 import com.triplify.domain.model.Trip;
 import com.triplify.domain.model.TripPlace;
@@ -43,7 +42,10 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -58,7 +60,6 @@ public class TripRouteServiceImpl implements TripRouteService {
     private final RouteRepository routeRepository;
     private final RoutePlaceRepository routePlaceRepository;
     private final TripPlaceRepository tripPlaceRepository;
-    private final RouteService routeService;
     private final UserSessionContext userSessionContext;
 
     @Inject
@@ -68,7 +69,6 @@ public class TripRouteServiceImpl implements TripRouteService {
             RouteRepository routeRepository,
             RoutePlaceRepository routePlaceRepository,
             TripPlaceRepository tripPlaceRepository,
-            RouteService routeService,
             UserSessionContext userSessionContext
     ) {
         this.tripRouteRepository = tripRouteRepository;
@@ -76,7 +76,6 @@ public class TripRouteServiceImpl implements TripRouteService {
         this.routeRepository = routeRepository;
         this.routePlaceRepository = routePlaceRepository;
         this.tripPlaceRepository = tripPlaceRepository;
-        this.routeService = routeService;
         this.userSessionContext = userSessionContext;
     }
 
@@ -228,7 +227,10 @@ public class TripRouteServiceImpl implements TripRouteService {
 
     @Override
     public Result<TripRouteResponse> getTripRouteById(GetTripRouteByIdRequest request) {
-        return toResponse(requireTripRoute(request.id()).orThrow());
+        TripRoute tripRoute = requireTripRoute(request.id()).orThrow();
+        Map<UUID, Route> routesById = loadRoutesById(List.of(tripRoute));
+        Map<UUID, List<RoutePlace>> routePlacesByRouteId = loadRoutePlacesByRouteId(routesById.keySet());
+        return toResponse(tripRoute, routesById, routePlacesByRouteId);
     }
 
     @Override
@@ -240,9 +242,11 @@ public class TripRouteServiceImpl implements TripRouteService {
                 filter == null ? null : filter.status()
         );
 
+        Map<UUID, Route> routesById = loadRoutesById(page.items());
+        Map<UUID, List<RoutePlace>> routePlacesByRouteId = loadRoutePlacesByRouteId(routesById.keySet());
         List<TripRouteResponse> responses = new ArrayList<>(page.items().size());
         for (TripRoute tripRoute : page.items()) {
-            responses.add(toResponse(tripRoute).orThrow());
+            responses.add(toResponse(tripRoute, routesById, routePlacesByRouteId).orThrow());
         }
 
         return Result.ok(new Page<>(responses, page.page(), page.size(), page.hasNext()));
@@ -338,15 +342,25 @@ public class TripRouteServiceImpl implements TripRouteService {
         return Result.ok();
     }
 
-    private Result<TripRouteResponse> toResponse(TripRoute tripRoute) {
-        RouteResponse route = routeService.getRouteById(
-                new GetRouteByIdRequest(tripRoute.getRouteId())
-        ).orThrow();
+    private Result<TripRouteResponse> toResponse(
+            TripRoute tripRoute,
+            Map<UUID, Route> routesById,
+            Map<UUID, List<RoutePlace>> routePlacesByRouteId
+    ) {
+        Route route = routesById.get(tripRoute.getRouteId());
+        if (route == null) {
+            return Result.fail(new RouteError.NotFound(tripRoute.getRouteId().toString()));
+        }
+
+        RouteResponse routeResponse = RouteResponse.from(
+                route,
+                routePlacesByRouteId.getOrDefault(tripRoute.getRouteId(), List.of())
+        );
 
         return Result.ok(new TripRouteResponse(
                 tripRoute.getId(),
                 tripRoute.getTripId(),
-                route,
+                routeResponse,
                 tripRoute.getOrder(),
                 tripRoute.getStatus(),
                 tripRoute.getStartedAt(),
@@ -385,10 +399,16 @@ public class TripRouteServiceImpl implements TripRouteService {
         removeExistingRouteDerivedPlaces(tripId);
 
         List<TripRoute> tripRoutes = tripRouteRepository.findList(new PageRequest(0, 512), tripId, null).items();
+        Set<UUID> routeIds = tripRoutes.stream()
+                .map(TripRoute::getRouteId)
+                .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        Map<UUID, List<RoutePlace>> routePlacesByRouteId = loadRoutePlacesByRouteId(routeIds);
+        Set<UUID> existingPlaceIds = loadAllTripPlaceIds(tripId);
+
         for (TripRoute tripRoute : tripRoutes) {
-            List<RoutePlace> routePlaces = routePlaceRepository.findByRouteId(tripRoute.getRouteId());
+            List<RoutePlace> routePlaces = routePlacesByRouteId.getOrDefault(tripRoute.getRouteId(), List.of());
             for (RoutePlace routePlace : routePlaces) {
-                if (tripPlaceRepository.findByTripIdAndPlaceId(tripId, routePlace.getPlaceId()).isPresent()) {
+                if (!existingPlaceIds.add(routePlace.getPlaceId())) {
                     continue;
                 }
                 tripPlaceRepository.create(new TripPlace(
@@ -398,6 +418,56 @@ public class TripRouteServiceImpl implements TripRouteService {
                         routePlace.getId()
                 ));
             }
+        }
+    }
+
+    private Map<UUID, Route> loadRoutesById(List<TripRoute> tripRoutes) {
+        LinkedHashSet<UUID> routeIds = new LinkedHashSet<>();
+        for (TripRoute tripRoute : tripRoutes) {
+            routeIds.add(tripRoute.getRouteId());
+        }
+
+        Map<UUID, Route> routesById = new LinkedHashMap<>();
+        for (Route route : routeRepository.findByIds(routeIds)) {
+            routesById.put(route.getId(), route);
+        }
+        return routesById;
+    }
+
+    private Map<UUID, List<RoutePlace>> loadRoutePlacesByRouteId(Set<UUID> routeIds) {
+        Map<UUID, List<RoutePlace>> routePlacesByRouteId = new LinkedHashMap<>();
+        for (UUID routeId : routeIds) {
+            routePlacesByRouteId.put(routeId, new ArrayList<>());
+        }
+        for (RoutePlace routePlace : routePlaceRepository.findByRouteIds(routeIds)) {
+            routePlacesByRouteId
+                    .computeIfAbsent(routePlace.getRouteId(), ignored -> new ArrayList<>())
+                    .add(routePlace);
+        }
+        return routePlacesByRouteId;
+    }
+
+    private Set<UUID> loadAllTripPlaceIds(UUID tripId) {
+        LinkedHashSet<UUID> placeIds = new LinkedHashSet<>();
+        PageRequest pageRequest = new PageRequest(0, 512);
+        while (true) {
+            Page<TripPlace> page = tripPlaceRepository.findList(
+                    pageRequest,
+                    tripId,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    true
+            );
+            for (TripPlace tripPlace : page.items()) {
+                placeIds.add(tripPlace.getPlaceId());
+            }
+            if (!page.hasNext()) {
+                return placeIds;
+            }
+            pageRequest = pageRequest.next();
         }
     }
 

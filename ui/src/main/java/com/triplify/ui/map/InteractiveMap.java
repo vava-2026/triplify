@@ -51,6 +51,7 @@ public class InteractiveMap extends StackPane {
     private PolylineLayer polylineLayer;
     private MarkersLayer markersLayer;
     private List<CountryBoundary> countryBoundaries;
+    private CountryBoundary hoveredCountry;
 
     private double mapPressSceneX;
     private double mapPressSceneY;
@@ -58,6 +59,7 @@ public class InteractiveMap extends StackPane {
     private double mapDragSceneY;
     private boolean rightMouseDragging;
     private boolean selectionEnabled = true;
+    private boolean layerRefreshScheduled;
 
     private final ObjectProperty<MapPoint> selectedPoint = new SimpleObjectProperty<>();
     private final ObjectProperty<String> selectedCountryName = new SimpleObjectProperty<>();
@@ -332,9 +334,12 @@ public class InteractiveMap extends StackPane {
         }
 
         MapPoint point = mapView.getMapPosition(localPoint.getX(), localPoint.getY());
-        CountryBoundary hoveredCountry = findCountry(point.getLatitude(), point.getLongitude());
-        countryHoverLayer.setHoveredCountry(hoveredCountry);
-        updateHoveredCountryLabel(hoveredCountry);
+        CountryBoundary nextHoveredCountry = hoveredCountry != null && hoveredCountry.contains(point.getLatitude(), point.getLongitude())
+                ? hoveredCountry
+                : findCountry(point.getLatitude(), point.getLongitude());
+        hoveredCountry = nextHoveredCountry;
+        countryHoverLayer.setHoveredCountry(nextHoveredCountry);
+        updateHoveredCountryLabel(nextHoveredCountry);
     }
 
     private CountryBoundary findCountry(double latitude, double longitude) {
@@ -345,6 +350,7 @@ public class InteractiveMap extends StackPane {
     }
 
     private void clearHoveredCountry() {
+        hoveredCountry = null;
         countryHoverLayer.setHoveredCountry(null);
         updateHoveredCountryLabel(null);
     }
@@ -388,7 +394,12 @@ public class InteractiveMap extends StackPane {
     }
 
     private void refreshInteractiveLayersLater() {
+        if (layerRefreshScheduled) {
+            return;
+        }
+        layerRefreshScheduled = true;
         Platform.runLater(() -> {
+            layerRefreshScheduled = false;
             pinLayer.refresh();
             countryHoverLayer.refresh();
             polylineLayer.refresh();

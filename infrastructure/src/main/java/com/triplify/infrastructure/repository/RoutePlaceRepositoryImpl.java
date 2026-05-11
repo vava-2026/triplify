@@ -24,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 public class RoutePlaceRepositoryImpl implements RoutePlaceRepository {
@@ -114,6 +115,38 @@ public class RoutePlaceRepositoryImpl implements RoutePlaceRepository {
         } catch (SQLException e) {
             log.error("Error fetching RoutePlaces for routeId='{}'", routeId, e);
             throw new RuntimeException("Database error while finding route places", e);
+        }
+    }
+
+    @Override
+    public List<RoutePlace> findByRouteIds(Set<UUID> routeIds) {
+        if (routeIds == null || routeIds.isEmpty()) {
+            return List.of();
+        }
+
+        String placeholders = String.join(", ", java.util.Collections.nCopies(routeIds.size(), "?"));
+        String sql = ROUTE_PLACE_WITH_RELATIONS_SELECT + """
+             WHERE rp.route_id IN (%s)
+             ORDER BY rp.route_id ASC, rp."order" ASC
+            """.formatted(placeholders);
+
+        try (Connection conn = SQLiteConnectionFactory.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            int index = 1;
+            for (UUID routeId : routeIds) {
+                ps.setString(index++, routeId.toString());
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                List<RoutePlace> routePlaces = new ArrayList<>();
+                while (rs.next()) {
+                    routePlaces.add(mapRoutePlaceWithRelations(rs));
+                }
+                return routePlaces;
+            }
+        } catch (SQLException e) {
+            log.error("Error fetching RoutePlaces for routeIds='{}'", routeIds, e);
+            throw new RuntimeException("Database error while finding route places by route ids", e);
         }
     }
 
