@@ -1,7 +1,9 @@
 package com.triplify.ui;
 
 import java.net.URL;
+import java.util.Objects;
 
+import javafx.scene.image.Image;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,6 +69,8 @@ public class MainApp extends Application {
     public void start(Stage stage) throws Exception {
         log.info("App launched");
         userSessionContext.load();
+        Image icon = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/com/triplify/ui/logo.png")));
+        stage.getIcons().add(icon);
 
         FxmlLoadResult<Node, SidebarIslandView> islandResult = fxml.load("/com/triplify/ui/shared/menu/view/SidebarIsland.fxml");
         Node island = islandResult.node();
