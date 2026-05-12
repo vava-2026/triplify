@@ -308,7 +308,7 @@ public class MapMarkersLayer extends MapLayer {
         return switch (type) {
             case ROUTE -> "map-marker-route";
             case STORY -> "map-marker-story";
-            default    -> "map-marker-place";
+            default -> "map-marker-place";
         };
     }
 
@@ -317,7 +317,7 @@ public class MapMarkersLayer extends MapLayer {
         return switch (type) {
             case ROUTE -> Color.web("#2a9d8f");
             case STORY -> Color.web("#8338ec");
-            default    -> Color.web("#2f6690");
+            default -> Color.web("#2f6690");
         };
     }
 

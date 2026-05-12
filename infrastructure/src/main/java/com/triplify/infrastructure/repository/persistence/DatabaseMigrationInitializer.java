@@ -10,7 +10,9 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.triplify.infrastructure.unsplash.UnsplashImageSeeder;
 
 @Singleton
 public class DatabaseMigrationInitializer {
@@ -39,34 +41,43 @@ public class DatabaseMigrationInitializer {
             new MigrationStep(20, "seeders/statistics_seeder.sql")
     );
 
+    private final UnsplashImageSeeder unsplashImageSeeder;
+
+    @Inject
+    public DatabaseMigrationInitializer(UnsplashImageSeeder unsplashImageSeeder) {
+        this.unsplashImageSeeder = unsplashImageSeeder;
+    }
+
     public void initialize() {
         try (Connection connection = SQLiteConnectionFactory.getSpatialConnection()) {
             int userVersion = readUserVersion(connection);
-            if (userVersion >= CURRENT_SCHEMA_VERSION) {
-                logger.info("SQLite schema already initialized; skipping migrations");
-                return;
-            }
-
-            for (MigrationStep migration : MIGRATIONS) {
-                if (migration.version() <= userVersion || migration.version() > CURRENT_SCHEMA_VERSION) {
-                    continue;
-                }
-
-                logger.info("Applying SQLite migration v{} from {}", migration.version(), migration.fileName());
-                runSqlFile(connection, migration.fileName());
-
-                setUserVersion(connection, migration.version());
-                userVersion = migration.version();
-                logger.info("SQLite migration v{} applied", migration.version());
-            }
 
             if (userVersion < CURRENT_SCHEMA_VERSION) {
-                throw new IllegalStateException("Missing migration definition for schema version " + (userVersion + 1));
+                for (MigrationStep migration : MIGRATIONS) {
+                    if (migration.version() <= userVersion || migration.version() > CURRENT_SCHEMA_VERSION) {
+                        continue;
+                    }
+
+                    logger.info("Applying SQLite migration v{} from {}", migration.version(), migration.fileName());
+                    runSqlFile(connection, migration.fileName());
+
+                    setUserVersion(connection, migration.version());
+                    userVersion = migration.version();
+                    logger.info("SQLite migration v{} applied", migration.version());
+                }
+
+                if (userVersion < CURRENT_SCHEMA_VERSION) {
+                    throw new IllegalStateException("Missing migration definition for schema version " + (userVersion + 1));
+                }
+            } else {
+                logger.info("SQLite schema already initialized; skipping migrations");
             }
         } catch (Exception e) {
             logger.error("Failed to initialize SQLite schema", e);
             throw new RuntimeException("Failed to initialize SQLite schema", e);
         }
+
+        unsplashImageSeeder.seed();
     }
 
     private int readUserVersion(Connection connection) throws SQLException {

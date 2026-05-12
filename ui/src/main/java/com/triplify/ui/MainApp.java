@@ -72,7 +72,7 @@ public class MainApp extends Application {
         Node island = islandResult.node();
         SidebarIslandView islandView = islandResult.controller();
 
-        Pane islandPane = new Pane(island);
+        StackPane islandPane = new StackPane(island);
         islandPane.setPrefWidth(MenuView.SIDEBAR_WIDTH);
         islandPane.setMinWidth(MenuView.SIDEBAR_WIDTH);
         islandPane.setMaxWidth(MenuView.SIDEBAR_WIDTH);
@@ -138,6 +138,7 @@ public class MainApp extends Application {
         BooleanBinding showIsland = showMenu;
         islandPane.visibleProperty().bind(showIsland);
         islandPane.managedProperty().bind(showIsland);
+        islandPane.setMouseTransparent(false);
         showMenu.addListener((obs, wasVisible, isVisible) -> {
             if (isVisible) {
                 menuView.refreshAccountSection();
@@ -150,6 +151,8 @@ public class MainApp extends Application {
                 .and(routerContext.fullScreenContentProperty().not());
         header.visibleProperty().bind(showHeader);
         header.managedProperty().bind(showHeader);
+        header.mouseTransparentProperty().bind(showHeader.not());
+        header.pickOnBoundsProperty().bind(showHeader.not());
 
         contentArea.routerProperty().addListener((obs, oldRouter, newRouter) -> {
             router = newRouter;
@@ -173,7 +176,8 @@ public class MainApp extends Application {
         topBar.getStyleClass().add("app-top-bar");
         topBar.visibleProperty().bind(showIsland);
         topBar.managedProperty().bind(showIsland);
-        topBar.pickOnBoundsProperty().bind(showHeader);
+        topBar.pickOnBoundsProperty().bind(showHeader.not());
+        topBar.mouseTransparentProperty().bind(showHeader.not());
 
         StackPane.setAlignment(topBar, Pos.TOP_LEFT);
         StackPane.setAlignment(menu, Pos.TOP_LEFT);

@@ -70,6 +70,7 @@ public class MapServiceImpl implements MapService {
     }
 
 
+    //Partly generated with Copilot
     private double computeGridSize(double zoomLevel) {
         double raw = 360.0 / Math.pow(2, zoomLevel) / GRID_DIVISOR;
         return Math.max(MIN_GRID_SIZE, Math.min(MAX_GRID_SIZE, raw));

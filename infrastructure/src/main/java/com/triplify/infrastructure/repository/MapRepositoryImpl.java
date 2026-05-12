@@ -19,6 +19,7 @@ import com.triplify.domain.pagination.PageRequest;
 import com.triplify.domain.repository.MapRepository;
 import com.triplify.infrastructure.repository.persistence.SQLiteConnectionFactory;
 
+// Partly generated with Copilot
 public class MapRepositoryImpl implements MapRepository {
 
     private static final Logger log = LoggerFactory.getLogger(MapRepositoryImpl.class);
@@ -130,14 +131,14 @@ public class MapRepositoryImpl implements MapRepository {
         String union = String.join(" UNION ALL ", subQueries);
         String sql = """
                 SELECT
-                  CASE WHEN COUNT(*) = 1 THEN MIN(id)           ELSE NULL  END AS id,
-                  CASE WHEN COUNT(*) = 1 THEN MIN(object_type)  ELSE NULL  END AS object_type,
-                  CASE WHEN COUNT(*) = 1 THEN MIN(title)         ELSE NULL  END AS title,
-                  AVG(latitude)                                               AS latitude,
-                  AVG(longitude)                                              AS longitude,
+                  CASE WHEN COUNT(*) = 1 THEN MIN(id) ELSE NULL END AS id,
+                  CASE WHEN COUNT(*) = 1 THEN MIN(object_type) ELSE NULL END AS object_type,
+                  CASE WHEN COUNT(*) = 1 THEN MIN(title) ELSE NULL END AS title,
+                  AVG(latitude) AS latitude,
+                  AVG(longitude) AS longitude,
                   CASE WHEN COUNT(*) = 1 THEN MIN(cover_image_id) ELSE NULL END AS cover_image_id,
                   CASE WHEN COUNT(*) = 1 THEN MIN(cover_image_url) ELSE NULL END AS cover_image_url,
-                  COUNT(*)                                                    AS count
+                  COUNT(*) AS count
                 FROM (
                 """ + union + """
                 )
@@ -174,11 +175,9 @@ public class MapRepositoryImpl implements MapRepository {
             Set<MapObjectType> filter,
             PageRequest pageRequest) {
 
-        // Identify the grid cell from the cluster centroid
         int gridRow = (int) Math.round(clusterLatitude  / gridSize);
         int gridCol = (int) Math.round(clusterLongitude / gridSize);
 
-        // Cell bounds with small buffer to account for floating-point rounding
         double halfCell = gridSize / 2.0 + gridSize * 0.01;
         double cellMinLat = gridRow * gridSize - halfCell;
         double cellMaxLat = gridRow * gridSize + halfCell;
@@ -195,7 +194,6 @@ public class MapRepositoryImpl implements MapRepository {
 
         if (places) {
             subQueries.add(PLACES_SUB);
-            // For places, use BuildMbr spatial filter
             params.add(userId.toString());
             params.add(cellMinLon);
             params.add(cellMinLat);
@@ -222,7 +220,6 @@ public class MapRepositoryImpl implements MapRepository {
         if (subQueries.isEmpty()) return Page.empty(pageRequest);
 
         String union = String.join(" UNION ALL ", subQueries);
-        // No GROUP BY — return individual rows, paginated
         String sql = "SELECT id, object_type, title, latitude, longitude, cover_image_id, cover_image_url, 1 AS count FROM (" + union + ") ORDER BY id LIMIT ? OFFSET ?";
 
         params.add(pageRequest.size() + 1);
@@ -249,14 +246,14 @@ public class MapRepositoryImpl implements MapRepository {
     }
 
     private MapDataPoint mapRow(ResultSet rs) throws SQLException {
-        String idStr    = rs.getString("id");
+        String idStr = rs.getString("id");
         String typeStr  = rs.getString("object_type");
-        String title    = rs.getString("title");
+        String title  = rs.getString("title");
         double latitude = rs.getDouble("latitude");
         double longitude = rs.getDouble("longitude");
         String imgIdStr = rs.getString("cover_image_id");
-        String imgUrl   = rs.getString("cover_image_url");
-        int count       = rs.getInt("count");
+        String imgUrl = rs.getString("cover_image_url");
+        int count = rs.getInt("count");
 
         UUID id = idStr != null ? UUID.fromString(idStr) : null;
 
