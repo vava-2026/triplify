@@ -25,8 +25,7 @@
         <ScrollPane fx:id="card" styleClass="card-grid-scroll" prefHeight="700" vbarPolicy="ALWAYS" hbarPolicy="NEVER">
             <VBox spacing="8">
                 <ImageView fx:id="imageView" fitWidth="600" preserveRatio="true"/>
-                <Label fx:id="descriptionLabel" styleClass="image-modal-description"
-                       maxWidth="Infinity" wrapText="true"/>
+                <Label fx:id="descriptionLabel" styleClass="image-modal-description" maxWidth="600" wrapText="true"/>
                 <HBox fx:id="deleteButtonContainer"/>
             </VBox>
         </ScrollPane>

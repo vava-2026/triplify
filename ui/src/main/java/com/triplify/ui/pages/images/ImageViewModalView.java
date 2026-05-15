@@ -68,6 +68,7 @@ public final class ImageViewModalView {
         this.stage = new Stage(StageStyle.TRANSPARENT);
         this.stage.initModality(Modality.APPLICATION_MODAL);
         this.root = loadView();
+        this.descriptionLabel.setWrapText(true);
         configureScene();
     }
 
